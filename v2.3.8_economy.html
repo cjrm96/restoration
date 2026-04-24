@@ -5381,6 +5381,18 @@
         state.freshHeadline = `${tier.title} unlocked`;
         toast(`${tier.title} — ${tier.sub}`, "event-good");
       }
+      function modalBusy() {
+        return (
+          !state.tutorialComplete ||
+          !!state.pendingVictory ||
+          !!state.showStage ||
+          state.showLoading ||
+          state.showStore ||
+          !!state.pendingScene ||
+          !!state.pendingEvent ||
+          !!state.pendingMarketplaceOffer
+        );
+      }
       function queueEvent(kind, payload) {
         state.eventQueue = Array.isArray(state.eventQueue)
           ? state.eventQueue
@@ -5389,48 +5401,26 @@
       }
       function processEventQueue() {
         if (!state.eventQueue || !state.eventQueue.length) return;
-        if (state.showLoading || state.showStore) return;
-        if (state.pendingScene || state.pendingEvent || state.pendingMarketplaceOffer)
-          return;
+        if (modalBusy()) return;
         const next = state.eventQueue.shift();
         if (!next) return;
         if (next.kind === "scene") state.pendingScene = next.payload;
         else if (next.kind === "event") state.pendingEvent = next.payload;
         else if (next.kind === "marketplace") {
           state.pendingMarketplaceOffer = next.payload;
+          playSfx("ding");
         }
       }
       function queueScene(scene) {
-        if (
-          state.pendingScene ||
-          state.pendingEvent ||
-          state.pendingMarketplaceOffer ||
-          state.showLoading ||
-          state.showStore
-        )
-          queueEvent("scene", scene);
+        if (modalBusy()) queueEvent("scene", scene);
         else state.pendingScene = scene;
       }
       function queueWeeklyEvent(ev) {
-        if (
-          state.pendingScene ||
-          state.pendingEvent ||
-          state.pendingMarketplaceOffer ||
-          state.showLoading ||
-          state.showStore
-        )
-          queueEvent("event", ev);
+        if (modalBusy()) queueEvent("event", ev);
         else state.pendingEvent = ev;
       }
       function queueMarketplaceOffer(offer) {
-        if (
-          state.pendingScene ||
-          state.pendingEvent ||
-          state.pendingMarketplaceOffer ||
-          state.showLoading ||
-          state.showStore
-        )
-          queueEvent("marketplace", offer);
+        if (modalBusy()) queueEvent("marketplace", offer);
         else {
           state.pendingMarketplaceOffer = offer;
           playSfx("ding");
@@ -5657,15 +5647,7 @@
         }
       }
       function maybeGenerateMarketplaceOffer(rollChance = 0.68) {
-        if (
-          state.pendingMarketplaceOffer ||
-          state.pendingScene ||
-          state.pendingEvent ||
-          state.pendingVictory ||
-          state.showStage ||
-          !state.tutorialComplete
-        )
-          return false;
+        if (modalBusy()) return false;
         const listed = state.partsInventory.filter((i) => i.listed && !i.sold);
         if (!listed.length || Math.random() > rollChance) return false;
         const item = listed[Math.floor(Math.random() * listed.length)];
