@@ -828,6 +828,311 @@
         text-decoration: underline;
       }
 
+      .victory-modal {
+        max-width: 640px !important;
+        background:
+          radial-gradient(
+            ellipse at top,
+            rgba(209, 154, 63, 0.22) 0%,
+            transparent 62%
+          ),
+          linear-gradient(180deg, #2a1f13 0%, #140e08 100%) !important;
+        border: 1px solid var(--gold) !important;
+        box-shadow:
+          0 0 0 1px rgba(209, 154, 63, 0.25) inset,
+          0 26px 80px rgba(0, 0, 0, 0.75),
+          0 0 120px rgba(209, 154, 63, 0.18) !important;
+        padding: 0 !important;
+        overflow: hidden;
+      }
+      .victory-kicker {
+        text-align: center;
+        font-size: 11px;
+        letter-spacing: 3px;
+        color: var(--gold);
+        font-weight: bold;
+        padding: 22px 24px 0;
+        text-transform: uppercase;
+      }
+      .victory-trophy {
+        text-align: center;
+        font-size: 92px;
+        line-height: 1;
+        margin: 8px 0 4px;
+        filter: drop-shadow(0 6px 24px rgba(209, 154, 63, 0.4));
+        animation: revealPop 0.7s cubic-bezier(0.2, 1.3, 0.4, 1);
+      }
+      .victory-title {
+        text-align: center;
+        font-size: 34px;
+        font-weight: bold;
+        color: var(--text-bright);
+        letter-spacing: 0.6px;
+        padding: 0 28px;
+        margin: 10px 0 6px;
+        line-height: 1.15;
+      }
+      .victory-sub {
+        text-align: center;
+        font-size: 14px;
+        color: var(--gold-soft);
+        padding: 0 28px 20px;
+        font-style: italic;
+        line-height: 1.6;
+      }
+      .victory-statline {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        padding: 0 28px 22px;
+      }
+      .victory-stat {
+        background: rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(209, 154, 63, 0.2);
+        border-radius: 8px;
+        padding: 12px 8px;
+        text-align: center;
+      }
+      .victory-stat-v {
+        font-size: 22px;
+        font-weight: bold;
+        color: var(--gold);
+      }
+      .victory-stat-k {
+        font-size: 10px;
+        letter-spacing: 1.2px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        margin-top: 4px;
+      }
+      .victory-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 0 32px 28px;
+      }
+      .victory-primary {
+        appearance: none;
+        font-family: inherit;
+        background: linear-gradient(180deg, #e0a955 0%, #b6802e 100%);
+        color: #1a120a;
+        font-weight: bold;
+        font-size: 15px;
+        letter-spacing: 0.4px;
+        border: 1px solid #f0c478;
+        border-radius: 8px;
+        padding: 14px 24px;
+        cursor: pointer;
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.18) inset,
+          0 6px 18px rgba(209, 154, 63, 0.32);
+        transition: transform 0.12s, box-shadow 0.12s;
+      }
+      .victory-primary:hover {
+        transform: translateY(-1px);
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.22) inset,
+          0 9px 24px rgba(209, 154, 63, 0.42);
+      }
+      .victory-secondary {
+        appearance: none;
+        font-family: inherit;
+        background: transparent;
+        color: var(--text);
+        font-weight: normal;
+        font-size: 13px;
+        border: 1px solid #4a4036;
+        border-radius: 8px;
+        padding: 11px 20px;
+        cursor: pointer;
+        transition: border-color 0.15s, color 0.15s;
+      }
+      .victory-secondary:hover {
+        border-color: var(--muted);
+        color: var(--text-bright);
+      }
+
+      .legacy-wrap {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      .legacy-hero {
+        position: relative;
+        background:
+          radial-gradient(
+            ellipse at top,
+            rgba(209, 154, 63, 0.16) 0%,
+            transparent 60%
+          ),
+          linear-gradient(180deg, #221910 0%, #14100b 100%);
+        border: 1px solid var(--gold);
+        border-radius: 12px;
+        padding: 32px 28px 28px;
+        margin-bottom: 18px;
+        box-shadow:
+          0 0 0 1px rgba(209, 154, 63, 0.18) inset,
+          0 12px 36px rgba(0, 0, 0, 0.4);
+      }
+      .legacy-hero-kicker {
+        font-size: 11px;
+        letter-spacing: 3px;
+        color: var(--gold);
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .legacy-hero-title {
+        font-size: 32px;
+        font-weight: bold;
+        color: var(--text-bright);
+        letter-spacing: 0.4px;
+        margin-bottom: 6px;
+      }
+      .legacy-hero-sub {
+        font-size: 14px;
+        color: var(--gold-soft);
+        font-style: italic;
+        line-height: 1.6;
+        margin-bottom: 18px;
+        max-width: 620px;
+      }
+      .legacy-career-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+      .legacy-career-stat {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(209, 154, 63, 0.22);
+        border-radius: 8px;
+        padding: 12px;
+      }
+      .legacy-career-v {
+        font-size: 22px;
+        font-weight: bold;
+        color: var(--gold);
+        line-height: 1.1;
+      }
+      .legacy-career-k {
+        font-size: 10px;
+        letter-spacing: 1.2px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        margin-top: 4px;
+      }
+      .legacy-back {
+        appearance: none;
+        background: transparent;
+        color: var(--text-dim);
+        border: 1px solid #3a3228;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-family: inherit;
+        font-size: 11px;
+        letter-spacing: 0.8px;
+        cursor: pointer;
+        text-transform: uppercase;
+        transition: color 0.15s, border-color 0.15s;
+      }
+      .legacy-back:hover {
+        color: var(--text-bright);
+        border-color: var(--muted);
+      }
+      .legacy-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 14px;
+      }
+      .legacy-card {
+        background: linear-gradient(180deg, #221911 0%, #170f09 100%);
+        border: 1px solid #433629;
+        border-radius: 10px;
+        padding: 18px 16px 16px;
+        position: relative;
+        overflow: hidden;
+        transition: border-color 0.2s, transform 0.15s;
+      }
+      .legacy-card:hover {
+        border-color: var(--gold-soft);
+        transform: translateY(-1px);
+      }
+      .legacy-card.national {
+        border-color: var(--gold);
+        box-shadow:
+          0 0 0 1px rgba(209, 154, 63, 0.16) inset,
+          0 0 32px rgba(209, 154, 63, 0.1);
+      }
+      .legacy-card.national::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      }
+      .legacy-card-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        font-size: 22px;
+        filter: drop-shadow(0 2px 6px rgba(209, 154, 63, 0.4));
+      }
+      .legacy-card-emoji {
+        font-size: 42px;
+        line-height: 1;
+        margin-bottom: 10px;
+      }
+      .legacy-card-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: var(--text-bright);
+        letter-spacing: 0.2px;
+        margin-bottom: 2px;
+      }
+      .legacy-card-sub {
+        font-size: 11px;
+        color: var(--text-dim);
+        letter-spacing: 0.5px;
+        margin-bottom: 14px;
+        text-transform: uppercase;
+      }
+      .legacy-card-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .legacy-card-stat {
+        background: rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(75, 64, 54, 0.5);
+        border-radius: 6px;
+        padding: 8px;
+      }
+      .legacy-card-stat-v {
+        font-size: 16px;
+        font-weight: bold;
+        color: var(--text);
+      }
+      .legacy-card-stat-v.gold {
+        color: var(--gold);
+      }
+      .legacy-card-stat-k {
+        font-size: 9px;
+        letter-spacing: 0.9px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        margin-top: 2px;
+      }
+      .legacy-empty {
+        text-align: center;
+        padding: 48px 24px;
+        color: var(--text-dim);
+        font-size: 14px;
+        line-height: 1.7;
+        font-style: italic;
+      }
+
       @media (max-width: 980px) {
         .grid-main,
         .grid-main-shows {
@@ -1349,6 +1654,20 @@
               title="Toggle music"
             >
               🎵
+            </button>
+            <button
+              class="btn"
+              id="sfxBtn"
+              style="
+                background: #2a221a;
+                color: var(--muted);
+                border-color: #4a4036;
+                min-width: 36px;
+              "
+              onclick="toggleSfx()"
+              title="Toggle sound effects"
+            >
+              🔊
             </button>
           </div>
         </div>
@@ -3794,6 +4113,8 @@
           tutorialComplete: false,
           tutorialStep: 0,
           sfxMuted: false,
+          legacyBuilds: [],
+          pendingVictory: null,
           postShowWeekLocked: false,
           starterHelpReceived: false,
           starterCarbUsed: false,
@@ -6092,8 +6413,10 @@
         };
         state.showStage = "arriving";
 
-        if (place === 1 && show.tier === "National" && effectiveOverall >= 90)
+        if (place === 1 && show.tier === "National" && effectiveOverall >= 90) {
           state.won = true;
+          triggerVictory();
+        }
         if (place === 1) {
           pushRivalNote(
             `You just beat the field at ${show.name}. Buck is going to hear about this.`,
@@ -6213,6 +6536,102 @@
         state.tutorialStep = 0;
         playSfx("click");
         saveGame();
+        requestRender("full");
+      }
+
+      function snapshotCompletedBuild() {
+        const car = currentCar();
+        if (!car) return null;
+        return {
+          id: `build_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          year: car.year,
+          make: car.make,
+          model: car.model,
+          emoji: car.emoji,
+          finalOverall: getOverall(car),
+          wonNational: !!state.won,
+          completedWeek: state.week,
+          completedSeason: (state.legacyBuilds || []).length + 1,
+          followersAtCompletion: state.followers,
+          bestPlace: state.seasonStats.bestPlace,
+          bestTier: state.seasonStats.bestTier,
+          partsInstalled: car.installedParts ? car.installedParts.length : 0,
+        };
+      }
+
+      function triggerVictory() {
+        if (state.pendingVictory) return;
+        state.pendingVictory = {
+          build: snapshotCompletedBuild(),
+          totalBuilds: (state.legacyBuilds || []).length + 1,
+        };
+        saveGame();
+      }
+
+      function dismissVictoryCallItDone() {
+        const v = state.pendingVictory;
+        if (!v) return;
+        if (v.build) {
+          state.legacyBuilds = [v.build, ...(state.legacyBuilds || [])];
+        }
+        state.pendingVictory = null;
+        state.seasonWrap = true;
+        playSfx("click");
+        saveGame();
+        requestRender("full");
+      }
+
+      function startLegacyRun() {
+        const v = state.pendingVictory;
+        if (v && v.build) {
+          state.legacyBuilds = [v.build, ...(state.legacyBuilds || [])];
+        } else {
+          const snap = snapshotCompletedBuild();
+          if (snap) state.legacyBuilds = [snap, ...(state.legacyBuilds || [])];
+        }
+        // Reset car + season but PRESERVE progress
+        state.cars = [];
+        state.carId = null;
+        state.week = 1;
+        state.won = false;
+        state.pendingVictory = null;
+        state.seasonWrap = false;
+        state.history = [];
+        state.activeRestorations = [];
+        state.enteredShowsThisWeek = [];
+        state.postShowWeekLocked = false;
+        state.result = null;
+        state.pendingAdvanceReason = null;
+        state.winterStorageReport = null;
+        state.winterAppliedForSeason = false;
+        state.freshHeadline = "";
+        state.milestones = {
+          firstShow: false,
+          hit50: false,
+          wonRegional: false,
+          threeSponsors: (state.legacyBuilds.length > 0),
+          homeGarage: state.workshopLevel !== "curb",
+          wonNational: false,
+        };
+        state.rival = { score: 32 + (state.legacyBuilds.length || 0) * 4, showsEntered: 0, lastPlace: null };
+        state.seasonStats = {
+          moneyStart: state.money,
+          moneyEarned: 0,
+          showsEntered: 0,
+          bestPlace: null,
+          bestTier: null,
+          startOverall: 0,
+        };
+        state.view = "dealership";
+        playSfx("success");
+        toast("Legacy run started. Pick your next project in the Marketplace.", "event-good");
+        saveGame();
+        requestRender("full");
+      }
+
+      function openLegacyWall() {
+        state.view = "legacy";
+        playSfx("swoosh");
         requestRender("full");
       }
 
@@ -6693,6 +7112,29 @@ body{position:relative!important;display:block!important;}
         return true;
       }
 
+      function renderVictoryModal() {
+        const root = getEl("modalRoot");
+        if (!state.pendingVictory) return false;
+        const v = state.pendingVictory;
+        const b = v.build || {};
+        const carLine = b.year && b.make ? `${b.year} ${b.make} ${b.model}` : "Your build";
+        const buildNo = v.totalBuilds || 1;
+        const ordinal =
+          buildNo === 1
+            ? "first"
+            : buildNo === 2
+              ? "second"
+              : buildNo === 3
+                ? "third"
+                : `${buildNo}th`;
+        const sub =
+          buildNo === 1
+            ? "Your first National win. Everyone who doubted this build is finding a new hobby."
+            : `Your ${ordinal} National title. The garage has earned its reputation.`;
+        root.innerHTML = `<div class="modal"><div class="modal-card victory-modal show-beat"><div class="victory-kicker">National Champion · Season Complete</div><div class="victory-trophy">🏆</div><div class="victory-title">${carLine}</div><div class="victory-sub">${sub}</div><div class="victory-statline"><div class="victory-stat"><div class="victory-stat-v">${b.finalOverall || 0}</div><div class="victory-stat-k">Final Overall</div></div><div class="victory-stat"><div class="victory-stat-v">${fmtF(b.followersAtCompletion || 0)}</div><div class="victory-stat-k">Followers</div></div><div class="victory-stat"><div class="victory-stat-v">#${buildNo}</div><div class="victory-stat-k">Career Build</div></div></div><div class="victory-actions"><button class="victory-primary" onclick="startLegacyRun()">Start a Legacy Build →</button><button class="victory-secondary" onclick="dismissVictoryCallItDone()">Call it done, see the season recap</button></div></div></div>`;
+        return true;
+      }
+
       function renderShowCinematicModal() {
         const root = getEl("modalRoot");
         if (!state.showLoading || !state.showStage) return false;
@@ -7167,9 +7609,24 @@ body{position:relative!important;display:block!important;}
         )}</div></div>`;
       }
 
+      function renderLegacyTeaser() {
+        const builds = state.legacyBuilds || [];
+        const count = builds.length;
+        const nationals = builds.filter((b) => b.wonNational).length;
+        const subtitle = count
+          ? `${count} build${count === 1 ? "" : "s"} retired · ${nationals} National title${nationals === 1 ? "" : "s"}`
+          : "No retired builds yet. Win Nationals or start a Legacy run to unlock.";
+        return `<div class="legacy-hero" style="margin-bottom:14px;padding:20px 20px 18px">
+          <div class="legacy-hero-kicker">Legacy Wall</div>
+          <div style="font-size:20px;font-weight:bold;color:var(--text-bright);margin-bottom:4px;letter-spacing:.2px">Your career so far</div>
+          <div style="font-size:13px;color:var(--gold-soft);font-style:italic;line-height:1.6;margin-bottom:14px">${subtitle}</div>
+          <button class="victory-primary" style="padding:11px 22px;font-size:14px" onclick="openLegacyWall()">${count ? "Open the wall →" : "Preview the wall →"}</button>
+        </div>`;
+      }
+
       function renderCareer() {
         const activeCar = currentCar();
-        return `<div class="grid-main"><div>${activeCar ? renderHeroCallout("Social Media Hub", "All world, rival, marketplace, and posting interactions now run through one live scene board.", "WORLD INTERACTIONS") : ""}${renderFollowersTracker()}${activeCar ? renderUnifiedSocialFeed(activeCar, { showSponsors: false, showHistory: true }) : renderUnifiedSocialFeed(null, { showSponsors: false, showHistory: true })}</div><div>${renderUpcomingBar()}${panel(
+        return `<div class="grid-main"><div>${activeCar ? renderHeroCallout("Social Media Hub", "All world, rival, marketplace, and posting interactions now run through one live scene board.", "WORLD INTERACTIONS") : ""}${renderLegacyTeaser()}${renderFollowersTracker()}${activeCar ? renderUnifiedSocialFeed(activeCar, { showSponsors: false, showHistory: true }) : renderUnifiedSocialFeed(null, { showSponsors: false, showHistory: true })}</div><div>${renderUpcomingBar()}${panel(
           "Sponsor Watch",
           `${SPONSORS.slice(0, 6)
             .map(
@@ -7180,6 +7637,68 @@ body{position:relative!important;display:block!important;}
           "Know what each sponsor gives you and how close you are.",
           "#d8a24f",
         )}</div></div>`;
+      }
+
+      function renderLegacyWall() {
+        const builds = state.legacyBuilds || [];
+        const careerStats = {
+          total: builds.length,
+          nationals: builds.filter((b) => b.wonNational).length,
+          best: builds.reduce((m, b) => Math.max(m, b.finalOverall || 0), 0),
+          followers: state.followers,
+        };
+        const cards = builds
+          .map(
+            (b) => `
+          <div class="legacy-card ${b.wonNational ? "national" : ""}">
+            ${b.wonNational ? `<div class="legacy-card-badge">🏆</div>` : ""}
+            <div class="legacy-card-emoji">${b.emoji || "🚗"}</div>
+            <div class="legacy-card-title">${b.year || ""} ${b.make || ""} ${b.model || ""}</div>
+            <div class="legacy-card-sub">Build #${b.completedSeason || "—"} · ${b.wonNational ? "National Champion" : "Retired Project"}</div>
+            <div class="legacy-card-stats">
+              <div class="legacy-card-stat">
+                <div class="legacy-card-stat-v ${b.finalOverall >= 90 ? "gold" : ""}">${b.finalOverall || 0}</div>
+                <div class="legacy-card-stat-k">Final Overall</div>
+              </div>
+              <div class="legacy-card-stat">
+                <div class="legacy-card-stat-v">${fmtF(b.followersAtCompletion || 0)}</div>
+                <div class="legacy-card-stat-k">Followers Then</div>
+              </div>
+              <div class="legacy-card-stat">
+                <div class="legacy-card-stat-v">${b.bestTier ? placeLabel(b.bestPlace || 0) : "—"}</div>
+                <div class="legacy-card-stat-k">Best Result</div>
+              </div>
+              <div class="legacy-card-stat">
+                <div class="legacy-card-stat-v">${b.partsInstalled || 0}</div>
+                <div class="legacy-card-stat-k">Parts Installed</div>
+              </div>
+            </div>
+          </div>
+        `,
+          )
+          .join("");
+        const emptyMarkup = builds.length
+          ? ""
+          : `<div class="legacy-empty">No completed builds yet.<br/>Win a Nationals round or retire a project to start the wall.</div>`;
+        return `<div class="legacy-wrap">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px;flex-wrap:wrap">
+            <button class="legacy-back" onclick="setView('career')">← Back to Social</button>
+            ${currentCar() ? button("Start a fresh Legacy build", "startLegacyRun()", false, "", "background:transparent;border:1px solid var(--gold);color:var(--gold);padding:6px 14px;font-size:11px;letter-spacing:.8px;text-transform:uppercase") : ""}
+          </div>
+          <div class="legacy-hero">
+            <div class="legacy-hero-kicker">The Legacy Wall</div>
+            <div class="legacy-hero-title">Every build you ever finished</div>
+            <div class="legacy-hero-sub">The scene remembers. Each project retired here carries its score, its titles, and the followers that stayed for the next chapter.</div>
+            <div class="legacy-career-row">
+              <div class="legacy-career-stat"><div class="legacy-career-v">${careerStats.total}</div><div class="legacy-career-k">Builds Completed</div></div>
+              <div class="legacy-career-stat"><div class="legacy-career-v">${careerStats.nationals}</div><div class="legacy-career-k">National Titles</div></div>
+              <div class="legacy-career-stat"><div class="legacy-career-v">${careerStats.best || "—"}</div><div class="legacy-career-k">Highest Overall</div></div>
+              <div class="legacy-career-stat"><div class="legacy-career-v">${fmtF(careerStats.followers)}</div><div class="legacy-career-k">Lifetime Followers</div></div>
+            </div>
+          </div>
+          ${emptyMarkup}
+          <div class="legacy-grid">${cards}</div>
+        </div>`;
       }
 
       function renderContent() {
@@ -7197,6 +7716,8 @@ body{position:relative!important;display:block!important;}
             return renderDealership();
           case "career":
             return renderCareer();
+          case "legacy":
+            return renderLegacyWall();
           default:
             return renderWorkshop();
         }
@@ -7316,7 +7837,9 @@ body{position:relative!important;display:block!important;}
               label,
               id === "workshop"
                 ? state.view === "garage" || state.view === "workshop"
-                : state.view === id,
+                : id === "career"
+                  ? state.view === "career" || state.view === "legacy"
+                  : state.view === id,
               `setView('${id}')`,
             ),
           )
@@ -7326,6 +7849,7 @@ body{position:relative!important;display:block!important;}
       function getModalLayerSignature() {
         return [
           state.tutorialComplete ? "" : "tut:" + (state.tutorialStep || 0),
+          state.pendingVictory ? "victory" : "",
           state.showLoading ? 1 : 0,
           state.showStage || "",
           state.pendingScene ? 1 : 0,
@@ -7346,11 +7870,13 @@ body{position:relative!important;display:block!important;}
         modalLayerSignature = nextModalSignature;
         modalRoot.innerHTML = "";
         if (!renderTutorialModal()) {
-          if (!renderShowCinematicModal()) {
-            if (!renderPendingSceneModal()) {
-              renderStoreModal();
-              renderEventModal();
-              renderMarketplaceOfferModal();
+          if (!renderVictoryModal()) {
+            if (!renderShowCinematicModal()) {
+              if (!renderPendingSceneModal()) {
+                renderStoreModal();
+                renderEventModal();
+                renderMarketplaceOfferModal();
+              }
             }
           }
         }
@@ -7384,6 +7910,7 @@ body{position:relative!important;display:block!important;}
             .join(","),
           state.ownedTools.length,
           state.cars.length,
+          (state.legacyBuilds || []).length,
           state.freePart ? 1 : 0,
           state.partsInventory
             .filter((i) => !i.sold)
@@ -7491,6 +8018,7 @@ body{position:relative!important;display:block!important;}
   ═══════════════════════════════════════════ */
 
       loadGame();
+      updateSfxBtn();
       render("full");
       runBackgroundTick();
       runWorldRefreshTick();
@@ -7984,6 +8512,16 @@ body{position:relative!important;display:block!important;}
       function updateMusicBtn() {
         const b = getEl("musicBtn");
         if (b) b.textContent = musicPlaying ? "🔇" : "🎵";
+      }
+      function toggleSfx() {
+        state.sfxMuted = !state.sfxMuted;
+        updateSfxBtn();
+        if (!state.sfxMuted) playSfx("click");
+        saveGame();
+      }
+      function updateSfxBtn() {
+        const b = getEl("sfxBtn");
+        if (b) b.textContent = state.sfxMuted ? "🔈" : "🔊";
       }
       function toggleSplashPreview() {
         const b = getEl("splashMuteBtn");
