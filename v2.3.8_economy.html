@@ -3550,40 +3550,6 @@
         };
       }
 
-      function getBuildPath(car = currentCar()) {
-        const overall = car ? getOverall(car) : 0;
-        const counts = getShowCounts();
-        return [
-          { label: "Get roadworthy", done: car ? roadworthy(car) : false },
-          { label: "Reach 50 overall", done: overall >= 50 },
-          {
-            label: "Run 3 Local shows",
-            done: counts.local >= 3,
-            progress: `${counts.local}/3`,
-          },
-          {
-            label: "Beat Buck at Regional",
-            done: !!state.history.find(
-              (h) => h.tier === "Regional" && h.place < (h.buckPlace || 99),
-            ),
-            progress: state.rival.lastPlace
-              ? `Buck last placed ${placeLabel(state.rival.lastPlace)}`
-              : "Buck still talking",
-          },
-          { label: "Win National", done: !!state.won },
-        ];
-      }
-
-      function setBuildScreen(screen) {
-        state.view =
-          screen === "garage"
-            ? "workshop"
-            : screen === "workshop"
-              ? "workshop"
-              : "garage";
-        requestRender("full");
-      }
-
 
 
       function recordMoneyChange(amount, reason) {
@@ -4059,57 +4025,6 @@
             ? `One drop per week. Brand deals open at ${fmtF(BRAND_DEAL_MIN_FOLLOWERS)} followers.`
             : "One drop per week. Payouts scale with followers and car quality.";
         return `<div class="info-box"><div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Post Content · lifetime $${fmt(earned)}</div><div class="social-actions">${buttons}</div><div class="tiny muted" style="margin-top:8px">${footer}</div>${dealMarkup}</div>`;
-      }
-
-      function renderCombinedDashboard(car = currentCar()) {
-        if (!car) return "";
-        const objective = getCurrentObjective(car);
-        const suggestions = getSuggestedRestorations(car);
-        const primary = suggestions[0];
-        const path = getBuildPath(car);
-        const roadRows = [
-          { label: "Engine", value: car.engine, need: ROADWORTHY_ENGINE },
-          {
-            label: "Transmission",
-            value: car.transmission,
-            need: ROADWORTHY_TRANSMISSION,
-          },
-          { label: "Brakes", value: car.brakes, need: ROADWORTHY_BRAKES },
-        ];
-        return panel(
-          "Garage Dashboard",
-          `
-      <div class="hero-callout" style="margin-bottom:10px">
-        <div class="hero-kicker">NEXT MOVE</div>
-        <div class="hero-title">${objective.title}</div>
-        <div class="hero-sub">${objective.desc}</div>
-      </div>
-      <div class="info-box">
-        <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">One best action right now</div>
-        ${
-          primary
-            ? `<div class="small" style="color:#efe2c6;margin-bottom:4px">${primary.part.name}</div>
-        <div class="tiny muted" style="margin-bottom:8px">${primary.why}</div>
-        <div class="btn-row two">${button(primary.recommendedMethod === "diy" ? `Start DIY · $${fmt(state.starterHelpReceived && primary.part.id === 2 && !state.starterCarbUsed ? 0 : primary.recommendedCost)}` : `Send To Shop · $${fmt(state.starterHelpReceived && primary.part.id === 2 && !state.starterCarbUsed ? 0 : primary.recommendedCost)}`, `installPart(${primary.part.id},'${primary.recommendedMethod}',false)`, !!findActiveTask(car.id, primary.part.id), "", "width:100%")}${button("Open Build Screen", "setBuildScreen('workshop')", false, "", "width:100%;background:#4a3c2e;color:#efe2c6;border-color:#6b5840")}</div>`
-            : `<div class="small muted">Nothing urgent is waiting right now. The build is caught up or your current jobs are already running.</div>`
-        }
-      </div>
-      <div class="info-box">
-        <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Build path</div>
-        ${path.map((goal, idx) => `<div class="guide-step"><span class="small" style="color:${goal.done ? "#9fd18e" : "#efe2c6"}">${goal.done ? "✅" : "•"} ${goal.label}</span><span class="tiny ${goal.done ? "good" : "warn"}">${goal.progress || (goal.done ? "done" : "next")}</span></div>`).join("")}
-      </div>
-      <div class="info-box">
-        <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Roadworthy blockers</div>
-        ${roadRows.map((row) => `<div class="guide-step"><span class="small" style="color:#efe2c6">${row.label}</span><span class="tiny ${row.value >= row.need ? "good" : "warn"}">${row.value >= row.need ? `${row.value} ✓` : `${row.value} / need ${row.need}`}</span></div>`).join("")}
-      </div>
-      <div class="btn-row two">
-        ${button(objective.ctaLabel, objective.cta, false, "", "width:100%")}
-        ${button("Take It To Shows", "setView('shows')", false, "", "width:100%;background:#4a3c2e;color:#efe2c6;border-color:#6b5840")}
-      </div>
-    `,
-          "All guidance, blockers, and build path in one actual board.",
-          "#d8a24f",
-        );
       }
 
       function renderFollowersTracker() {
@@ -6234,7 +6149,7 @@ body{position:relative!important;display:block!important;}
           )}`;
         }
 
-        return `<div class="grid-main"><div>${renderFTUEPanel(car)}${panel("Auto Shop Floor", `${carPreview(car)}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab("Next Jobs", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Build Jobs", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart && state.shopSub === "parts" ? `<div style="background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:#e2cef7;font-size:12px">Free Budget part ready — claim it in the shop.</div>` : ""}${subcontent}`, "", "#d8a24f")}${renderGarageSign(car)}<div class='taped-note'><div class='feed-kicker'>SHOP MOOD</div><div class='feed-text'>${getWorkspaceFlavor()}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div></div><div>${renderUpcomingBar()}${renderCombinedDashboard(car)}${renderUnifiedSocialFeed(car, { showSponsors: false, showHistory: false })}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#7da0c2")}</div></div>`;
+        return `<div class="grid-main"><div>${renderFTUEPanel(car)}${panel("Auto Shop Floor", `${carPreview(car)}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab("Next Jobs", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Build Jobs", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart && state.shopSub === "parts" ? `<div style="background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:#e2cef7;font-size:12px">Free Budget part ready — claim it in the shop.</div>` : ""}${subcontent}`, "", "#d8a24f")}${renderGarageSign(car)}<div class='taped-note'><div class='feed-kicker'>SHOP MOOD</div><div class='feed-text'>${getWorkspaceFlavor()}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div></div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#7da0c2")}</div></div>`;
       }
 
       function renderShows() {
@@ -6291,7 +6206,14 @@ body{position:relative!important;display:block!important;}
         );
         const sceneTension = renderHeroCallout("Show Night", roadworthy(car) ? "The truck is ready to risk public opinion. Now give the crowd something to talk about." : "Do not roll in half-built and ask the crowd for mercy.", "SCENE TENSION");
         const showCircuitRead = `<div class='taped-note'><div class='feed-kicker'>SHOW CIRCUIT READ</div><div class='feed-text'>${roadworthy(car) ? "The car can drive itself there. Now the only question is whether it can survive public opinion." : "You are not ready for the field yet. Right now this is still a garage argument, not a show car."}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div>`;
-        return `<div class="grid-main-shows"><div>${renderFTUEPanel(car)}${showPrepBoard}${sceneTension}${showCircuitRead}</div><div>${renderUpcomingBar()}${renderUnifiedSocialFeed(car, { showSponsors: false, showHistory: false })}</div></div>`;
+        const { nextShow, nextShowText } = getUpcomingSummary();
+        const showNotes = panel(
+          "Show Notes",
+          `${chalkRow("Next Event", nextShowText, nextShow && nextShow.weeksUntil === 0 ? "good" : "warn")}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Overall", getOverall(car))}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL} gal`)}${chalkRow("Cash On Hand", `$${fmt(state.money)}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}${hasUiUnlock("buck") ? chalkRow("Buck Score", `~${getRivalBaseScore()}`, getRivalBaseScore() > getOverall(car) ? "bad" : "warn") : ""}`,
+          "",
+          "#7da0c2",
+        );
+        return `<div class="grid-main-shows"><div>${renderFTUEPanel(car)}${showPrepBoard}${sceneTension}${showCircuitRead}</div><div>${renderUpcomingBar()}${showNotes}</div></div>`;
       }
 
 
@@ -6409,14 +6331,18 @@ body{position:relative!important;display:block!important;}
           : `<div class="small muted">No deals closed yet this season.</div>`;
 
         return `<div class="grid-main"><div>${panel(
-          "Facebook Marketplace",
+          "Sell",
           `
       <div class="info-box">
         <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">List parts from the garage</div>
         ${stashMarkup}
       </div>
+      <div class="info-box">
+        <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Your live listings</div>
+        ${listedMarkup}
+      </div>
     `,
-          "List it on the left. The second you post it, it should jump to the live side.",
+          `${chalkRow("Parts In Stash", stash.length)}${chalkRow("Live Listings", listed.length)}`,
           "#d8a24f",
         )}${panel(
           "Recent Buyers",
@@ -6428,18 +6354,14 @@ body{position:relative!important;display:block!important;}
           "Who's been showing up in your DMs.",
           "#b68ae6",
         )}</div><div>${panel(
-          "Live Marketplace",
+          "Buy",
           `
-      <div class="info-box">
-        <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Your live deals</div>
-        ${listedMarkup}
-      </div>
       <div class="info-box">
         <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Cars for sale</div>
         ${carBuyMarkup}
       </div>
     `,
-          `${chalkRow("Season Week", `${state.week}/${state.seasonLength}`)}${chalkRow("Cash On Hand", `$${fmt(state.money)}`)}${chalkRow("Parts In Stash", stash.length)}${chalkRow("Live Listings", listed.length)}`,
+          `${chalkRow("Season Week", `${state.week}/${state.seasonLength}`)}${chalkRow("Cash On Hand", `$${fmt(state.money)}`)}`,
           "#7da0c2",
         )}</div></div>`;
       }
@@ -6583,8 +6505,8 @@ body{position:relative!important;display:block!important;}
         getEl("mainTabs").innerHTML = [
           ["workshop", "🔧 Build"],
           ["shows", "🏁 Compete"],
-          ["dealership", "📘 Facebook Marketplace"],
-          ["career", "📱 Social Hub"],
+          ["dealership", "📘 Marketplace"],
+          ["career", "📱 Social"],
         ]
           .map(([id, label]) =>
             tab(
