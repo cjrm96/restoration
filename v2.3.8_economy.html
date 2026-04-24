@@ -12,12 +12,19 @@
         --panel-3: #2d241d;
         --line: #4b4036;
         --text: #efe2c6;
+        --text-bright: #f2e6cf;
+        --text-dim: #8f8476;
         --muted: #a99b84;
         --gold: #d19a3f;
+        --gold-soft: #c9aa73;
         --blue: #7da0c2;
+        --blue-bright: #95b5d4;
         --green: #8fcb7e;
+        --green-bright: #9fd18e;
         --red: #c46d60;
+        --red-bright: #e07070;
         --purple: #a984dd;
+        --purple-bright: #bca0e5;
         --brown: #7e5c34;
       }
       * {
@@ -160,8 +167,8 @@
       }
       .tab.active {
         background: #7e5c34;
-        color: #f5ebd7;
-        border-color: #c99842;
+        color: var(--text-bright);
+        border-color: var(--gold);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
       }
       .content {
@@ -253,7 +260,7 @@
         font-size: 11px;
       }
       .big-score {
-        font-size: 54px;
+        font-size: 56px;
         font-weight: bold;
         line-height: 1;
       }
@@ -291,7 +298,7 @@
         text-align: right;
       }
       .good {
-        color: #9fd18e;
+        color: var(--green-bright);
       }
       .warn {
         color: #d9a65d;
@@ -357,11 +364,11 @@
         bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
-        color: #fff6ea;
+        color: var(--text-bright);
         padding: 11px 20px;
         border-radius: 8px;
         z-index: 999;
-        font-size: 13px;
+        font-size: 14px;
         text-align: center;
         max-width: 460px;
         box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
@@ -477,7 +484,7 @@
       .art-note {
         margin-top: 8px;
         font-size: 11px;
-        color: #a99b84;
+        color: var(--muted);
         text-align: center;
       }
       /* Milestone checkboxes */
@@ -504,7 +511,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 13px;
+        font-size: 14px;
         flex-shrink: 0;
       }
       .milestone-item.done .milestone-check {
@@ -519,7 +526,7 @@
         border-radius: 999px;
         background: #3a1a1a;
         border: 1px solid #8b4040;
-        color: #e07070;
+        color: var(--red-bright);
         margin-left: 6px;
       }
 
@@ -562,8 +569,8 @@
         margin-bottom: 6px;
       }
       .goal-pill.active {
-        border-color: #c99842;
-        color: #f4e8cf;
+        border-color: var(--gold);
+        color: var(--text-bright);
         box-shadow: 0 0 0 1px rgba(201, 152, 66, 0.15) inset;
       }
       .smart-tag {
@@ -676,14 +683,14 @@
           inset 0 1px 0 rgba(255, 255, 255, 0.04);
       }
       .splash-badge {
-        font-size: 52px;
+        font-size: 56px;
         margin-bottom: 16px;
         display: block;
         filter: drop-shadow(0 4px 12px rgba(209, 154, 63, 0.45));
       }
       .splash-title {
         font-family: Georgia, serif;
-        font-size: 34px;
+        font-size: 32px;
         font-weight: bold;
         color: var(--gold);
         letter-spacing: 0.5px;
@@ -698,7 +705,7 @@
       }
       .splash-tagline {
         font-size: 14px;
-        color: #c9b88a;
+        color: var(--gold-soft);
         margin-bottom: 28px;
         line-height: 1.6;
       }
@@ -708,7 +715,7 @@
         border: 1px solid #e8c060;
         border-radius: 10px;
         padding: 14px 36px;
-        font-size: 17px;
+        font-size: 18px;
         font-weight: bold;
         font-family: Georgia, serif;
         cursor: pointer;
@@ -742,7 +749,7 @@
         font-family: Georgia, serif;
       }
       .splash-music-toggle:hover {
-        color: #c9b88a;
+        color: var(--gold-soft);
         border-color: #7e5c34;
       }
 
@@ -775,7 +782,7 @@
         right: 18px;
       }
       .garage-sign .headline {
-        color: #f1dfbf;
+        color: var(--text-bright);
         font-size: 14px;
         font-weight: bold;
         letter-spacing: 0.9px;
@@ -803,13 +810,13 @@
       .flavor-label {
         font-size: 10px;
         letter-spacing: 0.9px;
-        color: #c9aa73;
+        color: var(--gold-soft);
         margin-bottom: 6px;
       }
       .flavor-text {
         font-size: 12px;
         line-height: 1.55;
-        color: #efe2c6;
+        color: var(--text);
       }
       .feed-item {
         background: #181410;
@@ -821,17 +828,17 @@
       .feed-kicker {
         font-size: 10px;
         letter-spacing: 0.8px;
-        color: #c9aa73;
+        color: var(--gold-soft);
         margin-bottom: 5px;
       }
       .feed-text {
         font-size: 12px;
         line-height: 1.5;
-        color: #efe2c6;
+        color: var(--text);
       }
       .feed-meta {
         font-size: 10px;
-        color: #8f8476;
+        color: var(--text-dim);
         margin-top: 6px;
       }
       .taped-note {
@@ -864,18 +871,18 @@
       .hero-kicker {
         font-size: 10px;
         letter-spacing: 1px;
-        color: #d8a24f;
+        color: var(--gold);
         margin-bottom: 6px;
       }
       .hero-title {
         font-size: 18px;
-        color: #f6ead2;
+        color: var(--text-bright);
         font-weight: bold;
         margin-bottom: 4px;
       }
       .hero-sub {
         font-size: 12px;
-        color: #c9b88a;
+        color: var(--gold-soft);
         line-height: 1.6;
       }
       .cinematic-line {
@@ -904,9 +911,9 @@
         font-weight: bold;
       }
       .mode-chip.active {
-        border-color: #c99842;
+        border-color: var(--gold);
         background: #332619;
-        color: #f5ead2;
+        color: var(--text-bright);
         box-shadow: 0 0 0 1px rgba(201, 152, 66, 0.12) inset;
       }
       .next-step-card {
@@ -926,7 +933,7 @@
       .next-step-title {
         font-size: 22px;
         line-height: 1.2;
-        color: #f7ead3;
+        color: var(--text-bright);
         font-weight: bold;
         margin-bottom: 6px;
       }
@@ -961,9 +968,9 @@
         margin-bottom: 3px;
       }
       .mini-stat .v {
-        font-size: 15px;
+        font-size: 14px;
         font-weight: bold;
-        color: #f0e4cb;
+        color: var(--text-bright);
       }
     </style>
   </head>
@@ -1144,7 +1151,7 @@
               id="musicBtn"
               style="
                 background: #2a221a;
-                color: #a99b84;
+                color: var(--muted);
                 border-color: #4a4036;
                 min-width: 36px;
               "
@@ -3994,7 +4001,7 @@
         ];
         return panel(
           "First-Time Player Guide",
-          `<div class="guide-card"><div class="guide-kicker">START HERE</div><div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:10px">${objective.title}</div><div class="small muted" style="margin-bottom:10px;line-height:1.6">${objective.desc}</div>${steps.map((step) => `<div class="guide-step"><span class="small" style="color:${step.done ? "#9fd18e" : "#e9dec8"}">${step.done ? "✅" : "➡️"} ${step.label}</span><span class="tiny ${step.done ? "good" : "warn"}">${step.done ? "done" : "next"}</span></div>`).join("")}<div class="btn-row two" style="margin-top:10px">${button(objective.ctaLabel, objective.cta, false, "pulse-callout", "width:100%")}${button("Hide Guide", "dismissTutorial()", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:#efe2c6")}</div></div>`,
+          `<div class="guide-card"><div class="guide-kicker">START HERE</div><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:10px">${objective.title}</div><div class="small muted" style="margin-bottom:10px;line-height:1.6">${objective.desc}</div>${steps.map((step) => `<div class="guide-step"><span class="small" style="color:${step.done ? "#9fd18e" : "#e9dec8"}">${step.done ? "✅" : "➡️"} ${step.label}</span><span class="tiny ${step.done ? "good" : "warn"}">${step.done ? "done" : "next"}</span></div>`).join("")}<div class="btn-row two" style="margin-top:10px">${button(objective.ctaLabel, objective.cta, false, "pulse-callout", "width:100%")}${button("Hide Guide", "dismissTutorial()", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:var(--text)")}</div></div>`,
           "A lighter first ten minutes so the game teaches itself.",
           "#d8a24f",
         );
@@ -4017,14 +4024,14 @@
         }).join("");
         const deal = state.pendingBrandDeal;
         const dealMarkup = deal
-          ? `<div class="info-box" style="background:#291b36;border-color:#6f4d91;margin-top:10px"><div class="small" style="color:#e2cef7;font-weight:bold;margin-bottom:4px">📦 Brand Deal · ${deal.brand}</div><div class="tiny" style="color:#cbb9e0;margin-bottom:8px">They'll send a free Budget part in exchange for a sponsored post. +${fmtF(deal.followerBonus)} followers on the campaign.</div><div class="btn-row two">${button("Accept", "acceptBrandDeal()", !!state.freePart, "", "width:100%;background:#a47ed4;border-color:#bca0e5")}${button("Decline", "declineBrandDeal()", false, "", "width:100%;background:#4a3c2e;color:#efe2c6;border-color:#6b5840")}</div>${state.freePart ? `<div class="tiny warn" style="margin-top:6px">Claim your existing free part before accepting another.</div>` : ""}</div>`
+          ? `<div class="info-box" style="background:#291b36;border-color:#6f4d91;margin-top:10px"><div class="small" style="color:var(--purple-bright);font-weight:bold;margin-bottom:4px">📦 Brand Deal · ${deal.brand}</div><div class="tiny" style="color:#cbb9e0;margin-bottom:8px">They'll send a free Budget part in exchange for a sponsored post. +${fmtF(deal.followerBonus)} followers on the campaign.</div><div class="btn-row two">${button("Accept", "acceptBrandDeal()", !!state.freePart, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright)")}${button("Decline", "declineBrandDeal()", false, "", "width:100%;background:#4a3c2e;color:var(--text);border-color:#6b5840")}</div>${state.freePart ? `<div class="tiny warn" style="margin-top:6px">Claim your existing free part before accepting another.</div>` : ""}</div>`
           : "";
         const footer = already
           ? "Already dropped content this week."
           : state.followers < BRAND_DEAL_MIN_FOLLOWERS
             ? `One drop per week. Brand deals open at ${fmtF(BRAND_DEAL_MIN_FOLLOWERS)} followers.`
             : "One drop per week. Payouts scale with followers and car quality.";
-        return `<div class="info-box"><div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Post Content · lifetime $${fmt(earned)}</div><div class="social-actions">${buttons}</div><div class="tiny muted" style="margin-top:8px">${footer}</div>${dealMarkup}</div>`;
+        return `<div class="info-box"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Post Content · lifetime $${fmt(earned)}</div><div class="social-actions">${buttons}</div><div class="tiny muted" style="margin-top:8px">${footer}</div>${dealMarkup}</div>`;
       }
 
       function renderFollowersTracker() {
@@ -4115,17 +4122,17 @@
           .slice(0, showHistory ? 8 : 6)
           .map(
             (item) =>
-              `<div class="feed-item"><div class="feed-kicker">${item.kicker}</div><div class="feed-text">${item.text}</div>${item.meta ? `<div class="feed-meta">${item.meta}</div>` : ""}${item.item && !item.item.listed ? `<div class='btn-row three' style='margin-top:8px'>${button("Firm", `listPartOnMarketplaceWithTone('${item.item.id}','firm')`, false, "", "width:100%;padding:6px 8px;font-size:11px")}${button("Need Gone", `listPartOnMarketplaceWithTone('${item.item.id}','gone')`, false, "", "width:100%;padding:6px 8px;font-size:11px;background:#7da0c2;border-color:#95b5d4")}${button("Trade Bait", `listPartOnMarketplaceWithTone('${item.item.id}','trade')`, false, "", "width:100%;padding:6px 8px;font-size:11px;background:#4a3c2e;color:#efe2c6;border-color:#6b5840")}</div>` : ""}</div>`,
+              `<div class="feed-item"><div class="feed-kicker">${item.kicker}</div><div class="feed-text">${item.text}</div>${item.meta ? `<div class="feed-meta">${item.meta}</div>` : ""}${item.item && !item.item.listed ? `<div class='btn-row three' style='margin-top:8px'>${button("Firm", `listPartOnMarketplaceWithTone('${item.item.id}','firm')`, false, "", "width:100%;padding:6px 8px;font-size:11px")}${button("Need Gone", `listPartOnMarketplaceWithTone('${item.item.id}','gone')`, false, "", "width:100%;padding:6px 8px;font-size:11px;background:#7da0c2;border-color:var(--blue-bright)")}${button("Trade Bait", `listPartOnMarketplaceWithTone('${item.item.id}','trade')`, false, "", "width:100%;padding:6px 8px;font-size:11px;background:#4a3c2e;color:var(--text);border-color:#6b5840")}</div>` : ""}</div>`,
           )
           .join("");
         const sponsorMarkup = showSponsors
-          ? `<div class="info-box"><div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Sponsor watch</div>${SPONSORS.slice(
+          ? `<div class="info-box"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Sponsor watch</div>${SPONSORS.slice(
               0,
               5,
             )
               .map(
                 (s) =>
-                  `<div class="guide-step"><div><div class="small" style="color:#efe2c6">${s.emoji} ${s.name}</div><div class="tiny muted" style="margin-top:3px">${s.benefit}</div></div><span class="tiny ${state.followers >= s.req ? "good" : "warn"}">${state.followers >= s.req ? "active" : fmtF(s.req)}</span></div>`,
+                  `<div class="guide-step"><div><div class="small" style="color:var(--text)">${s.emoji} ${s.name}</div><div class="tiny muted" style="margin-top:3px">${s.benefit}</div></div><span class="tiny ${state.followers >= s.req ? "good" : "warn"}">${state.followers >= s.req ? "active" : fmtF(s.req)}</span></div>`,
               )
               .join("")}</div>`
           : "";
@@ -4134,7 +4141,7 @@
           `
       ${renderCreatorPanel()}
       <div class="info-box">
-        <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Latest scene updates</div>
+        <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Latest scene updates</div>
         ${feedMarkup || `<div class="small muted">No scene updates yet. Start going to shows, posting, and moving parts.</div>`}
       </div>
       ${sponsorMarkup}
@@ -5513,7 +5520,7 @@
       }
       function gauge(label, value, max, color = "#c99842") {
         const pct = Math.max(0, Math.min(1, value / max));
-        return `<div>${label ? `<div class="gauge-label"><span>${label}</span><span style="color:#efe2c6;font-weight:bold">${value}/${max}</span></div>` : ""}<div class="gauge-wrap"><div class="gauge-fill" style="width:${pct * 100}%;background:linear-gradient(90deg,${color} 0%,${color}CC 100%)"></div></div></div>`;
+        return `<div>${label ? `<div class="gauge-label"><span>${label}</span><span style="color:var(--text);font-weight:bold">${value}/${max}</span></div>` : ""}<div class="gauge-wrap"><div class="gauge-fill" style="width:${pct * 100}%;background:linear-gradient(90deg,${color} 0%,${color}CC 100%)"></div></div></div>`;
       }
       function chalkRow(k, v, cls = "") {
         return `<div class="row"><span class="row-k">${k}</span><span class="row-v ${cls}">${v}</span></div>`;
@@ -5884,7 +5891,7 @@ body{position:relative!important;display:block!important;}
           sprite = `<g shape-rendering="crispEdges"><rect x="40" y="111" width="246" height="12" fill="${baseColor}"/><rect x="52" y="103" width="42" height="8" fill="${baseColor}"/><rect x="94" y="95" width="34" height="8" fill="${baseColor}"/><rect x="128" y="87" width="104" height="8" fill="${baseColor}"/><rect x="232" y="91" width="34" height="8" fill="${baseColor}"/><rect x="266" y="95" width="16" height="8" fill="${baseColor}"/><rect x="92" y="79" width="22" height="8" fill="${baseColor}"/><rect x="114" y="71" width="38" height="8" fill="${roofColor}"/><rect x="152" y="63" width="64" height="16" fill="${roofColor}"/><rect x="216" y="71" width="32" height="8" fill="${roofColor}"/><rect x="248" y="79" width="24" height="8" fill="${baseColor}"/><rect x="122" y="71" width="20" height="12" fill="${windowColor}"/><rect x="144" y="67" width="22" height="16" fill="${windowColor}"/><rect x="168" y="67" width="22" height="16" fill="${windowColor}"/><rect x="192" y="67" width="26" height="16" fill="${windowColor}"/><rect x="220" y="71" width="18" height="12" fill="${windowColor}"/><rect x="74" y="106" width="172" height="4" fill="${trimColor}"/><rect x="88" y="98" width="144" height="3" fill="${trimColor}"/><rect x="48" y="111" width="16" height="3" fill="${trimColor}"/><rect x="262" y="111" width="16" height="3" fill="${trimColor}"/><rect x="40" y="123" width="248" height="4" fill="${shadowColor}" opacity=".8"/>${pixelWheel(96, 126, wheelColor, wheelHub, wheelSpoke)}${pixelWheel(244, 126, wheelColor, wheelHub, wheelSpoke)}</g>`;
         }
 
-        return `<div class="car-preview-wrap"><div class="flex between center" style="gap:10px;margin-bottom:8px"><div><div style="color:#f4e8cf;font-weight:bold;font-size:15px">${car.year} ${car.make} ${car.model}</div><div style="color:#a7987f;font-size:11px">Stage: ${stage}</div></div><div style="color:#d2a14b;font-weight:bold;font-size:12px">${overall} overall</div></div><div class="art-backdrop-shell">${workspaceBackdropFrame()}<div class="car-preview-stage"><svg viewBox="0 0 340 190" preserveAspectRatio="xMidYMax meet" style="width:100%;height:100%;display:block;image-rendering:pixelated"><defs><filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity=".35"/></filter></defs><rect x="26" y="30" width="68" height="42" fill="#111" opacity=".15"/><rect x="32" y="36" width="56" height="30" fill="#d7c6a0" opacity=".08"/><g opacity=".18" shape-rendering="crispEdges"><rect x="62" y="148" width="44" height="4" fill="#000"/><rect x="118" y="150" width="104" height="4" fill="#000"/><rect x="232" y="148" width="46" height="4" fill="#000"/></g><g transform="translate(0,${mechHealth < 18 ? 4 : mechHealth < 35 ? 2 : 0})" filter="url(#shadow)">${sprite}</g><g opacity="${rustOpacity}" shape-rendering="crispEdges"><rect x="92" y="102" width="12" height="5" fill="#8a4517"/><rect x="166" y="86" width="10" height="4" fill="#7c3516"/><rect x="218" y="100" width="13" height="5" fill="#8a4517"/></g><g opacity="${dentOpacity}" shape-rendering="crispEdges"><rect x="140" y="103" width="18" height="3" fill="#1a2127"/><rect x="196" y="107" width="10" height="3" fill="#1a2127"/></g><g opacity="${shineOpacity}" shape-rendering="crispEdges"><rect x="102" y="82" width="96" height="2" fill="#fff"/><rect x="118" y="98" width="122" height="2" fill="#fff"/></g>${car.paint < 20 ? `<g opacity=".8" shape-rendering="crispEdges"><rect x="68" y="104" width="16" height="5" fill="#111827"/><rect x="236" y="100" width="18" height="5" fill="#111827"/></g>` : ""}${smokeOpacity > 0 ? `<g opacity="${smokeOpacity}"><rect x="70" y="56" width="6" height="6" fill="#cdd3d8"/><rect x="74" y="50" width="8" height="8" fill="#bcc4cb"/><rect x="82" y="44" width="8" height="8" fill="#d6dde2"/></g>` : ""}</svg></div></div></div>`;
+        return `<div class="car-preview-wrap"><div class="flex between center" style="gap:10px;margin-bottom:8px"><div><div style="color:var(--text-bright);font-weight:bold;font-size:14px">${car.year} ${car.make} ${car.model}</div><div style="color:#a7987f;font-size:11px">Stage: ${stage}</div></div><div style="color:#d2a14b;font-weight:bold;font-size:12px">${overall} overall</div></div><div class="art-backdrop-shell">${workspaceBackdropFrame()}<div class="car-preview-stage"><svg viewBox="0 0 340 190" preserveAspectRatio="xMidYMax meet" style="width:100%;height:100%;display:block;image-rendering:pixelated"><defs><filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity=".35"/></filter></defs><rect x="26" y="30" width="68" height="42" fill="#111" opacity=".15"/><rect x="32" y="36" width="56" height="30" fill="#d7c6a0" opacity=".08"/><g opacity=".18" shape-rendering="crispEdges"><rect x="62" y="148" width="44" height="4" fill="#000"/><rect x="118" y="150" width="104" height="4" fill="#000"/><rect x="232" y="148" width="46" height="4" fill="#000"/></g><g transform="translate(0,${mechHealth < 18 ? 4 : mechHealth < 35 ? 2 : 0})" filter="url(#shadow)">${sprite}</g><g opacity="${rustOpacity}" shape-rendering="crispEdges"><rect x="92" y="102" width="12" height="5" fill="#8a4517"/><rect x="166" y="86" width="10" height="4" fill="#7c3516"/><rect x="218" y="100" width="13" height="5" fill="#8a4517"/></g><g opacity="${dentOpacity}" shape-rendering="crispEdges"><rect x="140" y="103" width="18" height="3" fill="#1a2127"/><rect x="196" y="107" width="10" height="3" fill="#1a2127"/></g><g opacity="${shineOpacity}" shape-rendering="crispEdges"><rect x="102" y="82" width="96" height="2" fill="#fff"/><rect x="118" y="98" width="122" height="2" fill="#fff"/></g>${car.paint < 20 ? `<g opacity=".8" shape-rendering="crispEdges"><rect x="68" y="104" width="16" height="5" fill="#111827"/><rect x="236" y="100" width="18" height="5" fill="#111827"/></g>` : ""}${smokeOpacity > 0 ? `<g opacity="${smokeOpacity}"><rect x="70" y="56" width="6" height="6" fill="#cdd3d8"/><rect x="74" y="50" width="8" height="8" fill="#bcc4cb"/><rect x="82" y="44" width="8" height="8" fill="#d6dde2"/></g>` : ""}</svg></div></div></div>`;
       }
 
       /* ═══════════════════════════════════════════
@@ -5901,14 +5908,14 @@ body{position:relative!important;display:block!important;}
           root.innerHTML = "";
           return;
         }
-        root.innerHTML = `<div class="modal"><div class="modal-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:#d8a24f;font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">Borrow just enough to keep the build alive — or make a worse decision.</div>${panel("Bank Loan", `${chalkRow("Cash Now", "+$2,000", "good")}${chalkRow("Payday Hit", "-$250 every paycheck", "warn")}${button(state.bankLoanBalance > 0 ? `Outstanding $${fmt(state.bankLoanBalance)}` : "Take Bank Loan", "takeBankLoan()", state.bankLoanBalance > 0, "", "width:100%")}`, "Legit paperwork, standard pain.", "#7da0c2")}${panel("Loan Shark", `${chalkRow("Cash Now", "+$3,000", "good")}${chalkRow("You Owe", "$3,900 total", "bad")}${chalkRow("Payday Hit", "-$500 every paycheck", "bad")}${button(state.sharkLoanBalance > 0 ? `Outstanding $${fmt(state.sharkLoanBalance)}` : "Take Shark Loan", "takeSharkLoan()", state.sharkLoanBalance > 0, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "Fast money, ugly terms.", "#c46d60")}</div></div>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">Borrow just enough to keep the build alive — or make a worse decision.</div>${panel("Bank Loan", `${chalkRow("Cash Now", "+$2,000", "good")}${chalkRow("Payday Hit", "-$250 every paycheck", "warn")}${button(state.bankLoanBalance > 0 ? `Outstanding $${fmt(state.bankLoanBalance)}` : "Take Bank Loan", "takeBankLoan()", state.bankLoanBalance > 0, "", "width:100%")}`, "Legit paperwork, standard pain.", "#7da0c2")}${panel("Loan Shark", `${chalkRow("Cash Now", "+$3,000", "good")}${chalkRow("You Owe", "$3,900 total", "bad")}${chalkRow("Payday Hit", "-$500 every paycheck", "bad")}${button(state.sharkLoanBalance > 0 ? `Outstanding $${fmt(state.sharkLoanBalance)}` : "Take Shark Loan", "takeSharkLoan()", state.sharkLoanBalance > 0, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "Fast money, ugly terms.", "#c46d60")}</div></div>`;
       }
 
       function renderShowLoadingModal() {
         const root = getEl("modalRoot");
         if (!state.showLoading) return false;
         const comment = state.currentShowComment || randomShowComment();
-        root.innerHTML = `<div class="modal"><div class="modal-card" style="max-width:560px;text-align:center"><div style="font-size:54px;margin-bottom:10px">🚶‍♂️</div><div style="color:#d8a24f;font-weight:bold;font-size:22px;margin-bottom:8px">Walking the show field…</div><div class="small muted" style="line-height:1.7;margin-bottom:18px">Crowds are filing in, chrome is catching the lights, and judges are making the rounds.</div><div style="background:#181410;border:1px solid #41372f;border-radius:10px;padding:16px;margin-bottom:14px"><div style="font-size:38px;letter-spacing:8px">🚶‍♂️  🚗  🚘  🏆</div><div class="tiny muted" style="margin-top:10px">Checking every row before the results come in.</div></div><div class="info-box" style="text-align:left"><div class="tiny muted" style="margin-bottom:6px">From the crowd and judges</div><div class="small" style="color:#efe2c6;line-height:1.6">${comment}</div></div>${button("See Show Results", "dismissShowLoading()", false, "", "width:100%;margin-top:14px;font-size:15px")}</div></div>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card" style="max-width:560px;text-align:center"><div style="font-size:56px;margin-bottom:10px">🚶‍♂️</div><div style="color:var(--gold);font-weight:bold;font-size:22px;margin-bottom:8px">Walking the show field…</div><div class="small muted" style="line-height:1.7;margin-bottom:18px">Crowds are filing in, chrome is catching the lights, and judges are making the rounds.</div><div style="background:#181410;border:1px solid #41372f;border-radius:10px;padding:16px;margin-bottom:14px"><div style="font-size:40px;letter-spacing:4px">🚶‍♂️  🚗  🚘  🏆</div><div class="tiny muted" style="margin-top:10px">Checking every row before the results come in.</div></div><div class="info-box" style="text-align:left"><div class="tiny muted" style="margin-bottom:6px">From the crowd and judges</div><div class="small" style="color:var(--text);line-height:1.6">${comment}</div></div>${button("See Show Results", "dismissShowLoading()", false, "", "width:100%;margin-top:14px;font-size:14px")}</div></div>`;
         return true;
       }
       function dismissShowLoading() {
@@ -5928,14 +5935,14 @@ body{position:relative!important;display:block!important;}
         const isGood = ev.type === "good";
         const accentCol = isGood ? "#5a9ab8" : "#c4723a";
         const bgCol = isGood ? "#0e1d26" : "#261409";
-        root.innerHTML = `<div class="modal"><div class="modal-card" style="border-color:${accentCol};background:linear-gradient(180deg,${bgCol} 0%,#141210 100%)"><div style="text-align:center;font-size:42px;margin-bottom:12px">${ev.emoji}</div><div style="color:${accentCol};font-weight:bold;font-size:18px;text-align:center;margin-bottom:8px">${ev.title}</div><div class="small muted" style="text-align:center;margin-bottom:20px;line-height:1.6">${ev.desc}</div>${isGood ? `<div style="text-align:center;margin-bottom:16px;font-size:13px;color:#c9d8a0">${ev.cashGain ? `+$${fmt(ev.cashGain)} cash` : ev.followersGain ? `+${fmtF(ev.followersGain)} followers` : ev.statBoost ? `+${ev.statBoost.amt} ${ev.statBoost.cat}` : ""}</div>${button("Claim It", "resolveEvent(false)", false, "", "width:100%;background:#2a4a2a;border-color:#4a8a4a;color:#a0e0a0")}` : ev.choice ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn" style="background:#2a3a1a;border-color:#5a8a3a;color:#a0d080" onclick="resolveEvent(true)">Pay $${fmt(ev.cost)} to fix it</button><button class="btn" style="background:#3a1a0a;border-color:#8a4020;color:#e08060" onclick="resolveEvent(false)">Take the hit</button></div>` : `${button("Understood", "resolveEvent(false)", false, "", "width:100%;background:#2a1a0a;border-color:#6a3a1a;color:#d09060")}`}</div></div>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card" style="border-color:${accentCol};background:linear-gradient(180deg,${bgCol} 0%,#141210 100%)"><div style="text-align:center;font-size:40px;margin-bottom:12px">${ev.emoji}</div><div style="color:${accentCol};font-weight:bold;font-size:18px;text-align:center;margin-bottom:8px">${ev.title}</div><div class="small muted" style="text-align:center;margin-bottom:20px;line-height:1.6">${ev.desc}</div>${isGood ? `<div style="text-align:center;margin-bottom:16px;font-size:14px;color:#c9d8a0">${ev.cashGain ? `+$${fmt(ev.cashGain)} cash` : ev.followersGain ? `+${fmtF(ev.followersGain)} followers` : ev.statBoost ? `+${ev.statBoost.amt} ${ev.statBoost.cat}` : ""}</div>${button("Claim It", "resolveEvent(false)", false, "", "width:100%;background:#2a4a2a;border-color:#4a8a4a;color:#a0e0a0")}` : ev.choice ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn" style="background:#2a3a1a;border-color:#5a8a3a;color:#a0d080" onclick="resolveEvent(true)">Pay $${fmt(ev.cost)} to fix it</button><button class="btn" style="background:#3a1a0a;border-color:#8a4020;color:#e08060" onclick="resolveEvent(false)">Take the hit</button></div>` : `${button("Understood", "resolveEvent(false)", false, "", "width:100%;background:#2a1a0a;border-color:#6a3a1a;color:#d09060")}`}</div></div>`;
       }
 
       function renderPendingSceneModal() {
         const root = getEl("modalRoot");
         const scene = state.pendingScene;
         if (!scene || state.showStore || state.showLoading) return false;
-        root.innerHTML = `<div class="modal"><div class="modal-card" style="max-width:520px"><div style="text-align:center;font-size:40px;margin-bottom:8px">${scene.emoji || "🔧"}</div><div style="color:#d8a24f;font-weight:bold;font-size:21px;text-align:center;margin-bottom:10px">${scene.title}</div><div class="small muted" style="text-align:center;line-height:1.7;margin-bottom:16px">${scene.text}</div><div class="btn-row ${scene.choices && scene.choices.length === 3 ? "three" : "two"}">${(scene.choices || []).map((choice, idx) => button(choice.label, `resolvePendingScene(${idx})`, false, "", `width:100%;${idx === 1 ? "background:#7da0c2;border-color:#95b5d4" : idx === 2 ? "background:#4a3c2e;border-color:#6b5840;color:#efe2c6" : ""}`)).join("")}</div></div></div>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card" style="max-width:520px"><div style="text-align:center;font-size:40px;margin-bottom:8px">${scene.emoji || "🔧"}</div><div style="color:var(--gold);font-weight:bold;font-size:22px;text-align:center;margin-bottom:10px">${scene.title}</div><div class="small muted" style="text-align:center;line-height:1.7;margin-bottom:16px">${scene.text}</div><div class="btn-row ${scene.choices && scene.choices.length === 3 ? "three" : "two"}">${(scene.choices || []).map((choice, idx) => button(choice.label, `resolvePendingScene(${idx})`, false, "", `width:100%;${idx === 1 ? "background:#7da0c2;border-color:var(--blue-bright)" : idx === 2 ? "background:#4a3c2e;border-color:#6b5840;color:var(--text)" : ""}`)).join("")}</div></div></div>`;
         return true;
       }
 
@@ -5952,7 +5959,7 @@ body{position:relative!important;display:block!important;}
           return false;
         const item = state.partsInventory.find((i) => i.id === offer.itemId);
         if (!item) return false;
-        root.innerHTML = `<div class="modal"><div class="modal-card" style="max-width:500px"><div style="text-align:center;font-size:38px;margin-bottom:8px">💬</div><div style="color:#7da0c2;font-weight:bold;font-size:20px;text-align:center;margin-bottom:8px">Facebook Marketplace Message</div><div class="small muted" style="text-align:center;margin-bottom:14px">${offer.buyer || "Buyer"} wants ${item.name}</div><div class="info-box"><div class="tiny muted" style="margin-bottom:6px">Message</div><div class="small" style="color:#efe2c6;line-height:1.6">"${offer.message}"</div></div><div class="btn-row two">${button(`Take the deal · $${fmt(offer.offer)}`, "respondMarketplaceOffer(true)", false, "", "width:100%")}${button("Pass for now", "respondMarketplaceOffer(false)", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:#efe2c6")}<div class="tiny muted" style="margin-top:12px">Buyer type: <span style="color:#d8a24f">${offer.buyerType}</span> · Garage Lore perk: ${Math.round(garageLoreDiscount() * 100)}% better offers</div></div></div>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card" style="max-width:500px"><div style="text-align:center;font-size:40px;margin-bottom:8px">💬</div><div style="color:#7da0c2;font-weight:bold;font-size:22px;text-align:center;margin-bottom:8px">Facebook Marketplace Message</div><div class="small muted" style="text-align:center;margin-bottom:14px">${offer.buyer || "Buyer"} wants ${item.name}</div><div class="info-box"><div class="tiny muted" style="margin-bottom:6px">Message</div><div class="small" style="color:var(--text);line-height:1.6">"${offer.message}"</div></div><div class="btn-row two">${button(`Take the deal · $${fmt(offer.offer)}`, "respondMarketplaceOffer(true)", false, "", "width:100%")}${button("Pass for now", "respondMarketplaceOffer(false)", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:var(--text)")}<div class="tiny muted" style="margin-top:12px">Buyer type: <span style="color:var(--gold)">${offer.buyerType}</span> · Garage Lore perk: ${Math.round(garageLoreDiscount() * 100)}% better offers</div></div></div>`;
         return true;
       }
       function renderRestorationPanel(car) {
@@ -5970,7 +5977,7 @@ body{position:relative!important;display:block!important;}
             .map((task) => {
               const part = PARTS.find((p) => p.id === task.partId);
               const remaining = Math.max(0, task.finishTime - Date.now());
-              return `<div class="info-box"><div class="flex between center" style="margin-bottom:8px;gap:10px"><div><div class="small" style="color:#f2e6cf;font-weight:bold">${part?.name || "Restoration"}</div><div class="tiny muted">${task.method === "shop" ? "At the auto shop" : "DIY in your workspace"} · ${task.weeksRequired} week plan</div></div><div class="small good" style="font-weight:bold">${remaining <= 0 ? "COMPLETE" : formatRemaining(remaining)}</div></div>${gauge("", Math.round(getRestorationProgress(task) * 100), 100, "#7da0c2")}<div class="tiny muted" style="margin-top:6px">${remaining <= 0 ? "Wrapping up now…" : taskStatusText(task)}</div></div>`;
+              return `<div class="info-box"><div class="flex between center" style="margin-bottom:8px;gap:10px"><div><div class="small" style="color:var(--text-bright);font-weight:bold">${part?.name || "Restoration"}</div><div class="tiny muted">${task.method === "shop" ? "At the auto shop" : "DIY in your workspace"} · ${task.weeksRequired} week plan</div></div><div class="small good" style="font-weight:bold">${remaining <= 0 ? "COMPLETE" : formatRemaining(remaining)}</div></div>${gauge("", Math.round(getRestorationProgress(task) * 100), 100, "#7da0c2")}<div class="tiny muted" style="margin-top:6px">${remaining <= 0 ? "Wrapping up now…" : taskStatusText(task)}</div></div>`;
             })
             .join("")}`,
           "Real-time timers continue while offline.",
@@ -5982,11 +5989,11 @@ body{position:relative!important;display:block!important;}
      SPECIAL SCREENS
   ═══════════════════════════════════════════ */
       function renderGameOver() {
-        return `<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div style="text-align:center;max-width:420px"><div style="font-size:64px;margin-bottom:16px">🛑</div><div style="color:#c46d60;font-weight:bold;font-size:28px;margin-bottom:8px">Build Stalled</div><div class="small muted" style="margin-bottom:24px;line-height:1.7">The money ran out and the build ground to a halt. No fuel, no parts, no payday in sight. It happens. The truck's still there — start fresh and do it right this time.</div><div style="display:grid;gap:10px;max-width:220px;margin:0 auto">${button("Start Over", "restartGame()", false, "", "width:100%;font-size:16px")}</div></div></div>`;
+        return `<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div style="text-align:center;max-width:420px"><div style="font-size:56px;margin-bottom:16px">🛑</div><div style="color:#c46d60;font-weight:bold;font-size:28px;margin-bottom:8px">Build Stalled</div><div class="small muted" style="margin-bottom:24px;line-height:1.7">The money ran out and the build ground to a halt. No fuel, no parts, no payday in sight. It happens. The truck's still there — start fresh and do it right this time.</div><div style="display:grid;gap:10px;max-width:220px;margin:0 auto">${button("Start Over", "restartGame()", false, "", "width:100%;font-size:16px")}</div></div></div>`;
       }
 
       function renderNoCar() {
-        return `<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div style="text-align:center;max-width:440px"><div style="font-size:56px;margin-bottom:16px">🚘</div><div style="color:#d8a24f;font-weight:bold;font-size:28px;margin-bottom:10px">No Car in the Garage</div><div class="small muted" style="margin-bottom:22px;line-height:1.7">You sold your last project. Head to the Vehicles tab, pick up another classic, and start the next build.</div>${button("Drag Home Another Project", "setView('dealership')", false, "", "font-size:16px")}</div></div>`;
+        return `<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div style="text-align:center;max-width:440px"><div style="font-size:56px;margin-bottom:16px">🚘</div><div style="color:var(--gold);font-weight:bold;font-size:28px;margin-bottom:10px">No Car in the Garage</div><div class="small muted" style="margin-bottom:22px;line-height:1.7">You sold your last project. Head to the Vehicles tab, pick up another classic, and start the next build.</div>${button("Drag Home Another Project", "setView('dealership')", false, "", "font-size:16px")}</div></div>`;
       }
 
       function renderSeasonWrap() {
@@ -5998,7 +6005,7 @@ body{position:relative!important;display:block!important;}
         const bestStr = state.seasonStats.bestPlace
           ? `${placeLabel(state.seasonStats.bestPlace)} at ${state.seasonStats.bestTier}`
           : "None";
-        return `<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div style="max-width:520px;width:100%"><div style="text-align:center;margin-bottom:24px"><div style="font-size:56px;margin-bottom:12px">🏁</div><div style="color:#d8a24f;font-weight:bold;font-size:26px;margin-bottom:6px">Season Complete</div><div class="small muted">The season is in the books. Here's how the build went.</div></div>${panel("Season Recap", `${chalkRow("Starting Overall", state.seasonStats.startOverall)}${chalkRow("Final Overall", finalOverall, finalOverall >= state.seasonStats.startOverall ? "good" : "warn")}${chalkRow("Shows Entered", state.seasonStats.showsEntered)}${chalkRow("Best Result", bestStr)}${chalkRow("Net Money Earned", "$" + fmt(state.seasonStats.moneyEarned), state.seasonStats.moneyEarned >= 0 ? "good" : "bad")}${chalkRow("Milestones Hit", `${milestoneDone} / ${MILESTONES.length}`)}${chalkRow("Rival Buck's Score", state.rival.score)}`, "", "#d8a24f")}${state.winterStorageReport ? panel("Winter Storage", state.winterStorageReport.map((r) => `<div class="row"><span class="row-k">Off-Season</span><span class="row-v warn">${r}</span></div>`).join(""), "How the car came out of winter storage.", "#c46d60") : ""}${panel("Milestones", MILESTONES.map((m) => `<div class="milestone-item ${state.milestones[m.id] ? "done" : ""}"><div class="milestone-check">${state.milestones[m.id] ? "✓" : ""}</div><div class="small" style="color:${state.milestones[m.id] ? "#9fd18e" : "#8a7d6a"}">${m.emoji} ${m.label}</div></div>`).join(""), "", "#7da0c2")}<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${button("Play Another Season", "restartGame()", false, "", "width:100%;font-size:15px")}${button("Keep Building", "continueSeason()", false, "", "width:100%;font-size:15px;background:#2a3a1a;border-color:#5a7a3a;color:#c0d8a0")}</div></div></div>`;
+        return `<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div style="max-width:520px;width:100%"><div style="text-align:center;margin-bottom:24px"><div style="font-size:56px;margin-bottom:12px">🏁</div><div style="color:var(--gold);font-weight:bold;font-size:28px;margin-bottom:6px">Season Complete</div><div class="small muted">The season is in the books. Here's how the build went.</div></div>${panel("Season Recap", `${chalkRow("Starting Overall", state.seasonStats.startOverall)}${chalkRow("Final Overall", finalOverall, finalOverall >= state.seasonStats.startOverall ? "good" : "warn")}${chalkRow("Shows Entered", state.seasonStats.showsEntered)}${chalkRow("Best Result", bestStr)}${chalkRow("Net Money Earned", "$" + fmt(state.seasonStats.moneyEarned), state.seasonStats.moneyEarned >= 0 ? "good" : "bad")}${chalkRow("Milestones Hit", `${milestoneDone} / ${MILESTONES.length}`)}${chalkRow("Rival Buck's Score", state.rival.score)}`, "", "#d8a24f")}${state.winterStorageReport ? panel("Winter Storage", state.winterStorageReport.map((r) => `<div class="row"><span class="row-k">Off-Season</span><span class="row-v warn">${r}</span></div>`).join(""), "How the car came out of winter storage.", "#c46d60") : ""}${panel("Milestones", MILESTONES.map((m) => `<div class="milestone-item ${state.milestones[m.id] ? "done" : ""}"><div class="milestone-check">${state.milestones[m.id] ? "✓" : ""}</div><div class="small" style="color:${state.milestones[m.id] ? "#9fd18e" : "#8a7d6a"}">${m.emoji} ${m.label}</div></div>`).join(""), "", "#7da0c2")}<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${button("Play Another Season", "restartGame()", false, "", "width:100%;font-size:14px")}${button("Keep Building", "continueSeason()", false, "", "width:100%;font-size:14px;background:#2a3a1a;border-color:#5a7a3a;color:#c0d8a0")}</div></div></div>`;
       }
 
       /* ═══════════════════════════════════════════
@@ -6040,8 +6047,8 @@ body{position:relative!important;display:block!important;}
                         state.money < shopCost ||
                         activeTasksByMethod(car.id, "diy").length;
                       return panel(
-                        `${p.name}${starterFree ? ` <span class="badge" style="color:#87c77b">NEIGHBOR GIFT</span>` : ""}`,
-                        `<div class="small muted" style="margin-bottom:8px">Recommended path: <span style="color:#d8a24f;font-weight:bold">${item.recommendedMethod === "diy" ? "DIY" : "Send to Shop"}</span></div><div class="smart-tag">${item.tag}</div><div class="small muted" style="margin-bottom:8px">DIY: <span style="color:#efe2c6;font-weight:bold">$${fmt(diyCost)}</span> <span style="color:#8f8476">·</span> Shop: <span style="color:#efe2c6;font-weight:bold">$${fmt(shopCost)}</span></div><div class="small muted" style="margin-bottom:10px">Improvement: <span class="good" style="font-weight:bold">+${p.imp} ${CAT_LABELS[p.category]}</span></div><div class="tiny muted" style="margin-bottom:10px">${item.why}</div>${missing.length ? `<div class="tiny warn" style="margin-bottom:10px">Missing tools for DIY: ${missing.join(", ")}</div>` : `<div class="tiny good" style="margin-bottom:10px">DIY is ready to go with your current tools.</div>`}${activeTask ? `<div class="info-box"><div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:6px">Already in progress</div>${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>` : `<div class="btn-row two">${button(`Start DIY · $${fmt(diyCost)}`, `installPart(${p.id},'diy',false)`, diyBlocked, "", "width:100%;")}${button(`Send to Shop · $${fmt(shopCost)}`, `installPart(${p.id},'shop',false)`, shopBlocked, "", "width:100%;background:#7da0c2;border-color:#95b5d4;")}</div><div class="tiny muted" style="margin-top:8px">${activeTasksByMethod(car.id, "shop").length ? "Finish shop work before starting a DIY job." : activeTasksByMethod(car.id, "diy").length ? "Finish DIY work before sending the car to the shop." : state.money < Math.min(diyCost, shopCost) ? "Save a little more cash to start the next move." : "Both paths are available right now — pick your play."}</div>`}`,
+                        `${p.name}${starterFree ? ` <span class="badge" style="color:var(--green)">NEIGHBOR GIFT</span>` : ""}`,
+                        `<div class="small muted" style="margin-bottom:8px">Recommended path: <span style="color:var(--gold);font-weight:bold">${item.recommendedMethod === "diy" ? "DIY" : "Send to Shop"}</span></div><div class="smart-tag">${item.tag}</div><div class="small muted" style="margin-bottom:8px">DIY: <span style="color:var(--text);font-weight:bold">$${fmt(diyCost)}</span> <span style="color:var(--text-dim)">·</span> Shop: <span style="color:var(--text);font-weight:bold">$${fmt(shopCost)}</span></div><div class="small muted" style="margin-bottom:10px">Improvement: <span class="good" style="font-weight:bold">+${p.imp} ${CAT_LABELS[p.category]}</span></div><div class="tiny muted" style="margin-bottom:10px">${item.why}</div>${missing.length ? `<div class="tiny warn" style="margin-bottom:10px">Missing tools for DIY: ${missing.join(", ")}</div>` : `<div class="tiny good" style="margin-bottom:10px">DIY is ready to go with your current tools.</div>`}${activeTask ? `<div class="info-box"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:6px">Already in progress</div>${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>` : `<div class="btn-row two">${button(`Start DIY · $${fmt(diyCost)}`, `installPart(${p.id},'diy',false)`, diyBlocked, "", "width:100%;")}${button(`Send to Shop · $${fmt(shopCost)}`, `installPart(${p.id},'shop',false)`, shopBlocked, "", "width:100%;background:#7da0c2;border-color:var(--blue-bright);")}</div><div class="tiny muted" style="margin-top:8px">${activeTasksByMethod(car.id, "shop").length ? "Finish shop work before starting a DIY job." : activeTasksByMethod(car.id, "diy").length ? "Finish DIY work before sending the car to the shop." : state.money < Math.min(diyCost, shopCost) ? "Save a little more cash to start the next move." : "Both paths are available right now — pick your play."}</div>`}`,
                         `${p.tier} · ${CAT_LABELS[p.category]} · ${p.desc}`,
                         item.recommendedMethod === "diy"
                           ? "#87c77b"
@@ -6076,7 +6083,7 @@ body{position:relative!important;display:block!important;}
                 state.starterHelpReceived &&
                 p.id === 2 &&
                 !state.starterCarbUsed;
-              const title = `${p.name}${disc > 0 ? ` <span class="badge" style="color:#d8a24f">-${Math.round(disc * 100)}%</span>` : ""}${starterFree ? ` <span class="badge" style="color:#87c77b">NEIGHBOR GIFT</span>` : ""}`;
+              const title = `${p.name}${disc > 0 ? ` <span class="badge" style="color:var(--gold)">-${Math.round(disc * 100)}%</span>` : ""}${starterFree ? ` <span class="badge" style="color:var(--green)">NEIGHBOR GIFT</span>` : ""}`;
               return panel(
                 title,
                 `<div class="small muted" style="margin-bottom:8px">Improvement: <span class="good" style="font-weight:bold">+${p.imp} ${CAT_LABELS[state.shopCat]}</span></div><div class="info-box"><div class="tiny muted" style="margin-bottom:6px">DIY tool requirements</div>${rq
@@ -6088,7 +6095,7 @@ body{position:relative!important;display:block!important;}
                   })
                   .join(
                     "",
-                  )}</div>${activeTask ? `<div class="info-box"><div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:6px">Already in progress</div>${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>` : `<div class="btn-row ${state.freePart && p.tier === "Budget" && !maxed ? "three" : "two"}">${button(maxed ? "Maxed" : `Start DIY · $${fmt(starterFree ? 0 : dc)}`, `installPart(${p.id},'diy',false)`, !hasAll || state.money < (starterFree ? 0 : dc) || maxed || activeTasksByMethod(car.id, "shop").length)}${button(maxed ? "Maxed" : `Send to Shop · $${fmt(starterFree ? 0 : sc)}`, `installPart(${p.id},'shop',false)`, state.money < (starterFree ? 0 : sc) || maxed || activeTasksByMethod(car.id, "diy").length, "", "background:#7da0c2;border-color:#95b5d4")}${state.freePart && p.tier === "Budget" && !maxed ? button("Sponsored · FREE", `installPart(${p.id},'shop',true)`, false, "", "background:#a47ed4;border-color:#bca0e5") : ""}</div>`}`,
+                  )}</div>${activeTask ? `<div class="info-box"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:6px">Already in progress</div>${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>` : `<div class="btn-row ${state.freePart && p.tier === "Budget" && !maxed ? "three" : "two"}">${button(maxed ? "Maxed" : `Start DIY · $${fmt(starterFree ? 0 : dc)}`, `installPart(${p.id},'diy',false)`, !hasAll || state.money < (starterFree ? 0 : dc) || maxed || activeTasksByMethod(car.id, "shop").length)}${button(maxed ? "Maxed" : `Send to Shop · $${fmt(starterFree ? 0 : sc)}`, `installPart(${p.id},'shop',false)`, state.money < (starterFree ? 0 : sc) || maxed || activeTasksByMethod(car.id, "diy").length, "", "background:#7da0c2;border-color:var(--blue-bright)")}${state.freePart && p.tier === "Budget" && !maxed ? button("Sponsored · FREE", `installPart(${p.id},'shop',true)`, false, "", "background:#a47ed4;border-color:var(--purple-bright)") : ""}</div>`}`,
                 `${p.tier} · ${p.desc}`,
                 tierCol(p.tier),
               );
@@ -6104,7 +6111,7 @@ body{position:relative!important;display:block!important;}
           );
           const storage = toolStorageData();
           const nextStorage = nextToolStorage();
-          subcontent = `${panel("Tool Storage", `${chalkRow("Current Storage", storage.name)}${chalkRow("Capacity", `${state.ownedTools.length} / ${storage.maxTools}`)}${chalkRow("Speed Bonus", `${Math.round(storage.speedBonus * 100)}% faster restorations`)}${nextStorage ? button(`Upgrade Storage · $${fmt(nextStorage.cost)}`, "upgradeToolStorage()", state.money < nextStorage.cost, "", "width:100%;margin-top:10px;background:#7da0c2;border-color:#95b5d4") : "<div class='good small'>Top shelf storage installed.</div>"}`, storage.desc, "#7da0c2")}<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">${tab("All", state.toolCat === "all", "setToolCat('all')")}${TOOL_CATEGORIES.map((cat) => tab(`${cat.emoji} ${cat.label}`, state.toolCat === cat.id, `setToolCat('${cat.id}')`)).join("")}</div>${
+          subcontent = `${panel("Tool Storage", `${chalkRow("Current Storage", storage.name)}${chalkRow("Capacity", `${state.ownedTools.length} / ${storage.maxTools}`)}${chalkRow("Speed Bonus", `${Math.round(storage.speedBonus * 100)}% faster restorations`)}${nextStorage ? button(`Upgrade Storage · $${fmt(nextStorage.cost)}`, "upgradeToolStorage()", state.money < nextStorage.cost, "", "width:100%;margin-top:10px;background:#7da0c2;border-color:var(--blue-bright)") : "<div class='good small'>Top shelf storage installed.</div>"}`, storage.desc, "#7da0c2")}<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">${tab("All", state.toolCat === "all", "setToolCat('all')")}${TOOL_CATEGORIES.map((cat) => tab(`${cat.emoji} ${cat.label}`, state.toolCat === cat.id, `setToolCat('${cat.id}')`)).join("")}</div>${
             availableTools.length
               ? availableTools
                   .map((t) => {
@@ -6117,7 +6124,7 @@ body{position:relative!important;display:block!important;}
                     );
                     return panel(
                       t.name,
-                      `<div class="small muted" style="margin-bottom:10px">Category: ${TOOL_CATEGORIES.find((c) => c.id === t.cat)?.label} <span style="color:#d8a24f;margin-left:10px">Requires: ${rw?.name}</span></div><div class="tiny" style="color:#8e8473;margin-bottom:12px">Enables: ${parts.length ? `${parts.slice(0, 3).join(", ")}${parts.length > 3 ? ` +${parts.length - 3} more` : ""}` : ""}</div><div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center"><div style="color:#efe2c6;font-weight:bold">$${fmt(t.cost)}</div><div style="min-width:140px">${button("Buy Tool", `buyTool('${t.id}')`, !can.ok, "", "width:100%")}${!can.ok ? `<div class="tiny" style="color:#8f8476;margin-top:5px;text-align:right">${can.msg}</div>` : ""}</div></div>`,
+                      `<div class="small muted" style="margin-bottom:10px">Category: ${TOOL_CATEGORIES.find((c) => c.id === t.cat)?.label} <span style="color:var(--gold);margin-left:10px">Requires: ${rw?.name}</span></div><div class="tiny" style="color:#8e8473;margin-bottom:12px">Enables: ${parts.length ? `${parts.slice(0, 3).join(", ")}${parts.length > 3 ? ` +${parts.length - 3} more` : ""}` : ""}</div><div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center"><div style="color:var(--text);font-weight:bold">$${fmt(t.cost)}</div><div style="min-width:140px">${button("Buy Tool", `buyTool('${t.id}')`, !can.ok, "", "width:100%")}${!can.ok ? `<div class="tiny" style="color:var(--text-dim);margin-top:5px;text-align:right">${can.msg}</div>` : ""}</div></div>`,
                       t.desc,
                       "#d8a24f",
                     );
@@ -6151,7 +6158,7 @@ body{position:relative!important;display:block!important;}
           )}`;
         }
 
-        return `<div class="grid-main"><div>${renderFTUEPanel(car)}${panel("Auto Shop Floor", `${carPreview(car)}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab("Next Jobs", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Build Jobs", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart && state.shopSub === "parts" ? `<div style="background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:#e2cef7;font-size:12px">Free Budget part ready — claim it in the shop.</div>` : ""}${subcontent}`, "", "#d8a24f")}${renderGarageSign(car)}<div class='taped-note'><div class='feed-kicker'>SHOP MOOD</div><div class='feed-text'>${getWorkspaceFlavor()}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div></div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#7da0c2")}</div></div>`;
+        return `<div class="grid-main"><div>${renderFTUEPanel(car)}${panel("Auto Shop Floor", `${carPreview(car)}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab("Next Jobs", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Build Jobs", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart && state.shopSub === "parts" ? `<div style="background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px">Free Budget part ready — claim it in the shop.</div>` : ""}${subcontent}`, "", "#d8a24f")}${renderGarageSign(car)}<div class='taped-note'><div class='feed-kicker'>SHOP MOOD</div><div class='feed-text'>${getWorkspaceFlavor()}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div></div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#7da0c2")}</div></div>`;
       }
 
       function renderShows() {
@@ -6161,7 +6168,7 @@ body{position:relative!important;display:block!important;}
         const fillAmount = MAX_FUEL - state.fuel;
         const showPrepBoard = panel(
           "Show Prep Board",
-          `${carPreview(car)}${panel("Travel & Fuel", `<div class="info-box"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>Buy 5 Gal ($20)</button><button class="btn" style="background:#7da0c2;border-color:#95b5d4" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill Tank ($${fmt(fillAmount * FUEL_PRICE)})</button></div></div>`, "", "#7da0c2")}<div class="cards">${shows
+          `${carPreview(car)}${panel("Travel & Fuel", `<div class="info-box"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>Buy 5 Gal ($20)</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright)" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill Tank ($${fmt(fillAmount * FUEL_PRICE)})</button></div></div>`, "", "#7da0c2")}<div class="cards">${shows
             .map((show) => {
               const progressReq = showProgressRequirement(show);
               const locked = getOverall(car) < show.minScore || !progressReq.ok;
@@ -6193,7 +6200,7 @@ body{position:relative!important;display:block!important;}
               });
               const rivalLine =
                 show.tier === "Regional" || show.tier === "National"
-                  ? `<div class="tiny" style="color:#e07070;margin-bottom:8px">🏎 Buck's '67 Mustang will be there · current score ~${getRivalBaseScore()}</div><div class="tiny muted" style="margin-bottom:8px">He is your measuring stick now. If you are not improving, he is.</div>`
+                  ? `<div class="tiny" style="color:var(--red-bright);margin-bottom:8px">🏎 Buck's '67 Mustang will be there · current score ~${getRivalBaseScore()}</div><div class="tiny muted" style="margin-bottom:8px">He is your measuring stick now. If you are not improving, he is.</div>`
                   : "";
               return panel(
                 show.name,
@@ -6223,7 +6230,7 @@ body{position:relative!important;display:block!important;}
         const car = currentCar();
         const r = state.result;
         const buckLine = r.buckPlace
-          ? `<div class="tiny" style="color:#e07070;margin-top:4px">Buck's '67 Mustang finished ${placeLabel(r.buckPlace)}</div>`
+          ? `<div class="tiny" style="color:var(--red-bright);margin-top:4px">Buck's '67 Mustang finished ${placeLabel(r.buckPlace)}</div>`
           : "";
         const rewardLine = r.showReward
           ? `<div class="small good" style="margin-bottom:8px">${r.showReward.label}</div><div class="tiny muted" style="margin-bottom:10px">${r.showReward.detail}</div>`
@@ -6241,7 +6248,7 @@ body{position:relative!important;display:block!important;}
           : "";
         return `<div class="grid-main"><div>${renderHeroCallout(r.place === 1 ? "Crowd went quiet" : r.place <= 3 ? "People finally respected it" : "The field was tougher than the truck", r.arrivalLine || "", "SHOW NIGHT")}${panel(
           "Show Result",
-          `${carPreview(car).replace(workspaceBackdropFrame(), showBackdropFrame(r.tier))}<div class="cinematic-line"><div class="hero-kicker">ARRIVAL</div><div class="small" style="color:#efe2c6;line-height:1.6">${r.arrivalLine || ""}</div></div><div class="cinematic-line"><div class="hero-kicker">JUDGING</div><div class="small" style="color:#efe2c6;line-height:1.6">${r.judgingLine || ""}</div></div><div style="text-align:center;margin-bottom:12px"><div style="font-size:40px">${r.place === 1 ? "🏆" : r.place === 2 ? "🥈" : r.place === 3 ? "🥉" : "📋"}</div><div style="color:${r.place <= 2 ? "#d8a24f" : r.place === 3 ? "#bdb7ab" : "#8f8577"};font-weight:bold;font-size:22px">${placeLabel(r.place)}</div><div class="small muted" style="margin-top:2px">${r.car} · Score ${r.score}</div>${buckLine}</div><div class='taped-note' style='margin-bottom:12px'><div class='feed-kicker'>NIGHT OF THE SHOW</div><div class='feed-text'>${vibeLine}</div>${buckVibe ? `<div class='feed-meta'>${buckVibe}</div>` : ""}</div>${r.localSponsorCovered ? `<div class="small good" style="margin-bottom:8px">Entry fee covered by town sponsor.</div>` : ""}${rewardLine}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px">${[
+          `${carPreview(car).replace(workspaceBackdropFrame(), showBackdropFrame(r.tier))}<div class="cinematic-line"><div class="hero-kicker">ARRIVAL</div><div class="small" style="color:var(--text);line-height:1.6">${r.arrivalLine || ""}</div></div><div class="cinematic-line"><div class="hero-kicker">JUDGING</div><div class="small" style="color:var(--text);line-height:1.6">${r.judgingLine || ""}</div></div><div style="text-align:center;margin-bottom:12px"><div style="font-size:40px">${r.place === 1 ? "🏆" : r.place === 2 ? "🥈" : r.place === 3 ? "🥉" : "📋"}</div><div style="color:${r.place <= 2 ? "#d8a24f" : r.place === 3 ? "#bdb7ab" : "#8f8577"};font-weight:bold;font-size:22px">${placeLabel(r.place)}</div><div class="small muted" style="margin-top:2px">${r.car} · Score ${r.score}</div>${buckLine}</div><div class='taped-note' style='margin-bottom:12px'><div class='feed-kicker'>NIGHT OF THE SHOW</div><div class='feed-text'>${vibeLine}</div>${buckVibe ? `<div class='feed-meta'>${buckVibe}</div>` : ""}</div>${r.localSponsorCovered ? `<div class="small good" style="margin-bottom:8px">Entry fee covered by town sponsor.</div>` : ""}${rewardLine}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px">${[
             ["Prize", `$${fmt(r.prize)}`, "#87c77b"],
             r.bonusCash > 0
               ? ["Sponsor", `+$${fmt(r.bonusCash)}`, "#d8a24f"]
@@ -6258,12 +6265,12 @@ body{position:relative!important;display:block!important;}
             .filter(Boolean)
             .map(
               ([label, val, col]) =>
-                `<div style="background:#191511;border:1px solid #41372f;border-radius:8px;padding:10px 8px;text-align:center"><div style="color:${col};font-weight:bold;font-size:17px">${val}</div><div class="tiny muted" style="letter-spacing:.5px">${label.toUpperCase()}</div></div>`,
+                `<div style="background:#191511;border:1px solid #41372f;border-radius:8px;padding:10px 8px;text-align:center"><div style="color:${col};font-weight:bold;font-size:18px">${val}</div><div class="tiny muted" style="letter-spacing:.5px">${label.toUpperCase()}</div></div>`,
             )
             .join("")}`,
           r.show,
           r.place === 1 ? "#d8a24f" : "#a79a86",
-        )}${panel("Final Standings", `${r.standings.map((e, i) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 6px;border-bottom:${i < r.standings.length - 1 ? "1px dashed #453a31" : "none"};background:${e.isPlayer ? "rgba(79,112,74,0.18)" : e.isRival ? "rgba(112,40,40,0.15)" : "transparent"};border-radius:4px"><div style="display:flex;gap:10px"><span style="color:${i === 0 ? "#d8a24f" : "#7d7468"};font-weight:bold;width:18px">${i + 1}</span><span style="color:${e.isPlayer ? "#9fd18e" : e.isRival ? "#e07070" : "#e4d8c1"};font-size:13px">${e.name}${e.isRival ? `<span class="rival-badge">RIVAL</span>` : ""}</span></div><span class="small muted">${e.score}</span></div>`).join("")}`, "", "#7da0c2")}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("After the Show", `${button("Back to Garage", "state.postShowWeekLocked=false; setView('garage')", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "Return to the garage and keep building.", "#d8a24f")}</div></div>`;
+        )}${panel("Final Standings", `${r.standings.map((e, i) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 6px;border-bottom:${i < r.standings.length - 1 ? "1px dashed #453a31" : "none"};background:${e.isPlayer ? "rgba(79,112,74,0.18)" : e.isRival ? "rgba(112,40,40,0.15)" : "transparent"};border-radius:4px"><div style="display:flex;gap:10px"><span style="color:${i === 0 ? "#d8a24f" : "#7d7468"};font-weight:bold;width:18px">${i + 1}</span><span style="color:${e.isPlayer ? "#9fd18e" : e.isRival ? "#e07070" : "#e4d8c1"};font-size:14px">${e.name}${e.isRival ? `<span class="rival-badge">RIVAL</span>` : ""}</span></div><span class="small muted">${e.score}</span></div>`).join("")}`, "", "#7da0c2")}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("After the Show", `${button("Back to Garage", "state.postShowWeekLocked=false; setView('garage')", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "Return to the garage and keep building.", "#d8a24f")}</div></div>`;
       }
 
       function renderDealership() {
@@ -6283,8 +6290,8 @@ body{position:relative!important;display:block!important;}
         <div class="feed-meta">${item.sourcePart} · baseline value $${fmt(item.baselineValue || 0)}</div>
         <div class="btn-row three" style="margin-top:8px">
           ${button("Firm on Price", `listPartOnMarketplaceWithTone('${item.id}','firm')`, false, "", "width:100%;padding:6px 8px;font-size:11px")}
-          ${button("Get it Gone", `listPartOnMarketplaceWithTone('${item.id}','gone')`, false, "", "width:100%;padding:6px 8px;font-size:11px;background:#7da0c2;border-color:#95b5d4")}
-          ${button("Open for Trade", `listPartOnMarketplaceWithTone('${item.id}','trade')`, false, "", "width:100%;padding:6px 8px;font-size:11px;background:#4a3c2e;color:#efe2c6;border-color:#6b5840")}
+          ${button("Get it Gone", `listPartOnMarketplaceWithTone('${item.id}','gone')`, false, "", "width:100%;padding:6px 8px;font-size:11px;background:#7da0c2;border-color:var(--blue-bright)")}
+          ${button("Open for Trade", `listPartOnMarketplaceWithTone('${item.id}','trade')`, false, "", "width:100%;padding:6px 8px;font-size:11px;background:#4a3c2e;color:var(--text);border-color:#6b5840")}
         </div>
       </div>
     `,
@@ -6324,7 +6331,7 @@ body{position:relative!important;display:block!important;}
               .map(
                 (entry) => `
       <div class="guide-step">
-        <span class="small" style="color:#efe2c6">${entry.item}</span>
+        <span class="small" style="color:var(--text)">${entry.item}</span>
         <span class="tiny good">$${fmt(entry.amount)}</span>
       </div>
     `,
@@ -6336,11 +6343,11 @@ body{position:relative!important;display:block!important;}
           "Sell",
           `
       <div class="info-box">
-        <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">List parts from the garage</div>
+        <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">List parts from the garage</div>
         ${stashMarkup}
       </div>
       <div class="info-box">
-        <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Your live listings</div>
+        <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Your live listings</div>
         ${listedMarkup}
       </div>
     `,
@@ -6359,7 +6366,7 @@ body{position:relative!important;display:block!important;}
           "Buy",
           `
       <div class="info-box">
-        <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Cars for sale</div>
+        <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Cars for sale</div>
         ${carBuyMarkup}
       </div>
     `,
@@ -6375,7 +6382,7 @@ body{position:relative!important;display:block!important;}
           `${SPONSORS.slice(0, 6)
             .map(
               (s) =>
-                `<div class="guide-step"><div><div class="small" style="color:#efe2c6">${s.emoji} ${s.name}</div><div class="tiny muted" style="margin-top:3px">${s.benefit}</div></div><div style="text-align:right"><div class="tiny ${state.followers >= s.req ? "good" : "warn"}">${state.followers >= s.req ? "ACTIVE" : fmtF(s.req)}</div>${state.followers < s.req ? `<div class="tiny muted" style="margin-top:3px">${fmtF(s.req - state.followers)} away</div>` : ""}</div></div>`,
+                `<div class="guide-step"><div><div class="small" style="color:var(--text)">${s.emoji} ${s.name}</div><div class="tiny muted" style="margin-top:3px">${s.benefit}</div></div><div style="text-align:right"><div class="tiny ${state.followers >= s.req ? "good" : "warn"}">${state.followers >= s.req ? "ACTIVE" : fmtF(s.req)}</div>${state.followers < s.req ? `<div class="tiny muted" style="margin-top:3px">${fmtF(s.req - state.followers)} away</div>` : ""}</div></div>`,
             )
             .join("")}`,
           "Know what each sponsor gives you and how close you are.",
