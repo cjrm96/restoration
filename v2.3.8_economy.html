@@ -6291,7 +6291,7 @@ body{position:relative!important;display:block!important;}
         );
         const sceneTension = renderHeroCallout("Show Night", roadworthy(car) ? "The truck is ready to risk public opinion. Now give the crowd something to talk about." : "Do not roll in half-built and ask the crowd for mercy.", "SCENE TENSION");
         const showCircuitRead = `<div class='taped-note'><div class='feed-kicker'>SHOW CIRCUIT READ</div><div class='feed-text'>${roadworthy(car) ? "The car can drive itself there. Now the only question is whether it can survive public opinion." : "You are not ready for the field yet. Right now this is still a garage argument, not a show car."}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div>`;
-        return `<div class="grid-main-shows"><div>${renderFTUEPanel(car)}${showPrepBoard}${sceneTension}${renderGarageSign(car)}${showCircuitRead}</div><div>${renderUpcomingBar()}${renderUnifiedSocialFeed(car, { showSponsors: false, showHistory: false })}</div></div>`;
+        return `<div class="grid-main-shows"><div>${renderFTUEPanel(car)}${showPrepBoard}${sceneTension}${showCircuitRead}</div><div>${renderUpcomingBar()}${renderUnifiedSocialFeed(car, { showSponsors: false, showHistory: false })}</div></div>`;
       }
 
 
