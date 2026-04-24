@@ -3366,6 +3366,19 @@
           ],
           lore: 5,
         },
+        {
+          id: "buck",
+          name: "Buck",
+          openers: [
+            "saw your listing. i can do $%OFFER%, cash today. don't think about it too hard.",
+            "you're asking a lot for that. $%OFFER% is fair. you won't get better.",
+            "take $%OFFER% and we'll both pretend this never happened.",
+            "i'll do you a favor. $%OFFER%. no need to thank me.",
+            "cash in hand, $%OFFER%. i'm the only buyer who isn't going to waste your time.",
+            "$%OFFER%. tell your friends i don't lowball.",
+          ],
+          lore: 8,
+        },
       ];
 
       const MARKETPLACE_SCENARIOS = [
@@ -3800,6 +3813,63 @@
         "Buck posted 'real ones know' under a photo of the same Mustang we all already know about.",
       ];
 
+      const BUCK_POSTS_AFTER_LOSS = [
+        "Buck posted a lengthy caption about 'judging variance' that nobody asked for.",
+        "Buck deleted his show photo six minutes after posting it. Still think nobody noticed.",
+        "Buck's story says 'lessons learned.' Tomorrow he'll pretend he meant to place where he did.",
+        "Buck just posted about how ratings don't reflect real builds. Tagged nobody. Ironic.",
+        "Buck posted a throwback to a show he did win. From two years ago. The desperation is quiet but loud.",
+        "Buck said he had 'engine issues' in his recap reel. The engine was fine.",
+        "Buck is calling the judging 'political' in a group chat somebody screenshotted.",
+        "Buck posted a Rocky quote under a photo of his trunk. Make of that what you will.",
+        "Buck shared your show post. Couldn't resist. Added a thinking emoji that is doing a lot.",
+        "Buck went unusually quiet on the group chat. Everyone noticed. Nobody said anything.",
+      ];
+
+      const BUCK_POSTS_AFTER_WIN = [
+        "Buck posted a slow-mo of the trophy being placed in his passenger seat.",
+        "Buck said 'told y'all' under his show photo. Y'all was nobody.",
+        "Buck's caption is three emojis of a flexing arm and the word 'pattern.'",
+        "Buck replied to every comment on his post. Every single one. Even the bots.",
+        "Buck's story is a video of the Mustang idling with the sound bumped way up.",
+        "Buck changed his profile pic to the trophy-reveal photo. It was only a Regional.",
+        "Buck's wife commented 'we did it baby' on his post. She was not at the show.",
+        "Buck's caption is 'built, not bought' again. At this point it's a tic.",
+        "Buck said 'respectfully, I called it.' He didn't call it.",
+        "Buck posted the standings. Screen-cropped so his place is centered perfectly.",
+      ];
+
+      /* ── Buck scenes ── */
+      const BUCK_INTRO_SCENE = {
+        id: "buck_intro",
+        emoji: "👀",
+        title: "Someone rolled up",
+        text: "You're parked on the side lot, hood up, fussing with something minor. A clean '67 Mustang pulls in two spaces over. The driver leans on his door, gives your truck a long, slow look. Doesn't say anything for a second. Then: 'First time out here?'",
+        choices: [
+          {
+            label: "Yeah, just getting into it",
+            impression: "humble",
+            note: "Buck nodded. Said his name was Buck, he runs most of the local class, you'll see him around. It wasn't a threat. It wasn't not a threat.",
+            lore: 3,
+            followers: 0,
+          },
+          {
+            label: "Been at it a while. You?",
+            impression: "cocky",
+            note: "Buck smirked. Said he hadn't seen your truck before but he'd remember it now. Then he walked off before you could decide if that was good or bad.",
+            lore: 4,
+            followers: 5,
+          },
+          {
+            label: "Not in the mood today",
+            impression: "dismissive",
+            note: "Buck shrugged, muttered something about attitudes, and went to find someone more interesting to talk to. Your truck probably lost some imaginary points with him.",
+            lore: 2,
+            followers: 0,
+          },
+        ],
+      };
+
       /* ── Weekly Events ── */
       const WEEKLY_EVENTS = [
         // Bad
@@ -4116,6 +4186,13 @@
           legacyBuilds: [],
           pendingVictory: null,
           pendingVictoryTrigger: false,
+          buck: {
+            metOnce: false,
+            firstImpression: null,
+            beatenCount: 0,
+            lostToCount: 0,
+            boughtPartCount: 0,
+          },
           postShowWeekLocked: false,
           starterHelpReceived: false,
           starterCarbUsed: false,
@@ -4645,6 +4722,12 @@
             sold: false,
           });
         }
+        if (choice.buckImpression) {
+          if (!state.buck) state.buck = {};
+          state.buck.metOnce = true;
+          state.buck.firstImpression = choice.buckImpression;
+          if (choice.note) pushRivalNote(choice.note);
+        }
         if (choice.toast)
           toast(
             choice.toast,
@@ -4684,6 +4767,24 @@
               note: "One more tiny story added to the build.",
             },
           ],
+        });
+      }
+
+      function maybeTriggerBuckIntro() {
+        if (!state.buck || state.buck.metOnce) return;
+        if (state.pendingScene || state.pendingEvent) return;
+        queueScene({
+          id: BUCK_INTRO_SCENE.id,
+          title: BUCK_INTRO_SCENE.title,
+          emoji: BUCK_INTRO_SCENE.emoji,
+          text: BUCK_INTRO_SCENE.text,
+          choices: BUCK_INTRO_SCENE.choices.map((c) => ({
+            label: c.label,
+            lore: c.lore,
+            followers: c.followers,
+            note: c.note,
+            buckImpression: c.impression,
+          })),
         });
       }
 
@@ -4815,19 +4916,37 @@
 
       function maybeTriggerRivalBeat() {
         if (state.week < 3 || Math.random() > 0.6) return;
-        const beats = [
-          `Buck posted a smug photo from his garage. His Mustang looks a little cleaner this week.`,
-          `Word at the parts counter is Buck just finished another late-night wrench session.`,
-          `Buck is telling people he already has the Regional field figured out.`,
-          `Someone at Cars & Coffee says Buck's paint finally stopped looking terrible. Unfortunately.`,
-          `Buck told the whole coffee line your build sheet reads like a cry for help.`,
-          `Rumor says Buck bought fresh white-letter tires and now will not stop talking about stance.`,
-          `Buck says he is not worried about your truck yet. The yet part is doing a lot of work.`,
-          BUCK_SOCIAL_POSTS[
-            Math.floor(Math.random() * BUCK_SOCIAL_POSTS.length)
-          ],
-        ];
-        const msg = beats[Math.floor(Math.random() * beats.length)];
+        const lastShow = state.history[0];
+        const buckJustLost =
+          lastShow &&
+          lastShow.buckPlace &&
+          lastShow.place < lastShow.buckPlace &&
+          lastShow.week &&
+          state.week - lastShow.week <= 1;
+        const buckJustWon =
+          lastShow &&
+          lastShow.buckPlace &&
+          lastShow.place > lastShow.buckPlace &&
+          lastShow.week &&
+          state.week - lastShow.week <= 1;
+        let msg;
+        if (buckJustLost && Math.random() < 0.7) {
+          msg = pickFresh(BUCK_POSTS_AFTER_LOSS, "buckPostLoss");
+        } else if (buckJustWon && Math.random() < 0.7) {
+          msg = pickFresh(BUCK_POSTS_AFTER_WIN, "buckPostWin");
+        } else {
+          const beats = [
+            `Buck posted a smug photo from his garage. His Mustang looks a little cleaner this week.`,
+            `Word at the parts counter is Buck just finished another late-night wrench session.`,
+            `Buck is telling people he already has the Regional field figured out.`,
+            `Someone at Cars & Coffee says Buck's paint finally stopped looking terrible. Unfortunately.`,
+            `Buck told the whole coffee line your build sheet reads like a cry for help.`,
+            `Rumor says Buck bought fresh white-letter tires and now will not stop talking about stance.`,
+            `Buck says he is not worried about your truck yet. The yet part is doing a lot of work.`,
+            pickFresh(BUCK_SOCIAL_POSTS, "buckSocial"),
+          ];
+          msg = beats[Math.floor(Math.random() * beats.length)];
+        }
         pushRivalNote(msg);
         toast(msg, "event-bad");
       }
@@ -5183,6 +5302,12 @@
           `Deal done with ${buyerName}. +$${fmt(amount)} from ${item.name}.`,
           "ok",
         );
+        if (buyerName === "Buck" && state.buck) {
+          state.buck.boughtPartCount = (state.buck.boughtPartCount || 0) + 1;
+          pushRivalNote(
+            `Buck bought ${item.name.toLowerCase()} off you. He'll deny it if asked, but it's going on his Mustang.`,
+          );
+        }
       }
       function maybeGenerateMarketplaceOffer(rollChance = 0.68) {
         if (
@@ -5197,10 +5322,17 @@
         const listed = state.partsInventory.filter((i) => i.listed && !i.sold);
         if (!listed.length || Math.random() > rollChance) return false;
         const item = listed[Math.floor(Math.random() * listed.length)];
-        const archetype =
-          MARKETPLACE_BUYERS[
-            Math.floor(Math.random() * MARKETPLACE_BUYERS.length)
-          ];
+        const buckEligible =
+          state.buck &&
+          state.buck.metOnce &&
+          item.baselineValue >= 60 &&
+          Math.random() < 0.18;
+        const pool = buckEligible
+          ? MARKETPLACE_BUYERS
+          : MARKETPLACE_BUYERS.filter((b) => b.id !== "buck");
+        const archetype = buckEligible
+          ? MARKETPLACE_BUYERS.find((b) => b.id === "buck")
+          : pool[Math.floor(Math.random() * pool.length)];
         const loreBonus = garageLoreDiscount();
         const toneBonus =
           item.listingTone === "firm"
@@ -6389,6 +6521,7 @@
         state.result = {
           show: show.name,
           tier: show.tier,
+          week: state.week,
           car: `${effectiveCar.year} ${effectiveCar.make} ${effectiveCar.model}`,
           place,
           score: myScore,
@@ -6426,6 +6559,13 @@
             `You just beat the field at ${show.name}. Buck is going to hear about this.`,
           );
           if (show.tier === "Local") maybeAddBuckReaction("firstLocalWin");
+        }
+        if (buckInShow && state.buck) {
+          if (place < buckPlace) state.buck.beatenCount = (state.buck.beatenCount || 0) + 1;
+          else if (place > buckPlace) state.buck.lostToCount = (state.buck.lostToCount || 0) + 1;
+        }
+        if (show.tier === "Cars & Coffee" && state.buck && !state.buck.metOnce) {
+          maybeTriggerBuckIntro();
         }
         checkMilestones();
         saveGame();
