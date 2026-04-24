@@ -3093,6 +3093,22 @@
         { min: 6000, chance: 0.22, minCash: 150, maxCash: 300, label: "paid shop spotlight" },
         { min: 1000, chance: 0.18, minCash: 75, maxCash: 150, label: "local parts sponsor shoutout" },
       ];
+      const CREATOR_POSTS = {
+        insta: { label: "Insta Photo", emoji: "📸", cashRate: 0.012, cashMin: 2, cashCap: 400, followerFlat: 3, followerRate: 0.004, followerCap: 60, moneyCost: 0, fuelCost: 0, desc: "Quick phone shot from the garage." },
+        reel:  { label: "Reel Clip",   emoji: "🎬", cashRate: 0.035, cashMin: 6, cashCap: 1200, followerFlat: 8, followerRate: 0.008, followerCap: 200, moneyCost: 10, fuelCost: 0, desc: "Short action clip — revs, reveals, wrench porn." },
+        youtube:{ label: "YouTube Video", emoji: "▶️", cashRate: 0.085, cashMin: 15, cashCap: 3000, followerFlat: 20, followerRate: 0.013, followerCap: 600, moneyCost: 0, fuelCost: 2, desc: "Long form build log — requires a roadworthy car and b-roll drive." },
+      };
+      const BRAND_DEAL_BRANDS = [
+        "RevLine Auto Parts",
+        "Apex Speed Co.",
+        "Dynoflow Performance",
+        "Gasket Gods",
+        "Torque District",
+        "Midnight Motor Oil",
+        "Chrome Theory",
+        "Backyard Built Co.",
+      ];
+      const BRAND_DEAL_MIN_FOLLOWERS = 500;
       const SAVE_KEY = "classic_restoration_save_v5";
       const SAVE_VERSION = 4;
 
@@ -3148,6 +3164,9 @@
           lastShowTier: null,
           lastShowPlace: null,
           socialPostedWeek: null,
+          creatorPostedWeek: null,
+          pendingBrandDeal: null,
+          totalCreatorEarnings: 0,
           rival: { score: 32, showsEntered: 0, lastPlace: null },
           milestones: {
             firstShow: false,
@@ -4215,6 +4234,29 @@
         return `<div class="info-box"><div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Post an update</div><div class="social-actions">${button(`Post Hype · +${fmtF(hypeGain)}`, "doSocialPost('hype')", state.socialPostedWeek === state.week, "", "width:100%")}${button(`Show Off A Trophy · +${fmtF(trophyGain)}`, "doSocialPost('trophy')", state.socialPostedWeek === state.week || trophyGain <= 0, "", "width:100%")}${button(`Post Progress · +${fmtF(progressGain)}`, "doSocialPost('progress')", state.socialPostedWeek === state.week, "", "width:100%")}</div><div class="tiny muted" style="margin-top:8px">${state.socialPostedWeek === state.week ? "Already posted this week." : "One post per week. Use it to move followers, pressure, and momentum."}</div></div>`;
       }
 
+      function renderCreatorPanel() {
+        const already = state.creatorPostedWeek === state.week;
+        const rows = Object.entries(CREATOR_POSTS).map(([type, cfg]) => {
+          const { cash, followers } = calcCreatorReward(type);
+          const blocked = already || !!creatorPostBlockedReason(type);
+          const costBits = [];
+          if (cfg.moneyCost) costBits.push(`$${cfg.moneyCost}`);
+          if (cfg.fuelCost) costBits.push(`${cfg.fuelCost} gal`);
+          const costLabel = costBits.length ? ` · cost ${costBits.join(" + ")}` : "";
+          const label = `${cfg.emoji} ${cfg.label} · +$${fmt(cash)} · +${fmtF(followers)}`;
+          return button(label, `doCreatorPost('${type}')`, blocked, "", "width:100%;background:#4a3c2e;color:#efe2c6;border-color:#6b5840") +
+            `<div class="tiny muted" style="margin:-2px 0 8px">${cfg.desc}${costLabel}</div>`;
+        }).join("");
+        const deal = state.pendingBrandDeal;
+        const dealMarkup = deal
+          ? `<div class="info-box" style="background:#291b36;border-color:#6f4d91;margin-top:10px"><div class="small" style="color:#e2cef7;font-weight:bold;margin-bottom:4px">📦 Brand Deal · ${deal.brand}</div><div class="tiny" style="color:#cbb9e0;margin-bottom:8px">They'll send a free Budget part in exchange for a sponsored post. +${fmtF(deal.followerBonus)} followers on the campaign.</div><div class="btn-row two">${button("Accept", "acceptBrandDeal()", !!state.freePart, "", "width:100%;background:#a47ed4;border-color:#bca0e5")}${button("Decline", "declineBrandDeal()", false, "", "width:100%;background:#4a3c2e;color:#efe2c6;border-color:#6b5840")}</div>${state.freePart ? `<div class="tiny warn" style="margin-top:6px">Claim your existing free part before accepting another.</div>` : ""}</div>`
+          : (state.followers < BRAND_DEAL_MIN_FOLLOWERS
+            ? `<div class="tiny muted" style="margin-top:8px">Brand deals open up at ${fmtF(BRAND_DEAL_MIN_FOLLOWERS)} followers.</div>`
+            : `<div class="tiny muted" style="margin-top:8px">No brand deals in the inbox this week. Keep posting.</div>`);
+        const earned = state.totalCreatorEarnings || 0;
+        return `<div class="info-box"><div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Content drops · lifetime $${fmt(earned)}</div>${rows}<div class="tiny muted" style="margin-top:4px">${already ? "Already dropped content this week." : "Payouts scale with followers and car quality. One drop per week."}</div>${dealMarkup}</div>`;
+      }
+
       function renderCombinedDashboard(car = currentCar()) {
         if (!car) return "";
         const objective = getCurrentObjective(car);
@@ -4372,6 +4414,7 @@
           "Social Feed",
           `
       ${renderSocialPostingPanel()}
+      ${renderCreatorPanel()}
       <div class="info-box">
         <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Latest scene updates</div>
         ${feedMarkup || `<div class="small muted">No scene updates yet. Start going to shows, posting, and moving parts.</div>`}
@@ -5249,6 +5292,7 @@
         maybeTriggerGarageMoment();
         maybeGenerateMarketplaceOffer();
         maybeTriggerFollowerPayout();
+        maybeOfferBrandDeal();
         if (missedSocialPost) {
           toast(
             "You rolled into a new week without posting. The scene moved on without you for a minute.",
@@ -5454,6 +5498,102 @@
           "event-good",
         );
         checkMilestones();
+        saveGame();
+        requestRender("full");
+      }
+
+      function calcCreatorReward(type) {
+        const cfg = CREATOR_POSTS[type];
+        if (!cfg) return { cash: 0, followers: 0 };
+        const car = currentCar();
+        const overall = car ? getOverall(car) : 0;
+        const qualityMult = 0.5 + overall / 100;
+        const ms = activeSponsors().find((s) => s.socialBoost);
+        const sponsorMult = ms ? 1 + ms.socialBoost : 1;
+        const cashRaw = Math.max(cfg.cashMin, state.followers * cfg.cashRate);
+        const cash = Math.min(cfg.cashCap, Math.round(cashRaw * qualityMult * sponsorMult));
+        const folRaw = cfg.followerFlat + state.followers * cfg.followerRate;
+        const followers = Math.min(cfg.followerCap, Math.max(1, Math.round(folRaw * qualityMult * sponsorMult)));
+        return { cash, followers };
+      }
+
+      function creatorPostBlockedReason(type) {
+        const cfg = CREATOR_POSTS[type];
+        if (!cfg) return "Unknown post type.";
+        if (state.creatorPostedWeek === state.week) return "Already dropped content this week.";
+        if (cfg.moneyCost && state.money < cfg.moneyCost) return `Need $${cfg.moneyCost} for props.`;
+        if (cfg.fuelCost && state.fuel < cfg.fuelCost) return `Need ${cfg.fuelCost} gal for b-roll.`;
+        if (type === "youtube") {
+          const car = currentCar();
+          if (!car || !roadworthy(car)) return "Car must be roadworthy to film a YouTube build.";
+        }
+        return null;
+      }
+
+      function doCreatorPost(type) {
+        const cfg = CREATOR_POSTS[type];
+        if (!cfg) return;
+        const blocked = creatorPostBlockedReason(type);
+        if (blocked) return toast(blocked, "err");
+        const { cash, followers } = calcCreatorReward(type);
+        const variance = 0.85 + Math.random() * 0.4;
+        const finalCash = Math.max(1, Math.round(cash * variance));
+        const finalFollowers = Math.max(1, Math.round(followers * variance));
+        if (cfg.moneyCost) state.money -= cfg.moneyCost;
+        if (cfg.fuelCost) state.fuel -= cfg.fuelCost;
+        state.money += finalCash;
+        state.followers += finalFollowers;
+        state.totalCreatorEarnings = (state.totalCreatorEarnings || 0) + finalCash;
+        state.creatorPostedWeek = state.week;
+        recordMoneyChange(finalCash - (cfg.moneyCost || 0), `${cfg.label} payout`);
+        addGarageLore(type === "youtube" ? 3 : type === "reel" ? 2 : 1);
+        toast(
+          `${cfg.emoji} ${cfg.label} went live. +$${fmt(finalCash)} · +${fmtF(finalFollowers)} followers.`,
+          "event-good",
+        );
+        checkMilestones();
+        saveGame();
+        requestRender("full");
+      }
+
+      function maybeOfferBrandDeal() {
+        if (state.pendingBrandDeal) return;
+        if (state.followers < BRAND_DEAL_MIN_FOLLOWERS) return;
+        if (state.freePart) return;
+        const chance = Math.min(0.22, 0.06 + state.followers / 60000);
+        if (Math.random() > chance) return;
+        const brand = BRAND_DEAL_BRANDS[Math.floor(Math.random() * BRAND_DEAL_BRANDS.length)];
+        state.pendingBrandDeal = {
+          brand,
+          offeredWeek: state.week,
+          followerBonus: Math.max(10, Math.round(state.followers * 0.015)),
+        };
+        toast(`📦 ${brand} slid into your DMs with a brand deal.`, "event-good");
+      }
+
+      function acceptBrandDeal() {
+        const deal = state.pendingBrandDeal;
+        if (!deal) return;
+        if (state.freePart) return toast("Claim the free part you already have first.", "err");
+        state.freePart = true;
+        state.followers += deal.followerBonus;
+        addGarageLore(2);
+        state.pendingBrandDeal = null;
+        toast(
+          `Deal locked with ${deal.brand}. Free Budget part waiting in the shop. +${fmtF(deal.followerBonus)} followers.`,
+          "event-good",
+        );
+        checkMilestones();
+        saveGame();
+        requestRender("full");
+      }
+
+      function declineBrandDeal() {
+        const deal = state.pendingBrandDeal;
+        if (!deal) return;
+        addGarageLore(1);
+        state.pendingBrandDeal = null;
+        toast(`Passed on ${deal.brand}. Staying independent — for now.`, "ok");
         saveGame();
         requestRender("full");
       }
