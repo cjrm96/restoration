@@ -5052,6 +5052,7 @@
 
       function maybeTriggerGarageMoment() {
         if (state.pendingScene || Math.random() > 0.16) return;
+        if (state.view === "result" || state.showStage || state.showLoading) return;
         const moment =
           GARAGE_MOMENTS[Math.floor(Math.random() * GARAGE_MOMENTS.length)];
         const gain = moment.gain || {};
@@ -5530,7 +5531,7 @@
       }
 
       function addRemovedPartItem(part, car) {
-        const label = `${CAT_LABELS[part.category]} take-off from ${car.year} ${car.make}`;
+        const label = `${part.name} take-off from ${car.year} ${car.make}`;
         const base = Math.max(20, Math.round(part.diy * 0.22));
         state.partsInventory.push({
           id: `inv_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -5983,8 +5984,49 @@
               `${part.name} wrapped up on your ${car.year} ${car.make}. It feels a little more legit now. +${part.imp} ${CAT_LABELS[part.category]}.`,
               "ok",
             );
+          if (task.method === "diy" && !state.starterHelpReceived) {
+            maybeTriggerNeighborHelp(car);
+          }
         }
         task.completed = true;
+      }
+
+      function maybeTriggerNeighborHelp(car) {
+        if (state.starterHelpReceived) return;
+        // Pick the most-needed tool the player doesn't own and can use right now
+        const need = Object.create(null);
+        const installed = new Set(car ? car.installedParts : []);
+        PARTS.forEach((p) => {
+          if (installed.has(p.id)) return;
+          if (p.tier !== "Budget") return;
+          (p.tools || []).forEach((tid) => {
+            need[tid] = (need[tid] || 0) + 1;
+          });
+        });
+        const wsIdx = getWorkspaceIndex(state.workshopLevel);
+        const candidates = TOOLS_LIST.filter(
+          (t) =>
+            !state.ownedTools.includes(t.id) &&
+            getWorkspaceIndex(t.workshop) <= wsIdx,
+        )
+          .map((t) => ({ tool: t, score: need[t.id] || 0 }))
+          .sort((a, b) => b.score - a.score);
+        const pick = candidates.length ? candidates[0].tool : null;
+        state.starterHelpReceived = true;
+        state.money += 125;
+        recordMoneyChange(125, "Neighbor starter help");
+        if (pick && state.ownedTools.length < toolStorageData().maxTools) {
+          state.ownedTools.push(pick.id);
+          toast(
+            `An old neighbor saw the garage light on. Walked over with a clean ${pick.name} he wasn't using and slid you $125 for parts. "Pay me back when the truck wins something."`,
+            "event-good",
+          );
+        } else {
+          toast(
+            `An old neighbor saw the garage light on. Walked over and slid you $125 for parts. "Pay me back when the truck wins something."`,
+            "event-good",
+          );
+        }
       }
 
       function resolveCompletedRestorations(showToast = true) {
@@ -6118,7 +6160,7 @@
         }
         toast(
           `${part.name} started — ${restorationStartLine(method)} · ${formatRemaining(duration)} real time.`,
-          "ok",
+          "event-good",
         );
         saveGame();
         requestRender("full");
@@ -6389,17 +6431,6 @@
           );
         } else {
           toast(`Week ${state.week} — ${reason}.`, "ok");
-        }
-
-        if (!state.starterHelpReceived && state.week <= 2) {
-          state.starterHelpReceived = true;
-          if (!state.ownedTools.includes("t18")) state.ownedTools.push("t18");
-          state.money += 125;
-          recordMoneyChange(125, "Neighbor starter help");
-          toast(
-            "An old neighbor saw you wrenching late, dropped off extra jack stands and a spare carb rebuild kit. +Floor Jack & Stands, +$125 parts money.",
-            "event-good",
-          );
         }
 
         maybeTriggerRivalBeat();
@@ -7875,7 +7906,7 @@ body{position:relative!important;display:block!important;}
                     );
                     return panel(
                       t.name,
-                      `<div class="small muted" style="margin-bottom:10px">Category: ${TOOL_CATEGORIES.find((c) => c.id === t.cat)?.label} <span style="color:var(--gold);margin-left:10px">Requires: ${rw?.name}</span></div><div class="tiny" style="color:#8e8473;margin-bottom:12px">Enables: ${parts.length ? `${parts.slice(0, 3).join(", ")}${parts.length > 3 ? ` +${parts.length - 3} more` : ""}` : ""}</div><div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center"><div style="color:var(--text);font-weight:bold">$${fmt(t.cost)}</div><div style="min-width:140px">${button("Buy Tool", `buyTool('${t.id}')`, !can.ok, "", "width:100%")}${!can.ok ? `<div class="tiny" style="color:var(--text-dim);margin-top:5px;text-align:right">${can.msg}</div>` : ""}</div></div>`,
+                      `<div class="small muted" style="margin-bottom:10px">Category: ${TOOL_CATEGORIES.find((c) => c.id === t.cat)?.label} <span style="color:var(--gold);margin-left:10px">Requires: ${rw?.name}</span></div><div class="tiny" style="color:#8e8473;margin-bottom:12px">Enables: ${parts.length ? `${parts.slice(0, 3).join(", ")}${parts.length > 3 ? ` +${parts.length - 3} more` : ""}` : ""}</div><div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center"><div style="color:var(--text);font-weight:bold">$${fmt(t.cost)}</div><div style="min-width:140px">${button("Buy Tool", `buyTool('${t.id}')`, !can.ok, "", "width:100%")}</div></div>${!can.ok ? `<div class="tiny warn" style="margin-top:8px;font-weight:bold">⚠️ ${can.msg}</div>` : ""}`,
                       t.desc,
                       "#d8a24f",
                     );
@@ -8026,7 +8057,7 @@ body{position:relative!important;display:block!important;}
             .join("")}`,
           r.show,
           r.place === 1 ? "#d8a24f" : "#a79a86",
-        )}${panel("Final Standings", `${r.standings.map((e, i) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 6px;border-bottom:${i < r.standings.length - 1 ? "1px dashed #453a31" : "none"};background:${e.isPlayer ? "rgba(79,112,74,0.18)" : e.isRival ? "rgba(112,40,40,0.15)" : "transparent"};border-radius:4px"><div style="display:flex;gap:10px"><span style="color:${i === 0 ? "#d8a24f" : "#7d7468"};font-weight:bold;width:18px">${i + 1}</span><span style="color:${e.isPlayer ? "#9fd18e" : e.isRival ? "#e07070" : "#e4d8c1"};font-size:14px">${e.name}${e.isRival ? `<span class="rival-badge">RIVAL</span>` : ""}</span></div><span class="small muted">${e.score}</span></div>`).join("")}`, "", "#7da0c2")}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("After the Show", `${button("Back to Garage", "state.postShowWeekLocked=false; setView('garage')", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "Return to the garage and keep building.", "#d8a24f")}</div></div>`;
+        )}${panel("Final Standings", `${r.standings.map((e, i) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 6px;border-bottom:${i < r.standings.length - 1 ? "1px dashed #453a31" : "none"};background:${e.isPlayer ? "rgba(79,112,74,0.18)" : e.isRival ? "rgba(112,40,40,0.15)" : "transparent"};border-radius:4px"><div style="display:flex;gap:10px"><span style="color:${i === 0 ? "#d8a24f" : "#7d7468"};font-weight:bold;width:18px">${i + 1}</span><span style="color:${e.isPlayer ? "#9fd18e" : e.isRival ? "#e07070" : "#e4d8c1"};font-size:14px">${e.name}${e.isRival ? `<span class="rival-badge">RIVAL</span>` : ""}</span></div><span class="small muted">${e.score}</span></div>`).join("")}`, "", "#7da0c2")}</div><div>${renderUpcomingBar()}${panel("After the Show", `${button("Back to Garage", "state.postShowWeekLocked=false; setView('garage')", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "Return to the garage and keep building.", "#d8a24f")}</div></div>`;
       }
 
       function renderDealership() {
@@ -8399,6 +8430,7 @@ body{position:relative!important;display:block!important;}
           "notice:" + ((state.noticeQueue && state.noticeQueue.length) || 0),
           state.pendingScene ? 1 : 0,
           state.showStore ? 1 : 0,
+          state.showStore ? `loan:${state.bankLoanBalance}:${state.sharkLoanBalance}` : "",
           state.pendingEvent
             ? state.pendingEvent.title || state.pendingEvent.type || "event"
             : "",
@@ -8450,10 +8482,7 @@ body{position:relative!important;display:block!important;}
           state.toolStorageLevel,
           state.activeRestorations.length,
           state.activeRestorations
-            .map(
-              (task) =>
-                `${task.carId}:${task.partId}:${Math.max(0, Math.ceil((task.finishTime - Date.now()) / 1000))}`,
-            )
+            .map((task) => `${task.carId}:${task.partId}:${task.completed ? 1 : 0}`)
             .join(","),
           state.ownedTools.length,
           state.cars.length,
@@ -8488,6 +8517,7 @@ body{position:relative!important;display:block!important;}
 
       function renderMainContent(force = false) {
         const nextSig = getRenderSignature();
+        if (!force && nextSig === lastRenderSignature) return;
         getEl("appContent").innerHTML = renderContent();
         lastRenderSignature = nextSig;
       }
