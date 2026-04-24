@@ -5392,13 +5392,12 @@
         const already = state.creatorPostedWeek === state.week;
         const earned = state.totalCreatorEarnings || 0;
         const buttons = Object.entries(CREATOR_POSTS).map(([type, cfg]) => {
-          const { cash, followers } = calcCreatorReward(type);
           const blocked = already || !!creatorPostBlockedReason(type);
           const costBits = [];
           if (cfg.moneyCost) costBits.push(`-$${cfg.moneyCost}`);
           if (cfg.fuelCost) costBits.push(`-${cfg.fuelCost} gal`);
           const costSuffix = costBits.length ? ` · ${costBits.join(" ")}` : "";
-          const label = `${cfg.emoji} ${cfg.label.split(" ")[0]} · +$${fmt(cash)} · +${fmtF(followers)}${costSuffix}`;
+          const label = `${cfg.emoji} ${cfg.label.split(" ")[0]}${costSuffix}`;
           return button(label, `doCreatorPost('${type}')`, blocked, "", "width:100%");
         }).join("");
         const deal = state.pendingBrandDeal;
@@ -6868,7 +6867,7 @@
           show.tier === "Cars & Coffee"
             ? "You rolled in early, parked crooked, and immediately started pretending the idle sounded intentional."
             : show.tier === "Local"
-              ? "The fairgrounds smell like old fuel, paper tickets, and guys defending bad wheel choices."
+              ? "Main Street is closed off, sawhorses up, somebody's already plugged in their boom box. Local crowd's already gathering."
               : show.tier === "Regional"
                 ? "You can feel the room tighten up now. Fewer jokes, more measuring tape energy."
                 : "This is the big stage now. Every panel gap feels like public information.";
@@ -7679,30 +7678,61 @@ body{position:relative!important;display:block!important;}
         const data = state.showCinematicData || {};
         const r = state.result || {};
         if (state.showStage === "arriving") {
-          root.innerHTML = `<div class="modal"><div class="modal-card show-beat" style="max-width:540px;text-align:center"><div class="feed-kicker" style="margin-bottom:6px">SHOW NIGHT · ARRIVAL</div><div style="font-size:56px;margin-bottom:10px">🚙</div><div style="color:var(--gold);font-weight:bold;font-size:22px;margin-bottom:14px">${r.show || "The show"}</div><div class="info-box" style="text-align:left"><div class="small" style="color:var(--text);line-height:1.7">${data.arrivalLine || ""}</div></div>${button("Walk it to the field →", "advanceShowStage()", false, "", "width:100%;margin-top:14px;font-size:14px")}</div></div>`;
+          const isCoffeeArr = r.tier === "Cars & Coffee";
+          const arriveKicker = isCoffeeArr ? "Cars & Coffee · Arrival" : "Show Night · Arrival";
+          const arriveCta = isCoffeeArr ? "See who's around →" : "Walk it to the field →";
+          root.innerHTML = `<div class="modal"><div class="modal-card show-beat" style="max-width:540px;text-align:center"><div class="feed-kicker" style="margin-bottom:6px">${arriveKicker}</div><div style="font-size:56px;margin-bottom:10px">${isCoffeeArr ? "☕" : "🚙"}</div><div style="color:var(--gold);font-weight:bold;font-size:22px;margin-bottom:14px">${r.show || "The show"}</div><div class="info-box" style="text-align:left"><div class="small" style="color:var(--text);line-height:1.7">${data.arrivalLine || ""}</div></div>${button(arriveCta, "advanceShowStage()", false, "", "width:100%;margin-top:14px;font-size:14px")}</div></div>`;
         } else if (state.showStage === "judging") {
+          const isCoffeeJudge = r.tier === "Cars & Coffee";
+          const judgeLabels = isCoffeeJudge
+            ? ["FIRST WALKBY", "POPPED THE HOOD", "PARTING WORD"]
+            : ["FIRST PASS", "WALKAROUND", "PARTING SHOT"];
           const lines = (data.judgingComments || []).map((line, i) =>
-            `<div class="judging-line" style="animation-delay:${i * 0.18}s"><div class="feed-kicker">${["FIRST PASS", "WALKAROUND", "PARTING SHOT"][i] || "FROM THE CROWD"}</div><div class="small" style="color:var(--text);line-height:1.6">${line}</div></div>`
+            `<div class="judging-line" style="animation-delay:${i * 0.18}s"><div class="feed-kicker">${judgeLabels[i] || "FROM THE CROWD"}</div><div class="small" style="color:var(--text);line-height:1.6">${line}</div></div>`
           ).join("");
-          root.innerHTML = `<div class="modal"><div class="modal-card show-beat" style="max-width:560px"><div class="feed-kicker" style="text-align:center;margin-bottom:6px">SHOW NIGHT · JUDGING</div><div style="text-align:center;color:var(--gold);font-weight:bold;font-size:22px;margin-bottom:14px">Judges and crowd are making the rounds</div><div class="info-box judging-stack">${lines}</div>${button("See the standings →", "advanceShowStage()", false, "", "width:100%;margin-top:14px;font-size:14px")}</div></div>`;
+          const judgeKicker = isCoffeeJudge ? "Cars & Coffee · Hangout" : "Show Night · Judging";
+          const judgeHeadline = isCoffeeJudge
+            ? "People are walking by, sipping coffee, dropping comments"
+            : "Judges and crowd are making the rounds";
+          const judgeCta = isCoffeeJudge ? "See how it landed →" : "See the standings →";
+          root.innerHTML = `<div class="modal"><div class="modal-card show-beat" style="max-width:560px"><div class="feed-kicker" style="text-align:center;margin-bottom:6px">${judgeKicker}</div><div style="text-align:center;color:var(--gold);font-weight:bold;font-size:22px;margin-bottom:14px">${judgeHeadline}</div><div class="info-box judging-stack">${lines}</div>${button(judgeCta, "advanceShowStage()", false, "", "width:100%;margin-top:14px;font-size:14px")}</div></div>`;
         } else if (state.showStage === "reveal") {
           const place = r.place || 0;
-          const trophy = place === 1 ? "🏆" : place === 2 ? "🥈" : place === 3 ? "🥉" : "📋";
-          const placeColor = place === 1 ? "var(--gold)" : place === 2 ? "#c9c9c9" : place === 3 ? "#c08858" : "var(--text-dim)";
-          const placeText =
-            place === 1
-              ? "1ST PLACE"
-              : place === 2
-                ? "2ND PLACE"
-                : place === 3
-                  ? "3RD PLACE"
-                  : place >= 4
-                    ? `${place}TH PLACE`
-                    : "UNPLACED";
+          const isCoffee = r.tier === "Cars & Coffee";
+          let trophy, placeColor, placeText, kicker, headline;
+          if (isCoffee) {
+            kicker = "Cars & Coffee · How It Went";
+            headline = "Crowd reception is in…";
+            trophy = place <= 2 ? "☕" : place <= 4 ? "🚗" : "🌫";
+            placeColor = place <= 2 ? "var(--gold)" : place <= 4 ? "var(--text-bright)" : "var(--text-dim)";
+            placeText =
+              place === 1
+                ? "TURNED HEADS"
+                : place <= 3
+                  ? "GOT NOTICED"
+                  : place <= 5
+                    ? "SHOWED UP"
+                    : "QUIET MORNING";
+          } else {
+            kicker = "Show Night · Standings";
+            headline = "And the results are in…";
+            trophy = place === 1 ? "🏆" : place === 2 ? "🥈" : place === 3 ? "🥉" : "📋";
+            placeColor = place === 1 ? "var(--gold)" : place === 2 ? "#c9c9c9" : place === 3 ? "#c08858" : "var(--text-dim)";
+            placeText =
+              place === 1
+                ? "1ST PLACE"
+                : place === 2
+                  ? "2ND PLACE"
+                  : place === 3
+                    ? "3RD PLACE"
+                    : place >= 4
+                      ? `${place}TH PLACE`
+                      : "UNPLACED";
+          }
           const buckMarkup = data.buckLine
             ? `<div class="info-box" style="margin-top:14px;text-align:left"><div class="feed-kicker">BUCK WATCH</div><div class="small" style="color:var(--text);line-height:1.6">${data.buckLine}</div></div>`
             : "";
-          root.innerHTML = `<div class="modal"><div class="modal-card show-beat" style="max-width:540px;text-align:center"><div class="feed-kicker" style="margin-bottom:6px">SHOW NIGHT · STANDINGS</div><div style="color:var(--gold);font-weight:bold;font-size:22px;margin-bottom:18px">And the results are in…</div><div class="reveal-pop" style="margin-bottom:14px"><div style="font-size:56px;line-height:1">${trophy}</div><div style="color:${placeColor};font-weight:bold;font-size:40px;letter-spacing:1px;margin-top:6px">${placeText}</div></div><div class="info-box" style="text-align:left"><div class="small" style="color:var(--text);line-height:1.7">${data.revealReaction || ""}</div></div>${buckMarkup}${button("See full results →", "advanceShowStage()", false, "", "width:100%;margin-top:14px;font-size:14px")}</div></div>`;
+          root.innerHTML = `<div class="modal"><div class="modal-card show-beat" style="max-width:540px;text-align:center"><div class="feed-kicker" style="margin-bottom:6px">${kicker}</div><div style="color:var(--gold);font-weight:bold;font-size:22px;margin-bottom:18px">${headline}</div><div class="reveal-pop" style="margin-bottom:14px"><div style="font-size:56px;line-height:1">${trophy}</div><div style="color:${placeColor};font-weight:bold;font-size:${isCoffee ? "30px" : "40px"};letter-spacing:1px;margin-top:6px">${placeText}</div></div><div class="info-box" style="text-align:left"><div class="small" style="color:var(--text);line-height:1.7">${data.revealReaction || ""}</div></div>${buckMarkup}${button("See full results →", "advanceShowStage()", false, "", "width:100%;margin-top:14px;font-size:14px")}</div></div>`;
         }
         return true;
       }
@@ -7993,8 +8023,8 @@ body{position:relative!important;display:block!important;}
                   : "";
               return panel(
                 show.name,
-                `<div class="show-prizes" style="margin-bottom:10px">${show.tier === "Cars & Coffee" ? `<div class="show-prize">Free part or tool giveaway</div><div class="show-prize">No cash prizes</div>` : show.prizes.map((p, i) => `<div class="show-prize">${["1st", "2nd", "3rd", "4th", "5th"][i]} · $${p}</div>`).join("")}</div><div class="show-prizes" style="margin-bottom:10px">${show.followers.map((f, i) => `<div class="show-prize">${["1st", "2nd", "3rd", "4th", "5th"][i]} · +${fmtF(f)}</div>`).join("")}</div>${show.enteredThisWeek ? `<div class="tiny warn" style="margin-bottom:8px">Already entered this week</div>` : show.weeksUntil === 0 ? `<div class="tiny good" style="margin-bottom:8px">Happening this week</div>` : `<div class="tiny muted" style="margin-bottom:8px">Starts in ${show.weeksUntil} week(s)</div>`}${!progressReq.ok ? `<div class="tiny bad" style="margin-bottom:8px">${progressReq.msg}</div>` : ""}${rivalLine}${localSponsor ? `<div class="tiny good" style="margin-bottom:8px">${localSponsor.name} covers Local entry fee.</div>` : ""}${bonus > 0 && show.tier !== "Cars & Coffee" ? `<div class="tiny good" style="margin-bottom:8px">Sponsor bonus: +$${bonus}</div>` : ""}${getOverall(car) < show.minScore ? `<div class="tiny bad" style="margin-bottom:8px">Requires ${show.minScore}+ overall</div>` : ""}${!roadworthy(car) ? `<div class="tiny bad" style="margin-bottom:8px">Not roadworthy yet</div>` : ""}${hasActiveRestorations(car.id) ? `<div class="tiny bad" style="margin-bottom:8px">Finish your active restoration jobs before taking the car to a show</div>` : ""}${roadworthy(car) && state.fuel < fuelNeed ? `<div class="tiny bad" style="margin-bottom:8px">Not enough fuel</div>` : ""}${button(show.tier === "Cars & Coffee" ? "Roll Up And Hope It Idles" : `Roll In And Face The Opinions · $${fmt(entryFee)}`, `beginShowEntry(${show.id})`, off, "", "width:100%")}`,
-                `${show.tier} · ${show.tier === "Cars & Coffee" ? "no cash purse" : `base entry $${fmt(show.fee)}`} · fuel ${fuelNeed} gal`,
+                `<div class="show-prizes" style="margin-bottom:10px">${show.tier === "Cars & Coffee" ? `<div class="show-prize">No judges, no places</div><div class="show-prize">Free part raffle for showing up</div>` : show.prizes.map((p, i) => `<div class="show-prize">${["1st", "2nd", "3rd", "4th", "5th"][i]} · $${p}</div>`).join("")}</div>${show.tier !== "Cars & Coffee" ? `<div class="show-prizes" style="margin-bottom:10px">${show.followers.map((f, i) => `<div class="show-prize">${["1st", "2nd", "3rd", "4th", "5th"][i]} · +${fmtF(f)}</div>`).join("")}</div>` : `<div class="show-prizes" style="margin-bottom:10px"><div class="show-prize">Casual scene · just vibe</div><div class="show-prize">Bring your build, drink your coffee</div></div>`}${show.enteredThisWeek ? `<div class="tiny warn" style="margin-bottom:8px">Already entered this week</div>` : show.weeksUntil === 0 ? `<div class="tiny good" style="margin-bottom:8px">Happening this week</div>` : `<div class="tiny muted" style="margin-bottom:8px">Starts in ${show.weeksUntil} week(s)</div>`}${!progressReq.ok ? `<div class="tiny bad" style="margin-bottom:8px">${progressReq.msg}</div>` : ""}${rivalLine}${localSponsor ? `<div class="tiny good" style="margin-bottom:8px">${localSponsor.name} covers Local entry fee.</div>` : ""}${bonus > 0 && show.tier !== "Cars & Coffee" ? `<div class="tiny good" style="margin-bottom:8px">Sponsor bonus: +$${bonus}</div>` : ""}${getOverall(car) < show.minScore ? `<div class="tiny bad" style="margin-bottom:8px">Requires ${show.minScore}+ overall</div>` : ""}${!roadworthy(car) ? `<div class="tiny bad" style="margin-bottom:8px">Not roadworthy yet</div>` : ""}${hasActiveRestorations(car.id) ? `<div class="tiny bad" style="margin-bottom:8px">Finish your active restoration jobs before taking the car to a show</div>` : ""}${roadworthy(car) && state.fuel < fuelNeed ? `<div class="tiny bad" style="margin-bottom:8px">Not enough fuel</div>` : ""}${button(show.tier === "Cars & Coffee" ? "Roll Up And Hang Out" : `Roll In And Face The Opinions · $${fmt(entryFee)}`, `beginShowEntry(${show.id})`, off, "", "width:100%")}`,
+                `${show.tier} · ${show.tier === "Cars & Coffee" ? "casual meetup" : `base entry $${fmt(show.fee)}`} · fuel ${fuelNeed} gal`,
                 tc,
               );
             })
@@ -8091,7 +8121,6 @@ body{position:relative!important;display:block!important;}
               .map(
                 (item) => `
       <div class="feed-item">
-        <div class="feed-kicker">LIVE LISTING</div>
         <div class="feed-text">${item.name}</div>
         <div class="feed-meta">$${fmt(item.askingPrice)} · ${item.listingTone === "gone" ? "GET IT GONE" : item.listingTone === "trade" ? "OPEN FOR TRADE" : "FIRM ON PRICE"} · ${item.sourcePart}</div>
       </div>
