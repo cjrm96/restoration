@@ -1133,6 +1133,103 @@
         font-style: italic;
       }
 
+      .notice-modal {
+        max-width: 460px !important;
+        background:
+          radial-gradient(
+            ellipse at top,
+            rgba(143, 203, 126, 0.12) 0%,
+            transparent 60%
+          ),
+          linear-gradient(180deg, #1d1a13 0%, #130f0a 100%) !important;
+        border: 1px solid var(--green) !important;
+        box-shadow:
+          0 0 0 1px rgba(143, 203, 126, 0.14) inset,
+          0 18px 48px rgba(0, 0, 0, 0.6) !important;
+        padding: 24px 28px 22px !important;
+        text-align: center;
+      }
+      .notice-modal.notice-bad {
+        background:
+          radial-gradient(
+            ellipse at top,
+            rgba(196, 109, 96, 0.14) 0%,
+            transparent 60%
+          ),
+          linear-gradient(180deg, #1e1510 0%, #140d09 100%) !important;
+        border-color: var(--red) !important;
+        box-shadow:
+          0 0 0 1px rgba(196, 109, 96, 0.16) inset,
+          0 18px 48px rgba(0, 0, 0, 0.6) !important;
+      }
+      .notice-kicker {
+        font-size: 10px;
+        letter-spacing: 2.4px;
+        color: var(--green);
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+      .notice-modal.notice-bad .notice-kicker {
+        color: var(--red);
+      }
+      .notice-emoji {
+        font-size: 38px;
+        line-height: 1;
+        margin-bottom: 12px;
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4));
+      }
+      .notice-text {
+        font-size: 15px;
+        line-height: 1.6;
+        color: var(--text-bright);
+        margin: 0 auto 18px;
+        max-width: 380px;
+      }
+      .notice-primary {
+        appearance: none;
+        font-family: inherit;
+        background: linear-gradient(180deg, #93c884 0%, #5d8b4f 100%);
+        color: #11180d;
+        font-weight: bold;
+        font-size: 13px;
+        letter-spacing: 0.4px;
+        border: 1px solid #a7d998;
+        border-radius: 7px;
+        padding: 10px 22px;
+        cursor: pointer;
+        min-width: 180px;
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.18) inset,
+          0 4px 12px rgba(143, 203, 126, 0.22);
+        transition: transform 0.12s, box-shadow 0.12s;
+      }
+      .notice-modal.notice-bad .notice-primary {
+        background: linear-gradient(180deg, #c97d70 0%, #8c4e44 100%);
+        border-color: #d99a8f;
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.18) inset,
+          0 4px 12px rgba(196, 109, 96, 0.22);
+      }
+      .notice-primary:hover {
+        transform: translateY(-1px);
+      }
+      .notice-queue-pips {
+        display: flex;
+        gap: 4px;
+        justify-content: center;
+        margin-top: 10px;
+      }
+      .notice-queue-pip {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: rgba(143, 203, 126, 0.35);
+      }
+      .notice-modal.notice-bad .notice-queue-pip {
+        background: rgba(196, 109, 96, 0.35);
+      }
+
       @media (max-width: 980px) {
         .grid-main,
         .grid-main-shows {
@@ -4193,6 +4290,7 @@
             lostToCount: 0,
             boughtPartCount: 0,
           },
+          noticeQueue: [],
           postShowWeekLocked: false,
           starterHelpReceived: false,
           starterCarbUsed: false,
@@ -6765,6 +6863,7 @@
         state.showLoading = false;
         state.lastShowTier = null;
         state.lastShowPlace = null;
+        state.noticeQueue = [];
         state.milestones = {
           firstShow: false,
           hit50: false,
@@ -7269,6 +7368,31 @@ body{position:relative!important;display:block!important;}
           : "";
         const primaryLabel = isLast ? "Get after it →" : "Next →";
         root.innerHTML = `<div class="modal"><div class="modal-card tutorial-modal show-beat"><div class="tutorial-progress">${pips}</div><div class="tutorial-body"><div class="tutorial-kicker">${beat.kicker}</div><div class="tutorial-art">${beat.art}</div><div class="tutorial-headline">${beat.headline}</div><div class="tutorial-body-text">${beat.body}</div>${pointsMarkup}</div><div class="tutorial-actions"><button class="tutorial-primary" onclick="advanceTutorial()">${primaryLabel}</button>${isLast ? "" : `<button class="tutorial-skip" onclick="skipTutorial()">Skip intro</button>`}</div></div></div>`;
+        return true;
+      }
+
+      function renderNoticeModal() {
+        const root = getEl("modalRoot");
+        if (!state.noticeQueue || !state.noticeQueue.length) return false;
+        if (
+          !state.tutorialComplete ||
+          state.pendingVictory ||
+          state.showStage ||
+          state.pendingScene ||
+          state.pendingEvent ||
+          state.pendingMarketplaceOffer ||
+          state.showStore
+        )
+          return false;
+        const notice = state.noticeQueue[0];
+        const isBad = notice.tone === "bad";
+        const remaining = state.noticeQueue.length - 1;
+        const kicker = isBad ? "Heads Up" : "Good News";
+        const queuePipsMarkup =
+          remaining > 0
+            ? `<div class="notice-queue-pips">${Array.from({ length: Math.min(remaining, 5) }).map(() => `<div class="notice-queue-pip"></div>`).join("")}</div>`
+            : "";
+        root.innerHTML = `<div class="modal"><div class="modal-card notice-modal show-beat${isBad ? " notice-bad" : ""}"><div class="notice-kicker">${kicker}</div><div class="notice-emoji">${notice.emoji}</div><div class="notice-text">${notice.text}</div><button class="notice-primary" onclick="dismissNotice()">${remaining > 0 ? `Next (${remaining} more) →` : "Got it"}</button>${queuePipsMarkup}</div></div>`;
         return true;
       }
 
@@ -7897,6 +8021,10 @@ body{position:relative!important;display:block!important;}
      MAIN RENDER
   ═══════════════════════════════════════════ */
       function toast(msg, type = "ok") {
+        if (type === "event-good" || type === "event-bad") {
+          pushNotice(msg, type === "event-bad" ? "bad" : "good");
+          return;
+        }
         const root = getEl("toastRoot");
         const extra =
           type === "ok" ? "money-pop" : type === "err" ? "shake-lite" : "";
@@ -7904,7 +8032,24 @@ body{position:relative!important;display:block!important;}
         clearTimeout(toast._t);
         toast._t = setTimeout(() => (root.innerHTML = ""), 3500);
         if (type === "err") playSfx("error");
-        else if (type === "event-good") playSfx("success");
+      }
+
+      function pushNotice(text, tone) {
+        if (!state.noticeQueue) state.noticeQueue = [];
+        const emoji = tone === "bad" ? "⚠️" : "🎉";
+        state.noticeQueue.push({ text, tone: tone || "good", emoji });
+        if (state.noticeQueue.length === 1) {
+          playSfx(tone === "bad" ? "error" : "success");
+        }
+        requestRender("chrome");
+      }
+
+      function dismissNotice() {
+        if (!state.noticeQueue || !state.noticeQueue.length) return;
+        state.noticeQueue.shift();
+        playSfx("click");
+        saveGame();
+        requestRender("full");
       }
 
       /* ═══════════════════════════════════════════
@@ -8022,6 +8167,7 @@ body{position:relative!important;display:block!important;}
           state.pendingVictory ? "victory" : "",
           state.showLoading ? 1 : 0,
           state.showStage || "",
+          "notice:" + ((state.noticeQueue && state.noticeQueue.length) || 0),
           state.pendingScene ? 1 : 0,
           state.showStore ? 1 : 0,
           state.pendingEvent
@@ -8043,9 +8189,11 @@ body{position:relative!important;display:block!important;}
           if (!renderVictoryModal()) {
             if (!renderShowCinematicModal()) {
               if (!renderPendingSceneModal()) {
-                renderStoreModal();
-                renderEventModal();
-                renderMarketplaceOfferModal();
+                if (!renderNoticeModal()) {
+                  renderStoreModal();
+                  renderEventModal();
+                  renderMarketplaceOfferModal();
+                }
               }
             }
           }
@@ -8122,7 +8270,7 @@ body{position:relative!important;display:block!important;}
         if (mode === "full") {
           updateTabsChrome(true);
           renderMainContent();
-          renderModalLayer(true);
+          renderModalLayer(false);
           return;
         }
         renderModalLayer(false);
