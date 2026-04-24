@@ -5968,18 +5968,57 @@
           );
           Object.assign(state, makeDefaultState(), parsed.state);
           if (!savedHasTutorialField) state.tutorialComplete = true;
-          state.activeRestorations = Array.isArray(state.activeRestorations)
-            ? state.activeRestorations
-            : [];
-          state.enteredShowsThisWeek = Array.isArray(state.enteredShowsThisWeek)
-            ? state.enteredShowsThisWeek
-            : [];
-          state.partsInventory = Array.isArray(state.partsInventory)
-            ? state.partsInventory
-            : [];
-          state.marketplaceListings = Array.isArray(state.marketplaceListings)
-            ? state.marketplaceListings
-            : [];
+          const ensureArray = (key) => {
+            if (!Array.isArray(state[key])) state[key] = [];
+          };
+          ensureArray("activeRestorations");
+          ensureArray("enteredShowsThisWeek");
+          ensureArray("partsInventory");
+          ensureArray("marketplaceListings");
+          ensureArray("legacyBuilds");
+          ensureArray("noticeQueue");
+          ensureArray("eventQueue");
+          ensureArray("history");
+          ensureArray("rivalFeed");
+          ensureArray("buyerHistory");
+          ensureArray("ownedTools");
+          ensureArray("giftedTools");
+          ensureArray("cars");
+          if (!state.recentLines || typeof state.recentLines !== "object") {
+            state.recentLines = {};
+          }
+          if (!state.buck || typeof state.buck !== "object") {
+            state.buck = {
+              metOnce: false,
+              firstImpression: null,
+              beatenCount: 0,
+              lostToCount: 0,
+              boughtPartCount: 0,
+            };
+          }
+          if (!state.milestones || typeof state.milestones !== "object") {
+            state.milestones = {
+              firstShow: false,
+              hit50: false,
+              wonRegional: false,
+              threeSponsors: false,
+              homeGarage: false,
+              wonNational: false,
+            };
+          }
+          if (!state.rival || typeof state.rival !== "object") {
+            state.rival = { score: 32, showsEntered: 0, lastPlace: null };
+          }
+          if (!state.seasonStats || typeof state.seasonStats !== "object") {
+            state.seasonStats = {
+              moneyStart: state.money || 0,
+              moneyEarned: 0,
+              showsEntered: 0,
+              bestPlace: null,
+              bestTier: null,
+              startOverall: 0,
+            };
+          }
           if (!currentCar() && state.cars.length) {
             state.carId = state.cars[0].id;
           }
