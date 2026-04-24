@@ -3584,164 +3584,7 @@
         requestRender("full");
       }
 
-      function getQuickActions(car = currentCar()) {
-        if (!car) return [];
-        const counts = getShowCounts();
-        const suggestions = getSuggestedRestorations(car);
-        const actions = [];
-        const primarySuggestion = suggestions[0];
-        if (!roadworthy(car)) {
-          actions.push({
-            label: "Open Build Planner",
-            onclick: "setBuildScreen('garage')",
-            kind: "primary",
-          });
-          actions.push({
-            label: "Open Auto Shop",
-            onclick: "setBuildScreen('workshop')",
-            kind: "secondary",
-          });
-          if (primarySuggestion) {
-            actions.push({
-              label: `Best next fix: ${primarySuggestion.part.name}`,
-              onclick: "setBuildScreen('workshop')",
-              kind: "secondary",
-            });
-          }
-          return actions;
-        }
-        if (
-          counts.coffee < 2 ||
-          counts.local < 3 ||
-          counts.regional < 3 ||
-          state.won !== true
-        ) {
-          actions.push({
-            label: "Go To Show Circuit",
-            onclick: "setView('shows')",
-            kind: "primary",
-          });
-        }
-        if (primarySuggestion) {
-          actions.push({
-            label: `Keep Building: ${primarySuggestion.part.name}`,
-            onclick: "setBuildScreen('workshop')",
-            kind: "secondary",
-          });
-        }
-        actions.push({
-          label: "Check Marketplace & Scene",
-          onclick: "setView('career')",
-          kind: "secondary",
-        });
-        return actions.slice(0, 3);
-      }
 
-      function renderBuildModeStrip(active) {
-        return `<div class="mode-strip">
-      <button class="tab ${active === "workshop" ? "active" : ""}" onclick="setBuildScreen('workshop')">🔧 Next Jobs & Tools</button>
-    </div>`;
-      }
-
-      function renderNextStepPanel(car = currentCar()) {
-        if (!car) return "";
-        const objective = getCurrentObjective(car);
-        const actions = getQuickActions(car);
-        const counts = getShowCounts();
-        const summaryStats = [
-          ["Overall", getOverall(car)],
-          ["Roadworthy", roadworthy(car) ? "YES" : "NO"],
-          [
-            "Shows Run",
-            counts.coffee + counts.local + counts.regional + counts.national,
-          ],
-        ];
-        return `<div class="next-step-card pulse-callout">
-      <div class="next-step-kicker">WHAT TO DO NEXT</div>
-      <div class="next-step-title">${objective.title}</div>
-      <div class="next-step-sub">${objective.desc}</div>
-      <div class="quick-link-row">
-        ${button(objective.ctaLabel, objective.cta, false, "", "width:100%;font-size:14px")}
-        ${actions
-          .filter((a) => a.label !== objective.ctaLabel)
-          .map((a) =>
-            button(
-              a.label,
-              a.onclick,
-              false,
-              "",
-              `width:100%;${a.kind === "primary" ? "background:#d19a3f;border-color:#e0b565" : "background:#4a3c2e;color:#efe2c6;border-color:#6b5840"}`,
-            ),
-          )
-          .join("")}
-      </div>
-      <div class="mini-stat-grid">${summaryStats.map(([k, v]) => `<div class="mini-stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("")}</div>
-    </div>`;
-      }
-
-      function renderActionHub(car = currentCar()) {
-        if (!car) return "";
-        const suggestions = getSuggestedRestorations(car);
-        const suggestion = suggestions[0];
-        const storageNext = nextToolStorage();
-        const spaceNext = nextWorkshop();
-        let body = "";
-        if (suggestion) {
-          const p = suggestion.part;
-          const starterFree =
-            state.starterHelpReceived && p.id === 2 && !state.starterCarbUsed;
-          const price = starterFree ? 0 : suggestion.recommendedCost;
-          const missing = (p.tools || [])
-            .filter((tid) => !state.ownedTools.includes(tid))
-            .map((tid) => TOOLS_LIST.find((t) => t.id === tid))
-            .filter(Boolean);
-          body += `<div class="info-box">
-        <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:6px">Best next restoration</div>
-        <div class="small muted" style="margin-bottom:8px">${p.name} · +${p.imp} ${CAT_LABELS[p.category]} · ${suggestion.tag}</div>
-        <div class="tiny muted" style="margin-bottom:10px">${suggestion.why}</div>
-        ${
-          missing.length
-            ? `<div class="tiny warn" style="margin-bottom:8px">Missing tools: ${missing.map((t) => t.name).join(", ")}</div>
-        <div class="btn-row" style="margin-bottom:8px">${missing
-          .slice(0, 2)
-          .map((t) => {
-            const can = canOwnTool(t);
-            return button(
-              `Buy ${t.name} · $${fmt(t.cost)}`,
-              `buyTool('${t.id}')`,
-              !can.ok,
-              "",
-              "width:100%",
-            );
-          })
-          .join("")}</div>`
-            : ""
-        }
-        <div class="btn-row two">
-          ${button(`Start ${suggestion.recommendedMethod === "diy" ? "DIY" : "Shop"} Job · $${fmt(price)}`, `installPart(${p.id},'${suggestion.recommendedMethod}',false)`, state.money < price || !!findActiveTask(car.id, p.id) || (suggestion.recommendedMethod === "diy" ? activeTasksByMethod(car.id, "shop").length : activeTasksByMethod(car.id, "diy").length), "", "width:100%")}
-          ${button("See All Build Options", "setBuildScreen('workshop')", false, "", "width:100%;background:#4a3c2e;color:#efe2c6;border-color:#6b5840")}
-        </div>
-      </div>`;
-        } else {
-          body += `<div class="small muted">Nothing urgent is waiting in the shop right now. The car may be caught up or all current jobs are already running.</div>`;
-        }
-        if (spaceNext || storageNext) {
-          body += `<div class="info-box">
-        <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:6px">Unclog the build</div>
-        <div class="tiny muted" style="margin-bottom:10px">If the flow feels cramped, the next clean fix is usually more space or better storage.</div>
-        <div class="btn-row two">
-          ${spaceNext ? button(`Upgrade Space · $${fmt(spaceNext.cost)}`, "upgradeWorkspace()", state.money < spaceNext.cost, "", "width:100%") : ""}
-          ${storageNext ? button(`Upgrade Tool Storage · $${fmt(storageNext.cost)}`, "upgradeToolStorage()", state.money < storageNext.cost, "", "width:100%;background:#7da0c2;border-color:#95b5d4") : ""}
-        </div>
-      </div>`;
-        }
-        return panel(
-          "Action Hub",
-          body,
-          "One place for the next meaningful click.",
-          "#d8a24f",
-        );
-      }
 
       function recordMoneyChange(amount, reason) {
         state.lastMoneyDelta = amount;
@@ -4007,24 +3850,7 @@
         return `<div class="garage-sign tilt-a"><div class="headline">${car.year} ${car.make} ${car.model} · BUILT AFTER HOURS</div><div class="sub">${getWorkspaceFlavor()} Late-night parking lot deals, wrong parts, blocked numbers, and just enough confidence to keep the ratchet moving.</div></div>`;
       }
 
-      function renderWorldFlavorPanel() {
-        const items = getWorldFeedItems();
-        return panel(
-          "World Feed",
-          `${items.map((item, idx) => `<div class="feed-item ${idx === 0 ? "tilt-b" : ""}"><div class="feed-kicker">${item.kicker}</div><div class="feed-text">${item.text}</div>${item.meta ? `<div class="feed-meta">${item.meta}</div>` : ""}</div>`).join("")}`,
-          "The local scene should feel alive even when you are just standing there.",
-          "#c58f58",
-        );
-      }
 
-      function renderBuckPersonaPanel() {
-        return panel(
-          "Buck Says",
-          `<div class="flavor-card"><div class="flavor-label">LATEST TRASH TALK</div><div class="flavor-text">${getBuckTaunt()}</div></div><div class="flavor-card"><div class="flavor-label">RIVAL READ</div><div class="flavor-text">${state.rival.lastPlace ? `He last showed up and finished ${placeLabel(state.rival.lastPlace)}. He will absolutely mention it.` : `He has not lined up against you lately, which somehow feels more insulting.`}</div></div><div class="tiny muted">Buck works best when he feels like a real guy hovering at the edge of your progress, waiting to be annoying.</div>`,
-          "A real rival should feel like a person, not a number.",
-          "#c46d60",
-        );
-      }
 
       function maybeTriggerRivalBeat() {
         if (state.week < 3 || Math.random() > 0.6) return;
@@ -4208,25 +4034,7 @@
         );
       }
 
-      function renderBuildPathPanel(car = currentCar()) {
-        const path = getBuildPath(car);
-        return panel(
-          "Build Path",
-          `${path.map((goal, idx) => `<div class="milestone-item ${goal.done ? "done" : ""}"><div class="milestone-check">${goal.done ? "✓" : idx === path.findIndex((g) => !g.done) ? "•" : ""}</div><div><div class="small" style="color:${goal.done ? "#9fd18e" : "#efe2c6"}">${goal.label}</div>${goal.progress ? `<div class="tiny muted" style="margin-top:3px">${goal.progress}</div>` : ""}</div></div>`).join("")}`,
-          "Short-term clarity and long-term direction.",
-          "#87c77b",
-        );
-      }
 
-      function renderRivalIntelPanel(car = currentCar()) {
-        if (!car || !hasUiUnlock("buck")) return "";
-        return panel(
-          "Rival Intel",
-          `${chalkRow("Buck's '67 Mustang", "")}${chalkRow("Current Score", getRivalBaseScore(), getRivalBaseScore() > getOverall(car) ? "bad" : "warn")}${chalkRow("Cars & Coffee Runs", getShowCounts().coffee)}${chalkRow("Local Shows Run", getShowCounts().local)}${chalkRow("Regional Shows Run", getShowCounts().regional)}${chalkRow("Last Placement", state.rival.lastPlace ? placeLabel(state.rival.lastPlace) : "Not yet raced", "muted")}<div class="tiny muted" style="margin-top:8px">Local opens after 2 Cars & Coffee. Regional opens after 3 Local shows. National opens after 3 Regionals.</div>`,
-          "Buck is the face of the local scene pressure.",
-          "#d38a76",
-        );
-      }
 
       function renderCreatorPanel() {
         const already = state.creatorPostedWeek === state.week;
@@ -5006,46 +4814,6 @@
         requestRender("full");
       }
 
-      function sellCar(carId) {
-        const car = getCarById(carId);
-        if (!car) return;
-        resolveCompletedRestorations(false);
-        const overall = getOverall(car);
-        const base =
-          [
-            car.engine,
-            car.transmission,
-            car.brakes,
-            car.body,
-            car.paint,
-            car.interior,
-            car.chrome,
-          ].reduce((a, b) => a + b, 0) *
-            6 +
-          300;
-        const multiplier = Math.max(
-          0.65,
-          Math.pow(Math.max(25, overall) / 45, 1.9),
-        );
-        const salePrice = Math.round(base * multiplier);
-        state.money += salePrice;
-        recordMoneyChange(
-          salePrice,
-          `Vehicle sold: ${car.year} ${car.make} ${car.model}`,
-        );
-        state.activeRestorations = state.activeRestorations.filter(
-          (t) => t.carId !== carId,
-        );
-        state.cars = state.cars.filter((c) => c.id !== carId);
-        if (state.carId === carId) state.carId = state.cars[0]?.id || null;
-        state.view = "dealership";
-        toast(
-          `Sold ${car.year} ${car.make} ${car.model} for $${fmt(salePrice)}.`,
-          "ok",
-        );
-        saveGame();
-        requestRender("full");
-      }
 
       /* ═══════════════════════════════════════════
      WEEKLY EVENT LOGIC
@@ -5376,9 +5144,6 @@
         requestRender(state.view === "workshop" ? "full" : "chrome");
       }
 
-      function upgradeWorkshop() {
-        return upgradeWorkspace();
-      }
 
       function upgradeToolStorage() {
         const next = nextToolStorage();
@@ -5808,10 +5573,6 @@
       }
       function setToolCat(cat) {
         state.toolCat = cat;
-        requestRender("full");
-      }
-      function setFuelPurchase(v) {
-        state.fuelPurchase = Number(v);
         requestRender("full");
       }
 
@@ -6326,12 +6087,6 @@ body{position:relative!important;display:block!important;}
       /* ═══════════════════════════════════════════
      MAIN RENDER VIEWS
   ═══════════════════════════════════════════ */
-      function renderGarage() {
-        const car = currentCar();
-        if (!car) return renderNoCar();
-        const overall = getOverall(car);
-        return `<div class="grid-main"><div>${panel("Current Build", `${carPreview(car)}<div style="display:grid;grid-template-columns:1.2fr .8fr;gap:14px"><div><div style="color:#f4e8cf;font-weight:bold;font-size:18px;margin-bottom:4px">${car.year} ${car.make} ${car.model}</div><div class="small ${roadworthy(car) ? "good" : "warn"}" style="margin-bottom:10px">${roadworthy(car) ? "Roadworthy — it can drive itself to the show." : "Not roadworthy yet — engine, transmission, and brakes still need work."}</div><div class="responsive-stack">${CATS.map((cat) => `<div><div class="flex between" style="margin-bottom:4px"><span class="small" style="color:#cabda7">${CAT_ICONS[cat]} ${CAT_LABELS[cat]}</span><span class="small" style="font-weight:bold;color:${scoreCol(car[cat])}">${car[cat]}</span></div>${gauge("", car[cat], 100, scoreCol(car[cat]))}</div>`).join("")}</div></div><div>${panel("Overall", `<div style="text-align:center"><div class="big-score ${overall >= 50 ? "pulse-callout" : ""}" style="color:${scoreCol(overall)}">${overall}</div><div class="tiny muted" style="letter-spacing:1.2px">RESTORATION SCORE</div></div>`, "", "#d8a24f")}</div></div>`, "", "#d8a24f")}${renderBuildModeStrip("garage")}${renderFTUEPanel(car)}${renderGarageSign(car)}</div><div>${renderUpcomingBar()}${renderCombinedDashboard(car)}${renderUnifiedSocialFeed(car, { showSponsors: false, showHistory: false })}${renderRestorationPanel(car)}${panel("Shop Status", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Tool Storage", `${state.ownedTools.length} / ${toolStorageData().maxTools}`)}${chalkRow("Fuel", `${state.fuel} / ${MAX_FUEL} gal`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}${chalkRow("Weeks Until Paycheck", `${PAYCHECK_CYCLE - state.paycheckProgress}`)}${chalkRow("Sponsors", activeSponsors().length ? `${activeSponsors().length} active` : "None")}${chalkRow("Shows Entered", state.history.length)}${chalkRow("Loan Balance", state.bankLoanBalance + state.sharkLoanBalance ? `$${fmt(state.bankLoanBalance + state.sharkLoanBalance)}` : "None", state.bankLoanBalance + state.sharkLoanBalance ? "warn" : "good")}`, "", "#7da0c2")}</div></div>`;
-      }
 
       function renderWorkshop() {
         const car = currentCar();
@@ -6536,18 +6291,6 @@ body{position:relative!important;display:block!important;}
         )}</div><div>${renderUpcomingBar()}${renderUnifiedSocialFeed(car, { showSponsors: false, showHistory: false })}</div></div>`;
       }
 
-      function cycleMarketplaceTone(itemId) {
-        const item = state.partsInventory.find(
-          (i) => i.id === itemId && !i.sold,
-        );
-        if (!item) return;
-        const tones = ["firm", "gone", "trade"];
-        const current = tones.indexOf(item.listingTone || "firm");
-        listPartOnMarketplaceWithTone(
-          itemId,
-          tones[(current + 1) % tones.length],
-        );
-      }
 
       function renderResult() {
         const car = currentCar();
