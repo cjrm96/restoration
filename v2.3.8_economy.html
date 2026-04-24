@@ -4115,6 +4115,7 @@
           sfxMuted: false,
           legacyBuilds: [],
           pendingVictory: null,
+          pendingVictoryTrigger: false,
           postShowWeekLocked: false,
           starterHelpReceived: false,
           starterCarbUsed: false,
@@ -6415,7 +6416,7 @@
 
         if (place === 1 && show.tier === "National" && effectiveOverall >= 90) {
           state.won = true;
-          triggerVictory();
+          state.pendingVictoryTrigger = true;
         }
         if (place === 1) {
           pushRivalNote(
@@ -6450,8 +6451,13 @@
           state.showCinematicData = null;
           state.showLoading = false;
           playSfx("click");
-          processEventQueue();
-          drainWeekAdvanceQueue("queued");
+          if (state.pendingVictoryTrigger) {
+            state.pendingVictoryTrigger = false;
+            triggerVictory();
+          } else {
+            processEventQueue();
+            drainWeekAdvanceQueue("queued");
+          }
         }
         saveGame();
         requestRender("full");
@@ -6595,6 +6601,7 @@
         state.week = 1;
         state.won = false;
         state.pendingVictory = null;
+        state.pendingVictoryTrigger = false;
         state.seasonWrap = false;
         state.history = [];
         state.activeRestorations = [];
@@ -6605,6 +6612,16 @@
         state.winterStorageReport = null;
         state.winterAppliedForSeason = false;
         state.freshHeadline = "";
+        state.pendingMarketplaceOffer = null;
+        state.pendingBrandDeal = null;
+        state.pendingEvent = null;
+        state.pendingScene = null;
+        state.eventQueue = [];
+        state.showStage = null;
+        state.showCinematicData = null;
+        state.showLoading = false;
+        state.lastShowTier = null;
+        state.lastShowPlace = null;
         state.milestones = {
           firstShow: false,
           hit50: false,
@@ -7665,7 +7682,7 @@ body{position:relative!important;display:block!important;}
                 <div class="legacy-card-stat-k">Followers Then</div>
               </div>
               <div class="legacy-card-stat">
-                <div class="legacy-card-stat-v">${b.bestTier ? placeLabel(b.bestPlace || 0) : "—"}</div>
+                <div class="legacy-card-stat-v">${b.bestPlace ? placeLabel(b.bestPlace) : "—"}</div>
                 <div class="legacy-card-stat-k">Best Result</div>
               </div>
               <div class="legacy-card-stat">
