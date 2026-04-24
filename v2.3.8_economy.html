@@ -680,6 +680,154 @@
         padding: 12px 14px;
       }
 
+      .tutorial-modal {
+        max-width: 620px !important;
+        background:
+          radial-gradient(
+            ellipse at top,
+            rgba(209, 154, 63, 0.12) 0%,
+            transparent 60%
+          ),
+          linear-gradient(180deg, #221911 0%, #14100d 100%) !important;
+        border: 1px solid var(--gold) !important;
+        box-shadow:
+          0 0 0 1px rgba(209, 154, 63, 0.18) inset,
+          0 24px 60px rgba(0, 0, 0, 0.7),
+          0 0 80px rgba(209, 154, 63, 0.08) !important;
+        padding: 0 !important;
+        overflow: hidden;
+      }
+      .tutorial-progress {
+        display: flex;
+        gap: 6px;
+        padding: 14px 22px 0;
+        margin-bottom: 0;
+      }
+      .tutorial-progress-pip {
+        flex: 1;
+        height: 3px;
+        border-radius: 2px;
+        background: rgba(209, 154, 63, 0.18);
+        transition: background 0.25s;
+      }
+      .tutorial-progress-pip.active {
+        background: var(--gold);
+        box-shadow: 0 0 8px rgba(209, 154, 63, 0.6);
+      }
+      .tutorial-progress-pip.done {
+        background: rgba(209, 154, 63, 0.55);
+      }
+      .tutorial-body {
+        padding: 28px 36px 28px;
+        text-align: center;
+      }
+      .tutorial-kicker {
+        font-size: 11px;
+        letter-spacing: 2.4px;
+        color: var(--gold);
+        font-weight: bold;
+        margin-bottom: 14px;
+        text-transform: uppercase;
+      }
+      .tutorial-art {
+        font-size: 64px;
+        line-height: 1;
+        margin: 4px 0 18px;
+        filter: drop-shadow(0 4px 12px rgba(209, 154, 63, 0.25));
+      }
+      .tutorial-headline {
+        font-size: 26px;
+        font-weight: bold;
+        color: var(--text-bright);
+        line-height: 1.25;
+        margin: 0 0 14px;
+        letter-spacing: 0.3px;
+      }
+      .tutorial-body-text {
+        font-size: 14px;
+        line-height: 1.7;
+        color: var(--text);
+        margin: 0 auto 22px;
+        max-width: 460px;
+      }
+      .tutorial-points {
+        text-align: left;
+        background: rgba(0, 0, 0, 0.22);
+        border: 1px solid rgba(75, 64, 54, 0.55);
+        border-radius: 8px;
+        padding: 14px 18px;
+        margin: 0 auto 22px;
+        max-width: 460px;
+      }
+      .tutorial-point {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 13px;
+        line-height: 1.55;
+        color: var(--text);
+        margin-bottom: 8px;
+      }
+      .tutorial-point:last-child {
+        margin-bottom: 0;
+      }
+      .tutorial-point-icon {
+        flex-shrink: 0;
+        font-size: 16px;
+        line-height: 1.4;
+      }
+      .tutorial-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+        padding: 0 36px 28px;
+      }
+      .tutorial-primary {
+        appearance: none;
+        font-family: inherit;
+        background: linear-gradient(180deg, #e0a955 0%, #b6802e 100%);
+        color: #1a120a;
+        font-weight: bold;
+        font-size: 15px;
+        letter-spacing: 0.4px;
+        border: 1px solid #f0c478;
+        border-radius: 8px;
+        padding: 13px 28px;
+        cursor: pointer;
+        min-width: 240px;
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.18) inset,
+          0 6px 16px rgba(209, 154, 63, 0.28);
+        transition: transform 0.12s, box-shadow 0.12s;
+      }
+      .tutorial-primary:hover {
+        transform: translateY(-1px);
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.22) inset,
+          0 8px 22px rgba(209, 154, 63, 0.36);
+      }
+      .tutorial-primary:active {
+        transform: translateY(0);
+      }
+      .tutorial-skip {
+        appearance: none;
+        background: none;
+        border: none;
+        font-family: inherit;
+        color: var(--text-dim);
+        font-size: 11px;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        padding: 6px 12px;
+        text-transform: uppercase;
+        transition: color 0.15s;
+      }
+      .tutorial-skip:hover {
+        color: var(--muted);
+        text-decoration: underline;
+      }
+
       @media (max-width: 980px) {
         .grid-main,
         .grid-main-shows {
@@ -3643,6 +3791,8 @@
           showStage: null,
           showCinematicData: null,
           recentLines: {},
+          tutorialComplete: false,
+          tutorialStep: 0,
           postShowWeekLocked: false,
           starterHelpReceived: false,
           starterCarbUsed: false,
@@ -3659,7 +3809,6 @@
           pendingScene: null,
           garageLore: 0,
           buyerHistory: [],
-          tutorialDismissed: false,
           rivalFeed: [],
           lastMoneyDelta: 0,
           lastMoneyReason: "",
@@ -4492,29 +4641,6 @@
         return `<div class="hero-callout"><div class="hero-kicker">${kicker}</div><div class="hero-title">${title}</div><div class="hero-sub">${sub}</div></div>`;
       }
 
-      function renderFTUEPanel(car = currentCar()) {
-        if (state.tutorialDismissed || !car || !isEarlyGame()) return "";
-        const objective = getCurrentObjective(car);
-        const steps = [
-          {
-            label: "Start your first restoration",
-            done:
-              (state.activeRestorations && state.activeRestorations.length > 0) ||
-              state.cars.some((c) => c.installedParts && c.installedParts.length > 0),
-          },
-          { label: "Get the car roadworthy", done: roadworthy(car) },
-          {
-            label: "Enter your first Cars & Coffee",
-            done: getShowCounts().coffee > 0,
-          },
-        ];
-        return panel(
-          "First-Time Player Guide",
-          `<div class="guide-card"><div class="guide-kicker">START HERE</div><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:10px">${objective.title}</div><div class="small muted" style="margin-bottom:10px;line-height:1.6">${objective.desc}</div>${steps.map((step) => `<div class="guide-step"><span class="small" style="color:${step.done ? "#9fd18e" : "#e9dec8"}">${step.done ? "✅" : "➡️"} ${step.label}</span><span class="tiny ${step.done ? "good" : "warn"}">${step.done ? "done" : "next"}</span></div>`).join("")}<div class="btn-row two" style="margin-top:10px">${button(objective.ctaLabel, objective.cta, false, "pulse-callout", "width:100%")}${button("Hide Guide", "dismissTutorial()", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:var(--text)")}</div></div>`,
-          "A lighter first ten minutes so the game teaches itself.",
-          "#d8a24f",
-        );
-      }
 
 
 
@@ -4660,11 +4786,6 @@
         );
       }
 
-      function dismissTutorial() {
-        state.tutorialDismissed = true;
-        saveGame();
-        requestRender("full");
-      }
       function addRemovedPartItem(part, car) {
         const label = `${CAT_LABELS[part.category]} take-off from ${car.year} ${car.make}`;
         const base = Math.max(20, Math.round(part.diy * 0.22));
@@ -5024,7 +5145,12 @@
           if (!raw) return false;
           const parsed = JSON.parse(raw);
           if (!parsed || !parsed.state) return false;
+          const savedHasTutorialField = Object.prototype.hasOwnProperty.call(
+            parsed.state,
+            "tutorialComplete",
+          );
           Object.assign(state, makeDefaultState(), parsed.state);
+          if (!savedHasTutorialField) state.tutorialComplete = true;
           state.activeRestorations = Array.isArray(state.activeRestorations)
             ? state.activeRestorations
             : [];
@@ -5980,6 +6106,85 @@
         requestRender("full");
       }
 
+      const TUTORIAL_BEATS = [
+        {
+          kicker: "Welcome to the garage",
+          art: "🛻",
+          headline: "Every car guy story starts the same way.",
+          body:
+            "You found a project. You're three grand in. Your driveway is now a garage. The question isn't whether you can finish it — it's how badly you want to.",
+        },
+        {
+          kicker: "Step 1 · Build it",
+          art: "🔧",
+          headline: "Restore the car. One part at a time.",
+          body:
+            "Seven categories make up the build. You move the needle in each by buying parts and either installing them yourself or sending the car to a shop.",
+          points: [
+            { icon: "🛠", text: "DIY is cheaper but needs the right tools." },
+            { icon: "🏪", text: "Shop work is faster and skips tool ownership — but it'll cost you." },
+            { icon: "📋", text: "The Auto Shop Floor lists Next Jobs first. Trust the list while you're learning." },
+          ],
+        },
+        {
+          kicker: "Step 2 · Compete",
+          art: "🏁",
+          headline: "Take it to shows. Earn cash and reputation.",
+          body:
+            "Four tiers of show — Cars & Coffee, Local, Regional, and National — escalate in stakes. Place well and the money, followers, and sponsors all start rolling.",
+          points: [
+            { icon: "⛽", text: "Shows cost fuel to attend. Keep the tank topped off." },
+            { icon: "🏎", text: "A guy named Buck shows up at Regional and National. Beat him." },
+            { icon: "🏆", text: "Win Nationals with a 90+ build to take the season." },
+          ],
+        },
+        {
+          kicker: "Step 3 · The hustle",
+          art: "📱",
+          headline: "Shows aren't the only payday.",
+          body:
+            "The scene rewards everyone hustling — not just the guys with trophies. Three side hustles compound across a season:",
+          points: [
+            { icon: "💸", text: "Sell take-off parts on Marketplace. Buyers DM you in real time." },
+            { icon: "🎬", text: "Drop content as an influencer. Payouts scale with your follower count." },
+            { icon: "📦", text: "Land brand deals once you cross 500 followers — free Budget parts in exchange for posts." },
+          ],
+        },
+        {
+          kicker: "Ready",
+          art: "🛻🔥",
+          headline: "Your '65 F-100 is on jack stands. The clock is on you now.",
+          body:
+            "Twenty weeks per season. Paychecks land every four. Don't run out of fuel, don't take the shark loan unless you have to, and remember: 'while I'm in there' has ended more budgets than inflation.",
+        },
+      ];
+
+      function startTutorial() {
+        state.tutorialComplete = false;
+        state.tutorialStep = 0;
+        saveGame();
+        requestRender("full");
+      }
+
+      function advanceTutorial() {
+        const next = (state.tutorialStep || 0) + 1;
+        if (next >= TUTORIAL_BEATS.length) {
+          state.tutorialComplete = true;
+          state.tutorialStep = 0;
+        } else {
+          state.tutorialStep = next;
+        }
+        saveGame();
+        requestRender("full");
+      }
+
+      function skipTutorial() {
+        state.tutorialComplete = true;
+        state.tutorialStep = 0;
+        saveGame();
+        requestRender("full");
+      }
+
       function buyCar(id) {
         const c = BUYABLE_CARS.find((x) => x.id === id);
         if (state.money < c.price) return toast("Not enough cash.", "err");
@@ -6433,6 +6638,30 @@ body{position:relative!important;display:block!important;}
         root.innerHTML = `<div class="modal"><div class="modal-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">Borrow just enough to keep the build alive — or make a worse decision.</div>${panel("Bank Loan", `${chalkRow("Cash Now", "+$2,000", "good")}${chalkRow("Payday Hit", "-$250 every paycheck", "warn")}${button(state.bankLoanBalance > 0 ? `Outstanding $${fmt(state.bankLoanBalance)}` : "Take Bank Loan", "takeBankLoan()", state.bankLoanBalance > 0, "", "width:100%")}`, "Legit paperwork, standard pain.", "#7da0c2")}${panel("Loan Shark", `${chalkRow("Cash Now", "+$3,000", "good")}${chalkRow("You Owe", "$3,900 total", "bad")}${chalkRow("Payday Hit", "-$500 every paycheck", "bad")}${button(state.sharkLoanBalance > 0 ? `Outstanding $${fmt(state.sharkLoanBalance)}` : "Take Shark Loan", "takeSharkLoan()", state.sharkLoanBalance > 0, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "Fast money, ugly terms.", "#c46d60")}</div></div>`;
       }
 
+      function renderTutorialModal() {
+        const root = getEl("modalRoot");
+        if (state.tutorialComplete) return false;
+        const idx = Math.max(0, Math.min(state.tutorialStep || 0, TUTORIAL_BEATS.length - 1));
+        const beat = TUTORIAL_BEATS[idx];
+        if (!beat) return false;
+        const isLast = idx === TUTORIAL_BEATS.length - 1;
+        const pips = TUTORIAL_BEATS.map((_, i) => {
+          const cls = i === idx ? "active" : i < idx ? "done" : "";
+          return `<div class="tutorial-progress-pip ${cls}"></div>`;
+        }).join("");
+        const pointsMarkup = beat.points
+          ? `<div class="tutorial-points">${beat.points
+              .map(
+                (p) =>
+                  `<div class="tutorial-point"><span class="tutorial-point-icon">${p.icon}</span><span>${p.text}</span></div>`,
+              )
+              .join("")}</div>`
+          : "";
+        const primaryLabel = isLast ? "Get after it →" : "Next →";
+        root.innerHTML = `<div class="modal"><div class="modal-card tutorial-modal show-beat"><div class="tutorial-progress">${pips}</div><div class="tutorial-body"><div class="tutorial-kicker">${beat.kicker}</div><div class="tutorial-art">${beat.art}</div><div class="tutorial-headline">${beat.headline}</div><div class="tutorial-body-text">${beat.body}</div>${pointsMarkup}</div><div class="tutorial-actions"><button class="tutorial-primary" onclick="advanceTutorial()">${primaryLabel}</button>${isLast ? "" : `<button class="tutorial-skip" onclick="skipTutorial()">Skip intro</button>`}</div></div></div>`;
+        return true;
+      }
+
       function renderShowCinematicModal() {
         const root = getEl("modalRoot");
         if (!state.showLoading || !state.showStage) return false;
@@ -6690,7 +6919,7 @@ body{position:relative!important;display:block!important;}
           )}`;
         }
 
-        return `<div class="grid-main"><div>${renderFTUEPanel(car)}${panel("Auto Shop Floor", `${carPreview(car)}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab("Next Jobs", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Build Jobs", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart && state.shopSub === "parts" ? `<div style="background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px">Free Budget part ready — claim it in the shop.</div>` : ""}${subcontent}`, "", "#d8a24f")}${renderGarageSign(car)}<div class='taped-note'><div class='feed-kicker'>SHOP MOOD</div><div class='feed-text'>${getWorkspaceFlavor()}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div></div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#7da0c2")}</div></div>`;
+        return `<div class="grid-main"><div>${panel("Auto Shop Floor", `${carPreview(car)}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab("Next Jobs", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Build Jobs", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart && state.shopSub === "parts" ? `<div style="background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px">Free Budget part ready — claim it in the shop.</div>` : ""}${subcontent}`, "", "#d8a24f")}${renderGarageSign(car)}<div class='taped-note'><div class='feed-kicker'>SHOP MOOD</div><div class='feed-text'>${getWorkspaceFlavor()}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div></div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#7da0c2")}</div></div>`;
       }
 
       function renderShows() {
@@ -6754,7 +6983,7 @@ body{position:relative!important;display:block!important;}
           "",
           "#7da0c2",
         );
-        return `<div class="grid-main-shows"><div>${renderFTUEPanel(car)}${showPrepBoard}${sceneTension}${showCircuitRead}</div><div>${renderUpcomingBar()}${showNotes}</div></div>`;
+        return `<div class="grid-main-shows"><div>${showPrepBoard}${sceneTension}${showCircuitRead}</div><div>${renderUpcomingBar()}${showNotes}</div></div>`;
       }
 
 
@@ -7063,6 +7292,7 @@ body{position:relative!important;display:block!important;}
 
       function getModalLayerSignature() {
         return [
+          state.tutorialComplete ? "" : "tut:" + (state.tutorialStep || 0),
           state.showLoading ? 1 : 0,
           state.showStage || "",
           state.pendingScene ? 1 : 0,
@@ -7082,11 +7312,13 @@ body{position:relative!important;display:block!important;}
         if (!force && nextModalSignature === modalLayerSignature) return;
         modalLayerSignature = nextModalSignature;
         modalRoot.innerHTML = "";
-        if (!renderShowCinematicModal()) {
-          if (!renderPendingSceneModal()) {
-            renderStoreModal();
-            renderEventModal();
-            renderMarketplaceOfferModal();
+        if (!renderTutorialModal()) {
+          if (!renderShowCinematicModal()) {
+            if (!renderPendingSceneModal()) {
+              renderStoreModal();
+              renderEventModal();
+              renderMarketplaceOfferModal();
+            }
           }
         }
       }
@@ -7120,7 +7352,6 @@ body{position:relative!important;display:block!important;}
           state.ownedTools.length,
           state.cars.length,
           state.freePart ? 1 : 0,
-          state.tutorialDismissed ? 1 : 0,
           state.partsInventory
             .filter((i) => !i.sold)
             .map(
