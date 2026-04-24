@@ -638,6 +638,48 @@
         }
       }
 
+      @keyframes showBeatIn {
+        0% {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes revealPop {
+        0% {
+          opacity: 0;
+          transform: scale(0.6);
+        }
+        60% {
+          opacity: 1;
+          transform: scale(1.08);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      .show-beat {
+        animation: showBeatIn 0.32s ease-out;
+      }
+      .reveal-pop {
+        animation: revealPop 0.55s cubic-bezier(0.2, 1.2, 0.4, 1);
+      }
+      .judging-line {
+        opacity: 0;
+        animation: showBeatIn 0.4s ease-out forwards;
+        margin-bottom: 12px;
+      }
+      .judging-line:last-child {
+        margin-bottom: 0;
+      }
+      .judging-stack {
+        padding: 12px 14px;
+      }
+
       @media (max-width: 980px) {
         .grid-main,
         .grid-main-shows {
@@ -2234,6 +2276,158 @@
         "That is the most honest truck here, and I weirdly respect it.",
       ];
 
+      const SHOW_STAT_COMMENTS = {
+        engine: {
+          low: [
+            "Idle's got a lope to it. That's a choice, I guess.",
+            "Sounds like it's eating a lifter.",
+            "Vacuum looks low. Are we burning oil for fun?",
+            "Carb's loading up at idle. Float bowl level off?",
+            "That timing curve is doing a lot of guessing.",
+            "Rough at idle, smooth at speed — classic deflection move.",
+          ],
+          high: [
+            "That motor sounds healthy. What's the cam?",
+            "Idle's clean. You finally throw it on a vacuum gauge?",
+            "Tune sounds dialed. Headers or stock manifolds?",
+            "Real responsive throttle. You jet it for the elevation?",
+            "Smooth as a sewing machine. Stock cam or a regrind?",
+          ],
+        },
+        transmission: {
+          low: [
+            "Shifts are hunting between gears. Bands tight enough?",
+            "That converter is looser than the rules at Cars & Coffee.",
+            "Did it just neutral-drop on its own, or did I imagine that?",
+            "Linkage feels like it's wading through molasses.",
+          ],
+          high: [
+            "Crisp shifts. Shift kit?",
+            "Linkage feels factory-fresh. Bushings new?",
+            "Trans is laying it down clean. Built or stock?",
+          ],
+        },
+        brakes: {
+          low: [
+            "Pedal goes a little far before it cares.",
+            "Did you bench-bleed the master, or are we just hoping?",
+            "I can hear the calipers thinking about it.",
+            "Drums all around in the year of our lord? Bold.",
+          ],
+          high: [
+            "Stopping power feels solid. Stainless lines?",
+            "Pedal's firm. New master, I'm guessing?",
+            "Disc conversion looks tucked in clean.",
+          ],
+        },
+        body: {
+          low: [
+            "That quarter panel's got some waves to it.",
+            "Door gaps could use another look. Or three.",
+            "I'd run a magnet on that fender, just for fun.",
+            "Lot of body filler in there, huh? It's okay, we all do it.",
+            "Trunk lid's sitting a little proud on the passenger side.",
+          ],
+          high: [
+            "Panel gaps are tight. Did you shim it or hammer it?",
+            "Body's straight as a string. Frame check too?",
+            "Real respectable bodywork. No bondo glow under the lights.",
+          ],
+        },
+        paint: {
+          low: [
+            "Got some orange peel in the clear, huh?",
+            "Was that color factory? It looks... close.",
+            "Bet that paint job had a story behind it.",
+            "I can see fish-eye if I'm looking. Lucky for you most aren't.",
+            "Color's nice. The application is... a journey.",
+          ],
+          high: [
+            "Paint's laid down beautifully. PPG or House of Kolor?",
+            "Color's deep. You wet sand the whole car?",
+            "That's the kind of paint job that hides in a garage on rainy days.",
+            "Reflection's true. You spent some time on the prep, didn't you.",
+          ],
+        },
+        interior: {
+          low: [
+            "Headliner's saying its goodbyes.",
+            "Bench seat's got some character to it. We'll call it character.",
+            "Carpet's got that vintage funk. Could be charming.",
+            "Dash pad's cracked clean through. They all do that.",
+          ],
+          high: [
+            "Interior's clean. Reproduction or NOS?",
+            "Stitching looks tight. Did a shop do it or you?",
+            "Door panels match perfectly. That's a hard look to nail.",
+          ],
+        },
+        chrome: {
+          low: [
+            "Bumper's looking a little hazy.",
+            "Chrome could pop more if you buffed it out.",
+            "Is that pitting on the trim or am I being mean?",
+          ],
+          high: [
+            "Bumpers are mirror-finish. Re-chromed?",
+            "Trim's all there and aligned. That's a unicorn move.",
+          ],
+        },
+      };
+
+      const REVEAL_REACTIONS = {
+        1: [
+          "The room got quiet for a second. Then real loud.",
+          "Trophy in your hand, lump in your throat. Don't let them see it.",
+          "First place. The build is real now. Nobody can take it back.",
+          "You won. The same guys who said it was undriveable are now saying they always knew.",
+        ],
+        2: [
+          "Strong showing. The first place guy is bragging like he beat ten of you.",
+          "Second. Respectable. Annoying. Both at once.",
+          "So close to first you can smell the trophy polish.",
+        ],
+        3: [
+          "Bronze. Not bad. They'll spell your name wrong on the certificate.",
+          "Third place. The podium photo will look great cropped right.",
+          "Top three. Officially a build worth talking about.",
+        ],
+        4: [
+          "Mid-pack respect. The kind that doesn't make the local Facebook group.",
+          "Fourth. Honest result. You know what to fix now.",
+          "Just off the podium. The car will hear about this on the drive home.",
+        ],
+        5: [
+          "Fifth. You showed up. That counts more than the internet thinks.",
+          "Out of the photos but in the conversation.",
+          "Bottom of the placards but you got reps on the field.",
+        ],
+        default: [
+          "You learned something tonight. Most of it disguised as criticism.",
+          "Crowd was kind. The judges were not. That's how you grow.",
+          "Didn't place but the car got noticed. That's something.",
+          "Took some shots, took some notes. Long drive home to think about it.",
+        ],
+      };
+
+      const BUCK_RESULT_LINES = {
+        beat: [
+          "Buck's pretending he's looking at someone else's car.",
+          "Buck just left in a hurry. Funny that.",
+          "You can hear Buck explaining what he would've done differently. To no one.",
+          "Buck didn't say a word. That's the loudest he gets.",
+        ],
+        lost: [
+          "Buck's already pulled the trophy out for a photo op.",
+          "Buck made a point of walking past your car real slow.",
+          "Buck's holding court near the announcer booth. He saw the result coming, apparently.",
+        ],
+        absent: [
+          "Buck didn't even show up. Take that as you will.",
+          "No Buck tonight. The pressure of attending must've been too much.",
+        ],
+      };
+
       const SHOP_RADIO = [
         "Shop radio says someone traded a jet ski for a primered Nova in El Cajon. Honestly? Feels fair.",
         "The morning host is arguing that primer gray is a lifestyle, not a paint color.",
@@ -3199,6 +3393,8 @@
           sharkLoanPayment: 500,
           showLoading: false,
           pendingShowId: null,
+          showStage: null,
+          showCinematicData: null,
           postShowWeekLocked: false,
           starterHelpReceived: false,
           starterCarbUsed: false,
@@ -3209,7 +3405,6 @@
           pendingAdvanceReason: null,
           winterStorageReport: null,
           winterAppliedForSeason: false,
-          currentShowComment: null,
           partsInventory: [],
           marketplaceListings: [],
           pendingMarketplaceOffer: null,
@@ -3383,6 +3578,58 @@
         return Array.isArray(SHOW_COMMENTS) && SHOW_COMMENTS.length
           ? SHOW_COMMENTS[Math.floor(Math.random() * SHOW_COMMENTS.length)]
           : "The judges are making the rounds and the crowd is taking notice.";
+      }
+
+      function pickFrom(arr) {
+        return arr && arr.length
+          ? arr[Math.floor(Math.random() * arr.length)]
+          : "";
+      }
+
+      function pickJudgingComments(car, buckPlace, buckInShow) {
+        const lines = [];
+        const stats = [
+          { key: "engine", val: car.engine },
+          { key: "transmission", val: car.transmission },
+          { key: "brakes", val: car.brakes },
+          { key: "body", val: car.body },
+          { key: "paint", val: car.paint },
+          { key: "interior", val: car.interior },
+          { key: "chrome", val: car.chrome },
+        ];
+        const lows = stats
+          .filter((s) => s.val < 40)
+          .sort((a, b) => a.val - b.val);
+        const highs = stats
+          .filter((s) => s.val >= 70)
+          .sort((a, b) => b.val - a.val);
+        if (lows.length) {
+          const pool = SHOW_STAT_COMMENTS[lows[0].key];
+          if (pool && pool.low) lines.push(pickFrom(pool.low));
+        }
+        if (highs.length) {
+          const pool = SHOW_STAT_COMMENTS[highs[0].key];
+          if (pool && pool.high) lines.push(pickFrom(pool.high));
+        }
+        if (lows.length > 1 && lines.length < 2) {
+          const pool = SHOW_STAT_COMMENTS[lows[1].key];
+          if (pool && pool.low) lines.push(pickFrom(pool.low));
+        }
+        while (lines.length < 3) lines.push(randomShowComment());
+        return lines.slice(0, 3);
+      }
+
+      function pickRevealReaction(place) {
+        const pool = REVEAL_REACTIONS[place] || REVEAL_REACTIONS.default;
+        return pickFrom(pool);
+      }
+
+      function pickBuckResultLine(playerPlace, buckPlace, buckInShow) {
+        if (!buckInShow) return pickFrom(BUCK_RESULT_LINES.absent);
+        if (!buckPlace) return "";
+        return playerPlace < buckPlace
+          ? pickFrom(BUCK_RESULT_LINES.beat)
+          : pickFrom(BUCK_RESULT_LINES.lost);
       }
       function getCarsAndCoffeeReward() {
         const toolCandidates = TOOLS_LIST.filter(
@@ -5247,17 +5494,11 @@
      SHOWS + RIVAL
   ═══════════════════════════════════════════ */
       function beginShowEntry(showId) {
-        if (state.showLoading) return;
+        if (state.showLoading || state.showStage) return;
         state.showLoading = true;
         state.pendingShowId = showId;
-        requestRender("chrome");
-        setTimeout(() => finishEnterShow(showId), 1800);
-      }
-
-      function finishEnterShow(showId) {
-        state.showLoading = false;
-        state.pendingShowId = null;
         enterShow(showId);
+        state.pendingShowId = null;
       }
 
       function enterShow(showId) {
@@ -5442,8 +5683,13 @@
         state.history.unshift(state.result);
         state.view = "result";
         state.postShowWeekLocked = true;
-        state.showLoading = true;
-        state.currentShowComment = randomShowComment();
+        state.showCinematicData = {
+          arrivalLine,
+          judgingComments: pickJudgingComments(effectiveCar, buckPlace, buckInShow),
+          buckLine: pickBuckResultLine(place, buckPlace, buckInShow),
+          revealReaction: pickRevealReaction(place),
+        };
+        state.showStage = "arriving";
 
         if (place === 1 && show.tier === "National" && effectiveOverall >= 90)
           state.won = true;
@@ -5456,6 +5702,20 @@
         checkMilestones();
         saveGame();
         advanceWeek("after show");
+      }
+
+      function advanceShowStage() {
+        if (state.showStage === "arriving") state.showStage = "judging";
+        else if (state.showStage === "judging") state.showStage = "reveal";
+        else {
+          state.showStage = null;
+          state.showCinematicData = null;
+          state.showLoading = false;
+          processEventQueue();
+          drainWeekAdvanceQueue("queued");
+        }
+        saveGame();
+        requestRender("full");
       }
 
       function buyCar(id) {
@@ -5911,18 +6171,28 @@ body{position:relative!important;display:block!important;}
         root.innerHTML = `<div class="modal"><div class="modal-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">Borrow just enough to keep the build alive — or make a worse decision.</div>${panel("Bank Loan", `${chalkRow("Cash Now", "+$2,000", "good")}${chalkRow("Payday Hit", "-$250 every paycheck", "warn")}${button(state.bankLoanBalance > 0 ? `Outstanding $${fmt(state.bankLoanBalance)}` : "Take Bank Loan", "takeBankLoan()", state.bankLoanBalance > 0, "", "width:100%")}`, "Legit paperwork, standard pain.", "#7da0c2")}${panel("Loan Shark", `${chalkRow("Cash Now", "+$3,000", "good")}${chalkRow("You Owe", "$3,900 total", "bad")}${chalkRow("Payday Hit", "-$500 every paycheck", "bad")}${button(state.sharkLoanBalance > 0 ? `Outstanding $${fmt(state.sharkLoanBalance)}` : "Take Shark Loan", "takeSharkLoan()", state.sharkLoanBalance > 0, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "Fast money, ugly terms.", "#c46d60")}</div></div>`;
       }
 
-      function renderShowLoadingModal() {
+      function renderShowCinematicModal() {
         const root = getEl("modalRoot");
-        if (!state.showLoading) return false;
-        const comment = state.currentShowComment || randomShowComment();
-        root.innerHTML = `<div class="modal"><div class="modal-card" style="max-width:560px;text-align:center"><div style="font-size:56px;margin-bottom:10px">🚶‍♂️</div><div style="color:var(--gold);font-weight:bold;font-size:22px;margin-bottom:8px">Walking the show field…</div><div class="small muted" style="line-height:1.7;margin-bottom:18px">Crowds are filing in, chrome is catching the lights, and judges are making the rounds.</div><div style="background:#181410;border:1px solid #41372f;border-radius:10px;padding:16px;margin-bottom:14px"><div style="font-size:40px;letter-spacing:4px">🚶‍♂️  🚗  🚘  🏆</div><div class="tiny muted" style="margin-top:10px">Checking every row before the results come in.</div></div><div class="info-box" style="text-align:left"><div class="tiny muted" style="margin-bottom:6px">From the crowd and judges</div><div class="small" style="color:var(--text);line-height:1.6">${comment}</div></div>${button("See Show Results", "dismissShowLoading()", false, "", "width:100%;margin-top:14px;font-size:14px")}</div></div>`;
+        if (!state.showLoading || !state.showStage) return false;
+        const data = state.showCinematicData || {};
+        const r = state.result || {};
+        if (state.showStage === "arriving") {
+          root.innerHTML = `<div class="modal"><div class="modal-card show-beat" style="max-width:540px;text-align:center"><div class="feed-kicker" style="margin-bottom:6px">SHOW NIGHT · ARRIVAL</div><div style="font-size:56px;margin-bottom:10px">🚙</div><div style="color:var(--gold);font-weight:bold;font-size:22px;margin-bottom:14px">${r.show || "The show"}</div><div class="info-box" style="text-align:left"><div class="small" style="color:var(--text);line-height:1.7">${data.arrivalLine || ""}</div></div>${button("Walk it to the field →", "advanceShowStage()", false, "", "width:100%;margin-top:14px;font-size:14px")}</div></div>`;
+        } else if (state.showStage === "judging") {
+          const lines = (data.judgingComments || []).map((line, i) =>
+            `<div class="judging-line" style="animation-delay:${i * 0.18}s"><div class="feed-kicker">${["FIRST PASS", "WALKAROUND", "PARTING SHOT"][i] || "FROM THE CROWD"}</div><div class="small" style="color:var(--text);line-height:1.6">${line}</div></div>`
+          ).join("");
+          root.innerHTML = `<div class="modal"><div class="modal-card show-beat" style="max-width:560px"><div class="feed-kicker" style="text-align:center;margin-bottom:6px">SHOW NIGHT · JUDGING</div><div style="text-align:center;color:var(--gold);font-weight:bold;font-size:22px;margin-bottom:14px">Judges and crowd are making the rounds</div><div class="info-box judging-stack">${lines}</div>${button("See the standings →", "advanceShowStage()", false, "", "width:100%;margin-top:14px;font-size:14px")}</div></div>`;
+        } else if (state.showStage === "reveal") {
+          const place = r.place || 0;
+          const trophy = place === 1 ? "🏆" : place === 2 ? "🥈" : place === 3 ? "🥉" : "📋";
+          const placeColor = place === 1 ? "var(--gold)" : place === 2 ? "#c9c9c9" : place === 3 ? "#c08858" : "var(--text-dim)";
+          const buckMarkup = data.buckLine
+            ? `<div class="info-box" style="margin-top:14px;text-align:left"><div class="feed-kicker">BUCK WATCH</div><div class="small" style="color:var(--text);line-height:1.6">${data.buckLine}</div></div>`
+            : "";
+          root.innerHTML = `<div class="modal"><div class="modal-card show-beat" style="max-width:540px;text-align:center"><div class="feed-kicker" style="margin-bottom:6px">SHOW NIGHT · STANDINGS</div><div style="color:var(--gold);font-weight:bold;font-size:22px;margin-bottom:18px">And the results are in…</div><div class="reveal-pop" style="margin-bottom:14px"><div style="font-size:56px;line-height:1">${trophy}</div><div style="color:${placeColor};font-weight:bold;font-size:40px;letter-spacing:1px;margin-top:6px">${placeLabel(place).toUpperCase()}</div></div><div class="info-box" style="text-align:left"><div class="small" style="color:var(--text);line-height:1.7">${data.revealReaction || ""}</div></div>${buckMarkup}${button("See full results →", "advanceShowStage()", false, "", "width:100%;margin-top:14px;font-size:14px")}</div></div>`;
+        }
         return true;
-      }
-      function dismissShowLoading() {
-        state.showLoading = false;
-        processEventQueue();
-        drainWeekAdvanceQueue("queued");
-        requestRender("full");
       }
 
       function renderEventModal() {
@@ -6532,6 +6802,7 @@ body{position:relative!important;display:block!important;}
       function getModalLayerSignature() {
         return [
           state.showLoading ? 1 : 0,
+          state.showStage || "",
           state.pendingScene ? 1 : 0,
           state.showStore ? 1 : 0,
           state.pendingEvent
@@ -6549,7 +6820,7 @@ body{position:relative!important;display:block!important;}
         if (!force && nextModalSignature === modalLayerSignature) return;
         modalLayerSignature = nextModalSignature;
         modalRoot.innerHTML = "";
-        if (!renderShowLoadingModal()) {
+        if (!renderShowCinematicModal()) {
           if (!renderPendingSceneModal()) {
             renderStoreModal();
             renderEventModal();
