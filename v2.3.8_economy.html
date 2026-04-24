@@ -3147,7 +3147,7 @@
             },
           ],
           carId: 1,
-          view: "garage",
+          view: "workshop",
           shopCat: "engine",
           shopSub: "suggested",
           toolCat: "all",
@@ -4190,8 +4190,10 @@
         const objective = getCurrentObjective(car);
         const steps = [
           {
-            label: "Open the Auto Shop",
-            done: state.view === "workshop" || state.history.length > 0,
+            label: "Start your first restoration",
+            done:
+              (state.activeRestorations && state.activeRestorations.length > 0) ||
+              state.cars.some((c) => c.installedParts && c.installedParts.length > 0),
           },
           { label: "Get the car roadworthy", done: roadworthy(car) },
           {
@@ -5203,7 +5205,7 @@
         const car = currentCar();
         state.seasonWrap = false;
         state.week = 1;
-        state.view = "garage";
+        state.view = "workshop";
         state.result = null;
         state.pendingAdvanceReason = null;
         state.postShowWeekLocked = false;
@@ -5840,7 +5842,7 @@
         );
         state.cars.push({ ...data, installedParts: [] });
         state.carId = c.id;
-        state.view = "garage";
+        state.view = "workshop";
         saveGame();
         requestRender("full");
       }
@@ -6537,7 +6539,7 @@ body{position:relative!important;display:block!important;}
           )}`;
         }
 
-        return `<div class="grid-main"><div>${renderBuildModeStrip("workshop")}${renderFTUEPanel(car)}${renderGarageSign(car)}<div class='taped-note'><div class='feed-kicker'>SHOP MOOD</div><div class='feed-text'>${getWorkspaceFlavor()}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div>${panel("Auto Shop Floor", `${carPreview(car)}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab("Next Jobs", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Build Jobs", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart && state.shopSub === "parts" ? `<div style="background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:#e2cef7;font-size:12px">Free Budget part ready — claim it in the shop.</div>` : ""}${subcontent}`, "", "#d8a24f")}</div><div>${renderUpcomingBar()}${renderCombinedDashboard(car)}${renderUnifiedSocialFeed(car, { showSponsors: false, showHistory: false })}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#7da0c2")}</div></div>`;
+        return `<div class="grid-main"><div>${renderFTUEPanel(car)}${renderGarageSign(car)}<div class='taped-note'><div class='feed-kicker'>SHOP MOOD</div><div class='feed-text'>${getWorkspaceFlavor()}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div>${panel("Auto Shop Floor", `${carPreview(car)}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab("Next Jobs", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Build Jobs", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart && state.shopSub === "parts" ? `<div style="background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:#e2cef7;font-size:12px">Free Budget part ready — claim it in the shop.</div>` : ""}${subcontent}`, "", "#d8a24f")}</div><div>${renderUpcomingBar()}${renderCombinedDashboard(car)}${renderUnifiedSocialFeed(car, { showSponsors: false, showHistory: false })}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#7da0c2")}</div></div>`;
       }
 
       function renderShows() {
@@ -6771,19 +6773,18 @@ body{position:relative!important;display:block!important;}
         if (state.seasonWrap) return renderSeasonWrap();
         switch (state.view) {
           case "garage":
-            return renderGarage();
           case "workshop":
             return renderWorkshop();
           case "shows":
             return renderShows();
           case "result":
-            return state.result ? renderResult() : renderGarage();
+            return state.result ? renderResult() : renderWorkshop();
           case "dealership":
             return renderDealership();
           case "career":
             return renderCareer();
           default:
-            return renderGarage();
+            return renderWorkshop();
         }
       }
 
@@ -6889,7 +6890,7 @@ body{position:relative!important;display:block!important;}
             : "";
 
         getEl("mainTabs").innerHTML = [
-          ["garage", "🔧 Build"],
+          ["workshop", "🔧 Build"],
           ["shows", "🏁 Compete"],
           ["dealership", "📘 Facebook Marketplace"],
           ["career", "📱 Social Hub"],
@@ -6897,7 +6898,7 @@ body{position:relative!important;display:block!important;}
           .map(([id, label]) =>
             tab(
               label,
-              id === "garage"
+              id === "workshop"
                 ? state.view === "garage" || state.view === "workshop"
                 : state.view === id,
               `setView('${id}')`,
