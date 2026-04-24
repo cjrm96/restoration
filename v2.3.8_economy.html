@@ -1230,6 +1230,92 @@
         background: rgba(196, 109, 96, 0.35);
       }
 
+      .audio-toggle {
+        appearance: none;
+        background: transparent;
+        border: none;
+        padding: 0;
+        width: 26px;
+        height: 26px;
+        font-size: 14px;
+        line-height: 1;
+        cursor: pointer;
+        color: var(--text-dim);
+        opacity: 0.55;
+        transition: opacity 0.15s, color 0.15s, transform 0.1s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .audio-toggle:hover {
+        opacity: 1;
+        color: var(--gold-soft);
+        transform: translateY(-1px);
+      }
+      .audio-toggle:active {
+        transform: translateY(0);
+      }
+
+      .hero-panel {
+        position: relative;
+        background:
+          radial-gradient(
+            ellipse at top,
+            rgba(209, 154, 63, 0.16) 0%,
+            transparent 60%
+          ),
+          linear-gradient(180deg, #221910 0%, #14100b 100%);
+        border: 1px solid var(--gold);
+        border-radius: 12px;
+        padding: 22px 22px 20px;
+        margin-bottom: 14px;
+        box-shadow:
+          0 0 0 1px rgba(209, 154, 63, 0.18) inset,
+          0 12px 36px rgba(0, 0, 0, 0.4);
+      }
+      .hero-panel.hero-blue {
+        background:
+          radial-gradient(
+            ellipse at top,
+            rgba(125, 160, 194, 0.14) 0%,
+            transparent 60%
+          ),
+          linear-gradient(180deg, #141a20 0%, #0d1116 100%);
+        border-color: var(--blue);
+        box-shadow:
+          0 0 0 1px rgba(125, 160, 194, 0.18) inset,
+          0 12px 36px rgba(0, 0, 0, 0.4);
+      }
+      .hero-panel-kicker {
+        font-size: 11px;
+        letter-spacing: 2.6px;
+        color: var(--gold);
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .hero-panel.hero-blue .hero-panel-kicker {
+        color: var(--blue-bright);
+      }
+      .hero-panel-title {
+        font-size: 22px;
+        font-weight: bold;
+        color: var(--text-bright);
+        letter-spacing: 0.3px;
+        margin-bottom: 4px;
+        line-height: 1.2;
+      }
+      .hero-panel-sub {
+        font-size: 13px;
+        color: var(--gold-soft);
+        font-style: italic;
+        line-height: 1.6;
+        margin-bottom: 16px;
+      }
+      .hero-panel.hero-blue .hero-panel-sub {
+        color: #aec3d6;
+      }
+
       @media (max-width: 980px) {
         .grid-main,
         .grid-main-shows {
@@ -1739,28 +1825,16 @@
               ⏩ Advance Week
             </button>
             <button
-              class="btn"
+              class="audio-toggle"
               id="musicBtn"
-              style="
-                background: #2a221a;
-                color: var(--muted);
-                border-color: #4a4036;
-                min-width: 36px;
-              "
               onclick="toggleMusic()"
               title="Toggle music"
             >
               🎵
             </button>
             <button
-              class="btn"
+              class="audio-toggle"
               id="sfxBtn"
-              style="
-                background: #2a221a;
-                color: var(--muted);
-                border-color: #4a4036;
-                min-width: 36px;
-              "
               onclick="toggleSfx()"
               title="Toggle sound effects"
             >
@@ -6942,6 +7016,10 @@
       function panel(title, body, subtitle = "", accent = "#c99842") {
         return `<div class="panel"><div class="panel-header"><div><div class="panel-title" style="color:${accent}">${title}</div>${subtitle ? `<div class="panel-sub">${subtitle}</div>` : ""}</div><div class="dots"><div class="dot"></div><div class="dot"></div></div></div>${body}</div>`;
       }
+      function heroPanel(kicker, title, sub, body, tone = "gold") {
+        const toneCls = tone === "blue" ? "hero-blue" : "";
+        return `<div class="hero-panel ${toneCls}"><div class="hero-panel-kicker">${kicker}</div><div class="hero-panel-title">${title}</div>${sub ? `<div class="hero-panel-sub">${sub}</div>` : ""}${body}</div>`;
+      }
       function tab(label, active, onclick) {
         return `<button class="tab ${active ? "active" : ""}" onclick="${onclick}">${label}</button>`;
       }
@@ -7686,7 +7764,12 @@ body{position:relative!important;display:block!important;}
           )}`;
         }
 
-        return `<div class="grid-main"><div>${panel("Auto Shop Floor", `${carPreview(car)}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab("Next Jobs", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Build Jobs", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart && state.shopSub === "parts" ? `<div style="background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px">Free Budget part ready — claim it in the shop.</div>` : ""}${subcontent}`, "", "#d8a24f")}${renderGarageSign(car)}<div class='taped-note'><div class='feed-kicker'>SHOP MOOD</div><div class='feed-text'>${getWorkspaceFlavor()}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div></div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#7da0c2")}</div></div>`;
+        return `<div class="grid-main"><div>${heroPanel(
+          "Auto Shop Floor",
+          "Every bolt, every part, one at a time",
+          "Pick the next job. Track what's running. Keep the shop moving.",
+          `${carPreview(car)}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab("Next Jobs", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Build Jobs", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart && state.shopSub === "parts" ? `<div style="background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px">Free Budget part ready — claim it in the shop.</div>` : ""}${subcontent}`,
+        )}${renderGarageSign(car)}<div class='taped-note'><div class='feed-kicker'>SHOP MOOD</div><div class='feed-text'>${getWorkspaceFlavor()}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div></div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#7da0c2")}</div></div>`;
       }
 
       function renderShows() {
@@ -7694,8 +7777,10 @@ body{position:relative!important;display:block!important;}
         if (!car) return renderNoCar();
         const shows = getCurrentShows();
         const fillAmount = MAX_FUEL - state.fuel;
-        const showPrepBoard = panel(
+        const showPrepBoard = heroPanel(
           "Show Prep Board",
+          "Load the truck, check the fuel, roll it out",
+          "Every show the car runs is one more story on the build.",
           `${carPreview(car)}${panel("Travel & Fuel", `<div class="info-box"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>Buy 5 Gal ($20)</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright)" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill Tank ($${fmt(fillAmount * FUEL_PRICE)})</button></div></div>`, "", "#7da0c2")}<div class="cards">${shows
             .map((show) => {
               const progressReq = showProgressRequirement(show);
@@ -7738,8 +7823,6 @@ body{position:relative!important;display:block!important;}
               );
             })
             .join("")}</div>`,
-          "",
-          "#d8a24f",
         );
         const sceneTension = renderHeroCallout("Show Night", roadworthy(car) ? "The truck is ready to risk public opinion. Now give the crowd something to talk about." : "Do not roll in half-built and ask the crowd for mercy.", "SCENE TENSION");
         const showCircuitRead = `<div class='taped-note'><div class='feed-kicker'>SHOW CIRCUIT READ</div><div class='feed-text'>${roadworthy(car) ? "The car can drive itself there. Now the only question is whether it can survive public opinion." : "You are not ready for the field yet. Right now this is still a garage argument, not a show car."}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div>`;
@@ -7867,8 +7950,10 @@ body{position:relative!important;display:block!important;}
               .join("")
           : `<div class="small muted">No deals closed yet this season.</div>`;
 
-        return `<div class="grid-main"><div>${panel(
-          "Sell",
+        return `<div class="grid-main"><div>${heroPanel(
+          "Sell on Marketplace",
+          "Move the parts you're done with",
+          "Buyers DM in real time. Pick your tone, hold your price, or let it go cheap.",
           `
       <div class="info-box">
         <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">List parts from the garage</div>
@@ -7879,8 +7964,6 @@ body{position:relative!important;display:block!important;}
         ${listedMarkup}
       </div>
     `,
-          `${chalkRow("Parts In Stash", stash.length)}${chalkRow("Live Listings", listed.length)}`,
-          "#d8a24f",
         )}${panel(
           "Recent Buyers",
           `
@@ -7890,16 +7973,17 @@ body{position:relative!important;display:block!important;}
     `,
           "Who's been showing up in your DMs.",
           "#b68ae6",
-        )}</div><div>${panel(
-          "Buy",
+        )}</div><div>${heroPanel(
+          "On the Lot",
+          "Someone else's project, yours for the right price",
+          "Most great builds start as someone else's bad decision.",
           `
       <div class="info-box">
         <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Cars for sale</div>
         ${carBuyMarkup}
       </div>
     `,
-          `${chalkRow("Season Week", `${state.week}/${state.seasonLength}`)}${chalkRow("Cash On Hand", `$${fmt(state.money)}`)}`,
-          "#7da0c2",
+          "blue",
         )}</div></div>`;
       }
 
@@ -8086,7 +8170,7 @@ body{position:relative!important;display:block!important;}
           ? getBuildTier(headerCar).title
           : "No Build";
         getEl("brandSub").textContent =
-          `Build Tier: ${headerTier} · ${fmtF(state.followers)} followers · ${garageLoreTier()}${state.freshHeadline ? " · " + state.freshHeadline : ""}${Date.now() < state.saveFlashUntil ? " · Saving…" : state.lastSaved ? " · Saved" : ""}`;
+          `Build Tier: ${headerTier} · ${garageLoreTier()}${state.freshHeadline ? " · " + state.freshHeadline : ""}${Date.now() < state.saveFlashUntil ? " · Saving…" : state.lastSaved ? " · Saved" : ""}`;
         const moneyChip = getEl("moneyChip");
         moneyChip.textContent = `$${fmt(state.money)}`;
         const shouldPopMoney =
