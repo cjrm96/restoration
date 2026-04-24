@@ -259,11 +259,6 @@
       .tiny {
         font-size: 11px;
       }
-      .big-score {
-        font-size: 56px;
-        font-weight: bold;
-        line-height: 1;
-      }
       .gauge-label {
         display: flex;
         justify-content: space-between;
@@ -347,17 +342,6 @@
         padding: 5px 8px;
         font-size: 11px;
         color: #ddcfb8;
-      }
-      .history-card {
-        background: #181410;
-        border: 1px solid #41372f;
-        border-radius: 8px;
-        padding: 12px;
-        margin-bottom: 10px;
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        align-items: flex-start;
       }
       .toast {
         position: fixed;
@@ -472,20 +456,10 @@
         z-index: 2;
         display: block;
       }
-      .responsive-stack {
-        display: grid;
-        gap: 14px;
-      }
       .social-actions {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
         gap: 8px;
-      }
-      .art-note {
-        margin-top: 8px;
-        font-size: 11px;
-        color: var(--muted);
-        text-align: center;
       }
       /* Milestone checkboxes */
       .milestone-item {
@@ -530,13 +504,6 @@
         margin-left: 6px;
       }
 
-      .guide-card {
-        background: linear-gradient(180deg, #2f271f 0%, #1d1813 100%);
-        border: 1px solid #6f5a40;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 12px;
-      }
       .guide-step {
         display: flex;
         justify-content: space-between;
@@ -547,32 +514,6 @@
       .guide-step:last-child {
         border-bottom: none;
       }
-      .guide-kicker {
-        display: inline-block;
-        font-size: 10px;
-        padding: 2px 7px;
-        border-radius: 999px;
-        background: #2a241e;
-        border: 1px solid #5d4c3a;
-        color: #dcc9a8;
-        margin-bottom: 6px;
-      }
-      .goal-pill {
-        display: inline-block;
-        font-size: 10px;
-        padding: 3px 8px;
-        border-radius: 999px;
-        background: #1a1714;
-        border: 1px solid #4a4036;
-        color: #d9cfbf;
-        margin-right: 6px;
-        margin-bottom: 6px;
-      }
-      .goal-pill.active {
-        border-color: var(--gold);
-        color: var(--text-bright);
-        box-shadow: 0 0 0 1px rgba(201, 152, 66, 0.15) inset;
-      }
       .smart-tag {
         display: inline-block;
         font-size: 10px;
@@ -582,9 +523,6 @@
         border: 1px solid #6a583f;
         color: #f0dec0;
         margin-bottom: 8px;
-      }
-      .pulse-callout {
-        animation: pulseGlow 1.8s ease-in-out infinite;
       }
       .shake-lite {
         animation: shakeLite 0.32s ease;
@@ -1617,28 +1555,6 @@
       .tilt-a {
         transform: rotate(-0.35deg);
       }
-      .tilt-b {
-        transform: rotate(0.35deg);
-      }
-      .flavor-card {
-        background: linear-gradient(180deg, #191410 0%, #120f0c 100%);
-        border: 1px solid #45382e;
-        border-radius: 8px;
-        padding: 10px 11px;
-        margin-bottom: 10px;
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
-      }
-      .flavor-label {
-        font-size: 10px;
-        letter-spacing: 0.9px;
-        color: var(--gold-soft);
-        margin-bottom: 6px;
-      }
-      .flavor-text {
-        font-size: 12px;
-        line-height: 1.55;
-        color: var(--text);
-      }
       .feed-item {
         background: #181410;
         border: 1px solid #41372f;
@@ -1712,62 +1628,6 @@
         border-radius: 8px;
         padding: 10px 12px;
         margin-bottom: 10px;
-      }
-      .mode-strip {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-bottom: 12px;
-      }
-      .mode-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 7px 10px;
-        border-radius: 999px;
-        border: 1px solid #5f4d39;
-        background: #211912;
-        color: #d8c9ad;
-        font-size: 11px;
-        font-weight: bold;
-      }
-      .mode-chip.active {
-        border-color: var(--gold);
-        background: #332619;
-        color: var(--text-bright);
-        box-shadow: 0 0 0 1px rgba(201, 152, 66, 0.12) inset;
-      }
-      .next-step-card {
-        background: linear-gradient(180deg, #3a2918 0%, #20160f 100%);
-        border: 1px solid #9b7340;
-        border-radius: 12px;
-        padding: 14px 16px;
-        margin-bottom: 14px;
-        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
-      }
-      .next-step-kicker {
-        font-size: 10px;
-        letter-spacing: 1px;
-        color: #e0ad57;
-        margin-bottom: 7px;
-      }
-      .next-step-title {
-        font-size: 22px;
-        line-height: 1.2;
-        color: var(--text-bright);
-        font-weight: bold;
-        margin-bottom: 6px;
-      }
-      .next-step-sub {
-        font-size: 12px;
-        color: #d1bea0;
-        line-height: 1.6;
-        margin-bottom: 12px;
-      }
-      .quick-link-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 8px;
       }
       .mini-stat-grid {
         display: grid;
