@@ -3095,7 +3095,7 @@
       ];
       const CREATOR_POSTS = {
         insta: { label: "Insta Photo", emoji: "📸", cashRate: 0.012, cashMin: 2, cashCap: 400, followerFlat: 3, followerRate: 0.004, followerCap: 60, moneyCost: 0, fuelCost: 0, desc: "Quick phone shot from the garage." },
-        reel:  { label: "Reel Clip",   emoji: "🎬", cashRate: 0.035, cashMin: 6, cashCap: 1200, followerFlat: 8, followerRate: 0.008, followerCap: 200, moneyCost: 10, fuelCost: 0, desc: "Short action clip — revs, reveals, wrench porn." },
+        reel:  { label: "Reel Clip",   emoji: "🎬", cashRate: 0.035, cashMin: 6, cashCap: 1200, followerFlat: 8, followerRate: 0.008, followerCap: 200, moneyCost: 10, fuelCost: 0, desc: "Short action clip — revs, reveals, build moments." },
         youtube:{ label: "YouTube Video", emoji: "▶️", cashRate: 0.085, cashMin: 15, cashCap: 3000, followerFlat: 20, followerRate: 0.013, followerCap: 600, moneyCost: 0, fuelCost: 2, desc: "Long form build log — requires a roadworthy car and b-roll drive." },
       };
       const BRAND_DEAL_BRANDS = [
@@ -3163,7 +3163,6 @@
           giftedTools: [],
           lastShowTier: null,
           lastShowPlace: null,
-          socialPostedWeek: null,
           creatorPostedWeek: null,
           pendingBrandDeal: null,
           totalCreatorEarnings: 0,
@@ -4229,34 +4228,29 @@
         );
       }
 
-      function renderSocialPostingPanel() {
-        const hypeGain = calcSocialReward("hype"),
-          trophyGain = calcSocialReward("trophy"),
-          progressGain = calcSocialReward("progress");
-        return `<div class="info-box"><div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Post an update</div><div class="social-actions">${button(`Post Hype · +${fmtF(hypeGain)}`, "doSocialPost('hype')", state.socialPostedWeek === state.week, "", "width:100%")}${button(`Show Off A Trophy · +${fmtF(trophyGain)}`, "doSocialPost('trophy')", state.socialPostedWeek === state.week || trophyGain <= 0, "", "width:100%")}${button(`Post Progress · +${fmtF(progressGain)}`, "doSocialPost('progress')", state.socialPostedWeek === state.week, "", "width:100%")}</div><div class="tiny muted" style="margin-top:8px">${state.socialPostedWeek === state.week ? "Already posted this week." : "One post per week. Use it to move followers, pressure, and momentum."}</div></div>`;
-      }
-
       function renderCreatorPanel() {
         const already = state.creatorPostedWeek === state.week;
-        const rows = Object.entries(CREATOR_POSTS).map(([type, cfg]) => {
+        const earned = state.totalCreatorEarnings || 0;
+        const buttons = Object.entries(CREATOR_POSTS).map(([type, cfg]) => {
           const { cash, followers } = calcCreatorReward(type);
           const blocked = already || !!creatorPostBlockedReason(type);
           const costBits = [];
-          if (cfg.moneyCost) costBits.push(`$${cfg.moneyCost}`);
-          if (cfg.fuelCost) costBits.push(`${cfg.fuelCost} gal`);
-          const costLabel = costBits.length ? ` · cost ${costBits.join(" + ")}` : "";
-          const label = `${cfg.emoji} ${cfg.label} · +$${fmt(cash)} · +${fmtF(followers)}`;
-          return button(label, `doCreatorPost('${type}')`, blocked, "", "width:100%;background:#4a3c2e;color:#efe2c6;border-color:#6b5840") +
-            `<div class="tiny muted" style="margin:-2px 0 8px">${cfg.desc}${costLabel}</div>`;
+          if (cfg.moneyCost) costBits.push(`-$${cfg.moneyCost}`);
+          if (cfg.fuelCost) costBits.push(`-${cfg.fuelCost} gal`);
+          const costSuffix = costBits.length ? ` · ${costBits.join(" ")}` : "";
+          const label = `${cfg.emoji} ${cfg.label.split(" ")[0]} · +$${fmt(cash)} · +${fmtF(followers)}${costSuffix}`;
+          return button(label, `doCreatorPost('${type}')`, blocked, "", "width:100%");
         }).join("");
         const deal = state.pendingBrandDeal;
         const dealMarkup = deal
           ? `<div class="info-box" style="background:#291b36;border-color:#6f4d91;margin-top:10px"><div class="small" style="color:#e2cef7;font-weight:bold;margin-bottom:4px">📦 Brand Deal · ${deal.brand}</div><div class="tiny" style="color:#cbb9e0;margin-bottom:8px">They'll send a free Budget part in exchange for a sponsored post. +${fmtF(deal.followerBonus)} followers on the campaign.</div><div class="btn-row two">${button("Accept", "acceptBrandDeal()", !!state.freePart, "", "width:100%;background:#a47ed4;border-color:#bca0e5")}${button("Decline", "declineBrandDeal()", false, "", "width:100%;background:#4a3c2e;color:#efe2c6;border-color:#6b5840")}</div>${state.freePart ? `<div class="tiny warn" style="margin-top:6px">Claim your existing free part before accepting another.</div>` : ""}</div>`
-          : (state.followers < BRAND_DEAL_MIN_FOLLOWERS
-            ? `<div class="tiny muted" style="margin-top:8px">Brand deals open up at ${fmtF(BRAND_DEAL_MIN_FOLLOWERS)} followers.</div>`
-            : `<div class="tiny muted" style="margin-top:8px">No brand deals in the inbox this week. Keep posting.</div>`);
-        const earned = state.totalCreatorEarnings || 0;
-        return `<div class="info-box"><div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Content drops · lifetime $${fmt(earned)}</div>${rows}<div class="tiny muted" style="margin-top:4px">${already ? "Already dropped content this week." : "Payouts scale with followers and car quality. One drop per week."}</div>${dealMarkup}</div>`;
+          : "";
+        const footer = already
+          ? "Already dropped content this week."
+          : state.followers < BRAND_DEAL_MIN_FOLLOWERS
+            ? `One drop per week. Brand deals open at ${fmtF(BRAND_DEAL_MIN_FOLLOWERS)} followers.`
+            : "One drop per week. Payouts scale with followers and car quality.";
+        return `<div class="info-box"><div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Post Content · lifetime $${fmt(earned)}</div><div class="social-actions">${buttons}</div><div class="tiny muted" style="margin-top:8px">${footer}</div>${dealMarkup}</div>`;
       }
 
       function renderCombinedDashboard(car = currentCar()) {
@@ -4415,7 +4409,6 @@
         return panel(
           "Social Feed",
           `
-      ${renderSocialPostingPanel()}
       ${renderCreatorPanel()}
       <div class="info-box">
         <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Latest scene updates</div>
@@ -5230,7 +5223,7 @@
         resolveCompletedRestorations(false);
         state.pendingAdvanceReason = null;
         const previousWeek = state.week;
-        const missedSocialPost = state.socialPostedWeek !== previousWeek;
+        const missedSocialPost = state.creatorPostedWeek !== previousWeek;
         state.week += 1;
         state.enteredShowsThisWeek = [];
         state.rival.score = getRivalBaseScore();
@@ -5297,7 +5290,7 @@
         maybeOfferBrandDeal();
         if (missedSocialPost) {
           toast(
-            "You rolled into a new week without posting. The scene moved on without you for a minute.",
+            "You rolled into a new week without dropping any content. The algorithm forgot you for a minute.",
             "event-bad",
           );
         }
@@ -5451,59 +5444,6 @@
       /* ═══════════════════════════════════════════
      SOCIAL
   ═══════════════════════════════════════════ */
-      function calcSocialReward(type) {
-        let base = 0;
-        if (type === "hype") {
-          base =
-            state.lastShowTier === "National"
-              ? 420
-              : state.lastShowTier === "Regional"
-                ? 140
-                : 60;
-        } else if (type === "trophy") {
-          if (!state.lastShowPlace) return 0;
-          base =
-            state.lastShowTier === "National"
-              ? [0, 700, 420, 250, 120, 60][state.lastShowPlace] || 50
-              : state.lastShowTier === "Regional"
-                ? [0, 220, 150, 90, 45, 20][state.lastShowPlace] || 15
-                : [0, 90, 60, 35, 20, 10][state.lastShowPlace] || 8;
-        } else if (type === "progress") {
-          base = Math.max(25, Math.round(getOverall(currentCar()) * 1.8));
-        }
-        const ms = activeSponsors().find((s) => s.socialBoost);
-        if (ms) base = Math.round(base * (1 + ms.socialBoost));
-        return base;
-      }
-
-      function doSocialPost(type) {
-        if (state.socialPostedWeek === state.week)
-          return toast("Already posted this week.", "err");
-        let gained = calcSocialReward(type);
-        if (type === "trophy" && !state.lastShowPlace)
-          return toast("Win something first.", "err");
-        if (gained <= 0)
-          return toast(
-            "Not enough happening yet for that post to land.",
-            "err",
-          );
-        state.followers += gained;
-        addGarageLore(type === "trophy" ? 4 : type === "hype" ? 2 : 3);
-        pushRivalNote(
-          type === "trophy"
-            ? `Buck saw your trophy post and is probably furious.`
-            : `Your latest post got the crowd talking. Buck definitely noticed.`,
-        );
-        state.socialPostedWeek = state.week;
-        toast(
-          `Post landed. +${fmtF(gained)} followers from ${type}.`,
-          "event-good",
-        );
-        checkMilestones();
-        saveGame();
-        requestRender("full");
-      }
-
       function calcCreatorReward(type) {
         const cfg = CREATOR_POSTS[type];
         if (!cfg) return { cash: 0, followers: 0 };
