@@ -6234,7 +6234,7 @@ body{position:relative!important;display:block!important;}
           )}`;
         }
 
-        return `<div class="grid-main"><div>${renderFTUEPanel(car)}${renderGarageSign(car)}<div class='taped-note'><div class='feed-kicker'>SHOP MOOD</div><div class='feed-text'>${getWorkspaceFlavor()}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div>${panel("Auto Shop Floor", `${carPreview(car)}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab("Next Jobs", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Build Jobs", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart && state.shopSub === "parts" ? `<div style="background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:#e2cef7;font-size:12px">Free Budget part ready — claim it in the shop.</div>` : ""}${subcontent}`, "", "#d8a24f")}</div><div>${renderUpcomingBar()}${renderCombinedDashboard(car)}${renderUnifiedSocialFeed(car, { showSponsors: false, showHistory: false })}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#7da0c2")}</div></div>`;
+        return `<div class="grid-main"><div>${renderFTUEPanel(car)}${panel("Auto Shop Floor", `${carPreview(car)}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab("Next Jobs", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Build Jobs", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart && state.shopSub === "parts" ? `<div style="background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:#e2cef7;font-size:12px">Free Budget part ready — claim it in the shop.</div>` : ""}${subcontent}`, "", "#d8a24f")}${renderGarageSign(car)}<div class='taped-note'><div class='feed-kicker'>SHOP MOOD</div><div class='feed-text'>${getWorkspaceFlavor()}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div></div><div>${renderUpcomingBar()}${renderCombinedDashboard(car)}${renderUnifiedSocialFeed(car, { showSponsors: false, showHistory: false })}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#7da0c2")}</div></div>`;
       }
 
       function renderShows() {
@@ -6242,7 +6242,7 @@ body{position:relative!important;display:block!important;}
         if (!car) return renderNoCar();
         const shows = getCurrentShows();
         const fillAmount = MAX_FUEL - state.fuel;
-        return `<div class="grid-main-shows"><div>${renderFTUEPanel(car)}${renderHeroCallout("Show Night", roadworthy(car) ? "The truck is ready to risk public opinion. Now give the crowd something to talk about." : "Do not roll in half-built and ask the crowd for mercy.", "SCENE TENSION")}${renderGarageSign(car)}<div class='taped-note'><div class='feed-kicker'>SHOW CIRCUIT READ</div><div class='feed-text'>${roadworthy(car) ? "The car can drive itself there. Now the only question is whether it can survive public opinion." : "You are not ready for the field yet. Right now this is still a garage argument, not a show car."}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div>${panel(
+        const showPrepBoard = panel(
           "Show Prep Board",
           `${carPreview(car)}${panel("Travel & Fuel", `<div class="info-box"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>Buy 5 Gal ($20)</button><button class="btn" style="background:#7da0c2;border-color:#95b5d4" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill Tank ($${fmt(fillAmount * FUEL_PRICE)})</button></div></div>`, "", "#7da0c2")}<div class="cards">${shows
             .map((show) => {
@@ -6288,7 +6288,10 @@ body{position:relative!important;display:block!important;}
             .join("")}</div>`,
           "",
           "#d8a24f",
-        )}</div><div>${renderUpcomingBar()}${renderUnifiedSocialFeed(car, { showSponsors: false, showHistory: false })}</div></div>`;
+        );
+        const sceneTension = renderHeroCallout("Show Night", roadworthy(car) ? "The truck is ready to risk public opinion. Now give the crowd something to talk about." : "Do not roll in half-built and ask the crowd for mercy.", "SCENE TENSION");
+        const showCircuitRead = `<div class='taped-note'><div class='feed-kicker'>SHOW CIRCUIT READ</div><div class='feed-text'>${roadworthy(car) ? "The car can drive itself there. Now the only question is whether it can survive public opinion." : "You are not ready for the field yet. Right now this is still a garage argument, not a show car."}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div>`;
+        return `<div class="grid-main-shows"><div>${renderFTUEPanel(car)}${showPrepBoard}${sceneTension}${renderGarageSign(car)}${showCircuitRead}</div><div>${renderUpcomingBar()}${renderUnifiedSocialFeed(car, { showSponsors: false, showHistory: false })}</div></div>`;
       }
 
 
@@ -6415,6 +6418,15 @@ body{position:relative!important;display:block!important;}
     `,
           "List it on the left. The second you post it, it should jump to the live side.",
           "#d8a24f",
+        )}${panel(
+          "Recent Buyers",
+          `
+      <div class="info-box">
+        ${recentMarkup}
+      </div>
+    `,
+          "Who's been showing up in your DMs.",
+          "#b68ae6",
         )}</div><div>${panel(
           "Live Marketplace",
           `
@@ -6425,10 +6437,6 @@ body{position:relative!important;display:block!important;}
       <div class="info-box">
         <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Cars for sale</div>
         ${carBuyMarkup}
-      </div>
-      <div class="info-box">
-        <div class="small" style="color:#f2e6cf;font-weight:bold;margin-bottom:8px">Recent buyers</div>
-        ${recentMarkup}
       </div>
     `,
           `${chalkRow("Season Week", `${state.week}/${state.seasonLength}`)}${chalkRow("Cash On Hand", `$${fmt(state.money)}`)}${chalkRow("Parts In Stash", stash.length)}${chalkRow("Live Listings", listed.length)}`,
