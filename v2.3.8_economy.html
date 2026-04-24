@@ -2795,7 +2795,7 @@
           make: "Chevrolet",
           model: "Camaro SS",
           emoji: "🚗",
-          price: 1800,
+          price: 6500,
           engine: 22,
           transmission: 20,
           brakes: 18,
@@ -2813,7 +2813,7 @@
           make: "Chevrolet",
           model: "Bel Air",
           emoji: "🚘",
-          price: 2400,
+          price: 5800,
           engine: 18,
           transmission: 16,
           brakes: 20,
@@ -4536,9 +4536,9 @@
           gameOver: false,
           seasonWrap: false,
           bankLoanBalance: 0,
-          bankLoanPayment: 250,
+          bankLoanPayment: 400,
           sharkLoanBalance: 0,
-          sharkLoanPayment: 500,
+          sharkLoanPayment: 750,
           showLoading: false,
           pendingShowId: null,
           showStage: null,
@@ -4557,6 +4557,7 @@
             lostToCount: 0,
             boughtPartCount: 0,
           },
+          installsDone: 0,
           noticeQueue: [],
           tickerCollapsed: false,
           postShowWeekLocked: false,
@@ -4663,10 +4664,11 @@
       function workshopTimerModifier() {
         return Math.max(0.5, 1 - (toolStorageData().speedBonus || 0));
       }
-      function taskDurationMs(part) {
-        return Math.round(
-          (TASK_SECONDS[part.tier] || 60) * 1000 * workshopTimerModifier(),
-        );
+      function taskDurationMs(part, method) {
+        let secs = TASK_SECONDS[part.tier] || 60;
+        if (method === "shop") secs *= 0.6;
+        if ((state.installsDone || 0) < 3) secs *= 0.07;
+        return Math.round(secs * 1000 * workshopTimerModifier());
       }
       function taskWeeks(part) {
         return TASK_WEEKS[part.tier] || 1;
@@ -5982,6 +5984,7 @@
           if (task.method === "diy" && !state.starterHelpReceived) {
             maybeTriggerNeighborHelp(car);
           }
+          state.installsDone = (state.installsDone || 0) + 1;
         }
         task.completed = true;
       }
@@ -6112,7 +6115,7 @@
         if (isFree) state.freePart = false;
         if (starterFree) state.starterCarbUsed = true;
         const now = Date.now();
-        const duration = taskDurationMs(part);
+        const duration = taskDurationMs(part, method);
         state.activeRestorations.push({
           id: `task_${now}_${Math.random().toString(36).slice(2, 7)}`,
           carId: car.id,
@@ -6164,12 +6167,12 @@
       function takeBankLoan() {
         if (state.bankLoanBalance > 0)
           return toast("You already have a bank loan to pay down.", "err");
-        state.money += 2000;
-        recordMoneyChange(2000, "Bank loan funded");
-        state.bankLoanBalance = 2000;
+        state.money += 4000;
+        recordMoneyChange(4000, "Bank loan funded");
+        state.bankLoanBalance = 4000;
         toast(
-          "Bank loan approved. +$2,000 cash, but $250 comes out of each payday.",
-          "ok",
+          "Bank loan approved. +$4,000 cash, but $400 comes out of each payday.",
+          "event-good",
         );
         saveGame();
         requestRender("full");
@@ -6181,12 +6184,12 @@
             "The loan shark already owns a piece of your future.",
             "err",
           );
-        state.money += 3000;
-        recordMoneyChange(3000, "Loan shark cash drop");
-        state.sharkLoanBalance = 3900;
+        state.money += 6000;
+        recordMoneyChange(6000, "Loan shark cash drop");
+        state.sharkLoanBalance = 7800;
         toast(
-          "Loan shark money landed. +$3,000 now, but $500 disappears from every payday until the debt is gone.",
-          "err",
+          "Loan shark money landed. +$6,000 now, but $750 disappears from every payday until the $7,800 debt is gone.",
+          "event-bad",
         );
         saveGame();
         requestRender("full");
@@ -7593,7 +7596,7 @@ body{position:relative!important;display:block!important;}
           root.innerHTML = "";
           return;
         }
-        root.innerHTML = `<div class="modal"><div class="modal-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">Borrow just enough to keep the build alive — or make a worse decision.</div>${panel("Bank Loan", `${chalkRow("Cash Now", "+$2,000", "good")}${chalkRow("Payday Hit", "-$250 every paycheck", "warn")}${button(state.bankLoanBalance > 0 ? `Outstanding $${fmt(state.bankLoanBalance)}` : "Take Bank Loan", "takeBankLoan()", state.bankLoanBalance > 0, "", "width:100%")}`, "Legit paperwork, standard pain.", "#7da0c2")}${panel("Loan Shark", `${chalkRow("Cash Now", "+$3,000", "good")}${chalkRow("You Owe", "$3,900 total", "bad")}${chalkRow("Payday Hit", "-$500 every paycheck", "bad")}${button(state.sharkLoanBalance > 0 ? `Outstanding $${fmt(state.sharkLoanBalance)}` : "Take Shark Loan", "takeSharkLoan()", state.sharkLoanBalance > 0, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "Fast money, ugly terms.", "#c46d60")}</div></div>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">Borrow just enough to keep the build alive — or make a worse decision.</div>${panel("Bank Loan", `${chalkRow("Cash Now", "+$4,000", "good")}${chalkRow("Payday Hit", "-$400 every paycheck", "warn")}${button(state.bankLoanBalance > 0 ? `Outstanding $${fmt(state.bankLoanBalance)}` : "Take Bank Loan", "takeBankLoan()", state.bankLoanBalance > 0, "", "width:100%")}`, "Legit paperwork, standard pain.", "#7da0c2")}${panel("Loan Shark", `${chalkRow("Cash Now", "+$6,000", "good")}${chalkRow("You Owe", "$7,800 total", "bad")}${chalkRow("Payday Hit", "-$750 every paycheck", "bad")}${button(state.sharkLoanBalance > 0 ? `Outstanding $${fmt(state.sharkLoanBalance)}` : "Take Shark Loan", "takeSharkLoan()", state.sharkLoanBalance > 0, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "Fast money, ugly terms.", "#c46d60")}</div></div>`;
       }
 
       function renderTutorialModal() {
