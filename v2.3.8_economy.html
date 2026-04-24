@@ -4214,15 +4214,15 @@
           "ok",
         );
       }
-      function maybeGenerateMarketplaceOffer() {
+      function maybeGenerateMarketplaceOffer(rollChance = 0.68) {
         if (
           state.pendingMarketplaceOffer ||
           state.pendingScene ||
           state.pendingEvent
         )
-          return;
+          return false;
         const listed = state.partsInventory.filter((i) => i.listed && !i.sold);
-        if (!listed.length || Math.random() > 0.68) return;
+        if (!listed.length || Math.random() > rollChance) return false;
         const item = listed[Math.floor(Math.random() * listed.length)];
         const archetype =
           MARKETPLACE_BUYERS[
@@ -4284,6 +4284,7 @@
           message,
           scenario,
         });
+        return true;
       }
       function respondMarketplaceOffer(accept) {
         const offer = state.pendingMarketplaceOffer;
@@ -4481,6 +4482,7 @@
       let modalLayerSignature = "";
       let worldRefreshTimer = null;
       let backgroundTickTimer = null;
+      let marketplacePingTimer = null;
 
       function saveGame(force = false) {
         try {
@@ -6667,6 +6669,19 @@ body{position:relative!important;display:block!important;}
         );
       }
 
+      function runMarketplacePingTick() {
+        if (!document.hidden && !state.gameOver && !state.seasonWrap) {
+          if (maybeGenerateMarketplaceOffer(0.18)) {
+            saveGame();
+            requestRender("full");
+          }
+        }
+        marketplacePingTimer = setTimeout(
+          runMarketplacePingTick,
+          document.hidden ? 240000 : 45000,
+        );
+      }
+
       /* ═══════════════════════════════════════════
      APP BOOTSTRAP
   ═══════════════════════════════════════════ */
@@ -6675,6 +6690,7 @@ body{position:relative!important;display:block!important;}
       render("full");
       runBackgroundTick();
       runWorldRefreshTick();
+      runMarketplacePingTick();
 
       document.addEventListener("visibilitychange", () => {
         if (backgroundTickTimer) {
@@ -6685,8 +6701,13 @@ body{position:relative!important;display:block!important;}
           clearTimeout(worldRefreshTimer);
           worldRefreshTimer = null;
         }
+        if (marketplacePingTimer) {
+          clearTimeout(marketplacePingTimer);
+          marketplacePingTimer = null;
+        }
         runBackgroundTick();
         runWorldRefreshTick();
+        runMarketplacePingTick();
       });
 
       setInterval(() => saveGame(false), 15000);
