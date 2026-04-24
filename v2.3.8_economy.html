@@ -1316,6 +1316,143 @@
         color: #aec3d6;
       }
 
+      .world-ticker {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        min-height: 52px;
+        background:
+          linear-gradient(180deg, rgba(36, 29, 23, 0.98) 0%, rgba(14, 11, 7, 0.98) 100%);
+        border-top: 1px solid var(--gold);
+        box-shadow:
+          0 -1px 0 rgba(209, 154, 63, 0.25) inset,
+          0 -8px 24px rgba(0, 0, 0, 0.55);
+        display: flex;
+        align-items: center;
+        padding: 0 18px;
+        z-index: 60;
+        transition: min-height 0.25s ease, opacity 0.2s;
+        backdrop-filter: blur(6px);
+      }
+      .world-ticker[hidden] {
+        display: none;
+      }
+      .world-ticker.collapsed {
+        min-height: 26px;
+        padding: 0 14px;
+      }
+      .world-ticker.collapsed .world-ticker-inner {
+        opacity: 0.55;
+        font-size: 10px;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+      }
+      .world-ticker.collapsed .world-ticker-text,
+      .world-ticker.collapsed .world-ticker-source {
+        display: none;
+      }
+      .world-ticker-inner {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+        overflow: hidden;
+        cursor: default;
+      }
+      .world-ticker-kind {
+        flex-shrink: 0;
+        font-size: 10px;
+        letter-spacing: 1.6px;
+        color: var(--gold);
+        font-weight: bold;
+        text-transform: uppercase;
+        padding: 5px 10px;
+        border: 1px solid rgba(209, 154, 63, 0.45);
+        border-radius: 4px;
+        background: rgba(209, 154, 63, 0.06);
+        white-space: nowrap;
+      }
+      .world-ticker-kind.kind-social {
+        color: var(--purple-bright);
+        border-color: rgba(168, 132, 221, 0.45);
+        background: rgba(168, 132, 221, 0.06);
+      }
+      .world-ticker-kind.kind-news {
+        color: var(--blue-bright);
+        border-color: rgba(125, 160, 194, 0.45);
+        background: rgba(125, 160, 194, 0.06);
+      }
+      .world-ticker-kind.kind-player {
+        color: var(--green-bright);
+        border-color: rgba(143, 203, 126, 0.45);
+        background: rgba(143, 203, 126, 0.06);
+      }
+      .world-ticker-source {
+        flex-shrink: 0;
+        font-size: 11px;
+        font-weight: bold;
+        color: var(--text-bright);
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .world-ticker-text {
+        flex: 1;
+        font-size: 13px;
+        color: var(--text);
+        line-height: 1.4;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .world-ticker-text.typing {
+        animation: tickerTypeIn 0.35s ease-out;
+      }
+      @keyframes tickerTypeIn {
+        0% { opacity: 0; transform: translateY(4px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      .world-ticker-toggle {
+        appearance: none;
+        background: transparent;
+        border: 1px solid rgba(209, 154, 63, 0.3);
+        color: var(--gold-soft);
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 14px;
+        line-height: 1;
+        padding: 0;
+        margin-left: 10px;
+        flex-shrink: 0;
+        transition: color 0.15s, border-color 0.15s;
+      }
+      .world-ticker-toggle:hover {
+        color: var(--gold);
+        border-color: var(--gold);
+      }
+      body.ticker-active .app {
+        padding-bottom: 64px;
+      }
+      body.ticker-active.ticker-collapsed .app {
+        padding-bottom: 34px;
+      }
+      @media (max-width: 640px) {
+        .world-ticker {
+          padding: 0 12px;
+        }
+        .world-ticker-source {
+          display: none;
+        }
+        .world-ticker-text {
+          font-size: 12px;
+        }
+      }
+
       @media (max-width: 980px) {
         .grid-main,
         .grid-main-shows {
@@ -1850,6 +1987,14 @@
 
     <div id="modalRoot"></div>
     <div id="toastRoot"></div>
+    <div id="worldTicker" class="world-ticker" hidden>
+      <div class="world-ticker-inner" onmouseenter="pauseWorldTicker()" onmouseleave="resumeWorldTicker()">
+        <div class="world-ticker-kind" id="worldTickerKind">📻 ON AIR</div>
+        <div class="world-ticker-source" id="worldTickerSource"></div>
+        <div class="world-ticker-text" id="worldTickerText"></div>
+      </div>
+      <button class="world-ticker-toggle" id="worldTickerToggle" onclick="toggleWorldTicker()" title="Collapse the scene ticker">–</button>
+    </div>
 
     <script>
       /*
@@ -4010,6 +4155,94 @@
         "Buck posted the standings. Screen-cropped so his place is centered perfectly.",
       ];
 
+      /* ── World ticker content ── */
+      const RADIO_DJ_BANTER = [
+        { source: "DANNY", line: "You can LS swap anything. Even a vending machine, probably." },
+        { source: "MAX", line: "Danny, a vending machine already has a motor. That's not a swap, that's interference." },
+        { source: "DANNY", line: "I still say points and condenser was the high point of automotive engineering." },
+        { source: "MAX", line: "Danny, your daily driver has a remote start." },
+        { source: "DANNY", line: "That's for my wife. She made me." },
+        { source: "MAX", line: "Caller on line two says he's found 'the last good Mustang' for $800. I want to believe, folks." },
+        { source: "DANNY", line: "$800 Mustang? That's a title fee and a bag of tears." },
+        { source: "MAX", line: "Listener poll says 72% of you have cried in a garage. The other 28% were lying." },
+        { source: "DANNY", line: "Listen — if your project car starts on the first crank, you're either lucky or lying about the primer." },
+        { source: "MAX", line: "Hot take: fuel injection is just a carburetor with better lawyers." },
+        { source: "DANNY", line: "Somebody just drove past the station in a squarebody with one working headlight. We salute the commitment." },
+        { source: "MAX", line: "Breaking: local man's 'while I'm in there' now includes a full interior. His wife has questions." },
+        { source: "DANNY", line: "It's Spring in the garage, folks. That means bolts you forgot are seizing just thinking about you." },
+        { source: "MAX", line: "Danny just called a brake booster 'a vacuum Ouija board.' We might put that on a shirt." },
+        { source: "DANNY", line: "Real car guys don't check the weather. They check the driveway for oil drips." },
+      ];
+
+      const RADIO_ADS = [
+        { source: "EDDIE'S USED PARTS", line: "If it starts, it's a deal. If it doesn't, that's a feature. Eddie's — out by the railroad tracks, past the third pothole." },
+        { source: "HARBOR FRIGHT", line: "This week only, a complete socket set with only four missing sizes. Forty-nine dollars and hope." },
+        { source: "CHROME THEORY", line: "Your patina isn't patina. It's neglect. Chrome Theory Detail — we see you." },
+        { source: "DYNOFLOW PERFORMANCE", line: "Dynoflow. Because bragging rights need numbers and we have a sharpie." },
+        { source: "RUST-OFF ANONYMOUS", line: "Is your project more Bondo than metal? You're not alone. Wednesday nights, community center, coffee and regrets." },
+        { source: "BACKYARD BUILT CO.", line: "Parts sourced from the swap meet, shipped from our garage. No returns. No questions. Backyard Built." },
+        { source: "MIDNIGHT MOTOR OIL", line: "The only oil brave enough to admit we haven't changed the formula since 1987. Midnight — it runs, probably." },
+        { source: "APEX SPEED CO.", line: "Buy the shifter knob before you buy the transmission. That's the Apex philosophy." },
+        { source: "GASKET GODS", line: "Why pay for a new gasket when you can pay us to cut one from a cereal box? Gasket Gods. We improvise." },
+      ];
+
+      const RADIO_CALLERS = [
+        { source: "CALLER", line: "Yeah uh, I yarded my quarter panel out with a chain. Chain won. Call me back if you've ever won against a chain." },
+        { source: "CALLER", line: "So I traded a working snowblower for a Chevelle shell and I think I came out ahead. Am I crazy?" },
+        { source: "CALLER", line: "My wife said I can have two more projects or one divorce. Just wanted to update the listeners." },
+        { source: "CALLER", line: "I bought a running truck from Marketplace. It started once. In the seller's driveway. Under duress." },
+        { source: "CALLER", line: "Hey Danny, the 'free lifter tick' you told me to ignore turned into a free rod knock. Thanks for nothing." },
+        { source: "CALLER", line: "I'm at the swap meet. There's a guy selling a 'numbers matching' engine out of a minivan. What do I do." },
+        { source: "CALLER", line: "My kid asked what carburetor meant and I just started crying. He's five. Too young to know this grief." },
+        { source: "CALLER", line: "Just bought primer in three different shades. Told myself it's a design choice. Tell me it's a design choice." },
+      ];
+
+      const RADIO_TRAFFIC = [
+        { source: "TRAFFIC", line: "Reports of a stalled Chevelle on the shoulder of Route 9. Three men standing around pointing at it. No tools visible. We'll keep you posted." },
+        { source: "TRAFFIC", line: "Squarebody blocking the left lane of Main, driver says he heard a noise. Driver is wrong. Noise was always there." },
+        { source: "TRAFFIC", line: "Minor slowdown on 16 — open-hood crowd outside the parts store arguing about an alternator." },
+        { source: "TRAFFIC", line: "Low-slung coupe doing 22 in a 45. He's fine. That's just how it runs." },
+        { source: "TRAFFIC", line: "Trailer with a bare-metal project shell westbound. Somewhere, somebody has given up. Somewhere else, somebody has just begun." },
+      ];
+
+      const RADIO_SEGMENTS = {
+        banter: RADIO_DJ_BANTER,
+        ads: RADIO_ADS,
+        callers: RADIO_CALLERS,
+        traffic: RADIO_TRAFFIC,
+      };
+
+      const NPC_SOCIAL_POSTS = [
+        { source: "@StartingFluidSteve", line: "when she hits first crank after sitting all winter 🙌" },
+        { source: "@QuarterPanelQueen", line: "gap tolerances are a mindset, not a number. don't @ me." },
+        { source: "@CarbRebuildCarl", line: "third rebuild on the same Holley. she's my hobby now." },
+        { source: "@TrailerTonya", line: "another project picked up, another 'easy weekend.' the weekend had other plans." },
+        { source: "@MidCenturyMarcus", line: "period correct or it didn't happen." },
+        { source: "@Bondo_Bandit", line: "they said it was all metal. it was 60% metal. we move on." },
+        { source: "@DailyDriverDan", line: "daily driving a 1972 in 2026 is a lifestyle and also a cardio workout." },
+        { source: "@PickMeUpPaula", line: "if your pickup doesn't smell faintly of gasoline you're doing it wrong." },
+        { source: "@VacuumLeakVince", line: "found my vacuum leak. it was joy. joy was leaking out." },
+        { source: "@PolishPatricia", line: "buffed the chrome for three hours. you can see my reflection swearing." },
+        { source: "@JackStandJim", line: "if the jack stand is older than you are, you're making a statement. what it is, i'm not sure." },
+        { source: "@GarageDoorGreg", line: "wife says I live in the garage. I say I rent in the house." },
+        { source: "@PatinaPete", line: "paint sells cars. patina sells stories." },
+        { source: "@WrongPartWendy", line: "bought it three times. third one fit. I now own two paperweights." },
+        { source: "@TurboTodd", line: "boosted the leafblower. regret is temporary. the neighbors' hate is eternal." },
+        { source: "@SwapMeetSarah", line: "found an NOS trim piece for $20. I don't need it. I bought it anyway. you would too." },
+      ];
+
+      const SCENE_NEWS = [
+        { source: "SCENE", line: "Swap meet next weekend. Rumor says a guy in row C has a complete Muncie for cheap." },
+        { source: "SCENE", line: "Local shop just acquired a pallet of 'mystery carbs.' Pricing: negotiable. Quality: aspirational." },
+        { source: "SCENE", line: "Weekend weather: rain. Half the scene will claim their cars don't run in rain. All of them are lying." },
+        { source: "SCENE", line: "The Cars & Coffee field opened half an hour early. Three guys already there. They were sleeping in their trucks." },
+        { source: "SCENE", line: "Heard a '67 Mustang win a stoplight race against a modern Camaro. The Mustang then blew a hose. Karma." },
+        { source: "SCENE", line: "Regional field announced extra parking. Translation: more turnout, tighter judging, longer trophy speeches." },
+        { source: "SCENE", line: "Marketplace flooded with 'barn finds' this week. Fifty percent garage finds. Thirty percent carport finds. The rest is optimism." },
+        { source: "SCENE", line: "Town parts counter is out of 10mm sockets. Again. Nobody is surprised." },
+        { source: "SCENE", line: "Picked up murmurs of a new judge at Nationals this year. Strong opinions about paint. You've been warned." },
+      ];
+
       /* ── Buck scenes ── */
       const BUCK_INTRO_SCENE = {
         id: "buck_intro",
@@ -4365,6 +4598,7 @@
             boughtPartCount: 0,
           },
           noticeQueue: [],
+          tickerCollapsed: false,
           postShowWeekLocked: false,
           starterHelpReceived: false,
           starterCarbUsed: false,
@@ -5760,6 +5994,8 @@
       let worldRefreshTimer = null;
       let backgroundTickTimer = null;
       let marketplacePingTimer = null;
+      let worldTickerTimer = null;
+      let worldTickerPaused = false;
 
       function saveGame(force = false) {
         try {
@@ -8416,6 +8652,163 @@ body{position:relative!important;display:block!important;}
       }
 
       /* ═══════════════════════════════════════════
+     WORLD TICKER
+  ═══════════════════════════════════════════ */
+      let tickerRotation = 0;
+      function pickTickerItem() {
+        const lastShow = state.history && state.history[0];
+        const recent =
+          lastShow && state.week - (lastShow.week || 0) <= 1 ? lastShow : null;
+        if (recent && Math.random() < 0.18) {
+          return {
+            kind: "player",
+            kindLabel: "⚡ YOU",
+            source: "Scene Ticker",
+            text:
+              recent.place === 1
+                ? `Word spread about your ${placeLabel(recent.place).toLowerCase()} at ${recent.show}. Scene is talking.`
+                : recent.place <= 3
+                  ? `Podium mention: ${placeLabel(recent.place)} at ${recent.show}. Somebody saved the photo.`
+                  : `Your run at ${recent.show} is in the ticker. Not the headline, but it's in there.`,
+          };
+        }
+        const roll = Math.random();
+        if (roll < 0.4) {
+          const segTypes = ["banter", "ads", "callers", "traffic"];
+          const weights = [0.5, 0.22, 0.18, 0.1];
+          let cum = 0;
+          const r = Math.random();
+          let segType = "banter";
+          for (let i = 0; i < segTypes.length; i++) {
+            cum += weights[i];
+            if (r < cum) {
+              segType = segTypes[i];
+              break;
+            }
+          }
+          const pool = RADIO_SEGMENTS[segType];
+          const item = pickFresh(pool, "radio:" + segType);
+          return item
+            ? {
+                kind: "radio",
+                kindLabel: segType === "ads" ? "📻 AD BREAK" : "📻 ON AIR",
+                source: item.source,
+                text: item.line,
+              }
+            : null;
+        } else if (roll < 0.72) {
+          const pool = NPC_SOCIAL_POSTS.slice();
+          if (state.buck && state.buck.metOnce) {
+            const buckLast = state.history && state.history[0];
+            const buckPool =
+              buckLast && buckLast.buckPlace
+                ? buckLast.place < buckLast.buckPlace
+                  ? BUCK_POSTS_AFTER_LOSS
+                  : buckLast.place > buckLast.buckPlace
+                    ? BUCK_POSTS_AFTER_WIN
+                    : BUCK_SOCIAL_POSTS
+                : BUCK_SOCIAL_POSTS;
+            pool.push({ source: "@BuckMustang67", line: pickFresh(buckPool, "tickerBuck") });
+          }
+          const item = pool[Math.floor(Math.random() * pool.length)];
+          return {
+            kind: "social",
+            kindLabel: "📱 SOCIAL",
+            source: item.source,
+            text: item.line,
+          };
+        } else {
+          const item = pickFresh(SCENE_NEWS, "tickerNews");
+          if (!item) return null;
+          return {
+            kind: "news",
+            kindLabel: "📍 SCENE NEWS",
+            source: item.source,
+            text: item.line,
+          };
+        }
+      }
+
+      function renderTickerItem() {
+        const ticker = getEl("worldTicker");
+        if (!ticker) return;
+        const kindEl = getEl("worldTickerKind");
+        const sourceEl = getEl("worldTickerSource");
+        const textEl = getEl("worldTickerText");
+        if (!kindEl || !sourceEl || !textEl) return;
+        const item = pickTickerItem();
+        if (!item) return;
+        kindEl.className =
+          "world-ticker-kind" +
+          (item.kind === "social"
+            ? " kind-social"
+            : item.kind === "news"
+              ? " kind-news"
+              : item.kind === "player"
+                ? " kind-player"
+                : "");
+        kindEl.textContent = item.kindLabel;
+        sourceEl.textContent = item.source;
+        textEl.textContent = item.text;
+        textEl.classList.remove("typing");
+        void textEl.offsetWidth;
+        textEl.classList.add("typing");
+        tickerRotation++;
+        if (item.kind === "radio" && tickerRotation % 3 === 0) {
+          playSfx("radioJingle");
+        }
+      }
+
+      function scheduleWorldTicker() {
+        if (worldTickerTimer) clearTimeout(worldTickerTimer);
+        const interval = document.hidden
+          ? 30000
+          : worldTickerPaused
+            ? 4000
+            : 9000;
+        worldTickerTimer = setTimeout(() => {
+          if (!document.hidden && !worldTickerPaused) renderTickerItem();
+          scheduleWorldTicker();
+        }, interval);
+      }
+
+      function startWorldTicker() {
+        const ticker = getEl("worldTicker");
+        if (!ticker) return;
+        ticker.hidden = false;
+        document.body.classList.add("ticker-active");
+        if (state.tickerCollapsed) {
+          ticker.classList.add("collapsed");
+          document.body.classList.add("ticker-collapsed");
+          const toggleBtn = getEl("worldTickerToggle");
+          if (toggleBtn) toggleBtn.textContent = "+";
+        }
+        renderTickerItem();
+        scheduleWorldTicker();
+      }
+
+      function toggleWorldTicker() {
+        const ticker = getEl("worldTicker");
+        if (!ticker) return;
+        state.tickerCollapsed = !state.tickerCollapsed;
+        ticker.classList.toggle("collapsed", state.tickerCollapsed);
+        document.body.classList.toggle("ticker-collapsed", state.tickerCollapsed);
+        const toggleBtn = getEl("worldTickerToggle");
+        if (toggleBtn)
+          toggleBtn.textContent = state.tickerCollapsed ? "+" : "–";
+        playSfx("click");
+        saveGame();
+      }
+
+      function pauseWorldTicker() {
+        worldTickerPaused = true;
+      }
+
+      function resumeWorldTicker() {
+        worldTickerPaused = false;
+      }
+
+      /* ═══════════════════════════════════════════
      APP BOOTSTRAP
   ═══════════════════════════════════════════ */
 
@@ -8425,6 +8818,7 @@ body{position:relative!important;display:block!important;}
       runBackgroundTick();
       runWorldRefreshTick();
       runMarketplacePingTick();
+      startWorldTicker();
 
       document.addEventListener("visibilitychange", () => {
         if (backgroundTickTimer) {
@@ -8439,9 +8833,14 @@ body{position:relative!important;display:block!important;}
           clearTimeout(marketplacePingTimer);
           marketplacePingTimer = null;
         }
+        if (worldTickerTimer) {
+          clearTimeout(worldTickerTimer);
+          worldTickerTimer = null;
+        }
         runBackgroundTick();
         runWorldRefreshTick();
         runMarketplacePingTick();
+        if (!document.hidden) scheduleWorldTicker();
       });
 
       setInterval(() => saveGame(false), 15000);
@@ -8730,6 +9129,11 @@ body{position:relative!important;display:block!important;}
         },
         error: (t) => {
           sfxToneAt(t, 320, 0.18, "square", 0.12, { sweepTo: 180 });
+        },
+        radioJingle: (t) => {
+          sfxToneAt(t, 659, 0.1, "triangle", 0.09);
+          sfxToneAt(t + 0.08, 880, 0.1, "triangle", 0.09);
+          sfxToneAt(t + 0.16, 1319, 0.22, "triangle", 0.11);
         },
       };
       function playSfx(name) {
