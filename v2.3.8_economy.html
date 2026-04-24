@@ -1441,6 +1441,12 @@
       body.ticker-active.ticker-collapsed .app {
         padding-bottom: 34px;
       }
+      body.ticker-active .toast {
+        bottom: 72px;
+      }
+      body.ticker-active.ticker-collapsed .toast {
+        bottom: 44px;
+      }
       @media (max-width: 640px) {
         .world-ticker {
           padding: 0 12px;
@@ -4782,12 +4788,6 @@
           "The judges are making the rounds and the crowd is taking notice.";
       }
 
-      function pickFrom(arr) {
-        return arr && arr.length
-          ? arr[Math.floor(Math.random() * arr.length)]
-          : "";
-      }
-
       function pickFresh(pool, key, recentSize) {
         if (!Array.isArray(pool) || !pool.length) return "";
         if (!state.recentLines) state.recentLines = {};
@@ -4961,65 +4961,6 @@
           .slice(0, 3);
       }
 
-      function getCurrentObjective(car = currentCar()) {
-        const counts = getShowCounts();
-        const overall = car ? getOverall(car) : 0;
-        if (!car)
-          return {
-            title: "Buy a project car",
-            desc: "Head to Vehicles and grab something worth saving.",
-            cta: "setView('dealership')",
-            ctaLabel: "Browse Vehicles",
-          };
-        if (!roadworthy(car))
-          return {
-            title: "Get roadworthy",
-            desc: "Bring engine, transmission, and brakes up to minimum driving condition.",
-            cta: "setView('workshop')",
-            ctaLabel: "Open Auto Shop",
-          };
-        if (counts.coffee < 2)
-          return {
-            title: "Enter Cars & Coffee",
-            desc: "Do two small meets to build confidence, followers, and freebies.",
-            cta: "setView('shows')",
-            ctaLabel: "Go To Shows",
-          };
-        if (overall < 50)
-          return {
-            title: "Reach 50 overall",
-            desc: "You are building from rough driver to respectable local contender.",
-            cta: "setView('workshop')",
-            ctaLabel: "Use Suggested Upgrades",
-          };
-        if (counts.local < 3)
-          return {
-            title: "Run Local Shows",
-            desc: "Stack Local finishes to unlock the Regional path.",
-            cta: "setView('shows')",
-            ctaLabel: "Enter Local Show",
-          };
-        if (counts.regional < 3)
-          return {
-            title: "Beat Buck at Regionals",
-            desc: "You need Regional reps before the National stage opens up.",
-            cta: "setView('shows')",
-            ctaLabel: "Scout Regional Shows",
-          };
-        if (overall < 85)
-          return {
-            title: "Prep for Nationals",
-            desc: "Now every point matters. Tighten body, paint, and top-end mechanicals.",
-            cta: "setView('workshop')",
-            ctaLabel: "Chase Show Grade Parts",
-          };
-        return {
-          title: "Win the National Show",
-          desc: "The car is close. Keep the pressure on and finish the story.",
-          cta: "setView('shows')",
-          ctaLabel: "Take It To Nationals",
-        };
-      }
 
 
 
@@ -7066,13 +7007,6 @@
             "Twenty weeks per season. Paychecks land every four. Don't run out of fuel, don't take the shark loan unless you have to, and remember: 'while I'm in there' has ended more budgets than inflation.",
         },
       ];
-
-      function startTutorial() {
-        state.tutorialComplete = false;
-        state.tutorialStep = 0;
-        saveGame();
-        requestRender("full");
-      }
 
       function advanceTutorial() {
         const next = (state.tutorialStep || 0) + 1;
