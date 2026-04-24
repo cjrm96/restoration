@@ -3793,6 +3793,7 @@
           recentLines: {},
           tutorialComplete: false,
           tutorialStep: 0,
+          sfxMuted: false,
           postShowWeekLocked: false,
           starterHelpReceived: false,
           starterCarbUsed: false,
@@ -4220,6 +4221,13 @@
       function recordMoneyChange(amount, reason) {
         state.lastMoneyDelta = amount;
         state.lastMoneyReason = reason || "";
+        if (Math.abs(amount) >= 50) {
+          const now = Date.now();
+          if (!recordMoneyChange._lastSfx || now - recordMoneyChange._lastSfx > 800) {
+            recordMoneyChange._lastSfx = now;
+            playSfx(amount > 0 ? "coin" : "click");
+          }
+        }
       }
 
       function addGarageLore(amount) {
@@ -4635,7 +4643,10 @@
           state.showStore
         )
           queueEvent("marketplace", offer);
-        else state.pendingMarketplaceOffer = offer;
+        else {
+          state.pendingMarketplaceOffer = offer;
+          playSfx("ding");
+        }
       }
       function renderHeroCallout(title, sub, kicker = "GARAGE ARC") {
         return `<div class="hero-callout"><div class="hero-kicker">${kicker}</div><div class="hero-title">${title}</div><div class="hero-sub">${sub}</div></div>`;
@@ -5185,6 +5196,7 @@
           addRemovedPartItem(part, car);
           state.freshHeadline = `${part.name} finished`;
           maybeTriggerBuildTierMoment(car);
+          if (showToast) playSfx("wrench");
           if (showToast)
             toast(
               `${part.name} wrapped up on your ${car.year} ${car.make}. It feels a little more legit now. +${part.imp} ${CAT_LABELS[part.category]}.`,
@@ -5885,6 +5897,7 @@
         if (state.showLoading || state.showStage) return;
         state.showLoading = true;
         state.pendingShowId = showId;
+        playSfx("engineRev");
         enterShow(showId);
         state.pendingShowId = null;
       }
@@ -6093,12 +6106,27 @@
       }
 
       function advanceShowStage() {
-        if (state.showStage === "arriving") state.showStage = "judging";
-        else if (state.showStage === "judging") state.showStage = "reveal";
-        else {
+        if (state.showStage === "arriving") {
+          state.showStage = "judging";
+          playSfx("swoosh");
+        } else if (state.showStage === "judging") {
+          state.showStage = "reveal";
+          const place = (state.result && state.result.place) || 99;
+          if (place === 1) {
+            playSfx("applause");
+            setTimeout(() => playSfx("success"), 180);
+          } else if (place <= 3) {
+            playSfx("applause");
+          } else if (place <= 5) {
+            playSfx("ding");
+          } else {
+            playSfx("swoosh");
+          }
+        } else {
           state.showStage = null;
           state.showCinematicData = null;
           state.showLoading = false;
+          playSfx("click");
           processEventQueue();
           drainWeekAdvanceQueue("queued");
         }
@@ -6171,8 +6199,10 @@
         if (next >= TUTORIAL_BEATS.length) {
           state.tutorialComplete = true;
           state.tutorialStep = 0;
+          playSfx("success");
         } else {
           state.tutorialStep = next;
+          playSfx("swoosh");
         }
         saveGame();
         requestRender("full");
@@ -6181,6 +6211,7 @@
       function skipTutorial() {
         state.tutorialComplete = true;
         state.tutorialStep = 0;
+        playSfx("click");
         saveGame();
         requestRender("full");
       }
@@ -7181,6 +7212,8 @@ body{position:relative!important;display:block!important;}
         root.innerHTML = `<div class="toast ${type} ${extra}">${msg}</div>`;
         clearTimeout(toast._t);
         toast._t = setTimeout(() => (root.innerHTML = ""), 3500);
+        if (type === "err") playSfx("error");
+        else if (type === "event-good") playSfx("success");
       }
 
       /* ═══════════════════════════════════════════
@@ -7648,6 +7681,138 @@ body{position:relative!important;display:block!important;}
         src.start(t);
         src.stop(t + 0.2);
         musicNodes.push(src);
+      }
+
+      /* ── SFX library ── */
+      function getSfxGain() {
+        const ctx = getAudioCtx();
+        if (!getSfxGain._n) {
+          getSfxGain._n = ctx.createGain();
+          getSfxGain._n.gain.value = 0.55;
+          getSfxGain._n.connect(ctx.destination);
+        }
+        return getSfxGain._n;
+      }
+      function sfxToneAt(t, freq, dur, type, gain, opts) {
+        const ctx = getAudioCtx();
+        const o = ctx.createOscillator();
+        const e = ctx.createGain();
+        o.type = type || "sine";
+        o.frequency.setValueAtTime(freq, t);
+        if (opts && opts.sweepTo) {
+          o.frequency.exponentialRampToValueAtTime(
+            opts.sweepTo,
+            t + dur * (opts.sweepEnd || 1),
+          );
+        }
+        e.gain.setValueAtTime(0, t);
+        e.gain.linearRampToValueAtTime(gain, t + 0.005);
+        e.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.connect(e);
+        e.connect(getSfxGain());
+        o.start(t);
+        o.stop(t + dur + 0.05);
+      }
+      function sfxNoiseBurst(t, dur, gain, filterType, filterFreq, sweepTo) {
+        const ctx = getAudioCtx();
+        const buf = ctx.createBuffer(
+          1,
+          Math.max(1, Math.floor(ctx.sampleRate * dur)),
+          ctx.sampleRate,
+        );
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        const e = ctx.createGain();
+        const f = ctx.createBiquadFilter();
+        f.type = filterType || "bandpass";
+        f.frequency.setValueAtTime(filterFreq, t);
+        if (sweepTo) {
+          f.frequency.exponentialRampToValueAtTime(sweepTo, t + dur);
+        }
+        f.Q.value = 1;
+        e.gain.setValueAtTime(gain, t);
+        e.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        src.connect(f);
+        f.connect(e);
+        e.connect(getSfxGain());
+        src.start(t);
+        src.stop(t + dur + 0.05);
+      }
+      const SFX_PLAYERS = {
+        click: (t) => {
+          sfxToneAt(t, 720, 0.05, "sine", 0.18);
+        },
+        swoosh: (t) => {
+          sfxNoiseBurst(t, 0.18, 0.12, "bandpass", 1800, 600);
+        },
+        ding: (t) => {
+          sfxToneAt(t, 880, 0.12, "sine", 0.18);
+          sfxToneAt(t + 0.07, 1320, 0.18, "sine", 0.16);
+        },
+        coin: (t) => {
+          sfxToneAt(t, 1320, 0.06, "triangle", 0.18);
+          sfxToneAt(t + 0.04, 1760, 0.1, "triangle", 0.14);
+        },
+        wrench: (t) => {
+          sfxNoiseBurst(t, 0.08, 0.22, "bandpass", 2200);
+          sfxToneAt(t + 0.04, 220, 0.1, "sine", 0.14, { sweepTo: 110 });
+        },
+        engineRev: (t) => {
+          sfxToneAt(t, 80, 0.45, "sawtooth", 0.18, { sweepTo: 220 });
+          sfxToneAt(t + 0.05, 120, 0.4, "square", 0.08, { sweepTo: 280 });
+          sfxNoiseBurst(t, 0.5, 0.04, "lowpass", 600);
+        },
+        applause: (t) => {
+          const ctx = getAudioCtx();
+          const dur = 0.9;
+          const buf = ctx.createBuffer(
+            1,
+            Math.floor(ctx.sampleRate * dur),
+            ctx.sampleRate,
+          );
+          const d = buf.getChannelData(0);
+          for (let i = 0; i < d.length; i++) {
+            d[i] = (Math.random() * 2 - 1) * (0.4 + Math.random() * 0.6);
+          }
+          const src = ctx.createBufferSource();
+          src.buffer = buf;
+          const f = ctx.createBiquadFilter();
+          f.type = "bandpass";
+          f.frequency.value = 2200;
+          f.Q.value = 0.9;
+          const e = ctx.createGain();
+          e.gain.setValueAtTime(0, t);
+          e.gain.linearRampToValueAtTime(0.16, t + 0.12);
+          e.gain.linearRampToValueAtTime(0.18, t + 0.4);
+          e.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+          src.connect(f);
+          f.connect(e);
+          e.connect(getSfxGain());
+          src.start(t);
+          src.stop(t + dur + 0.05);
+        },
+        success: (t) => {
+          sfxToneAt(t, 523, 0.12, "triangle", 0.16);
+          sfxToneAt(t + 0.08, 659, 0.12, "triangle", 0.16);
+          sfxToneAt(t + 0.16, 784, 0.2, "triangle", 0.18);
+        },
+        error: (t) => {
+          sfxToneAt(t, 320, 0.18, "square", 0.12, { sweepTo: 180 });
+        },
+      };
+      function playSfx(name) {
+        if (state.sfxMuted) return;
+        const player = SFX_PLAYERS[name];
+        if (!player) return;
+        try {
+          const ctx = getAudioCtx();
+          if (ctx.state === "suspended") ctx.resume();
+          player(ctx.currentTime);
+        } catch (e) {
+          /* audio not ready, ignore */
+        }
       }
 
       const BPM = 88,
