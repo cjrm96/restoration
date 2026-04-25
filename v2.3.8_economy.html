@@ -2965,7 +2965,7 @@
           fuel: 4,
           prizes: [300, 150, 75, 35, 15],
           minScore: 0,
-          followers: [120, 80, 45, 22, 10],
+          followers: [220, 140, 80, 40, 18],
           cadence: 2,
         },
         {
@@ -2976,7 +2976,7 @@
           fuel: 12,
           prizes: [1000, 400, 200, 100, 50],
           minScore: 40,
-          followers: [650, 420, 240, 120, 60],
+          followers: [1500, 1000, 600, 300, 150],
           cadence: 4,
         },
         {
@@ -2987,7 +2987,7 @@
           fuel: 35,
           prizes: [10000, 4000, 2000, 1000, 500],
           minScore: 70,
-          followers: [3200, 2000, 1200, 600, 250],
+          followers: [12000, 8000, 5000, 2500, 1000],
           cadence: 1,
           onDemand: true,
         },
@@ -3127,7 +3127,65 @@
           prizePct: 0.2,
           freePart: true,
         },
+        {
+          id: 11,
+          req: 110000,
+          name: "Hot Rod Magazine",
+          emoji: "📰",
+          benefit: "+25% prize bonus on Regional and National",
+          prizePct: 0.25,
+        },
+        {
+          id: 12,
+          req: 175000,
+          name: "Petersen Automotive Museum",
+          emoji: "🏛",
+          benefit: "+$1,000/show + 10% off all parts",
+          cashPerShow: 1000,
+          allDiscount: 0.1,
+        },
+        {
+          id: 13,
+          req: 275000,
+          name: "Mecum Auctions",
+          emoji: "🎙",
+          benefit: "+30% National prize bonus",
+          nationalPrizePct: 0.3,
+        },
+        {
+          id: 14,
+          req: 425000,
+          name: "Speed Channel",
+          emoji: "📺",
+          benefit: "+$1,500/show + 35% follower boost on posts",
+          cashPerShow: 1500,
+          socialBoost: 0.35,
+        },
+        {
+          id: 15,
+          req: 650000,
+          name: "Holley Performance",
+          emoji: "🏁",
+          benefit: "+15% off all parts (stacks)",
+          allDiscount: 0.15,
+        },
+        {
+          id: 16,
+          req: 1000000,
+          name: "Barrett-Jackson",
+          emoji: "👑",
+          benefit: "+$3,000/show + 50% prize bonus + free Quality part",
+          cashPerShow: 3000,
+          prizePct: 0.5,
+          freePart: true,
+        },
       ];
+
+      const MAX_FOLLOWERS = 1000000;
+      function clampFollowers() {
+        if (state.followers > MAX_FOLLOWERS) state.followers = MAX_FOLLOWERS;
+        if (state.followers < 0) state.followers = 0;
+      }
 
       const CURRENCY_PACKS = [
         { id: 1, label: "Starter Pack", coins: 500, price: "$0.99" },
@@ -4712,9 +4770,9 @@
         { min: 1000, chance: 0.18, minCash: 75, maxCash: 150, label: "local parts sponsor shoutout" },
       ];
       const CREATOR_POSTS = {
-        insta: { label: "Insta Photo", emoji: "📸", cashRate: 0.012, cashMin: 2, cashCap: 400, followerFlat: 3, followerRate: 0.004, followerCap: 60, moneyCost: 0, fuelCost: 0, desc: "Quick phone shot from the garage." },
-        reel:  { label: "Reel Clip",   emoji: "🎬", cashRate: 0.035, cashMin: 6, cashCap: 1200, followerFlat: 8, followerRate: 0.008, followerCap: 200, moneyCost: 10, fuelCost: 0, desc: "Short action clip — revs, reveals, build moments." },
-        youtube:{ label: "YouTube Video", emoji: "▶️", cashRate: 0.085, cashMin: 15, cashCap: 3000, followerFlat: 20, followerRate: 0.013, followerCap: 600, moneyCost: 0, fuelCost: 2, desc: "Long form build log — requires a roadworthy car and b-roll drive." },
+        insta: { label: "Insta Photo", emoji: "📸", cashRate: 0.012, cashMin: 2, cashCap: 400, followerFlat: 8, followerRate: 0.01, followerCap: 250, moneyCost: 0, fuelCost: 0, desc: "Quick phone shot from the garage." },
+        reel:  { label: "Reel Clip",   emoji: "🎬", cashRate: 0.035, cashMin: 6, cashCap: 1200, followerFlat: 22, followerRate: 0.018, followerCap: 700, moneyCost: 10, fuelCost: 0, desc: "Short action clip — revs, reveals, build moments." },
+        youtube:{ label: "YouTube Video", emoji: "▶️", cashRate: 0.085, cashMin: 15, cashCap: 3000, followerFlat: 60, followerRate: 0.028, followerCap: 2400, moneyCost: 0, fuelCost: 2, desc: "Long form build log — requires a roadworthy car and b-roll drive." },
       };
       const BRAND_DEAL_BRANDS = [
         "RevLine Auto Parts",
@@ -5256,6 +5314,7 @@
         }
         if (choice.followers) {
           state.followers += choice.followers;
+          clampFollowers();
         }
         if (choice.lore) {
           addGarageLore(choice.lore);
@@ -6706,6 +6765,7 @@
           }
           if (ev.followersGain) {
             state.followers += ev.followersGain;
+            clampFollowers();
           }
           if (ev.statBoost) {
             car[ev.statBoost.cat] = clamp(
@@ -7118,6 +7178,7 @@
         if (cfg.fuelCost) state.fuel -= cfg.fuelCost;
         state.money += finalCash;
         state.followers += finalFollowers;
+        clampFollowers();
         state.totalCreatorEarnings = (state.totalCreatorEarnings || 0) + finalCash;
         state.creatorPostedWeek = state.week;
         recordMoneyChange(finalCash - (cfg.moneyCost || 0), `${cfg.label} payout`);
@@ -7137,6 +7198,7 @@
           return toast("You already dropped content this week.", "err");
         const gained = 1000;
         state.followers += gained;
+        clampFollowers();
         state.collabAvailable = false;
         state.creatorPostedWeek = state.week;
         addGarageLore(4);
@@ -7182,6 +7244,7 @@
         if (state.freePart) return toast("Claim the free part you already have first.", "err");
         state.freePart = true;
         state.followers += deal.followerBonus;
+        clampFollowers();
         addGarageLore(2);
         state.pendingBrandDeal = null;
         toast(
@@ -7409,6 +7472,7 @@
         if (show.tier !== "Cars & Coffee" && sponsors.find((s) => s.freePart))
           state.freePart = true;
         state.followers = newFollowers;
+        clampFollowers();
         state.lastShowTier = show.tier;
         state.lastShowPlace = place;
         state.enteredShowsThisWeek.push(show.id);
