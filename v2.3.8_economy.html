@@ -5301,7 +5301,7 @@
             choice.toast,
             choice.followers && choice.followers < 0 ? "err" : "ok",
           );
-        else if (choice.note) toast(choice.note, "ok");
+        else if (choice.note) toast(choice.note, choice.noteTone || "ok");
       }
 
       function resolvePendingScene(choiceIndex) {
@@ -6537,18 +6537,21 @@
             {
               label: "Try to explain",
               note: "You opened with 'it's an investment.' She closed with a fresh scratch from quarter to door. Paint took a hit, but at least she's still talking to you.",
+              noteTone: "event-bad",
               statBoost: { cat: "paint", amt: -10 },
               lore: 8,
             },
             {
               label: "Say absolutely nothing",
               note: "Smart. She circled the project car twice, dragged the key down the whole driver's side, and went inside. Big paint hit, but you kept the rest of the marriage. For now.",
+              noteTone: "event-bad",
               statBoost: { cat: "paint", amt: -18 },
               lore: 10,
             },
             {
               label: "Offer her half the cash",
               note: "She took the cash, kept the keys, and only keyed the trunk lid. Fair trade, all things considered.",
+              noteTone: "event-bad",
               statBoost: { cat: "paint", amt: -6 },
               money: -4000,
               lore: 6,
