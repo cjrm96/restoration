@@ -9752,31 +9752,28 @@ body{position:relative!important;display:block!important;}
             ? "Buck looked real normal about losing, which is to say not normal at all."
             : "Buck is absolutely going to bring this result up again."
           : "";
-        return `<div class="grid-main"><div>${renderHeroCallout(r.place === 1 ? "Crowd went quiet" : r.place <= 3 ? "People finally respected it" : "The field was tougher than the truck", r.arrivalLine || "", "SHOW NIGHT")}${panel(
-          "Show Result",
-          `${carPreview(car).replace(workspaceBackdropFrame(), showBackdropFrame(r.tier))}<div class="cinematic-line"><div class="hero-kicker">ARRIVAL</div><div class="small" style="color:var(--text);line-height:1.6">${r.arrivalLine || ""}</div></div><div class="cinematic-line"><div class="hero-kicker">JUDGING</div><div class="small" style="color:var(--text);line-height:1.6">${r.judgingLine || ""}</div></div><div style="text-align:center;margin-bottom:12px"><div style="font-size:40px">${r.place === 1 ? "🏆" : r.place === 2 ? "🥈" : r.place === 3 ? "🥉" : "📋"}</div><div style="color:${r.place <= 2 ? "#d8a24f" : r.place === 3 ? "#bdb7ab" : "#8f8577"};font-weight:bold;font-size:22px">${placeLabel(r.place)}</div><div class="small muted" style="margin-top:2px">${r.car} · Score ${r.score}</div>${buckLine}</div><div class='taped-note' style='margin-bottom:12px'><div class='feed-kicker'>NIGHT OF THE SHOW</div><div class='feed-text'>${vibeLine}</div>${buckVibe ? `<div class='feed-meta'>${buckVibe}</div>` : ""}</div>${r.localSponsorCovered ? `<div class="small good" style="margin-bottom:8px">Entry fee covered by town sponsor.</div>` : ""}${rewardLine}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px">${[
-            ["Prize", `$${fmt(r.prize)}`, "#87c77b"],
-            r.bonusCash > 0
-              ? ["Sponsor", `+$${fmt(r.bonusCash)}`, "#d8a24f"]
-              : null,
-            ["Entry", `-$${fmt(r.fee)}`, "#d38a76"],
-            ["Fuel", `-${r.fuelUsed} gal`, "#7da0c2"],
-            [
-              "Net",
-              `${r.net >= 0 ? "+" : ""}$${fmt(r.net)}`,
-              r.net >= 0 ? "#87c77b" : "#d38a76",
-            ],
-            ["Followers", `+${fmtF(r.gained)}`, "#b68ae6"],
-          ]
-            .filter(Boolean)
-            .map(
-              ([label, val, col]) =>
-                `<div style="background:#191511;border:1px solid #41372f;border-radius:8px;padding:10px 8px;text-align:center"><div style="color:${col};font-weight:bold;font-size:18px">${val}</div><div class="tiny muted" style="letter-spacing:.5px">${label.toUpperCase()}</div></div>`,
-            )
-            .join("")}`,
-          r.show,
-          r.place === 1 ? "#d8a24f" : "#a79a86",
-        )}${panel("Final Standings", `${r.standings.map((e, i) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 6px;border-bottom:${i < r.standings.length - 1 ? "1px dashed #453a31" : "none"};background:${e.isPlayer ? "rgba(79,112,74,0.18)" : e.isRival ? "rgba(112,40,40,0.15)" : "transparent"};border-radius:4px"><div style="display:flex;gap:10px"><span style="color:${i === 0 ? "#d8a24f" : "#7d7468"};font-weight:bold;width:18px">${i + 1}</span><span style="color:${e.isPlayer ? "#9fd18e" : e.isRival ? "#e07070" : "#e4d8c1"};font-size:14px">${e.name}${e.isRival ? `<span class="rival-badge">RIVAL</span>` : ""}</span></div><span class="small muted">${e.score}</span></div>`).join("")}`, "", "#7da0c2")}</div><div>${renderUpcomingBar()}${panel("After the Show", `${button("Back to Garage", "state.postShowWeekLocked=false; setView('garage')", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "Return to the garage and keep building.", "#d8a24f")}</div></div>`;
+        const placeColor = r.place === 1 ? "#d8a24f" : r.place === 2 ? "#d8a24f" : r.place === 3 ? "#bdb7ab" : "#8f8577";
+        const placeIcon = r.place === 1 ? "🏆" : r.place === 2 ? "🥈" : r.place === 3 ? "🥉" : "📋";
+        const heroBody = `<div style="text-align:center;padding:6px 0 4px"><div style="font-size:48px;line-height:1;margin-bottom:6px">${placeIcon}</div><div style="color:${placeColor};font-weight:bold;font-size:34px;letter-spacing:0.5px;margin-bottom:6px">${placeLabel(r.place)}</div><div class="small" style="color:var(--text);margin-bottom:2px">${r.car} · Score ${r.score}</div>${buckLine}${r.localSponsorCovered ? `<div class="tiny good" style="margin-top:8px">Entry fee covered by town sponsor.</div>` : ""}${rewardLine ? `<div style="margin-top:10px">${rewardLine}</div>` : ""}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-top:14px">${[
+          ["Prize", `$${fmt(r.prize)}`, "#87c77b"],
+          r.bonusCash > 0 ? ["Sponsor", `+$${fmt(r.bonusCash)}`, "#d8a24f"] : null,
+          ["Entry", `-$${fmt(r.fee)}`, "#d38a76"],
+          ["Fuel", `-${r.fuelUsed} gal`, "#7da0c2"],
+          ["Net", `${r.net >= 0 ? "+" : ""}$${fmt(r.net)}`, r.net >= 0 ? "#87c77b" : "#d38a76"],
+          ["Followers", `+${fmtF(r.gained)}`, "#b68ae6"],
+        ].filter(Boolean).map(([label, val, col]) => `<div style="background:#191511;border:1px solid #41372f;border-radius:8px;padding:9px 6px;text-align:center"><div style="color:${col};font-weight:bold;font-size:16px">${val}</div><div class="tiny muted" style="letter-spacing:.5px;margin-top:2px">${label.toUpperCase()}</div></div>`).join("")}</div>`;
+        const standingsBody = `${r.standings.map((e, i) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 6px;border-bottom:${i < r.standings.length - 1 ? "1px dashed #453a31" : "none"};background:${e.isPlayer ? "rgba(79,112,74,0.18)" : e.isRival ? "rgba(112,40,40,0.15)" : "transparent"};border-radius:4px"><div style="display:flex;gap:10px"><span style="color:${i === 0 ? "#d8a24f" : "#7d7468"};font-weight:bold;width:18px">${i + 1}</span><span style="color:${e.isPlayer ? "#9fd18e" : e.isRival ? "#e07070" : "#e4d8c1"};font-size:14px">${e.name}${e.isRival ? `<span class="rival-badge">RIVAL</span>` : ""}</span></div><span class="small muted">${e.score}</span></div>`).join("")}`;
+        const storyBody = `${carPreview(car).replace(workspaceBackdropFrame(), showBackdropFrame(r.tier))}
+          <div class="cinematic-line"><div class="hero-kicker">ARRIVAL</div><div class="small" style="color:var(--text);line-height:1.6">${r.arrivalLine || ""}</div></div>
+          <div class="cinematic-line"><div class="hero-kicker">JUDGING</div><div class="small" style="color:var(--text);line-height:1.6">${r.judgingLine || ""}</div></div>
+          <div class='taped-note' style='margin-top:4px'><div class='feed-kicker'>NIGHT OF THE SHOW</div><div class='feed-text'>${vibeLine}</div>${buckVibe ? `<div class='feed-meta'>${buckVibe}</div>` : ""}</div>`;
+        return `<div class="grid-main"><div>${panel(
+          placeLabel(r.place) + " · " + r.show,
+          heroBody,
+          "",
+          placeColor,
+        )}${panel("Final Standings", standingsBody, "", "#7da0c2")}${panel("Show Story", storyBody, "How the night played out", "#a79a86")}</div><div>${renderUpcomingBar()}${panel("After the Show", `${button("Back to Garage", "state.postShowWeekLocked=false; setView('garage')", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "Return to the garage and keep building.", "#d8a24f")}</div></div>`;
       }
 
       function renderDealership() {
