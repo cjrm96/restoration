@@ -4833,6 +4833,8 @@
           installsDone: 0,
           collabAvailable: false,
           wifeCarSold: false,
+          gloveBoxFound: false,
+          bribeActive: false,
           noticeQueue: [],
           tickerCollapsed: false,
           postShowWeekLocked: false,
@@ -5306,6 +5308,13 @@
             10,
             (state.mechanic.trust || 0) + choice.mechanicTrust,
           );
+        }
+        if (choice.gloveBoxAction) {
+          if (choice.gloveBoxAction.bribe) state.bribeActive = true;
+          // Auto-enter the show after the scene closes — runs after the
+          // current scene-resolution cycle so state is settled first.
+          const showId = choice.gloveBoxAction.showId;
+          setTimeout(() => beginShowEntry(showId), 60);
         }
         if (choice.toast)
           toast(
@@ -7203,6 +7212,51 @@
   ═══════════════════════════════════════════ */
       function beginShowEntry(showId) {
         if (state.showLoading || state.showStage) return;
+        // First-Local glove-box scene: fires once, before the player's very
+        // first Local show. Player picks pay-it-forward or bribe-the-judge.
+        const showPeek = getCurrentShows().find((s) => s.id === showId);
+        const firstLocal =
+          showPeek &&
+          showPeek.tier === "Local" &&
+          !state.gloveBoxFound &&
+          !state.history.some((h) => h.tier === "Local");
+        if (firstLocal) {
+          state.gloveBoxFound = true;
+          const fee = showPeek.fee;
+          queueScene({
+            id: "glove_box_first_local",
+            title: "$" + fee + " in the glove box",
+            emoji: "💵",
+            text: `You're rolling in early, getting in line for the registration table. Reaching for the parking pass, your hand finds a folded $${fee} bill wedged behind it. You don't remember putting it there. The registration line ahead has Mike from down the street, looking at his wallet like it owes him money. Off to the side, the head judge is alone for a second.`,
+            choices: [
+              {
+                label: `Cover Mike's entry — kid's been working on his truck for years`,
+                followers: 25,
+                lore: 8,
+                gloveBoxAction: { showId: showId },
+                note: "Mike couldn't believe it. Said he'd pay you back, both of you knew he wouldn't, both of you were okay with it. Word travels in this scene — somebody is going to remember this for a long time.",
+                noteTone: "event-good",
+              },
+              {
+                label: `Slip the head judge $${fee} — see what happens`,
+                lore: 6,
+                gloveBoxAction: { showId: showId, bribe: true },
+                note: "He pocketed it without a word and walked off. You felt clever for about ten seconds. The judging today might tilt your way. The scene picks up on this stuff eventually, but today is today.",
+                noteTone: "event-bad",
+              },
+              {
+                label: `Pocket the cash, ignore both of them`,
+                money: fee,
+                lore: 2,
+                gloveBoxAction: { showId: showId },
+                note: `You found $${fee} and kept $${fee}. The simplest decision of the day.`,
+                noteTone: "event-good",
+              },
+            ],
+          });
+          requestRender("full");
+          return;
+        }
         state.showLoading = true;
         state.pendingShowId = showId;
         playSfx("engineRev");
@@ -7247,7 +7301,9 @@
 
         const effectiveCar = { ...currentCar() };
         const effectiveOverall = getOverall(effectiveCar);
-        const myScore = clamp(effectiveOverall + (Math.random() * 20 - 10));
+        const bribeBoost = state.bribeActive ? 15 : 0;
+        if (state.bribeActive) state.bribeActive = false;
+        const myScore = clamp(effectiveOverall + (Math.random() * 20 - 10) + bribeBoost);
 
         let compPool = [...COMPS]
           .sort(() => Math.random() - 0.5)
