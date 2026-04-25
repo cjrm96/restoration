@@ -1940,8 +1940,8 @@
             </button>
           </div>
         </div>
-        <div class="car-tabs" id="carTabs"></div>
         <div class="tabs" id="mainTabs"></div>
+        <div class="car-tabs" id="carTabs"></div>
         <div class="content" id="appContent"></div>
       </div>
     </div>
@@ -9534,18 +9534,24 @@ body{position:relative!important;display:block!important;}
         ].join("|");
         if (!force && tabsSignature === chromeTabsSignature) return;
         chromeTabsSignature = tabsSignature;
-        getEl("carTabs").innerHTML =
-          state.cars.length > 1
-            ? state.cars
-                .map((c) =>
-                  tab(
-                    `${c.emoji} ${c.year} ${c.make}`,
-                    c.id === state.carId,
-                    `setCar(${c.id})`,
-                  ),
-                )
-                .join("")
-            : "";
+        const carTabsApply =
+          state.view === "workshop" ||
+          state.view === "garage" ||
+          state.view === "shows";
+        const carTabsEl = getEl("carTabs");
+        const showCarTabs = carTabsApply && state.cars.length > 1;
+        carTabsEl.innerHTML = showCarTabs
+          ? state.cars
+              .map((c) =>
+                tab(
+                  `${c.emoji} ${c.year} ${c.make}`,
+                  c.id === state.carId,
+                  `setCar(${c.id})`,
+                ),
+              )
+              .join("")
+          : "";
+        carTabsEl.style.display = showCarTabs ? "" : "none";
 
         getEl("mainTabs").innerHTML = [
           ["workshop", "🔧 Build"],
