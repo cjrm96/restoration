@@ -6291,6 +6291,9 @@
       let marketplacePingTimer = null;
       let worldTickerTimer = null;
       let worldTickerPaused = false;
+      let hoodClickCount = 0;
+      let hoodClickReset = 0;
+      let cheatPromptOpen = false;
 
       function saveGame(force = false) {
         try {
@@ -8369,7 +8372,7 @@ body{position:relative!important;display:block!important;}
           sprite = `<g shape-rendering="crispEdges"><rect x="40" y="111" width="246" height="12" fill="${baseColor}"/><rect x="52" y="103" width="42" height="8" fill="${baseColor}"/><rect x="94" y="95" width="34" height="8" fill="${baseColor}"/><rect x="128" y="87" width="104" height="8" fill="${baseColor}"/><rect x="232" y="91" width="34" height="8" fill="${baseColor}"/><rect x="266" y="95" width="16" height="8" fill="${baseColor}"/><rect x="92" y="79" width="22" height="8" fill="${baseColor}"/><rect x="114" y="71" width="38" height="8" fill="${roofColor}"/><rect x="152" y="63" width="64" height="16" fill="${roofColor}"/><rect x="216" y="71" width="32" height="8" fill="${roofColor}"/><rect x="248" y="79" width="24" height="8" fill="${baseColor}"/><rect x="122" y="71" width="20" height="12" fill="${windowColor}"/><rect x="144" y="67" width="22" height="16" fill="${windowColor}"/><rect x="168" y="67" width="22" height="16" fill="${windowColor}"/><rect x="192" y="67" width="26" height="16" fill="${windowColor}"/><rect x="220" y="71" width="18" height="12" fill="${windowColor}"/><rect x="74" y="106" width="172" height="4" fill="${trimColor}"/><rect x="88" y="98" width="144" height="3" fill="${trimColor}"/><rect x="48" y="111" width="16" height="3" fill="${trimColor}"/><rect x="262" y="111" width="16" height="3" fill="${trimColor}"/><rect x="40" y="123" width="248" height="4" fill="${shadowColor}" opacity=".8"/>${pixelWheel(96, 126, wheelColor, wheelHub, wheelSpoke)}${pixelWheel(244, 126, wheelColor, wheelHub, wheelSpoke)}</g>`;
         }
 
-        return `<div class="car-preview-wrap"><div class="flex between center" style="gap:10px;margin-bottom:8px"><div><div style="color:var(--text-bright);font-weight:bold;font-size:14px">${car.year} ${car.make} ${car.model}</div><div style="color:#a7987f;font-size:11px">Stage: ${stage}</div></div><div style="color:#d2a14b;font-weight:bold;font-size:12px">${overall} overall</div></div><div class="art-backdrop-shell">${workspaceBackdropFrame()}<div class="car-preview-stage"><svg viewBox="0 0 340 190" preserveAspectRatio="xMidYMax meet" style="width:100%;height:100%;display:block;image-rendering:pixelated"><defs><filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity=".35"/></filter></defs><rect x="26" y="30" width="68" height="42" fill="#111" opacity=".15"/><rect x="32" y="36" width="56" height="30" fill="#d7c6a0" opacity=".08"/><g opacity=".18" shape-rendering="crispEdges"><rect x="62" y="148" width="44" height="4" fill="#000"/><rect x="118" y="150" width="104" height="4" fill="#000"/><rect x="232" y="148" width="46" height="4" fill="#000"/></g><g transform="translate(0,${mechHealth < 18 ? 4 : mechHealth < 35 ? 2 : 0})" filter="url(#shadow)">${sprite}</g><g opacity="${rustOpacity}" shape-rendering="crispEdges"><rect x="92" y="102" width="12" height="5" fill="#8a4517"/><rect x="166" y="86" width="10" height="4" fill="#7c3516"/><rect x="218" y="100" width="13" height="5" fill="#8a4517"/></g><g opacity="${dentOpacity}" shape-rendering="crispEdges"><rect x="140" y="103" width="18" height="3" fill="#1a2127"/><rect x="196" y="107" width="10" height="3" fill="#1a2127"/></g><g opacity="${shineOpacity}" shape-rendering="crispEdges"><rect x="102" y="82" width="96" height="2" fill="#fff"/><rect x="118" y="98" width="122" height="2" fill="#fff"/></g>${car.paint < 20 ? `<g opacity=".8" shape-rendering="crispEdges"><rect x="68" y="104" width="16" height="5" fill="#111827"/><rect x="236" y="100" width="18" height="5" fill="#111827"/></g>` : ""}${smokeOpacity > 0 ? `<g opacity="${smokeOpacity}"><rect x="70" y="56" width="6" height="6" fill="#cdd3d8"/><rect x="74" y="50" width="8" height="8" fill="#bcc4cb"/><rect x="82" y="44" width="8" height="8" fill="#d6dde2"/></g>` : ""}</svg></div></div></div>`;
+        return `<div class="car-preview-wrap"><div class="flex between center" style="gap:10px;margin-bottom:8px"><div><div style="color:var(--text-bright);font-weight:bold;font-size:14px">${car.year} ${car.make} ${car.model}</div><div style="color:#a7987f;font-size:11px">Stage: ${stage}</div></div><div style="color:#d2a14b;font-weight:bold;font-size:12px">${overall} overall</div></div><div class="art-backdrop-shell" onclick="popTheHood()" style="cursor:pointer">${workspaceBackdropFrame()}<div class="car-preview-stage"><svg viewBox="0 0 340 190" preserveAspectRatio="xMidYMax meet" style="width:100%;height:100%;display:block;image-rendering:pixelated"><defs><filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity=".35"/></filter></defs><rect x="26" y="30" width="68" height="42" fill="#111" opacity=".15"/><rect x="32" y="36" width="56" height="30" fill="#d7c6a0" opacity=".08"/><g opacity=".18" shape-rendering="crispEdges"><rect x="62" y="148" width="44" height="4" fill="#000"/><rect x="118" y="150" width="104" height="4" fill="#000"/><rect x="232" y="148" width="46" height="4" fill="#000"/></g><g transform="translate(0,${mechHealth < 18 ? 4 : mechHealth < 35 ? 2 : 0})" filter="url(#shadow)">${sprite}</g><g opacity="${rustOpacity}" shape-rendering="crispEdges"><rect x="92" y="102" width="12" height="5" fill="#8a4517"/><rect x="166" y="86" width="10" height="4" fill="#7c3516"/><rect x="218" y="100" width="13" height="5" fill="#8a4517"/></g><g opacity="${dentOpacity}" shape-rendering="crispEdges"><rect x="140" y="103" width="18" height="3" fill="#1a2127"/><rect x="196" y="107" width="10" height="3" fill="#1a2127"/></g><g opacity="${shineOpacity}" shape-rendering="crispEdges"><rect x="102" y="82" width="96" height="2" fill="#fff"/><rect x="118" y="98" width="122" height="2" fill="#fff"/></g>${car.paint < 20 ? `<g opacity=".8" shape-rendering="crispEdges"><rect x="68" y="104" width="16" height="5" fill="#111827"/><rect x="236" y="100" width="18" height="5" fill="#111827"/></g>` : ""}${smokeOpacity > 0 ? `<g opacity="${smokeOpacity}"><rect x="70" y="56" width="6" height="6" fill="#cdd3d8"/><rect x="74" y="50" width="8" height="8" fill="#bcc4cb"/><rect x="82" y="44" width="8" height="8" fill="#d6dde2"/></g>` : ""}</svg></div></div></div>`;
       }
 
       /* ═══════════════════════════════════════════
@@ -8410,6 +8413,125 @@ body{position:relative!important;display:block!important;}
           : "";
         const primaryLabel = isLast ? "Get after it →" : "Next →";
         root.innerHTML = `<div class="modal"><div class="modal-card tutorial-modal show-beat"><div class="tutorial-progress">${pips}</div><div class="tutorial-body"><div class="tutorial-kicker">${beat.kicker}</div><div class="tutorial-art">${beat.art}</div><div class="tutorial-headline">${beat.headline}</div><div class="tutorial-body-text">${beat.body}</div>${pointsMarkup}</div><div class="tutorial-actions"><button class="tutorial-primary" onclick="advanceTutorial()">${primaryLabel}</button>${isLast ? "" : `<button class="tutorial-skip" onclick="skipTutorial()">Skip intro</button>`}</div></div></div>`;
+        return true;
+      }
+
+      function popTheHood() {
+        const now = Date.now();
+        if (now - hoodClickReset > 2000) hoodClickCount = 0;
+        hoodClickReset = now;
+        hoodClickCount++;
+        if (hoodClickCount >= 5) {
+          hoodClickCount = 0;
+          cheatPromptOpen = true;
+          playSfx("ding");
+          requestRender("full");
+        }
+      }
+      function closeCheatPrompt() {
+        cheatPromptOpen = false;
+        requestRender("full");
+      }
+      function submitCheatCode() {
+        const input = getEl("cheatCodeInput");
+        if (!input) return;
+        const code = input.value.trim().toUpperCase();
+        if (!code) return;
+        if (applyCheatCode(code)) {
+          cheatPromptOpen = false;
+          saveGame();
+          requestRender("full");
+        } else {
+          toast(`No dice on "${code}". Nothing rattled loose.`, "err");
+          input.value = "";
+        }
+      }
+      function applyCheatCode(code) {
+        if (code === "BARNFIND") {
+          state.money += 50000;
+          recordMoneyChange(50000, "Cheat: BARNFIND");
+          pushNotice(
+            "🏚 Barn find. Dragged home a Cobra shell, parted it out on Marketplace in an afternoon. +$50,000.",
+            "good",
+          );
+          return true;
+        }
+        if (code === "DALE") {
+          if (!state.mechanic)
+            state.mechanic = { metOnce: false, trust: 0, shopVisits: 0, milestoneSeen: false };
+          state.mechanic.metOnce = true;
+          state.mechanic.trust = 10;
+          state.mechanic.milestoneSeen = true;
+          pushNotice(
+            "🔧 Dale says he trusts you with anything now. Full 15% shop discount permanent.",
+            "good",
+          );
+          return true;
+        }
+        if (code === "BUILT") {
+          const car = currentCar();
+          if (!car) {
+            toast("No car in the garage to upgrade.", "err");
+            return true;
+          }
+          CATS.forEach((cat) => {
+            car[cat] = clamp((car[cat] || 0) + 15);
+          });
+          pushNotice(
+            `🛠 ${car.year} ${car.make} jumped 15 points in every category. Don't tell anybody where you got the parts.`,
+            "good",
+          );
+          return true;
+        }
+        if (code === "SNAPON") {
+          const wsIdx = getWorkspaceIndex(state.workshopLevel);
+          const unlocked = TOOLS_LIST.filter(
+            (t) =>
+              !state.ownedTools.includes(t.id) &&
+              getWorkspaceIndex(t.workshop) <= wsIdx,
+          );
+          const storage = toolStorageData();
+          const headroom = Math.max(0, storage.maxTools - state.ownedTools.length);
+          const take = unlocked.slice(0, headroom);
+          take.forEach((t) => state.ownedTools.push(t.id));
+          pushNotice(
+            `🟡 Snap-on driver unloaded ${take.length} tool${take.length === 1 ? "" : "s"} on the bench. Didn't ask for payment. Said "we'll figure it out."`,
+            "good",
+          );
+          return true;
+        }
+        if (code === "LEGEND") {
+          state.followers = MAX_FOLLOWERS;
+          pushNotice(
+            "🎥 A clip of your build went nuclear overnight. 1,000,000 followers. Your phone has stopped being useful.",
+            "good",
+          );
+          return true;
+        }
+        if (code === "HAYLEY") {
+          const warehouseIdx = WORKSPACE_LEVELS.findIndex((w) => w.id === "warehouse");
+          if (warehouseIdx < 0) return false;
+          if (getWorkspaceIndex(state.workshopLevel) >= warehouseIdx) {
+            toast("Already in the warehouse. Enjoy it.", "err");
+            return true;
+          }
+          state.workshopLevel = "warehouse";
+          pushNotice(
+            "🎰 Hayley hit the Megabucks at the casino. Walked in with the check and handed you the keys to a warehouse. Said 'now fix the truck somewhere with a roof.'",
+            "good",
+          );
+          return true;
+        }
+        return false;
+      }
+      function renderCheatModal() {
+        const root = getEl("modalRoot");
+        if (!cheatPromptOpen) return false;
+        root.innerHTML = `<div class="modal"><div class="modal-card show-beat" style="max-width:440px"><div class="feed-kicker" style="text-align:center;margin-bottom:6px">Glove Box</div><div style="text-align:center;font-size:44px;margin-bottom:10px">💼</div><div style="color:var(--gold);font-weight:bold;font-size:20px;text-align:center;margin-bottom:6px">Found something under the manual</div><div class="small muted" style="text-align:center;margin-bottom:14px;line-height:1.6">Folded up with the old insurance papers. Type the word to see what it does.</div><input id="cheatCodeInput" type="text" autocomplete="off" spellcheck="false" placeholder="CODE" style="width:100%;background:#181410;border:1px solid #41372f;border-radius:8px;padding:10px 12px;color:var(--text-bright);font-family:inherit;font-size:15px;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:12px" onkeydown="if(event.key==='Enter'){event.preventDefault();submitCheatCode();}"/><div class="btn-row two">${button("Try It", "submitCheatCode()", false, "", "width:100%")}${button("Shut the glove box", "closeCheatPrompt()", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:var(--text)")}</div></div></div>`;
+        setTimeout(() => {
+          const input = getEl("cheatCodeInput");
+          if (input) input.focus();
+        }, 20);
         return true;
       }
 
@@ -9297,6 +9419,7 @@ body{position:relative!important;display:block!important;}
 
       function getModalLayerSignature() {
         return [
+          cheatPromptOpen ? "cheat" : "",
           state.tutorialComplete ? "" : "tut:" + (state.tutorialStep || 0),
           state.pendingVictory ? "victory" : "",
           state.showLoading ? 1 : 0,
@@ -9320,14 +9443,16 @@ body{position:relative!important;display:block!important;}
         if (!force && nextModalSignature === modalLayerSignature) return;
         modalLayerSignature = nextModalSignature;
         modalRoot.innerHTML = "";
-        if (!renderTutorialModal()) {
-          if (!renderVictoryModal()) {
-            if (!renderShowCinematicModal()) {
-              if (!renderPendingSceneModal()) {
-                if (!renderNoticeModal()) {
-                  renderStoreModal();
-                  renderEventModal();
-                  renderMarketplaceOfferModal();
+        if (!renderCheatModal()) {
+          if (!renderTutorialModal()) {
+            if (!renderVictoryModal()) {
+              if (!renderShowCinematicModal()) {
+                if (!renderPendingSceneModal()) {
+                  if (!renderNoticeModal()) {
+                    renderStoreModal();
+                    renderEventModal();
+                    renderMarketplaceOfferModal();
+                  }
                 }
               }
             }
