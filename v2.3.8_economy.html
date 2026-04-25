@@ -9502,10 +9502,25 @@ body{position:relative!important;display:block!important;}
                       const shopBlocked =
                         state.money < shopCost ||
                         activeTasksByMethod(car.id, "diy").length;
+                      const diyLabel = `${item.recommendedMethod === "diy" ? "★ " : ""}Start DIY · $${fmt(diyCost)}`;
+                      const shopLabel = `${item.recommendedMethod === "shop" ? "★ " : ""}Send to Shop · $${fmt(shopCost)}`;
+                      const blockNote = activeTasksByMethod(car.id, "shop").length
+                        ? "Finish shop work before starting a DIY job."
+                        : activeTasksByMethod(car.id, "diy").length
+                          ? "Finish DIY work before sending the car to the shop."
+                          : state.money < Math.min(diyCost, shopCost)
+                            ? "Save a little more cash to start the next move."
+                            : "";
                       return panel(
                         `${p.name}${starterFree ? ` <span class="badge" style="color:var(--green)">NEIGHBOR GIFT</span>` : ""}`,
-                        `<div class="small muted" style="margin-bottom:8px">Recommended path: <span style="color:var(--gold);font-weight:bold">${item.recommendedMethod === "diy" ? "DIY" : "Send to Shop"}</span></div><div class="smart-tag">${item.tag}</div><div class="small muted" style="margin-bottom:8px">DIY: <span style="color:var(--text);font-weight:bold">$${fmt(diyCost)}</span> <span style="color:var(--text-dim)">·</span> Shop: <span style="color:var(--text);font-weight:bold">$${fmt(shopCost)}</span></div><div class="small muted" style="margin-bottom:10px">Improvement: <span class="good" style="font-weight:bold">+${p.imp} ${CAT_LABELS[p.category]}</span></div><div class="tiny muted" style="margin-bottom:10px">${item.why}</div>${missing.length ? `<div class="tiny warn" style="margin-bottom:10px">Missing tools for DIY: ${missing.join(", ")}</div>` : `<div class="tiny good" style="margin-bottom:10px">DIY is ready to go with your current tools.</div>`}${activeTask ? `<div class="info-box" data-task-id="${activeTask.id}"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:6px">Already in progress</div>${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>` : `<div class="btn-row two">${button(`Start DIY · $${fmt(diyCost)}`, `installPart(${p.id},'diy',false)`, diyBlocked, "", "width:100%;")}${button(`Send to Shop · $${fmt(shopCost)}`, `installPart(${p.id},'shop',false)`, shopBlocked, "", "width:100%;background:#7da0c2;border-color:var(--blue-bright);")}</div><div class="tiny muted" style="margin-top:8px">${activeTasksByMethod(car.id, "shop").length ? "Finish shop work before starting a DIY job." : activeTasksByMethod(car.id, "diy").length ? "Finish DIY work before sending the car to the shop." : state.money < Math.min(diyCost, shopCost) ? "Save a little more cash to start the next move." : "Both paths are available right now — pick your play."}</div>`}`,
-                        `${p.tier} · ${CAT_LABELS[p.category]} · ${p.desc}`,
+                        `<div class="small muted" style="margin-bottom:10px;line-height:1.55">${item.why}</div>
+                         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px"><span class="smart-tag">${item.tag}</span><span class="tiny good" style="font-weight:bold">+${p.imp} ${CAT_LABELS[p.category]}</span></div>
+                         ${missing.length ? `<div class="tiny warn" style="margin-bottom:10px">Missing tools for DIY: ${missing.join(", ")}</div>` : ""}
+                         ${activeTask
+                           ? `<div class="info-box" data-task-id="${activeTask.id}"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:6px">In progress</div>${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>`
+                           : `<div class="btn-row two">${button(diyLabel, `installPart(${p.id},'diy',false)`, diyBlocked, "", "width:100%;")}${button(shopLabel, `installPart(${p.id},'shop',false)`, shopBlocked, "", "width:100%;background:#7da0c2;border-color:var(--blue-bright);")}</div>${blockNote ? `<div class="tiny muted" style="margin-top:8px">${blockNote}</div>` : ""}`
+                         }`,
+                        `${p.tier} · ${CAT_LABELS[p.category]}`,
                         item.recommendedMethod === "diy"
                           ? "#87c77b"
                           : "#7da0c2",
