@@ -4807,6 +4807,7 @@
           legacyBuilds: [],
           pendingVictory: null,
           pendingVictoryTrigger: false,
+          pendingNationalEnd: false,
           buck: {
             metOnce: false,
             firstImpression: null,
@@ -7382,6 +7383,11 @@
         if (place === 1 && show.tier === "National" && effectiveOverall >= 90) {
           state.won = true;
           state.pendingVictoryTrigger = true;
+        } else if (place === 1 && show.tier === "National") {
+          // Won the National at under 90 overall — no trophy build, but the
+          // season still ends here. Cinematic plays through, then the season
+          // wrap fires.
+          state.pendingNationalEnd = true;
         }
         if (place === 1) {
           pushRivalNote(
@@ -7426,6 +7432,13 @@
           if (state.pendingVictoryTrigger) {
             state.pendingVictoryTrigger = false;
             triggerVictory();
+          } else if (state.pendingNationalEnd) {
+            state.pendingNationalEnd = false;
+            state.seasonWrap = true;
+            toast(
+              "National's done. The trophy's yours, the season closes out here.",
+              "event-good",
+            );
           } else {
             processEventQueue();
             drainWeekAdvanceQueue("queued");
@@ -7567,6 +7580,7 @@
         state.won = false;
         state.pendingVictory = null;
         state.pendingVictoryTrigger = false;
+        state.pendingNationalEnd = false;
         state.seasonWrap = false;
         state.history = [];
         state.activeRestorations = [];
