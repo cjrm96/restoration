@@ -9283,7 +9283,23 @@ body{position:relative!important;display:block!important;}
           return false;
         const item = state.partsInventory.find((i) => i.id === offer.itemId);
         if (!item) return false;
-        root.innerHTML = `<div class="modal"><div class="modal-card" style="max-width:500px"><div style="text-align:center;font-size:40px;margin-bottom:8px">💬</div><div style="color:#7da0c2;font-weight:bold;font-size:22px;text-align:center;margin-bottom:8px">the Marketplace Message</div><div class="small muted" style="text-align:center;margin-bottom:14px">${offer.buyer || "Buyer"} wants ${item.name}</div><div class="info-box"><div class="tiny muted" style="margin-bottom:6px">Message</div><div class="small" style="color:var(--text);line-height:1.6">"${offer.message}"</div></div><div class="btn-row two">${button(`Take the deal · $${fmt(offer.offer)}`, "respondMarketplaceOffer(true)", false, "", "width:100%")}${button("Pass for now", "respondMarketplaceOffer(false)", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:var(--text)")}<div class="tiny muted" style="margin-top:12px">Buyer type: <span style="color:var(--gold)">${offer.buyerType}</span> · Garage Lore perk: ${Math.round(garageLoreDiscount() * 100)}% better offers</div></div></div>`;
+        const baseline = item.baselineValue || 0;
+        const asking = item.askingPrice || 0;
+        const offerAmount = offer.offer || 0;
+        const baselinePct = baseline > 0 ? (offerAmount / baseline) * 100 : 100;
+        const verdict =
+          baseline <= 0
+            ? { label: "No baseline reference", color: "var(--text-dim)", tone: "" }
+            : baselinePct >= 105
+              ? { label: `Above baseline · +${Math.round(baselinePct - 100)}%`, color: "#9fd18e", tone: "Strong offer." }
+              : baselinePct >= 90
+                ? { label: `Near baseline · ${baselinePct >= 100 ? "+" : "-"}${Math.round(Math.abs(baselinePct - 100))}%`, color: "#e8d8b2", tone: "Fair money." }
+                : baselinePct >= 75
+                  ? { label: `Under baseline · -${Math.round(100 - baselinePct)}%`, color: "#e9c46a", tone: "A little low." }
+                  : { label: `Lowball · -${Math.round(100 - baselinePct)}%`, color: "#e57b7b", tone: "Way under value." };
+        const compareRow = (label, amount, color = "var(--text)") =>
+          `<div class="flex between center" style="padding:5px 0"><span class="tiny muted">${label}</span><span class="small" style="color:${color};font-weight:bold">$${fmt(amount)}</span></div>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card" style="max-width:500px"><div style="text-align:center;font-size:40px;margin-bottom:8px">💬</div><div style="color:#7da0c2;font-weight:bold;font-size:22px;text-align:center;margin-bottom:8px">Marketplace Message</div><div class="small muted" style="text-align:center;margin-bottom:14px">${offer.buyer || "Buyer"} wants ${item.name}</div><div class="info-box" style="margin-bottom:10px"><div class="tiny muted" style="margin-bottom:6px">Message</div><div class="small" style="color:var(--text);line-height:1.6">"${offer.message}"</div></div><div class="info-box" style="margin-bottom:14px"><div class="tiny" style="color:var(--gold-soft);font-weight:bold;letter-spacing:1px;margin-bottom:6px">THE NUMBERS</div>${compareRow("Their offer", offerAmount, verdict.color)}${compareRow("Your asking price", asking)}${baseline > 0 ? compareRow("Baseline value", baseline, "var(--text-dim)") : ""}<div style="margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.08);text-align:center"><div class="small" style="color:${verdict.color};font-weight:bold">${verdict.label}</div>${verdict.tone ? `<div class="tiny muted" style="margin-top:3px">${verdict.tone}</div>` : ""}</div></div><div class="btn-row two">${button(`Take the deal · $${fmt(offerAmount)}`, "respondMarketplaceOffer(true)", false, "", "width:100%")}${button("Pass for now", "respondMarketplaceOffer(false)", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:var(--text)")}</div><div class="tiny muted" style="margin-top:12px;text-align:center">Buyer type: <span style="color:var(--gold)">${offer.buyerType}</span> · Garage Lore perk: ${Math.round(garageLoreDiscount() * 100)}% better offers</div></div></div>`;
         return true;
       }
       function renderFineTuningPanel(car) {
