@@ -429,10 +429,14 @@
         align-items: center;
         justify-content: center;
         padding: 16px;
+        overscroll-behavior: contain;
       }
       .modal-card {
         width: 100%;
         max-width: 440px;
+        max-height: calc(100vh - 32px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
         background: linear-gradient(180deg, #2b241e 0%, #1d1814 100%);
         border: 1px solid #5a4b3d;
         border-radius: 12px;
