@@ -9676,8 +9676,6 @@ body{position:relative!important;display:block!important;}
             })
             .join("")}</div>`,
         );
-        const sceneTension = renderHeroCallout("Show Night", roadworthy(car) ? "The truck is ready to risk public opinion. Now give the crowd something to talk about." : "Do not roll in half-built and ask the crowd for mercy.", "SCENE TENSION");
-        const showCircuitRead = `<div class='taped-note'><div class='feed-kicker'>SHOW CIRCUIT READ</div><div class='feed-text'>${roadworthy(car) ? "The car can drive itself there. Now the only question is whether it can survive public opinion." : "You are not ready for the field yet. Right now this is still a garage argument, not a show car."}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div>`;
         const { nextShow, nextShowText } = getUpcomingSummary();
         const showNotes = panel(
           "Show Notes",
@@ -9685,7 +9683,7 @@ body{position:relative!important;display:block!important;}
           "",
           "#7da0c2",
         );
-        return `<div class="grid-main-shows"><div>${showPrepBoard}${sceneTension}${showCircuitRead}</div><div>${renderUpcomingBar()}${showNotes}</div></div>`;
+        return `<div class="grid-main-shows"><div>${showPrepBoard}</div><div>${renderUpcomingBar()}${showNotes}</div></div>`;
       }
 
 
