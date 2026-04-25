@@ -6375,6 +6375,17 @@
             Math.floor(Math.random() * archetype.openers.length)
           ];
         const message = `${buyerName}: ${openerTemplate.replace(/%OFFER%/g, offer)}`;
+        // "Get it Gone" tone — the player explicitly opted out of
+        // negotiating. Reasonable offers auto-accept with just a
+        // toast; lowballs walk away silently. Keeps mid/late game
+        // from drowning the player in offer modals when they have
+        // a stash of clearance parts listed.
+        if (item.listingTone === "gone") {
+          if (offer >= (item.baselineValue || 0) * 0.5) {
+            completeMarketplaceSale(item, offer, buyerName);
+          }
+          return true;
+        }
         let scenario = null;
         if (archetype.id === "night")
           scenario = MARKETPLACE_SCENARIOS.find(
@@ -9819,6 +9830,7 @@ body{position:relative!important;display:block!important;}
           ${button("Get it Gone", `listPartOnMarketplaceWithTone('${item.id}','gone')`, false, "", "width:100%;padding:6px 8px;font-size:11px;background:#7da0c2;border-color:var(--blue-bright)")}
           ${button("Open for Trade", `listPartOnMarketplaceWithTone('${item.id}','trade')`, false, "", "width:100%;padding:6px 8px;font-size:11px;background:#4a3c2e;color:var(--text);border-color:#6b5840")}
         </div>
+        <div class="tiny muted" style="margin-top:6px;line-height:1.5">Firm = negotiate · Get it Gone = auto-sell on reasonable offers · Trade = patient</div>
       </div>
     `,
               )
