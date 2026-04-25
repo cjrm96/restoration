@@ -85,31 +85,45 @@
       }
       .top-stats {
         display: flex;
-        gap: 10px;
+        gap: 0;
         align-items: center;
         flex-wrap: wrap;
       }
       .chip {
-        background: #1a1512;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 8px 12px;
-        font-weight: bold;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 6px 14px;
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--text);
+        white-space: nowrap;
         transition:
           transform 0.12s ease,
-          box-shadow 0.12s ease;
+          color 0.12s ease;
+      }
+      .chip + .chip {
+        border-left: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .top-stats .btn,
+      .top-stats .audio-toggle {
+        margin-left: 8px;
       }
       .chip.money {
-        color: var(--green);
+        color: var(--gold);
+        font-size: 16px;
+        font-weight: bold;
+        letter-spacing: 0.3px;
       }
       .chip.fuel {
-        color: #86bfe8;
+        color: #c8d4dd;
       }
       .chip.followers {
-        color: #b68ae6;
+        color: #d6c4ea;
       }
       .chip.pay {
-        color: #e9c46a;
+        color: var(--text-dim);
+        font-weight: 500;
       }
       .chip.week {
         color: #e8d8b2;
@@ -1446,8 +1460,11 @@
           font-size: 11px;
         }
         .chip {
-          padding: 6px 10px;
+          padding: 5px 8px;
           font-size: 11px;
+        }
+        .chip.money {
+          font-size: 14px;
         }
         .tutorial-modal {
           max-width: 100% !important;
