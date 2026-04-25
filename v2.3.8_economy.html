@@ -8676,7 +8676,7 @@ body{position:relative!important;display:block!important;}
           "Move the parts you're done with",
           "Buyers DM in real time. Pick your tone, hold your price, or let it go cheap.",
           `
-      ${!state.wifeCarSold ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border-color:rgba(196,109,96,0.4);margin-bottom:12px"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:6px">🚙 Sell the wife's daily driver?</div><div class="tiny" style="color:var(--text);margin-bottom:8px">It's clean, it runs, and she's at her sister's for the weekend. The Marketplace listing practically writes itself. What could go wrong.</div>${button("List the wife's car · ~$8,000", "sellWifeCar()", false, "", "width:100%;background:linear-gradient(180deg,#c97d70 0%,#8c4e44 100%);border-color:#d99a8f;color:#1a120a;font-weight:bold")}</div>` : ""}
+      ${!state.wifeCarSold && currentCar() ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border-color:rgba(196,109,96,0.4);margin-bottom:12px"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:6px">🚙 Sell the wife's daily driver?</div><div class="tiny" style="color:var(--text);margin-bottom:8px">It's clean, it runs, and she's at her sister's for the weekend. The Marketplace listing practically writes itself. What could go wrong.</div>${button("List the wife's car · ~$8,000", "sellWifeCar()", false, "", "width:100%;background:linear-gradient(180deg,#c97d70 0%,#8c4e44 100%);border-color:#d99a8f;color:#1a120a;font-weight:bold")}</div>` : ""}
       <div class="info-box">
         <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">List parts from the garage</div>
         ${stashMarkup}
@@ -8976,7 +8976,7 @@ body{position:relative!important;display:block!important;}
           "notice:" + ((state.noticeQueue && state.noticeQueue.length) || 0),
           state.pendingScene ? 1 : 0,
           state.showStore ? 1 : 0,
-          state.showStore ? `loan:${state.bankLoanBalance}:${state.sharkLoanBalance}` : "",
+          state.showStore ? `loan:${state.bankLoanBalance}:${state.sharkLoanBalance}:${state.toolTruckBalance || 0}` : "",
           state.pendingEvent
             ? state.pendingEvent.title || state.pendingEvent.type || "event"
             : "",
