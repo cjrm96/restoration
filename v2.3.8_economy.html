@@ -7977,9 +7977,7 @@
           const snap = snapshotCompletedBuild();
           if (snap) state.legacyBuilds = [snap, ...(state.legacyBuilds || [])];
         }
-        // Reset car + season but PRESERVE progress
-        state.cars = [];
-        state.carId = null;
+        // Reset season but PRESERVE the fleet — the trophy car stays
         state.week = 1;
         state.won = false;
         state.pendingVictory = null;
@@ -8025,7 +8023,7 @@
         };
         state.view = "dealership";
         playSfx("success");
-        toast("Legacy run started. Pick your next project in the Marketplace.", "event-good");
+        toast("Legacy run started. Trophy car is still in the garage — pick up an existing build or grab a new project from the Marketplace.", "event-good");
         saveGame();
         requestRender("full");
       }
