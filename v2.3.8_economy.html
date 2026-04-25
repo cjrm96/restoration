@@ -4878,6 +4878,7 @@
           weddingRingPawned: false,
           birthdayReceived: false,
           fakeFollowersBought: false,
+          polishesThisWeek: 0,
           showLoading: false,
           pendingShowId: null,
           showStage: null,
@@ -6983,6 +6984,7 @@
         const missedSocialPost = state.creatorPostedWeek !== previousWeek;
         state.week += 1;
         state.enteredShowsThisWeek = [];
+        state.polishesThisWeek = 0;
         state.rival.score = getRivalBaseScore();
         state.postShowWeekLocked = false;
 
@@ -7292,6 +7294,63 @@
           "event-good",
         );
         checkMilestones();
+        saveGame();
+        requestRender("full");
+      }
+
+      const POLISH_ACTIONS = {
+        engine: { verb: "Dyno Tune", emoji: "📈" },
+        transmission: { verb: "Shift Recalibrate", emoji: "⚙️" },
+        brakes: { verb: "Pad Bed-In", emoji: "🛑" },
+        suspension: { verb: "Alignment Tweak", emoji: "📐" },
+        wheels: { verb: "Spin Balance", emoji: "🛞" },
+        tires: { verb: "Pressure Dial-In", emoji: "💨" },
+        electrical: { verb: "Ground Rework", emoji: "⚡" },
+        differential: { verb: "Diff Lash Setup", emoji: "🔩" },
+        body: { verb: "Wet Sand Pass", emoji: "💧" },
+        paint: { verb: "Cut and Buff", emoji: "✨" },
+        interior: { verb: "Detail Clean", emoji: "🧴" },
+        chrome: { verb: "Chrome Polish Pass", emoji: "🪞" },
+      };
+      const POLISH_PER_WEEK = 3;
+      const POLISH_COST = 80;
+      const POLISH_GAIN = 3;
+
+      function getCategoryCompletion(car, cat) {
+        if (!car) return null;
+        const partsInCat = PARTS.filter((p) => p.category === cat);
+        if (!partsInCat.length) return null;
+        const installed = new Set(car.installedParts || []);
+        const allDone = partsInCat.every((p) => installed.has(p.id));
+        return { allDone, current: car[cat] || 0 };
+      }
+
+      function polishCategory(cat) {
+        const car = currentCar();
+        if (!car) return toast("No car in the garage to polish.", "err");
+        const status = getCategoryCompletion(car, cat);
+        if (!status || !status.allDone)
+          return toast(
+            "Need every part installed in that category before fine-tuning.",
+            "err",
+          );
+        if (car[cat] >= 100) return toast("That category is maxed out.", "err");
+        if ((state.polishesThisWeek || 0) >= POLISH_PER_WEEK)
+          return toast(
+            `Out of fine-tuning time this week (${POLISH_PER_WEEK} per week).`,
+            "err",
+          );
+        if (state.money < POLISH_COST)
+          return toast(`Need $${POLISH_COST} for the supplies.`, "err");
+        state.money -= POLISH_COST;
+        car[cat] = Math.min(100, car[cat] + POLISH_GAIN);
+        state.polishesThisWeek = (state.polishesThisWeek || 0) + 1;
+        recordMoneyChange(-POLISH_COST, `Fine tune: ${CAT_LABELS[cat]}`);
+        playSfx("wrench");
+        toast(
+          `${POLISH_ACTIONS[cat]?.verb || "Polished"} on ${CAT_LABELS[cat]}. +${POLISH_GAIN} (${car[cat]}/100).`,
+          "ok",
+        );
         saveGame();
         requestRender("full");
       }
@@ -8717,6 +8776,38 @@ body{position:relative!important;display:block!important;}
         root.innerHTML = `<div class="modal"><div class="modal-card" style="max-width:500px"><div style="text-align:center;font-size:40px;margin-bottom:8px">💬</div><div style="color:#7da0c2;font-weight:bold;font-size:22px;text-align:center;margin-bottom:8px">Facebook Marketplace Message</div><div class="small muted" style="text-align:center;margin-bottom:14px">${offer.buyer || "Buyer"} wants ${item.name}</div><div class="info-box"><div class="tiny muted" style="margin-bottom:6px">Message</div><div class="small" style="color:var(--text);line-height:1.6">"${offer.message}"</div></div><div class="btn-row two">${button(`Take the deal · $${fmt(offer.offer)}`, "respondMarketplaceOffer(true)", false, "", "width:100%")}${button("Pass for now", "respondMarketplaceOffer(false)", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:var(--text)")}<div class="tiny muted" style="margin-top:12px">Buyer type: <span style="color:var(--gold)">${offer.buyerType}</span> · Garage Lore perk: ${Math.round(garageLoreDiscount() * 100)}% better offers</div></div></div>`;
         return true;
       }
+      function renderFineTuningPanel(car) {
+        if (!car) return "";
+        const eligible = CATS.map((cat) => ({ cat, ...getCategoryCompletion(car, cat) }))
+          .filter((row) => row && row.allDone);
+        if (!eligible.length) return "";
+        const remainingPolishes = Math.max(
+          0,
+          POLISH_PER_WEEK - (state.polishesThisWeek || 0),
+        );
+        const allMaxed = eligible.every((row) => row.current >= 100);
+        const rows = eligible
+          .map((row) => {
+            const action = POLISH_ACTIONS[row.cat] || { verb: "Polish", emoji: "🪞" };
+            const maxed = row.current >= 100;
+            const blocked =
+              maxed ||
+              remainingPolishes <= 0 ||
+              state.money < POLISH_COST;
+            return `<div class="flex between center" style="gap:10px;padding:8px 0;border-bottom:1px dashed #3a3128"><div><div class="small" style="color:var(--text-bright);font-weight:bold">${action.emoji} ${action.verb}</div><div class="tiny muted">${CAT_LABELS[row.cat]} · ${row.current}/100${maxed ? " · maxed" : ""}</div></div><div style="min-width:120px">${button(maxed ? "Maxed" : `+${POLISH_GAIN} · $${POLISH_COST}`, `polishCategory('${row.cat}')`, blocked, "", "width:100%;padding:6px 8px;font-size:11px")}</div></div>`;
+          })
+          .join("");
+        const subtitle = allMaxed
+          ? "Every completed category is maxed out. Build is concours-clean."
+          : `${remainingPolishes}/${POLISH_PER_WEEK} fine-tuning sessions left this week. Pre-show pass.`;
+        return panel(
+          "Fine Tuning",
+          rows,
+          subtitle,
+          "#a984dd",
+        );
+      }
+
       function renderRestorationPanel(car) {
         const tasks = activeTasksForCar(car.id);
         if (!tasks.length)
@@ -8973,7 +9064,7 @@ body{position:relative!important;display:block!important;}
             if (rw) return `<div style="display:flex;align-items:center;gap:10px;background:rgba(143,203,126,0.1);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">✅</span><div><div class="small" style="color:var(--green-bright);font-weight:bold">Roadworthy</div><div class="tiny muted">The car can drive itself to a show. Time to compete.</div></div></div>`;
             return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">⚠️</span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " ✓"} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " ✓"} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " ✓"}</div></div></div>`;
           })()}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Build Jobs", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart && state.shopSub !== "parts" ? `<div onclick="setShopSub('parts')" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center"><span>📦 Free Budget part ready — tap to jump to All Build Jobs.</span><span style="opacity:0.7">→</span></div>` : ""}${state.freePart && state.shopSub === "parts" ? `<div style="background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px">📦 Free Budget part ready — claim it on any Budget tier item below.</div>` : ""}${subcontent}`,
-        )}${renderGarageSign(car)}<div class='taped-note'><div class='feed-kicker'>SHOP MOOD</div><div class='feed-text'>${getWorkspaceFlavor()}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div></div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#7da0c2")}</div></div>`;
+        )}${renderGarageSign(car)}<div class='taped-note'><div class='feed-kicker'>SHOP MOOD</div><div class='feed-text'>${getWorkspaceFlavor()}</div><div class='feed-meta'>${getReputationTitle(car)}</div></div></div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${renderFineTuningPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#7da0c2")}</div></div>`;
       }
 
       function renderShows() {
