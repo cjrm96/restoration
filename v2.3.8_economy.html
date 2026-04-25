@@ -5180,58 +5180,89 @@
               : counts.regional < 3
                 ? 70
                 : 85;
-        return PARTS.filter(
+        const partPicks = PARTS.filter(
           (part) =>
             !car.installedParts.includes(part.id) &&
             !findActiveTask(car.id, part.id) &&
             car[part.category] < 100,
-        )
-          .map((part) => {
-            const requiredTools = part.tools || [];
-            const hasAllTools = requiredTools.every((tid) =>
-              state.ownedTools.includes(tid),
-            );
-            const recommendedMethod = hasAllTools ? "diy" : "shop";
-            const recommendedCost = partCost(part, recommendedMethod);
-            const roi = part.imp / Math.max(1, recommendedCost);
-            let priority = roi * 100;
-            let tag = "Best ROI";
-            let why = `Strong value for the money with +${part.imp} ${CAT_LABELS[part.category]}.`;
-            if (roadworthyNeeded[part.category] > 0) {
-              priority += 180 + part.imp;
-              tag = "Fastest path to roadworthy";
-              why = `This helps clear the ${CAT_LABELS[part.category].toLowerCase()} requirement to get the car legally driving to shows.`;
-            } else if (getOverall(car) < nextShowTarget) {
-              priority += part.imp * 4;
-              tag = "Show-focused upgrade";
-              why = `This pushes your overall score toward the next meaningful show threshold.`;
-            } else if (
-              part.category === "body" ||
-              part.category === "paint" ||
-              part.category === "chrome"
-            ) {
-              priority += 18;
-              tag = "Crowd pleaser";
-              why = `Cosmetic work helps the car feel more competitive once the mechanical basics are handled.`;
-            }
-            if (recommendedMethod === "diy") priority += 10;
-            if (part.tier === "Budget") priority += 6;
-            return {
-              part,
-              recommendedMethod,
-              recommendedCost,
-              hasAllTools,
-              priority,
-              tag,
-              why,
-              roi,
-            };
-          })
+        ).map((part) => {
+          const requiredTools = part.tools || [];
+          const hasAllTools = requiredTools.every((tid) =>
+            state.ownedTools.includes(tid),
+          );
+          const recommendedMethod = hasAllTools ? "diy" : "shop";
+          const recommendedCost = partCost(part, recommendedMethod);
+          const roi = part.imp / Math.max(1, recommendedCost);
+          let priority = roi * 100;
+          let tag = "Best ROI";
+          let why = `Strong value for the money with +${part.imp} ${CAT_LABELS[part.category]}.`;
+          if (roadworthyNeeded[part.category] > 0) {
+            priority += 180 + part.imp;
+            tag = "Fastest path to roadworthy";
+            why = `This helps clear the ${CAT_LABELS[part.category].toLowerCase()} requirement to get the car legally driving to shows.`;
+          } else if (getOverall(car) < nextShowTarget) {
+            priority += part.imp * 4;
+            tag = "Show-focused upgrade";
+            why = `This pushes your overall score toward the next meaningful show threshold.`;
+          } else if (
+            part.category === "body" ||
+            part.category === "paint" ||
+            part.category === "chrome"
+          ) {
+            priority += 18;
+            tag = "Crowd pleaser";
+            why = `Cosmetic work helps the car feel more competitive once the mechanical basics are handled.`;
+          }
+          if (recommendedMethod === "diy") priority += 10;
+          if (part.tier === "Budget") priority += 6;
+          return {
+            type: "part",
+            part,
+            recommendedMethod,
+            recommendedCost,
+            hasAllTools,
+            priority,
+            tag,
+            why,
+            roi,
+          };
+        });
+
+        // Late-game polish picks: when a category has every part installed but
+        // the score is short of 100, fine-tuning is the only path to the cap.
+        const overall = getOverall(car);
+        const polishPicks = CATS.map((cat) => {
+          const status = getCategoryCompletion(car, cat);
+          if (!status || !status.allDone || status.current >= 100) return null;
+          const headroom = 100 - status.current;
+          const imp = Math.min(POLISH_GAIN, headroom);
+          let priority = (imp / POLISH_COST) * 100 + 12;
+          let tag = "Fine-tune for the last points";
+          let why = `Every part in ${CAT_LABELS[cat].toLowerCase()} is installed. Fine-tuning is the only way to push it past ${status.current} toward 100.`;
+          if (status.current < overall - 2) {
+            priority += 30;
+            tag = "Lift the dragging score";
+            why = `${CAT_LABELS[cat]} is below the rest of the build at ${status.current}/100 — fine-tuning is the only way to lift it.`;
+          }
+          return {
+            type: "polish",
+            cat,
+            recommendedCost: POLISH_COST,
+            priority,
+            tag,
+            why,
+            current: status.current,
+            imp,
+          };
+        }).filter(Boolean);
+
+        return [...partPicks, ...polishPicks]
           .sort(
             (a, b) =>
               b.priority - a.priority ||
-              a.recommendedCost - b.recommendedCost ||
-              b.part.imp - a.part.imp,
+              (a.recommendedCost || 0) - (b.recommendedCost || 0) ||
+              ((b.part && b.part.imp) || b.imp || 0) -
+                ((a.part && a.part.imp) || a.imp || 0),
           )
           .slice(0, 3);
       }
@@ -9002,6 +9033,20 @@ body{position:relative!important;display:block!important;}
               suggested.length
                 ? suggested
                     .map((item) => {
+                      if (item.type === "polish") {
+                        const action = POLISH_ACTIONS[item.cat] || { verb: "Polish", emoji: "🪞" };
+                        const remaining = Math.max(0, POLISH_PER_WEEK - (state.polishesThisWeek || 0));
+                        const blocked = remaining <= 0 || state.money < POLISH_COST;
+                        const status = remaining <= 0
+                          ? `No fine-tuning sessions left this week (${POLISH_PER_WEEK}/${POLISH_PER_WEEK} used). Resets next week.`
+                          : `${remaining}/${POLISH_PER_WEEK} sessions left this week · +${POLISH_GAIN} per pass.`;
+                        return panel(
+                          `${action.emoji} ${action.verb} · ${CAT_LABELS[item.cat]}`,
+                          `<div class="smart-tag">${item.tag}</div><div class="small muted" style="margin-bottom:8px">Cost: <span style="color:var(--text);font-weight:bold">$${POLISH_COST}</span> per pass <span style="color:var(--text-dim)">·</span> Score: <span style="color:var(--text);font-weight:bold">${item.current}/100</span></div><div class="small muted" style="margin-bottom:10px">Improvement: <span class="good" style="font-weight:bold">+${POLISH_GAIN} ${CAT_LABELS[item.cat]}</span></div><div class="tiny muted" style="margin-bottom:10px">${item.why}</div><div class="tiny muted" style="margin-bottom:10px">${status}</div>${button(blocked && state.money < POLISH_COST ? `Need $${POLISH_COST}` : remaining <= 0 ? "Maxed out this week" : `+${POLISH_GAIN} · $${POLISH_COST}`, `polishCategory('${item.cat}')`, blocked, "", "width:100%;background:rgba(168,132,221,0.15);border-color:rgba(168,132,221,0.6);color:var(--purple-bright)")}`,
+                          `Pre-show fine-tuning · ${CAT_LABELS[item.cat]}`,
+                          "#a884dd",
+                        );
+                      }
                       const p = item.part;
                       const activeTask = findActiveTask(car.id, p.id);
                       const starterFree =
