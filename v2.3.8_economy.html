@@ -8947,7 +8947,7 @@ body{position:relative!important;display:block!important;}
         )
           return;
         try {
-          localStorage.removeItem("restorationSave");
+          localStorage.removeItem(SAVE_KEY);
         } catch (e) {}
         location.reload();
       }
