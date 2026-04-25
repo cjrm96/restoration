@@ -4558,6 +4558,7 @@
             boughtPartCount: 0,
           },
           installsDone: 0,
+          collabAvailable: false,
           noticeQueue: [],
           tickerCollapsed: false,
           postShowWeekLocked: false,
@@ -5402,6 +5403,9 @@
           const label = `${cfg.emoji} ${cfg.label.split(" ")[0]}${costSuffix}`;
           return button(label, `doCreatorPost('${type}')`, blocked, "", "width:100%");
         }).join("");
+        const collabMarkup = state.collabAvailable
+          ? `<div class="info-box" style="background:rgba(143,203,126,0.08);border-color:rgba(143,203,126,0.45);margin-top:10px"><div class="small" style="color:var(--green-bright);font-weight:bold;margin-bottom:4px">🤝 Collab Opportunity</div><div class="tiny" style="color:var(--text);margin-bottom:8px">Another scene creator wants to build a video together. Big follower bump, one-time deal.</div>${button("Do a Collab · +1,000 followers", "doCollab()", already, "", "width:100%;background:linear-gradient(180deg,#93c884 0%,#5d8b4f 100%);border-color:#a7d998;color:#11180d")}</div>`
+          : "";
         const deal = state.pendingBrandDeal;
         const dealMarkup = deal
           ? `<div class="info-box" style="background:#291b36;border-color:#6f4d91;margin-top:10px"><div class="small" style="color:var(--purple-bright);font-weight:bold;margin-bottom:4px">📦 Brand Deal · ${deal.brand}</div><div class="tiny" style="color:#cbb9e0;margin-bottom:8px">They'll send a free Budget part in exchange for a sponsored post. +${fmtF(deal.followerBonus)} followers on the campaign.</div><div class="btn-row two">${button("Accept", "acceptBrandDeal()", !!state.freePart, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright)")}${button("Decline", "declineBrandDeal()", false, "", "width:100%;background:#4a3c2e;color:var(--text);border-color:#6b5840")}</div>${state.freePart ? `<div class="tiny warn" style="margin-top:6px">Claim your existing free part before accepting another.</div>` : ""}</div>`
@@ -5411,7 +5415,7 @@
           : state.followers < BRAND_DEAL_MIN_FOLLOWERS
             ? `One drop per week. Brand deals open at ${fmtF(BRAND_DEAL_MIN_FOLLOWERS)} followers.`
             : "One drop per week. Payouts scale with followers and car quality.";
-        return `<div class="info-box"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Post Content · lifetime $${fmt(earned)}</div><div class="social-actions">${buttons}</div><div class="tiny muted" style="margin-top:8px">${footer}</div>${dealMarkup}</div>`;
+        return `<div class="info-box"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Post Content · lifetime $${fmt(earned)}</div><div class="social-actions">${buttons}</div><div class="tiny muted" style="margin-top:8px">${footer}</div>${collabMarkup}${dealMarkup}</div>`;
       }
 
       function renderFollowersTracker() {
@@ -6164,6 +6168,28 @@
         requestRender("full");
       }
 
+      function payOffLoan(kind) {
+        const balance =
+          kind === "shark" ? state.sharkLoanBalance : state.bankLoanBalance;
+        if (balance <= 0) return;
+        const pay = Math.min(balance, state.money);
+        if (pay <= 0) return toast("You don't have any cash to put on it.", "err");
+        state.money -= pay;
+        if (kind === "shark") state.sharkLoanBalance -= pay;
+        else state.bankLoanBalance -= pay;
+        recordMoneyChange(
+          -pay,
+          kind === "shark" ? "Shark loan payment" : "Bank loan payment",
+        );
+        toast(
+          (kind === "shark" ? "Shark" : "Bank") +
+            ` loan paid down by $${fmt(pay)}.${(kind === "shark" ? state.sharkLoanBalance : state.bankLoanBalance) === 0 ? " Debt cleared." : ""}`,
+          "event-good",
+        );
+        saveGame();
+        requestRender("full");
+      }
+
       function takeBankLoan() {
         if (state.bankLoanBalance > 0)
           return toast("You already have a bank loan to pay down.", "err");
@@ -6437,6 +6463,7 @@
         maybeGenerateMarketplaceOffer();
         maybeTriggerFollowerPayout();
         maybeOfferBrandDeal();
+        maybeOfferCollab();
         if (missedSocialPost) {
           toast(
             "You rolled into a new week without dropping any content. The algorithm forgot you for a minute.",
@@ -6644,6 +6671,36 @@
         requestRender("full");
       }
 
+      function doCollab() {
+        if (!state.collabAvailable) return;
+        if (state.creatorPostedWeek === state.week)
+          return toast("You already dropped content this week.", "err");
+        const gained = 1000;
+        state.followers += gained;
+        state.collabAvailable = false;
+        state.creatorPostedWeek = state.week;
+        addGarageLore(4);
+        toast(
+          `🤝 Collab dropped. The other creator's audience showed up. +${fmtF(gained)} followers.`,
+          "event-good",
+        );
+        checkMilestones();
+        saveGame();
+        requestRender("full");
+      }
+
+      function maybeOfferCollab() {
+        if (state.collabAvailable) return;
+        if (state.followers < 200) return; // need at least some audience
+        if (Math.random() < 0.08) {
+          state.collabAvailable = true;
+          toast(
+            "🤝 A scene creator hit you up about a collab video. Check the Social tab.",
+            "event-good",
+          );
+        }
+      }
+
       function maybeOfferBrandDeal() {
         if (state.pendingBrandDeal) return;
         if (state.followers < BRAND_DEAL_MIN_FOLLOWERS) return;
@@ -6761,19 +6818,21 @@
             ),
           }));
         let buckInShow = false;
-        if (show.tier === "Regional" || show.tier === "National") {
-          const buckScore = clamp(
-            getRivalBaseScore() + (Math.random() * 10 - 5),
-          );
-          compPool.push({
-            name: "Buck's '67 Mustang",
-            score: buckScore,
-            isRival: true,
-          });
-          buckInShow = true;
-          state.rival.showsEntered++;
-          state.rival.score = Math.min(95, getRivalBaseScore() + 2);
-        }
+        // Buck shows up at every show, but his Cars & Coffee energy is
+        // casual — same Mustang, no trophy chase.
+        const buckBase = getRivalBaseScore();
+        const buckScore = clamp(
+          buckBase + (Math.random() * 10 - 5) -
+            (show.tier === "Cars & Coffee" ? 4 : 0),
+        );
+        compPool.push({
+          name: "Buck's '67 Mustang",
+          score: buckScore,
+          isRival: true,
+        });
+        buckInShow = true;
+        state.rival.showsEntered++;
+        state.rival.score = Math.min(95, buckBase + 2);
 
         const all = [
           ...compPool,
@@ -7596,7 +7655,7 @@ body{position:relative!important;display:block!important;}
           root.innerHTML = "";
           return;
         }
-        root.innerHTML = `<div class="modal"><div class="modal-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">Borrow just enough to keep the build alive — or make a worse decision.</div>${panel("Bank Loan", `${chalkRow("Cash Now", "+$4,000", "good")}${chalkRow("Payday Hit", "-$400 every paycheck", "warn")}${button(state.bankLoanBalance > 0 ? `Outstanding $${fmt(state.bankLoanBalance)}` : "Take Bank Loan", "takeBankLoan()", state.bankLoanBalance > 0, "", "width:100%")}`, "Legit paperwork, standard pain.", "#7da0c2")}${panel("Loan Shark", `${chalkRow("Cash Now", "+$6,000", "good")}${chalkRow("You Owe", "$7,800 total", "bad")}${chalkRow("Payday Hit", "-$750 every paycheck", "bad")}${button(state.sharkLoanBalance > 0 ? `Outstanding $${fmt(state.sharkLoanBalance)}` : "Take Shark Loan", "takeSharkLoan()", state.sharkLoanBalance > 0, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "Fast money, ugly terms.", "#c46d60")}</div></div>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">Borrow just enough to keep the build alive — or make a worse decision.</div>${panel("Bank Loan", `${chalkRow("Cash Now", "+$4,000", "good")}${chalkRow("Payday Hit", "-$400 every paycheck", "warn")}${state.bankLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.bankLoanBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $400", "payOffLoan('bank')", state.money < Math.min(400, state.bankLoanBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.bankLoanBalance)}`, "payOffLoan('bank')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Bank Loan", "takeBankLoan()", false, "", "width:100%")}`, "Legit paperwork, standard pain.", "#7da0c2")}${panel("Loan Shark", `${chalkRow("Cash Now", "+$6,000", "good")}${chalkRow("You Owe", "$7,800 total", "bad")}${chalkRow("Payday Hit", "-$750 every paycheck", "bad")}${state.sharkLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.sharkLoanBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $750", "payOffLoan('shark')", state.money < Math.min(750, state.sharkLoanBalance), "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}${button(`Pay Off $${fmt(state.sharkLoanBalance)}`, "payOffLoan('shark')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Shark Loan", "takeSharkLoan()", false, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "Fast money, ugly terms.", "#c46d60")}</div></div>`;
       }
 
       function renderTutorialModal() {
@@ -7830,7 +7889,47 @@ body{position:relative!important;display:block!important;}
 
         if (state.shopSub === "suggested") {
           const suggested = getSuggestedRestorations(car);
-          subcontent = `${panel(
+          // Early-game starter-tool nudge: if the player has done few installs and there
+          // are affordable basic tools that would unlock more DIY work, surface them.
+          const earlyGame = (state.installsDone || 0) < 5 && !roadworthy(car);
+          let starterToolMarkup = "";
+          if (earlyGame) {
+            const need = Object.create(null);
+            const installed = new Set(car.installedParts || []);
+            PARTS.forEach((p) => {
+              if (installed.has(p.id)) return;
+              if (p.tier !== "Budget") return;
+              if (
+                p.category !== "engine" &&
+                p.category !== "transmission" &&
+                p.category !== "brakes"
+              )
+                return;
+              (p.tools || []).forEach((tid) => {
+                need[tid] = (need[tid] || 0) + 1;
+              });
+            });
+            const wsIdx = getWorkspaceIndex(state.workshopLevel);
+            const candidates = TOOLS_LIST.filter(
+              (t) =>
+                !state.ownedTools.includes(t.id) &&
+                getWorkspaceIndex(t.workshop) <= wsIdx &&
+                state.money >= t.cost &&
+                (need[t.id] || 0) > 0,
+            )
+              .map((t) => ({ tool: t, score: need[t.id] || 0 }))
+              .sort((a, b) => b.score - a.score)
+              .slice(0, 2);
+            if (candidates.length) {
+              starterToolMarkup = `<div class="info-box" style="margin-bottom:12px;background:rgba(125,160,194,0.08);border-color:rgba(125,160,194,0.4)"><div class="small" style="color:var(--blue-bright);font-weight:bold;margin-bottom:6px">🛠 Pick up a starter tool first?</div><div class="tiny muted" style="margin-bottom:8px">DIY is cheaper than shop work, but needs the right tools. These would unlock the most jobs you have left:</div>${candidates
+                .map(
+                  ({ tool, score }) =>
+                    `<div class="flex between center" style="margin-bottom:6px;gap:10px"><div><div class="small" style="color:var(--text)">${tool.emoji} ${tool.name}</div><div class="tiny muted">Unlocks ${score} more DIY ${score === 1 ? "option" : "options"}</div></div>${button(`Buy · $${fmt(tool.cost)}`, `buyTool('${tool.id}')`, false, "", "padding:6px 10px;font-size:11px")}</div>`,
+                )
+                .join("")}</div>`;
+            }
+          }
+          subcontent = `${starterToolMarkup}${panel(
             "Suggested Next Moves",
             `${
               suggested.length
