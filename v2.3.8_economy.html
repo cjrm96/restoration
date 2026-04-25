@@ -7387,23 +7387,45 @@
         const effectiveOverall = getOverall(effectiveCar);
         const bribeBoost = state.bribeActive ? 15 : 0;
         if (state.bribeActive) state.bribeActive = false;
-        const myScore = clamp(effectiveOverall + (Math.random() * 20 - 10) + bribeBoost);
+        // Variance shrinks as the build gets tighter. A 30-overall daily
+        // driver swings ±10 (genuine dice roll); a 95+ show car swings
+        // ±3 (clean builds perform consistently).
+        const playerVariance = Math.max(
+          3,
+          13 - effectiveOverall * 0.11,
+        );
+        const myScore = clamp(
+          effectiveOverall +
+            (Math.random() * playerVariance * 2 - playerVariance) +
+            bribeBoost,
+        );
 
+        // Competitor max scales with the player's build. Below 80 overall,
+        // competitors can roll up to 90 (genuine threat). At 90+, comps cap
+        // a little under the player's overall so a top-tier build doesn't
+        // lose to a stranger who got lucky.
+        const compMax =
+          effectiveOverall >= 80
+            ? Math.min(95, Math.max(80, effectiveOverall - 3))
+            : 90;
         let compPool = [...COMPS]
           .sort(() => Math.random() - 0.5)
           .slice(0, 4)
           .map((name) => ({
             name,
             score: clamp(
-              show.minScore + 5 + Math.random() * (90 - show.minScore),
+              show.minScore + 5 + Math.random() * (compMax - show.minScore),
             ),
           }));
         let buckInShow = false;
         // Buck shows up at every show, but his Cars & Coffee energy is
-        // casual — same Mustang, no trophy chase.
+        // casual — same Mustang, no trophy chase. Buck stays competitive
+        // with the player but his variance also tightens at high tiers.
         const buckBase = getRivalBaseScore();
+        const buckVariance = Math.max(3, 8 - effectiveOverall * 0.04);
         const buckScore = clamp(
-          buckBase + (Math.random() * 10 - 5) -
+          buckBase +
+            (Math.random() * buckVariance * 2 - buckVariance) -
             (show.tier === "Cars & Coffee" ? 4 : 0),
         );
         compPool.push({
