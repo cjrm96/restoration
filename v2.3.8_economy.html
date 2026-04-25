@@ -9007,8 +9007,8 @@ body{position:relative!important;display:block!important;}
         const headerTier = headerCar
           ? getBuildTier(headerCar).title
           : "No Build";
-        getEl("brandSub").textContent =
-          `Build Tier: ${headerTier} · ${garageLoreTier()}${state.freshHeadline ? " · " + state.freshHeadline : ""}${Date.now() < state.saveFlashUntil ? " · Saving…" : state.lastSaved ? " · Saved" : ""}`;
+        getEl("brandSub").innerHTML =
+          `Build Tier: ${headerTier} · <span style="color:var(--gold-soft);font-weight:bold">${garageLoreTier()}</span>${state.freshHeadline ? " · " + state.freshHeadline : ""}${Date.now() < state.saveFlashUntil ? " · Saving…" : state.lastSaved ? " · Saved" : ""}`;
         const moneyChip = getEl("moneyChip");
         moneyChip.textContent = `$${fmt(state.money)}`;
         const shouldPopMoney =
