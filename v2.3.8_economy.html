@@ -2969,7 +2969,8 @@
           prizes: [10000, 4000, 2000, 1000, 500],
           minScore: 70,
           followers: [3200, 2000, 1200, 600, 250],
-          cadence: 8,
+          cadence: 1,
+          onDemand: true,
         },
       ];
 
@@ -6092,8 +6093,16 @@
 
       function getCurrentShows() {
         return SHOWS_MASTER.map((show) => {
-          const offset = state.week % show.cadence;
-          const weeksUntil = offset === 0 ? 0 : show.cadence - offset;
+          // On-demand shows (National) aren't on a fixed schedule — once the
+          // player meets the prerequisites, the show is available every week.
+          // showProgressRequirement still gates entry until those reqs are met.
+          let weeksUntil;
+          if (show.onDemand) {
+            weeksUntil = 0;
+          } else {
+            const offset = state.week % show.cadence;
+            weeksUntil = offset === 0 ? 0 : show.cadence - offset;
+          }
           return {
             ...show,
             weeksUntil,
