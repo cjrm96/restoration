@@ -4234,6 +4234,60 @@
         ],
       };
 
+      /* ── Mechanic (Dale) ── */
+      const DALE_INTRO_SCENE = {
+        id: "dale_intro",
+        emoji: "🔧",
+        title: "Meet Dale",
+        text: "You roll up to the only shop in town that'll take a project this rough. The bay door's open. Dale's leaning on a creeper, eating a sandwich. He looks at the truck, then at you, then back at the sandwich. 'Oh, you're the one,' he says. He doesn't say what that means.",
+        choices: [
+          {
+            label: "Hand over the keys",
+            note: "Dale nodded, set the sandwich down, and started writing it up. He doesn't talk much, but you watched him crawl under the truck for ten minutes before quoting anything. That's a guy who's going to do it right.",
+            mechanicTrust: 1,
+            lore: 4,
+          },
+          {
+            label: "Ask what he charges",
+            note: "Dale grinned. 'Whatever the truck tells me it needs.' Then he gave you a written estimate for less than expected. Trust earned, slow.",
+            mechanicTrust: 2,
+            lore: 5,
+          },
+          {
+            label: "Try to negotiate already",
+            note: "Dale raised one eyebrow at you and went back to the sandwich. You paid full price and he never quite forgot it.",
+            mechanicTrust: 0,
+            lore: 2,
+          },
+        ],
+      };
+
+      const DALE_MILESTONE_SCENE = {
+        id: "dale_milestone",
+        emoji: "🤝",
+        title: "Dale's been watching",
+        text: "You drop the truck off again and Dale meets you in the lot before you can get out. 'I been thinking,' he says. 'You keep showing up, you don't argue the bill, you bring the right parts when I ask. From here on out, my work goes 15% off for you. You earned it.'",
+        choices: [
+          {
+            label: "Shake his hand",
+            note: "From this build forward, Dale's shop runs cheaper than the going rate. He nods once and walks back into the bay.",
+            mechanicTrust: 0,
+            lore: 8,
+          },
+        ],
+      };
+
+      const DALE_SHOP_FLAVOR = [
+        "Dale waved at the truck like greeting a regular. Got to work.",
+        "Dale heard the engine before he saw it and yelled something positive from inside the bay.",
+        "Dale spotted the part you brought, nodded slow, and said 'good call.'",
+        "Dale wrote up the work order without asking what was wrong. He'd already noticed.",
+        "Dale told you to come back in a few days and not to worry about it. So you're going to worry about it.",
+        "Dale's apprentice held a flashlight wrong twice. Dale corrected him without raising his voice. Educational.",
+        "Dale offered you a coffee from the back. It tasted like the inside of a parts cleaner. You drank it anyway.",
+        "Dale pointed at one bolt and said 'see this one?' for thirty seconds before continuing the actual work order.",
+      ];
+
       /* ── Weekly Events ── */
       const WEEKLY_EVENTS = [
         // Bad
@@ -4539,6 +4593,8 @@
           bankLoanPayment: 400,
           sharkLoanBalance: 0,
           sharkLoanPayment: 750,
+          toolTruckBalance: 0,
+          toolTruckPayment: 90,
           showLoading: false,
           pendingShowId: null,
           showStage: null,
@@ -4557,8 +4613,15 @@
             lostToCount: 0,
             boughtPartCount: 0,
           },
+          mechanic: {
+            metOnce: false,
+            trust: 0,
+            shopVisits: 0,
+            milestoneSeen: false,
+          },
           installsDone: 0,
           collabAvailable: false,
+          wifeCarSold: false,
           noticeQueue: [],
           tickerCollapsed: false,
           postShowWeekLocked: false,
@@ -5031,6 +5094,13 @@
           state.buck.metOnce = true;
           state.buck.firstImpression = choice.buckImpression;
           if (choice.note) pushRivalNote(choice.note);
+        }
+        if (choice.mechanicTrust) {
+          if (!state.mechanic) state.mechanic = { metOnce: false, trust: 0, shopVisits: 0, milestoneSeen: false };
+          state.mechanic.trust = Math.min(
+            10,
+            (state.mechanic.trust || 0) + choice.mechanicTrust,
+          );
         }
         if (choice.toast)
           toast(
@@ -5934,6 +6004,14 @@
               boughtPartCount: 0,
             };
           }
+          if (!state.mechanic || typeof state.mechanic !== "object") {
+            state.mechanic = {
+              metOnce: false,
+              trust: 0,
+              shopVisits: 0,
+              milestoneSeen: false,
+            };
+          }
           if (!state.milestones || typeof state.milestones !== "object") {
             state.milestones = {
               firstShow: false,
@@ -6160,6 +6238,46 @@
             ],
           });
         }
+        if (method === "shop") {
+          if (!state.mechanic) state.mechanic = { metOnce: false, trust: 0, shopVisits: 0, milestoneSeen: false };
+          state.mechanic.shopVisits = (state.mechanic.shopVisits || 0) + 1;
+          if (!state.mechanic.metOnce) {
+            state.mechanic.metOnce = true;
+            queueScene({
+              id: DALE_INTRO_SCENE.id,
+              title: DALE_INTRO_SCENE.title,
+              emoji: DALE_INTRO_SCENE.emoji,
+              text: DALE_INTRO_SCENE.text,
+              choices: DALE_INTRO_SCENE.choices.map((c) => ({
+                label: c.label,
+                lore: c.lore,
+                note: c.note,
+                mechanicTrust: c.mechanicTrust,
+              })),
+            });
+          } else {
+            state.mechanic.trust = Math.min(10, (state.mechanic.trust || 0) + 1);
+            if (
+              state.mechanic.trust >= 5 &&
+              !state.mechanic.milestoneSeen
+            ) {
+              state.mechanic.milestoneSeen = true;
+              queueScene({
+                id: DALE_MILESTONE_SCENE.id,
+                title: DALE_MILESTONE_SCENE.title,
+                emoji: DALE_MILESTONE_SCENE.emoji,
+                text: DALE_MILESTONE_SCENE.text,
+                choices: DALE_MILESTONE_SCENE.choices.map((c) => ({
+                  label: c.label,
+                  lore: c.lore,
+                  note: c.note,
+                })),
+              });
+            } else if (Math.random() < 0.35) {
+              toast(pickFresh(DALE_SHOP_FLAVOR, "daleShop"), "ok");
+            }
+          }
+        }
         toast(
           `${part.name} started — ${restorationStartLine(method)} · ${formatRemaining(duration)} real time.`,
           "event-good",
@@ -6170,20 +6288,84 @@
 
       function payOffLoan(kind) {
         const balance =
-          kind === "shark" ? state.sharkLoanBalance : state.bankLoanBalance;
+          kind === "shark"
+            ? state.sharkLoanBalance
+            : kind === "truck"
+              ? state.toolTruckBalance
+              : state.bankLoanBalance;
         if (balance <= 0) return;
         const pay = Math.min(balance, state.money);
         if (pay <= 0) return toast("You don't have any cash to put on it.", "err");
         state.money -= pay;
         if (kind === "shark") state.sharkLoanBalance -= pay;
+        else if (kind === "truck") state.toolTruckBalance -= pay;
         else state.bankLoanBalance -= pay;
-        recordMoneyChange(
-          -pay,
-          kind === "shark" ? "Shark loan payment" : "Bank loan payment",
-        );
+        const label =
+          kind === "shark"
+            ? "Shark loan"
+            : kind === "truck"
+              ? "Tool truck tab"
+              : "Bank loan";
+        const remaining =
+          kind === "shark"
+            ? state.sharkLoanBalance
+            : kind === "truck"
+              ? state.toolTruckBalance
+              : state.bankLoanBalance;
+        recordMoneyChange(-pay, `${label} payment`);
         toast(
-          (kind === "shark" ? "Shark" : "Bank") +
-            ` loan paid down by $${fmt(pay)}.${(kind === "shark" ? state.sharkLoanBalance : state.bankLoanBalance) === 0 ? " Debt cleared." : ""}`,
+          `${label} paid down by $${fmt(pay)}.${remaining === 0 ? " Debt cleared." : ""}`,
+          "event-good",
+        );
+        saveGame();
+        requestRender("full");
+      }
+
+      function sellWifeCar() {
+        if (state.wifeCarSold) return;
+        state.wifeCarSold = true;
+        state.money += 8000;
+        recordMoneyChange(8000, "Wife's car sold");
+        playSfx("coin");
+        queueScene({
+          id: "wife_car_aftermath",
+          title: "She's home",
+          emoji: "🔑",
+          text: "The cash hits the account, you bring out a coffee, and the wife pulls into the driveway in an Uber. She sees the empty spot. The coffee gets cold. She walks past you toward the project car holding her keys like a weapon.",
+          choices: [
+            {
+              label: "Try to explain",
+              note: "You opened with 'it's an investment.' She closed with a fresh scratch from quarter to door. Paint took a hit, but at least she's still talking to you.",
+              statBoost: { cat: "paint", amt: -10 },
+              lore: 8,
+            },
+            {
+              label: "Say absolutely nothing",
+              note: "Smart. She circled the project car twice, dragged the key down the whole driver's side, and went inside. Big paint hit, but you kept the rest of the marriage. For now.",
+              statBoost: { cat: "paint", amt: -18 },
+              lore: 10,
+            },
+            {
+              label: "Offer her half the cash",
+              note: "She took the cash, kept the keys, and only keyed the trunk lid. Fair trade, all things considered.",
+              statBoost: { cat: "paint", amt: -6 },
+              money: -4000,
+              lore: 6,
+            },
+          ],
+        });
+        saveGame();
+        requestRender("full");
+      }
+
+      function takeToolTruckLoan() {
+        if (state.toolTruckBalance > 0)
+          return toast("Already on the tab — pay it down first.", "err");
+        state.money += 3500;
+        recordMoneyChange(3500, "Tool truck tab opened");
+        state.toolTruckBalance = 3600;
+        toast(
+          "Snap-on truck rolled by. Wrote you on the tab — $3,500 cash, $90/week for 40 weeks ($3,600 total). He's not in a hurry.",
           "event-good",
         );
         saveGame();
@@ -6421,6 +6603,18 @@
           return;
         }
 
+        // Tool truck tab — charged weekly, not per paycheck (snap-on truck shows up
+        // every week regardless).
+        if (state.toolTruckBalance > 0) {
+          const truckPay = Math.min(
+            state.toolTruckPayment || 90,
+            state.toolTruckBalance,
+          );
+          state.toolTruckBalance -= truckPay;
+          state.money -= truckPay;
+          recordMoneyChange(-truckPay, "Tool truck weekly");
+        }
+
         state.paycheckProgress += 1;
         if (state.paycheckProgress >= PAYCHECK_CYCLE) {
           state.paycheckProgress = 0;
@@ -6600,6 +6794,14 @@
         return d;
       }
 
+      function mechanicDiscount() {
+        const t = (state.mechanic && state.mechanic.trust) || 0;
+        if (t >= 8) return 0.15;
+        if (t >= 5) return 0.1;
+        if (t >= 3) return 0.05;
+        return 0;
+      }
+
       function partCost(p, method) {
         const base =
           method === "diy"
@@ -6607,7 +6809,9 @@
             : p.shop != null
               ? p.shop
               : Math.round(p.diy * p.mult);
-        return Math.round(base * (1 - getDiscount(p)));
+        let cost = base * (1 - getDiscount(p));
+        if (method === "shop") cost *= 1 - mechanicDiscount();
+        return Math.round(cost);
       }
 
       function installPart(id, method, isFree = false) {
@@ -7655,7 +7859,7 @@ body{position:relative!important;display:block!important;}
           root.innerHTML = "";
           return;
         }
-        root.innerHTML = `<div class="modal"><div class="modal-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">Borrow just enough to keep the build alive — or make a worse decision.</div>${panel("Bank Loan", `${chalkRow("Cash Now", "+$4,000", "good")}${chalkRow("Payday Hit", "-$400 every paycheck", "warn")}${state.bankLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.bankLoanBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $400", "payOffLoan('bank')", state.money < Math.min(400, state.bankLoanBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.bankLoanBalance)}`, "payOffLoan('bank')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Bank Loan", "takeBankLoan()", false, "", "width:100%")}`, "Legit paperwork, standard pain.", "#7da0c2")}${panel("Loan Shark", `${chalkRow("Cash Now", "+$6,000", "good")}${chalkRow("You Owe", "$7,800 total", "bad")}${chalkRow("Payday Hit", "-$750 every paycheck", "bad")}${state.sharkLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.sharkLoanBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $750", "payOffLoan('shark')", state.money < Math.min(750, state.sharkLoanBalance), "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}${button(`Pay Off $${fmt(state.sharkLoanBalance)}`, "payOffLoan('shark')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Shark Loan", "takeSharkLoan()", false, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "Fast money, ugly terms.", "#c46d60")}</div></div>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">Borrow just enough to keep the build alive — or make a worse decision.</div>${panel("Bank Loan", `${chalkRow("Cash Now", "+$4,000", "good")}${chalkRow("Payday Hit", "-$400 every paycheck", "warn")}${state.bankLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.bankLoanBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $400", "payOffLoan('bank')", state.money < Math.min(400, state.bankLoanBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.bankLoanBalance)}`, "payOffLoan('bank')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Bank Loan", "takeBankLoan()", false, "", "width:100%")}`, "Legit paperwork, standard pain.", "#7da0c2")}${panel("Loan Shark", `${chalkRow("Cash Now", "+$6,000", "good")}${chalkRow("You Owe", "$7,800 total", "bad")}${chalkRow("Payday Hit", "-$750 every paycheck", "bad")}${state.sharkLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.sharkLoanBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $750", "payOffLoan('shark')", state.money < Math.min(750, state.sharkLoanBalance), "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}${button(`Pay Off $${fmt(state.sharkLoanBalance)}`, "payOffLoan('shark')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Shark Loan", "takeSharkLoan()", false, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "Fast money, ugly terms.", "#c46d60")}${panel("Tool Truck Tab", `${chalkRow("Cash Now", "+$3,500", "good")}${chalkRow("You Owe", "$3,600 total", "warn")}${chalkRow("Weekly Hit", "-$90 for 40 weeks", "warn")}${state.toolTruckBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.toolTruckBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $90", "payOffLoan('truck')", state.money < Math.min(90, state.toolTruckBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.toolTruckBalance)}`, "payOffLoan('truck')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Open Tool Truck Tab", "takeToolTruckLoan()", false, "", "width:100%")}`, "Snap-on truck regular. Slow squeeze, low pressure.", "#c99842")}</div></div>`;
       }
 
       function renderTutorialModal() {
@@ -8271,6 +8475,7 @@ body{position:relative!important;display:block!important;}
           "Move the parts you're done with",
           "Buyers DM in real time. Pick your tone, hold your price, or let it go cheap.",
           `
+      ${!state.wifeCarSold ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border-color:rgba(196,109,96,0.4);margin-bottom:12px"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:6px">🚙 Sell the wife's daily driver?</div><div class="tiny" style="color:var(--text);margin-bottom:8px">It's clean, it runs, and she's at her sister's for the weekend. The Marketplace listing practically writes itself. What could go wrong.</div>${button("List the wife's car · ~$8,000", "sellWifeCar()", false, "", "width:100%;background:linear-gradient(180deg,#c97d70 0%,#8c4e44 100%);border-color:#d99a8f;color:#1a120a;font-weight:bold")}</div>` : ""}
       <div class="info-box">
         <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">List parts from the garage</div>
         ${stashMarkup}
