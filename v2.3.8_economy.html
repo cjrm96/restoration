@@ -8946,6 +8946,10 @@ body{position:relative!important;display:block!important;}
           )
         )
           return;
+        // Reset in-memory state first — the beforeunload handler will
+        // try to saveGame() during the reload, and if state still holds
+        // the old game it would just re-write what we just deleted.
+        Object.assign(state, makeDefaultState());
         try {
           localStorage.removeItem(SAVE_KEY);
         } catch (e) {}
