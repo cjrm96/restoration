@@ -6913,7 +6913,13 @@
           unlocked.push("🏠 Home Garage unlocked!");
           maybeAddBuckReaction("homeGarage");
         }
-        if (!m.wonNational && state.won) {
+        if (
+          !m.wonNational &&
+          (state.won ||
+            state.history.some(
+              (h) => h.tier === "National" && h.place === 1,
+            ))
+        ) {
           m.wonNational = true;
           unlocked.push("🏆 Won the National Show!");
         }
@@ -7927,7 +7933,11 @@
           model: car.model,
           emoji: car.emoji,
           finalOverall: getOverall(car),
-          wonNational: !!state.won,
+          wonNational:
+            !!state.won ||
+            state.history.some(
+              (h) => h.tier === "National" && h.place === 1,
+            ),
           completedWeek: state.week,
           completedSeason: (state.legacyBuilds || []).length + 1,
           followersAtCompletion: state.followers,
