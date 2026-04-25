@@ -1924,19 +1924,11 @@
             </button>
             <button
               class="audio-toggle"
-              id="musicBtn"
-              onclick="toggleMusic()"
-              title="Toggle music"
+              id="settingsBtn"
+              onclick="openSettings()"
+              title="Settings"
             >
-              🎵
-            </button>
-            <button
-              class="audio-toggle"
-              id="sfxBtn"
-              onclick="toggleSfx()"
-              title="Toggle sound effects"
-            >
-              🔊
+              ⚙️
             </button>
           </div>
         </div>
@@ -4887,6 +4879,13 @@
           tutorialComplete: false,
           tutorialStep: 0,
           sfxMuted: false,
+          settings: {
+            musicVolume: 0.6,
+            sfxVolume: 0.7,
+            paused: false,
+          },
+          settingsOpen: false,
+          pausedAt: 0,
           legacyBuilds: [],
           pendingVictory: null,
           pendingVictoryTrigger: false,
@@ -6398,9 +6397,19 @@
               startOverall: 0,
             };
           }
+          if (!state.settings || typeof state.settings !== "object") {
+            state.settings = { musicVolume: 0.6, sfxVolume: 0.7, paused: false };
+          } else {
+            if (typeof state.settings.musicVolume !== "number") state.settings.musicVolume = 0.6;
+            if (typeof state.settings.sfxVolume !== "number") state.settings.sfxVolume = 0.7;
+            if (typeof state.settings.paused !== "boolean") state.settings.paused = false;
+          }
+          state.settingsOpen = false;
+          if (typeof state.pausedAt !== "number") state.pausedAt = 0;
           if (!currentCar() && state.cars.length) {
             state.carId = state.cars[0].id;
           }
+          applyAudioSettings();
           resolveCompletedRestorations(false);
           lastSavedPayload = raw;
           return true;
@@ -6473,6 +6482,7 @@
       }
 
       function resolveCompletedRestorations(showToast = true) {
+        if (state.settings && state.settings.paused) return false;
         let changed = false;
         state.activeRestorations.forEach((task) => {
           if (!task.completed && Date.now() >= task.finishTime) {
@@ -8477,6 +8487,104 @@ body{position:relative!important;display:block!important;}
       /* ═══════════════════════════════════════════
      MODALS
   ═══════════════════════════════════════════ */
+      function openSettings() {
+        state.settingsOpen = true;
+        playSfx("click");
+        requestRender("modal");
+      }
+      function closeSettings() {
+        state.settingsOpen = false;
+        saveGame();
+        requestRender("full");
+      }
+      function setMusicVolumeFromSlider(v) {
+        const val = Math.max(0, Math.min(1, parseFloat(v) || 0));
+        state.settings.musicVolume = val;
+        applyAudioSettings();
+        if (val > 0 && !musicPlaying) startMusic();
+        if (val === 0 && musicPlaying) stopMusic();
+        const lbl = document.getElementById("musicVolLabel");
+        if (lbl) lbl.textContent = Math.round(val * 100) + "%";
+        saveGame();
+      }
+      function setSfxVolumeFromSlider(v) {
+        const val = Math.max(0, Math.min(1, parseFloat(v) || 0));
+        state.settings.sfxVolume = val;
+        applyAudioSettings();
+        const lbl = document.getElementById("sfxVolLabel");
+        if (lbl) lbl.textContent = Math.round(val * 100) + "%";
+        if (val > 0) playSfx("click");
+        saveGame();
+      }
+      function togglePause() {
+        if (state.settings.paused) {
+          // Unpause: push all active task finish times forward by the elapsed pause duration
+          const pauseElapsed = Date.now() - (state.pausedAt || Date.now());
+          if (pauseElapsed > 0) {
+            (state.activeRestorations || []).forEach((task) => {
+              if (!task.completed) {
+                task.startTime += pauseElapsed;
+                task.finishTime += pauseElapsed;
+              }
+            });
+          }
+          state.settings.paused = false;
+          state.pausedAt = 0;
+          toast("Resumed", "ok");
+        } else {
+          state.settings.paused = true;
+          state.pausedAt = Date.now();
+          toast("Paused", "ok");
+        }
+        saveGame();
+        requestRender("modal");
+      }
+      function replayTutorial() {
+        state.tutorialComplete = false;
+        state.tutorialStep = 0;
+        state.settingsOpen = false;
+        saveGame();
+        requestRender("full");
+      }
+      function resetSaveConfirm() {
+        if (
+          !confirm(
+            "Wipe your save and start over from scratch? This can't be undone.",
+          )
+        )
+          return;
+        try {
+          localStorage.removeItem("restorationSave");
+        } catch (e) {}
+        location.reload();
+      }
+      function renderSettingsModal() {
+        if (!state.settingsOpen) return false;
+        const root = getEl("modalRoot");
+        const s = state.settings;
+        const musicPct = Math.round(s.musicVolume * 100);
+        const sfxPct = Math.round(s.sfxVolume * 100);
+        const pauseLabel = s.paused ? "▶  Resume Game" : "⏸  Pause Game";
+        const pauseHint = s.paused
+          ? "Real-time clock is frozen. Active jobs won't tick down."
+          : "Stop the real-time clock so jobs don't tick while you're away.";
+        root.innerHTML = `<div class="modal" onclick="if(event.target===this)closeSettings()"><div class="modal-card" style="max-width:520px"><div class="flex between center" style="margin-bottom:14px"><div style="font-weight:bold;color:var(--gold);font-size:18px">⚙️ Settings</div><button class="btn" onclick="closeSettings()" style="padding:6px 12px;font-size:12px">Close</button></div>
+        ${panel("Audio",
+          `<div class="small" style="color:var(--text);margin-bottom:6px">🎵 Music · <span id="musicVolLabel" style="color:var(--gold);font-weight:bold">${musicPct}%</span></div>
+           <input type="range" min="0" max="1" step="0.05" value="${s.musicVolume}" oninput="setMusicVolumeFromSlider(this.value)" style="width:100%;margin-bottom:14px">
+           <div class="small" style="color:var(--text);margin-bottom:6px">🔊 Sound effects · <span id="sfxVolLabel" style="color:var(--gold);font-weight:bold">${sfxPct}%</span></div>
+           <input type="range" min="0" max="1" step="0.05" value="${s.sfxVolume}" oninput="setSfxVolumeFromSlider(this.value)" style="width:100%">`,
+          "", "#d8a24f")}
+        ${panel("Game",
+          `<div class="tiny muted" style="margin-bottom:8px">${pauseHint}</div>
+           ${button(pauseLabel, "togglePause()", false, "", "width:100%;margin-bottom:10px")}
+           ${button("📖  Replay Tutorial", "replayTutorial()", false, "", "width:100%;margin-bottom:10px")}
+           ${button("🗑  Reset Save (Start Over)", "resetSaveConfirm()", false, "", "width:100%;background:#5a2222;border-color:#a04040;color:#f0c8c8")}`,
+          "", "#7da0c2")}
+        <div class="tiny muted" style="text-align:center;margin-top:10px">Car Guy Simulator · v2.3.8</div></div></div>`;
+        return true;
+      }
+
       function renderStoreModal() {
         const root = getEl("modalRoot");
         if (
@@ -9574,6 +9682,7 @@ body{position:relative!important;display:block!important;}
       function getModalLayerSignature() {
         return [
           cheatPromptOpen ? "cheat" : "",
+          state.settingsOpen ? `settings:${state.settings.paused ? 1 : 0}` : "",
           state.tutorialComplete ? "" : "tut:" + (state.tutorialStep || 0),
           state.pendingVictory ? "victory" : "",
           state.showLoading ? 1 : 0,
@@ -9598,14 +9707,16 @@ body{position:relative!important;display:block!important;}
         modalLayerSignature = nextModalSignature;
         modalRoot.innerHTML = "";
         if (!renderCheatModal()) {
-          if (!renderTutorialModal()) {
-            if (!renderVictoryModal()) {
-              if (!renderShowCinematicModal()) {
-                if (!renderPendingSceneModal()) {
-                  if (!renderNoticeModal()) {
-                    renderStoreModal();
-                    renderEventModal();
-                    renderMarketplaceOfferModal();
+          if (!renderSettingsModal()) {
+            if (!renderTutorialModal()) {
+              if (!renderVictoryModal()) {
+                if (!renderShowCinematicModal()) {
+                  if (!renderPendingSceneModal()) {
+                    if (!renderNoticeModal()) {
+                      renderStoreModal();
+                      renderEventModal();
+                      renderMarketplaceOfferModal();
+                    }
                   }
                 }
               }
@@ -9712,6 +9823,7 @@ body{position:relative!important;display:block!important;}
       function updateRestorationTimers() {
         if (!state.activeRestorations || !state.activeRestorations.length)
           return;
+        const isPaused = state.settings && state.settings.paused;
         state.activeRestorations.forEach((task) => {
           if (task.completed) return;
           const blocks = document.querySelectorAll(
@@ -9723,12 +9835,16 @@ body{position:relative!important;display:block!important;}
           blocks.forEach((block) => {
             const timeEl = block.querySelector(".task-time");
             if (timeEl)
-              timeEl.textContent =
-                remaining <= 0 ? "COMPLETE" : formatRemaining(remaining);
+              timeEl.textContent = isPaused
+                ? "PAUSED"
+                : remaining <= 0
+                  ? "COMPLETE"
+                  : formatRemaining(remaining);
             const statusEl = block.querySelector(".task-status");
             if (statusEl)
-              statusEl.textContent =
-                remaining <= 0
+              statusEl.textContent = isPaused
+                ? "Paused — open Settings to resume"
+                : remaining <= 0
                   ? "Wrapping up now…"
                   : task.method === "shop"
                     ? `${formatRemaining(remaining)} remaining`
@@ -9745,7 +9861,8 @@ body{position:relative!important;display:block!important;}
           : state.activeRestorations.length || state.showLoading
             ? 1000
             : 1600;
-        const changed = resolveCompletedRestorations(true);
+        const isPaused = state.settings && state.settings.paused;
+        const changed = isPaused ? false : resolveCompletedRestorations(true);
         if (changed || state.showLoading) {
           // Only do the heavy full re-render when something actually changed
           // (a task completed, or the show is loading). Per-second timer ticks
@@ -9942,7 +10059,6 @@ body{position:relative!important;display:block!important;}
   ═══════════════════════════════════════════ */
 
       loadGame();
-      updateSfxBtn();
       render("full");
       runBackgroundTick();
       runWorldRefreshTick();
@@ -9992,10 +10108,19 @@ body{position:relative!important;display:block!important;}
         const ctx = getAudioCtx();
         if (!getMasterGain._n) {
           getMasterGain._n = ctx.createGain();
-          getMasterGain._n.gain.value = 0.18;
+          getMasterGain._n.gain.value = (state.settings && typeof state.settings.musicVolume === "number") ? state.settings.musicVolume * 0.3 : 0.18;
           getMasterGain._n.connect(ctx.destination);
         }
         return getMasterGain._n;
+      }
+      function applyAudioSettings() {
+        if (!state.settings) return;
+        if (getMasterGain._n) {
+          getMasterGain._n.gain.value = state.settings.musicVolume * 0.3;
+        }
+        if (getSfxGain._n) {
+          getSfxGain._n.gain.value = state.settings.sfxVolume * 0.78;
+        }
       }
       function getReverb() {
         const ctx = getAudioCtx();
@@ -10146,7 +10271,7 @@ body{position:relative!important;display:block!important;}
         const ctx = getAudioCtx();
         if (!getSfxGain._n) {
           getSfxGain._n = ctx.createGain();
-          getSfxGain._n.gain.value = 0.55;
+          getSfxGain._n.gain.value = (state.settings && typeof state.settings.sfxVolume === "number") ? state.settings.sfxVolume * 0.78 : 0.55;
           getSfxGain._n.connect(ctx.destination);
         }
         return getSfxGain._n;
@@ -10266,6 +10391,7 @@ body{position:relative!important;display:block!important;}
         },
       };
       function playSfx(name) {
+        if (state.settings && state.settings.sfxVolume <= 0) return;
         if (state.sfxMuted) return;
         const player = SFX_PLAYERS[name];
         if (!player) return;
@@ -10416,7 +10542,6 @@ body{position:relative!important;display:block!important;}
         musicPlaying = true;
         loopStartTime = ctx.currentTime + 0.1;
         scheduleLoop();
-        updateMusicBtn();
       }
       function stopMusic() {
         if (!musicPlaying) return;
@@ -10435,28 +10560,9 @@ body{position:relative!important;display:block!important;}
             0.3,
           );
           setTimeout(() => {
-            if (getMasterGain._n) getMasterGain._n.gain.value = 0.18;
+            applyAudioSettings();
           }, 600);
         }
-        updateMusicBtn();
-      }
-      function toggleMusic() {
-        if (musicPlaying) stopMusic();
-        else startMusic();
-      }
-      function updateMusicBtn() {
-        const b = getEl("musicBtn");
-        if (b) b.textContent = musicPlaying ? "🔇" : "🎵";
-      }
-      function toggleSfx() {
-        state.sfxMuted = !state.sfxMuted;
-        updateSfxBtn();
-        if (!state.sfxMuted) playSfx("click");
-        saveGame();
-      }
-      function updateSfxBtn() {
-        const b = getEl("sfxBtn");
-        if (b) b.textContent = state.sfxMuted ? "🔈" : "🔊";
       }
       function toggleSplashPreview() {
         const b = getEl("splashMuteBtn");
@@ -10472,7 +10578,7 @@ body{position:relative!important;display:block!important;}
         }
       }
       function startGame() {
-        if (getMasterGain._n) getMasterGain._n.gain.value = 0.18;
+        applyAudioSettings();
         if (!musicPlaying) startMusic();
         else splashPreviewActive = false;
         const sp = getEl("splash");
