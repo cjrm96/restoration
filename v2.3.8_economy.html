@@ -6345,6 +6345,13 @@
           ensureArray("partsInventory");
           ensureArray("marketplaceListings");
           ensureArray("legacyBuilds");
+          // Backfill wonNational on legacy entries saved before the snapshot
+          // fix — a build whose best result was a 1st-place National counts.
+          state.legacyBuilds.forEach((b) => {
+            if (!b.wonNational && b.bestPlace === 1 && b.bestTier === "National") {
+              b.wonNational = true;
+            }
+          });
           ensureArray("noticeQueue");
           ensureArray("eventQueue");
           ensureArray("history");
