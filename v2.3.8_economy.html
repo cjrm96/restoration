@@ -4876,6 +4876,7 @@
           ringPawnBalance: 0,
           ringPawnPayment: 50,
           weddingRingPawned: false,
+          birthdayReceived: false,
           showLoading: false,
           pendingShowId: null,
           showStage: null,
@@ -7048,6 +7049,7 @@
         maybeOfferBrandDeal();
         maybeOfferCollab();
         maybeOfferRingPawn();
+        maybeTriggerBirthday();
         if (missedSocialPost) {
           toast(
             "You rolled into a new week without dropping any content. The algorithm forgot you for a minute.",
@@ -7295,6 +7297,22 @@
             "event-good",
           );
         }
+      }
+
+      function maybeTriggerBirthday() {
+        if (state.birthdayReceived) return;
+        if (state.week < 13) return;
+        if (modalBusy()) return;
+        if (Math.random() > 0.3) return; // ~30% chance per week once eligible
+        state.birthdayReceived = true;
+        state.money += 1000;
+        recordMoneyChange(1000, "Birthday card");
+        const line = state.weddingRingPawned
+          ? "🎂 Happy birthday. Found a card on the workbench with $1,000 inside and a note in her handwriting: 'for the truck. NOT the ring.' She's been watching this whole thing closer than you thought."
+          : state.wifeCarSold
+            ? "🎂 Happy birthday. Card on the workbench with $1,000 inside and a note: 'for the truck. Please.' Not a lot of other context, but you'll take it."
+            : "🎂 Happy birthday. Found a card on the workbench with $1,000 inside and a note that just says 'for the truck.' Can't argue with that.";
+        pushNotice(line, "good");
       }
 
       function maybeOfferRingPawn() {
