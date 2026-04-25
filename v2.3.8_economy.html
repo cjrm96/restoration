@@ -5169,6 +5169,8 @@
           winterAppliedForSeason: false,
           partsInventory: [],
           marketplaceListings: [],
+          marketplaceStashExpanded: false,
+          marketplaceListedExpanded: false,
           pendingMarketplaceOffer: null,
           pendingScene: null,
           garageLore: 0,
@@ -6236,6 +6238,16 @@
       }
       function listPartOnMarketplace(itemId) {
         listPartOnMarketplaceWithTone(itemId, "firm");
+      }
+      function toggleStashExpanded() {
+        state.marketplaceStashExpanded = !state.marketplaceStashExpanded;
+        playSfx("click");
+        requestRender("full");
+      }
+      function toggleListedExpanded() {
+        state.marketplaceListedExpanded = !state.marketplaceListedExpanded;
+        playSfx("click");
+        requestRender("full");
       }
       function listPartOnMarketplaceWithTone(itemId, tone = "firm") {
         const item = state.partsInventory.find(
@@ -9714,9 +9726,32 @@ body{position:relative!important;display:block!important;}
         const listed = state.partsInventory.filter((i) => i.listed && !i.sold);
         const recent = (state.buyerHistory || []).slice(0, 4);
 
+        const STASH_PREVIEW = 5;
+        const LISTED_PREVIEW = 5;
+        const stashExpanded = !!state.marketplaceStashExpanded;
+        const listedExpanded = !!state.marketplaceListedExpanded;
+        const stashShown = stashExpanded ? stash : stash.slice(0, STASH_PREVIEW);
+        const listedShown = listedExpanded ? listed : listed.slice(0, LISTED_PREVIEW);
+        const stashHidden = Math.max(0, stash.length - stashShown.length);
+        const listedHidden = Math.max(0, listed.length - listedShown.length);
+        const listedTotal = listed.reduce((sum, i) => sum + (i.askingPrice || 0), 0);
+
+        const stashSummary = stash.length
+          ? `<div class="tiny muted" style="margin-bottom:8px">${stash.length} part${stash.length === 1 ? "" : "s"} ready to list</div>`
+          : "";
+        const listedSummary = listed.length
+          ? `<div class="tiny muted" style="margin-bottom:8px">${listed.length} live listing${listed.length === 1 ? "" : "s"} · asking <span style="color:var(--gold);font-weight:bold">$${fmt(listedTotal)}</span> total</div>`
+          : "";
+
+        const stashToggle = stash.length > STASH_PREVIEW
+          ? `<div style="text-align:center;margin-top:8px">${button(stashExpanded ? "Show less" : `Show all ${stash.length} parts`, "toggleStashExpanded()", false, "", "padding:6px 14px;font-size:11px;background:transparent;color:var(--gold-soft);border:1px solid rgba(217,162,79,0.4)")}</div>`
+          : "";
+        const listedToggle = listed.length > LISTED_PREVIEW
+          ? `<div style="text-align:center;margin-top:8px">${button(listedExpanded ? "Show less" : `Show all ${listed.length} listings`, "toggleListedExpanded()", false, "", "padding:6px 14px;font-size:11px;background:transparent;color:var(--gold-soft);border:1px solid rgba(217,162,79,0.4)")}</div>`
+          : "";
+
         const stashMarkup = stash.length
-          ? stash
-              .slice(0, 6)
+          ? stashSummary + stashShown
               .map(
                 (item) => `
       <div class="feed-item">
@@ -9731,11 +9766,11 @@ body{position:relative!important;display:block!important;}
       </div>
     `,
               )
-              .join("")
+              .join("") + stashToggle
           : `<div class="small muted">No loose parts waiting right now. As you replace parts on your build, take-offs will show up here.</div>`;
 
         const listedMarkup = listed.length
-          ? listed
+          ? listedSummary + listedShown
               .map(
                 (item) => `
       <div class="feed-item">
@@ -9744,7 +9779,7 @@ body{position:relative!important;display:block!important;}
       </div>
     `,
               )
-              .join("")
+              .join("") + listedToggle
           : `<div class="small muted">No live listings right now. List a take-off part and it should appear here immediately.</div>`;
 
         const carBuyMarkup = BUYABLE_CARS
