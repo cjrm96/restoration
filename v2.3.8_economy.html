@@ -4873,6 +4873,9 @@
           sharkLoanPayment: 750,
           toolTruckBalance: 0,
           toolTruckPayment: 90,
+          ringPawnBalance: 0,
+          ringPawnPayment: 50,
+          weddingRingPawned: false,
           showLoading: false,
           pendingShowId: null,
           showStage: null,
@@ -5384,6 +5387,43 @@
           // current scene-resolution cycle so state is settled first.
           const showId = choice.gloveBoxAction.showId;
           setTimeout(() => beginShowEntry(showId), 60);
+        }
+        if (choice.ringPawnAccept) {
+          state.weddingRingPawned = true;
+          state.ringPawnBalance = 6000;
+          // Schedule the wife reaction scene a beat after this scene closes.
+          setTimeout(() => {
+            queueScene({
+              id: "ring_pawn_aftermath",
+              title: "She noticed",
+              emoji: "💔",
+              text: "It took her three days. You came home from the parts store and she was sitting at the kitchen table with the empty ring box open in front of her. She didn't say anything for a long time. Then she did.",
+              choices: [
+                {
+                  label: "Tell her the truth",
+                  note: "You laid out the whole spreadsheet — the loans, the parts, the show schedule. She listened the whole way through, then said one quiet sentence that you're going to think about for a long time. Paint took a hit when she walked back to the bedroom past the truck.",
+                  statBoost: { cat: "paint", amt: -14 },
+                  lore: 14,
+                  noteTone: "event-bad",
+                },
+                {
+                  label: "Say it's at the jeweler for cleaning",
+                  note: "She nodded slow. She knew. You both knew she knew. The lie sits between you like another loan you can't afford. The truck got keyed twice this time — once on each side. Symmetry, she said.",
+                  statBoost: { cat: "paint", amt: -22 },
+                  lore: 12,
+                  noteTone: "event-bad",
+                },
+                {
+                  label: "Promise you'll get it back",
+                  note: "She made you say the date. June. You wrote it on the back of the pawn slip and she pinned it to the fridge with a magnet shaped like a hot rod. You're going to make that date. You have to.",
+                  statBoost: { cat: "paint", amt: -10 },
+                  lore: 16,
+                  noteTone: "event-bad",
+                },
+              ],
+            });
+            requestRender("full");
+          }, 80);
         }
         if (choice.toast)
           toast(
@@ -6604,29 +6644,41 @@
             ? state.sharkLoanBalance
             : kind === "truck"
               ? state.toolTruckBalance
-              : state.bankLoanBalance;
+              : kind === "ring"
+                ? state.ringPawnBalance
+                : state.bankLoanBalance;
         if (balance <= 0) return;
         const pay = Math.min(balance, state.money);
         if (pay <= 0) return toast("You don't have any cash to put on it.", "err");
         state.money -= pay;
         if (kind === "shark") state.sharkLoanBalance -= pay;
         else if (kind === "truck") state.toolTruckBalance -= pay;
+        else if (kind === "ring") state.ringPawnBalance -= pay;
         else state.bankLoanBalance -= pay;
         const label =
           kind === "shark"
             ? "Shark loan"
             : kind === "truck"
               ? "Tool truck tab"
-              : "Bank loan";
+              : kind === "ring"
+                ? "Pawn ticket"
+                : "Bank loan";
         const remaining =
           kind === "shark"
             ? state.sharkLoanBalance
             : kind === "truck"
               ? state.toolTruckBalance
-              : state.bankLoanBalance;
+              : kind === "ring"
+                ? state.ringPawnBalance
+                : state.bankLoanBalance;
         recordMoneyChange(-pay, `${label} payment`);
+        const cleared = remaining === 0;
+        const ringClearedNote =
+          kind === "ring" && cleared
+            ? " Picked up the ring on the way home. She didn't say anything when you put it back on the dresser, but you saw her smile."
+            : "";
         toast(
-          `${label} paid down by $${fmt(pay)}.${remaining === 0 ? " Debt cleared." : ""}`,
+          `${label} paid down by $${fmt(pay)}.${cleared ? " Debt cleared." : ""}${ringClearedNote}`,
           "event-good",
         );
         saveGame();
@@ -6941,6 +6993,16 @@
           state.money -= truckPay;
           recordMoneyChange(-truckPay, "Tool truck weekly");
         }
+        // Pawn ticket on the wedding ring — slow weekly bleed
+        if (state.ringPawnBalance > 0) {
+          const ringPay = Math.min(
+            state.ringPawnPayment || 50,
+            state.ringPawnBalance,
+          );
+          state.ringPawnBalance -= ringPay;
+          state.money -= ringPay;
+          recordMoneyChange(-ringPay, "Pawn shop weekly");
+        }
 
         state.paycheckProgress += 1;
         if (state.paycheckProgress >= PAYCHECK_CYCLE) {
@@ -6985,6 +7047,7 @@
         maybeTriggerFollowerPayout();
         maybeOfferBrandDeal();
         maybeOfferCollab();
+        maybeOfferRingPawn();
         if (missedSocialPost) {
           toast(
             "You rolled into a new week without dropping any content. The algorithm forgot you for a minute.",
@@ -7232,6 +7295,39 @@
             "event-good",
           );
         }
+      }
+
+      function maybeOfferRingPawn() {
+        if (state.weddingRingPawned) return;
+        if (!state.wifeCarSold) return;
+        // Player has to be all-in: every loan tapped, every dollar borrowed
+        // already. Ring pawn is the move when there's nothing left to sell.
+        if (state.bankLoanBalance <= 0) return;
+        if (state.sharkLoanBalance <= 0) return;
+        if (state.toolTruckBalance <= 0) return;
+        if (modalBusy()) return;
+        if (Math.random() > 0.35) return;
+        queueScene({
+          id: "ring_pawn_offer",
+          title: "The pawn shop is open late",
+          emoji: "💍",
+          text: "It's 10:47 PM. You're standing across the street from a pawn shop you've driven past a hundred times and never thought about. Three loans out, the wife's car already gone, and the bank account thirty bucks deep. Your wedding ring has been sitting on the dresser since you started painting last weekend. She probably wouldn't even notice tonight.",
+          choices: [
+            {
+              label: "Pawn the ring · +$5,000",
+              money: 5000,
+              ringPawnAccept: true,
+              note: "The pawnbroker counted out fifty hundred-dollar bills without making eye contact. You signed a slip that said you'd pay $6,000 to get the ring back. He smiled when he locked it in the case. He's seen this before.",
+              noteTone: "event-bad",
+            },
+            {
+              label: "Walk away — some things aren't for sale",
+              lore: 12,
+              note: "You sat in the truck for ten minutes, then drove home. The ring's still on the dresser. You'll figure something else out, or you won't, but at least you'll have that.",
+              noteTone: "event-good",
+            },
+          ],
+        });
       }
 
       function maybeOfferBrandDeal() {
@@ -8272,7 +8368,7 @@ body{position:relative!important;display:block!important;}
           root.innerHTML = "";
           return;
         }
-        root.innerHTML = `<div class="modal"><div class="modal-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">Borrow just enough to keep the build alive — or make a worse decision.</div>${panel("Bank Loan", `${chalkRow("Cash Now", "+$4,000", "good")}${chalkRow("Payday Hit", "-$400 every paycheck", "warn")}${state.bankLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.bankLoanBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $400", "payOffLoan('bank')", state.money < Math.min(400, state.bankLoanBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.bankLoanBalance)}`, "payOffLoan('bank')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Bank Loan", "takeBankLoan()", false, "", "width:100%")}`, "Legit paperwork, standard pain.", "#7da0c2")}${panel("Loan Shark", `${chalkRow("Cash Now", "+$6,000", "good")}${chalkRow("You Owe", "$7,800 total", "bad")}${chalkRow("Payday Hit", "-$750 every paycheck", "bad")}${state.sharkLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.sharkLoanBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $750", "payOffLoan('shark')", state.money < Math.min(750, state.sharkLoanBalance), "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}${button(`Pay Off $${fmt(state.sharkLoanBalance)}`, "payOffLoan('shark')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Shark Loan", "takeSharkLoan()", false, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "Fast money, ugly terms.", "#c46d60")}${panel("Tool Truck Tab", `${chalkRow("Cash Now", "+$3,500", "good")}${chalkRow("You Owe", "$3,600 total", "warn")}${chalkRow("Weekly Hit", "-$90 for 40 weeks", "warn")}${state.toolTruckBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.toolTruckBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $90", "payOffLoan('truck')", state.money < Math.min(90, state.toolTruckBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.toolTruckBalance)}`, "payOffLoan('truck')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Open Tool Truck Tab", "takeToolTruckLoan()", false, "", "width:100%")}`, "Snap-on truck regular. Slow squeeze, low pressure.", "#c99842")}</div></div>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">Borrow just enough to keep the build alive — or make a worse decision.</div>${panel("Bank Loan", `${chalkRow("Cash Now", "+$4,000", "good")}${chalkRow("Payday Hit", "-$400 every paycheck", "warn")}${state.bankLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.bankLoanBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $400", "payOffLoan('bank')", state.money < Math.min(400, state.bankLoanBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.bankLoanBalance)}`, "payOffLoan('bank')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Bank Loan", "takeBankLoan()", false, "", "width:100%")}`, "Legit paperwork, standard pain.", "#7da0c2")}${panel("Loan Shark", `${chalkRow("Cash Now", "+$6,000", "good")}${chalkRow("You Owe", "$7,800 total", "bad")}${chalkRow("Payday Hit", "-$750 every paycheck", "bad")}${state.sharkLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.sharkLoanBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $750", "payOffLoan('shark')", state.money < Math.min(750, state.sharkLoanBalance), "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}${button(`Pay Off $${fmt(state.sharkLoanBalance)}`, "payOffLoan('shark')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Shark Loan", "takeSharkLoan()", false, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "Fast money, ugly terms.", "#c46d60")}${panel("Tool Truck Tab", `${chalkRow("Cash Now", "+$3,500", "good")}${chalkRow("You Owe", "$3,600 total", "warn")}${chalkRow("Weekly Hit", "-$90 for 40 weeks", "warn")}${state.toolTruckBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.toolTruckBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $90", "payOffLoan('truck')", state.money < Math.min(90, state.toolTruckBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.toolTruckBalance)}`, "payOffLoan('truck')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Open Tool Truck Tab", "takeToolTruckLoan()", false, "", "width:100%")}`, "Snap-on truck regular. Slow squeeze, low pressure.", "#c99842")}${state.weddingRingPawned && state.ringPawnBalance > 0 ? panel("Pawn Ticket", `${chalkRow("You Owe", `$${fmt(state.ringPawnBalance)}`, "bad")}${chalkRow("Weekly Hit", "-$50 weekly", "warn")}${chalkRow("Outstanding", `$${fmt(state.ringPawnBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $50", "payOffLoan('ring')", state.money < Math.min(50, state.ringPawnBalance), "", "width:100%")}${button(`Pick Up Ring · $${fmt(state.ringPawnBalance)}`, "payOffLoan('ring')", state.money < state.ringPawnBalance, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}</div>`, "Get the ring back before the next anniversary. You know the drill.", "#a984dd") : ""}</div></div>`;
       }
 
       function renderTutorialModal() {
@@ -9190,7 +9286,7 @@ body{position:relative!important;display:block!important;}
           "notice:" + ((state.noticeQueue && state.noticeQueue.length) || 0),
           state.pendingScene ? 1 : 0,
           state.showStore ? 1 : 0,
-          state.showStore ? `loan:${state.bankLoanBalance}:${state.sharkLoanBalance}:${state.toolTruckBalance || 0}` : "",
+          state.showStore ? `loan:${state.bankLoanBalance}:${state.sharkLoanBalance}:${state.toolTruckBalance || 0}:${state.ringPawnBalance || 0}` : "",
           state.pendingEvent
             ? state.pendingEvent.title || state.pendingEvent.type || "event"
             : "",
