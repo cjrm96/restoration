@@ -32,7 +32,7 @@
       }
       body {
         margin: 0;
-        font-family: Georgia, serif;
+        font-family: Georgia, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", EmojiOne, serif;
         color: var(--text);
         background:
           linear-gradient(
@@ -1999,7 +1999,7 @@
         {
           id: "crate",
           name: "Milk Crate of Tools",
-          emoji: "🪣",
+          emoji: "📦",
           cost: 0,
           maxTools: 4,
           speedBonus: 0,
@@ -2276,14 +2276,14 @@
         engine: "⚙️",
         transmission: "⚙️",
         brakes: "🛑",
-        suspension: "🪛",
-        wheels: "🛞",
-        tires: "🛞",
+        suspension: "🛠",
+        wheels: "⚪",
+        tires: "⚪",
         electrical: "⚡",
         differential: "🔩",
         body: "🔧",
         paint: "🎨",
-        interior: "🪑",
+        interior: "💺",
         chrome: "✨",
       };
 
@@ -3127,7 +3127,7 @@
           year: 1972,
           make: "Chevrolet",
           model: "C10 Pickup",
-          emoji: "🛻",
+          emoji: "🚙",
           price: 4800,
           engine: 20,
           transmission: 22,
@@ -3219,7 +3219,7 @@
           year: 1969,
           make: "Ford",
           model: "F-250 Heavy Duty",
-          emoji: "🚚",
+          emoji: "🚛",
           price: 5200,
           engine: 22,
           transmission: 24,
@@ -4477,7 +4477,7 @@
       const GARAGE_MOMENTS = [
         {
           id: "gm1",
-          emoji: "🪑",
+          emoji: "💺",
           title: "Just Sitting in the Garage",
           text: "You are not wrenching. Just staring at the car, thinking about all the work left and somehow loving it anyway.",
           gain: { lore: 5 },
@@ -4812,7 +4812,7 @@
         {
           id: "e6",
           type: "bad",
-          emoji: "🪟",
+          emoji: "💥",
           title: "Fender Ding from the Neighbor",
           desc: "He backed into it. Apologized. Didn't help. Body took a hit.",
           choice: false,
@@ -5006,7 +5006,7 @@
               year: 1965,
               make: "Ford",
               model: "F-100",
-              emoji: "🛻",
+              emoji: "🚚",
               engine: 18,
               transmission: 12,
               brakes: 14,
@@ -7562,14 +7562,14 @@
         transmission: { verb: "Shift Recalibrate", emoji: "⚙️" },
         brakes: { verb: "Pad Bed-In", emoji: "🛑" },
         suspension: { verb: "Alignment Tweak", emoji: "📐" },
-        wheels: { verb: "Spin Balance", emoji: "🛞" },
+        wheels: { verb: "Spin Balance", emoji: "⚪" },
         tires: { verb: "Pressure Dial-In", emoji: "💨" },
         electrical: { verb: "Ground Rework", emoji: "⚡" },
         differential: { verb: "Diff Lash Setup", emoji: "🔩" },
         body: { verb: "Wet Sand Pass", emoji: "💧" },
         paint: { verb: "Cut and Buff", emoji: "✨" },
         interior: { verb: "Detail Clean", emoji: "🧴" },
-        chrome: { verb: "Chrome Polish Pass", emoji: "🪞" },
+        chrome: { verb: "Chrome Polish Pass", emoji: "✨" },
       };
       const POLISH_PER_WEEK = 3;
       const POLISH_COST = 80;
@@ -8104,7 +8104,7 @@
       const TUTORIAL_BEATS = [
         {
           kicker: "Welcome to the garage",
-          art: "🛻",
+          art: "🚚",
           headline: "Every car guy story starts the same way.",
           body:
             "You found a project. You're three grand in. Your driveway is now a garage. The question isn't whether you can finish it — it's how badly you want to.",
@@ -8147,7 +8147,7 @@
         },
         {
           kicker: "Ready",
-          art: "🛻🔥",
+          art: "🚚🔥",
           headline: "Your '65 F-100 is on jack stands. The clock is on you now.",
           body:
             "Twenty weeks per season. Paychecks land every four. Don't run out of fuel, don't take the shark loan unless you have to, and remember: 'while I'm in there' has ended more budgets than inflation.",
@@ -9216,7 +9216,7 @@ body{position:relative!important;display:block!important;}
         const allMaxed = eligible.every((row) => row.current >= 100);
         const rows = eligible
           .map((row) => {
-            const action = POLISH_ACTIONS[row.cat] || { verb: "Polish", emoji: "🪞" };
+            const action = POLISH_ACTIONS[row.cat] || { verb: "Polish", emoji: "✨" };
             const maxed = row.current >= 100;
             const blocked =
               maxed ||
@@ -9340,7 +9340,7 @@ body{position:relative!important;display:block!important;}
                 ? suggested
                     .map((item) => {
                       if (item.type === "polish") {
-                        const action = POLISH_ACTIONS[item.cat] || { verb: "Polish", emoji: "🪞" };
+                        const action = POLISH_ACTIONS[item.cat] || { verb: "Polish", emoji: "✨" };
                         const remaining = Math.max(0, POLISH_PER_WEEK - (state.polishesThisWeek || 0));
                         const blocked = remaining <= 0 || state.money < POLISH_COST;
                         const status = remaining <= 0
@@ -9403,7 +9403,7 @@ body{position:relative!important;display:block!important;}
           const tuneStatus = getCategoryCompletion(car, state.shopCat);
           let fineTuneMarkup = "";
           if (tuneStatus && tuneStatus.allDone) {
-            const action = POLISH_ACTIONS[state.shopCat] || { verb: "Polish", emoji: "🪞" };
+            const action = POLISH_ACTIONS[state.shopCat] || { verb: "Polish", emoji: "✨" };
             const remaining = Math.max(0, POLISH_PER_WEEK - (state.polishesThisWeek || 0));
             const maxed = tuneStatus.current >= 100;
             const blocked = maxed || remaining <= 0 || state.money < POLISH_COST;
