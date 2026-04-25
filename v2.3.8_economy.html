@@ -1590,22 +1590,6 @@
         color: #7a6e5e;
         margin-top: 14px;
       }
-      .splash-music-toggle {
-        background: none;
-        border: 1px solid #4a4036;
-        border-radius: 6px;
-        color: #8a7d6a;
-        font-size: 11px;
-        padding: 5px 10px;
-        cursor: pointer;
-        margin-top: 12px;
-        font-family: Georgia, serif;
-      }
-      .splash-music-toggle:hover {
-        color: var(--gold-soft);
-        border-color: #7e5c34;
-      }
-
       .garage-sign {
         position: relative;
         margin-bottom: 14px;
@@ -1888,15 +1872,6 @@
         <div class="splash-hint">
           WINNXT Studios | All Rights Reserved<br />
           Designed in California
-        </div>
-        <div>
-          <button
-            class="splash-music-toggle"
-            id="splashMuteBtn"
-            onclick="toggleSplashPreview()"
-          >
-            🎵 Preview Music
-          </button>
         </div>
       </div>
     </div>
@@ -10095,8 +10070,7 @@ body{position:relative!important;display:block!important;}
   ═══════════════════════════════════════════ */
       let audioCtx = null,
         musicPlaying = false,
-        musicNodes = [],
-        splashPreviewActive = false;
+        musicNodes = [];
       function getAudioCtx() {
         if (!audioCtx)
           audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -10562,23 +10536,9 @@ body{position:relative!important;display:block!important;}
           }, 600);
         }
       }
-      function toggleSplashPreview() {
-        const b = getEl("splashMuteBtn");
-        if (splashPreviewActive) {
-          stopMusic();
-          splashPreviewActive = false;
-          if (b) b.textContent = "🎵 Preview Music";
-        } else {
-          if (getMasterGain._n) getMasterGain._n.gain.value = 0.1;
-          startMusic();
-          splashPreviewActive = true;
-          if (b) b.textContent = "🔇 Stop Preview";
-        }
-      }
       function startGame() {
         applyAudioSettings();
         if (!musicPlaying) startMusic();
-        else splashPreviewActive = false;
         const sp = getEl("splash");
         sp.style.transition = "opacity .7s";
         sp.style.opacity = "0";
