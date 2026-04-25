@@ -8939,7 +8939,7 @@ body{position:relative!important;display:block!important;}
             .map((task) => {
               const part = PARTS.find((p) => p.id === task.partId);
               const remaining = Math.max(0, task.finishTime - Date.now());
-              return `<div class="info-box" data-task-id="${task.id}"><div class="flex between center" style="margin-bottom:8px;gap:10px"><div><div class="small" style="color:var(--text-bright);font-weight:bold">${part?.name || "Restoration"}</div><div class="tiny muted">${task.method === "shop" ? "At the auto shop" : "DIY in your workspace"} · ${task.weeksRequired} week plan</div></div><div class="small good task-time" style="font-weight:bold">${remaining <= 0 ? "COMPLETE" : formatRemaining(remaining)}</div></div>${gauge("", Math.round(getRestorationProgress(task) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${remaining <= 0 ? "Wrapping up now…" : taskStatusText(task)}</div></div>`;
+              return `<div class="info-box" data-task-id="${task.id}"><div class="flex between center" style="margin-bottom:8px;gap:10px"><div><div class="small" style="color:var(--text-bright);font-weight:bold">${part?.name || "Restoration"}</div></div><div class="small good task-time" style="font-weight:bold">${remaining <= 0 ? "COMPLETE" : formatRemaining(remaining)}</div></div>${gauge("", Math.round(getRestorationProgress(task) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${remaining <= 0 ? "Wrapping up now…" : taskStatusText(task)}</div></div>`;
             })
             .join("")}`,
           "Real-time timers continue while offline.",
