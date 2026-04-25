@@ -8893,7 +8893,35 @@ body{position:relative!important;display:block!important;}
            ${button("📖  Replay Tutorial", "replayTutorial()", false, "", "width:100%;margin-bottom:10px")}
            ${button("🗑  Reset Save (Start Over)", "resetSaveConfirm()", false, "", "width:100%;background:#5a2222;border-color:#a04040;color:#f0c8c8")}`,
           "", "#7da0c2")}
-        <div class="tiny muted" style="text-align:center;margin-top:10px">Car Guy Simulator · v2.3.8</div></div></div>`;
+        ${panel("About",
+          `<div style="text-align:center;margin-bottom:14px">
+             <div style="color:var(--gold);font-weight:bold;font-size:18px;margin-bottom:4px">Car Guy Simulator</div>
+             <div class="tiny muted">v2.3.8 · WINNXT Studios · 2026</div>
+           </div>
+           <div class="small" style="color:var(--text);line-height:1.65;margin-bottom:14px;font-style:italic;text-align:center">A garage management sim about restoring classic American iron, chasing show podiums, and keeping the lights on while your wife asks when you're going to fix the lawn mower.</div>
+           <div class="info-box" style="margin-bottom:12px">
+             <div class="tiny" style="color:var(--gold-soft);font-weight:bold;letter-spacing:1px;margin-bottom:6px">CREDITS</div>
+             <div class="small" style="color:var(--text);line-height:1.7">Game design & direction · WINNXT Studios<br>Vibe coded with AI 🤖</div>
+           </div>
+           <div class="info-box" style="margin-bottom:12px">
+             <div class="tiny" style="color:var(--gold-soft);font-weight:bold;letter-spacing:1px;margin-bottom:6px">BUILT WITH</div>
+             <div class="small" style="color:var(--text);line-height:1.7">Single-file HTML5 · vanilla JavaScript<br>Web Audio API for synthesized music and SFX<br>Hand-coded SVG pixel-art sprites<br>localStorage save persistence</div>
+           </div>
+           <div class="info-box" style="margin-bottom:12px">
+             <div class="tiny" style="color:var(--gold-soft);font-weight:bold;letter-spacing:1px;margin-bottom:6px">SOUNDTRACK</div>
+             <div class="small" style="color:var(--text);line-height:1.7">12-bar E-blues shuffle · 88 BPM<br>Composed and sequenced live in your browser. Nothing is cached or streamed.</div>
+           </div>
+           <div class="info-box" style="margin-bottom:12px">
+             <div class="tiny" style="color:var(--gold-soft);font-weight:bold;letter-spacing:1px;margin-bottom:6px">THANKS</div>
+             <div class="small" style="color:var(--text);line-height:1.7">To the playtesters who logged the feedback list that shaped this build. To every car guy who keeps a project alive in a garage that's slightly too small.</div>
+           </div>
+           <div class="info-box" style="margin-bottom:12px;background:rgba(125,160,194,0.06);border-color:rgba(125,160,194,0.4)">
+             <div class="tiny" style="color:var(--blue-bright);font-weight:bold;letter-spacing:1px;margin-bottom:6px">PRIVACY</div>
+             <div class="tiny muted" style="line-height:1.7">This game runs entirely in your browser. No data leaves your device. Your save lives in localStorage — yours to back up, share, or wipe.</div>
+           </div>
+           <div class="tiny muted" style="text-align:center;font-style:italic;line-height:1.6">Any resemblance to real cars, sponsors, or auction houses is parody. The brands they wink at are theirs, the loving impression is ours.</div>`,
+          "", "#a884dd")}
+        </div></div>`;
         return true;
       }
 
