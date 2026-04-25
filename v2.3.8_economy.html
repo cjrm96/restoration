@@ -2262,6 +2262,11 @@
         "engine",
         "transmission",
         "brakes",
+        "suspension",
+        "wheels",
+        "tires",
+        "electrical",
+        "differential",
         "body",
         "paint",
         "interior",
@@ -2271,6 +2276,11 @@
         engine: "Engine",
         transmission: "Transmission",
         brakes: "Brakes",
+        suspension: "Suspension",
+        wheels: "Wheels",
+        tires: "Tires",
+        electrical: "Electrical",
+        differential: "Differential",
         body: "Body",
         paint: "Paint",
         interior: "Interior",
@@ -2280,6 +2290,11 @@
         engine: "⚙️",
         transmission: "⚙️",
         brakes: "🛑",
+        suspension: "🪛",
+        wheels: "🛞",
+        tires: "🛞",
+        electrical: "⚡",
+        differential: "🔩",
         body: "🔧",
         paint: "🎨",
         interior: "🪑",
@@ -2639,6 +2654,176 @@
           desc: "The sort of overkill this hobby respects",
           tools: ["t20", "t17", "t19", "t15"],
         },
+        // ── Suspension ──
+        {
+          id: 101,
+          name: "Bushing Refresh",
+          category: "suspension",
+          tier: "Budget",
+          diy: 90,
+          mult: 1.5,
+          imp: 12,
+          desc: "Polyurethane swap on the worst of them",
+          tools: ["t1", "t3", "t4"],
+        },
+        {
+          id: 102,
+          name: "Quality Shock Set",
+          category: "suspension",
+          tier: "Quality",
+          diy: 280,
+          mult: 1.5,
+          imp: 22,
+          desc: "Bilstein-class shocks all four corners",
+          tools: ["t1", "t2", "t3", "t4"],
+        },
+        {
+          id: 103,
+          name: "Show-Grade Coilovers",
+          category: "suspension",
+          tier: "Show Grade",
+          diy: 620,
+          mult: 1.7,
+          imp: 36,
+          desc: "Adjustable everything, dialed for stance",
+          tools: ["t1", "t2", "t3", "t4", "t18"],
+        },
+        // ── Wheels ──
+        {
+          id: 104,
+          name: "Salvage Yard Steelies",
+          category: "wheels",
+          tier: "Budget",
+          diy: 70,
+          mult: 1.4,
+          imp: 11,
+          desc: "Honest stamped steel, period correct enough",
+          tools: ["t1", "t3"],
+        },
+        {
+          id: 105,
+          name: "Quality Aluminum Set",
+          category: "wheels",
+          tier: "Quality",
+          diy: 240,
+          mult: 1.5,
+          imp: 21,
+          desc: "Lightweight cast aluminum, clean finish",
+          tools: ["t1", "t3"],
+        },
+        {
+          id: 106,
+          name: "Show-Grade Forged Wheels",
+          category: "wheels",
+          tier: "Show Grade",
+          diy: 540,
+          mult: 1.7,
+          imp: 34,
+          desc: "Forged, polished, named after a guy in Cali",
+          tools: ["t1", "t3", "t17"],
+        },
+        // ── Tires ──
+        {
+          id: 107,
+          name: "Used Tire Set",
+          category: "tires",
+          tier: "Budget",
+          diy: 60,
+          mult: 1.4,
+          imp: 10,
+          desc: "Honest tread, matching brand, clean DOT date",
+          tools: ["t3"],
+        },
+        {
+          id: 108,
+          name: "Quality Radials",
+          category: "tires",
+          tier: "Quality",
+          diy: 220,
+          mult: 1.5,
+          imp: 20,
+          desc: "Modern compound, period-correct sidewall",
+          tools: ["t3"],
+        },
+        {
+          id: 109,
+          name: "White-Letter Show Tires",
+          category: "tires",
+          tier: "Show Grade",
+          diy: 480,
+          mult: 1.6,
+          imp: 32,
+          desc: "Aggressive tread, soft compound, photogenic",
+          tools: ["t3"],
+        },
+        // ── Electrical ──
+        {
+          id: 110,
+          name: "Battery and Cable Set",
+          category: "electrical",
+          tier: "Budget",
+          diy: 80,
+          mult: 1.5,
+          imp: 12,
+          desc: "Fresh battery, clean grounds, no more crank-crank",
+          tools: ["t1"],
+        },
+        {
+          id: 111,
+          name: "Quality Wiring Harness",
+          category: "electrical",
+          tier: "Quality",
+          diy: 260,
+          mult: 1.5,
+          imp: 22,
+          desc: "Modern reproduction harness, color-coded",
+          tools: ["t1", "t2"],
+        },
+        {
+          id: 112,
+          name: "Show-Grade Painless Kit",
+          category: "electrical",
+          tier: "Show Grade",
+          diy: 580,
+          mult: 1.7,
+          imp: 35,
+          desc: "Painless 18-circuit, fuse box you can show off",
+          tools: ["t1", "t2", "t18"],
+        },
+        // ── Differential ──
+        {
+          id: 113,
+          name: "Diff Fluid and Cover",
+          category: "differential",
+          tier: "Budget",
+          diy: 85,
+          mult: 1.4,
+          imp: 11,
+          desc: "Fresh gear oil, new gasket, clean cover",
+          tools: ["t1", "t3", "t4"],
+        },
+        {
+          id: 114,
+          name: "Quality Carrier Rebuild",
+          category: "differential",
+          tier: "Quality",
+          diy: 290,
+          mult: 1.5,
+          imp: 22,
+          desc: "Bearings and shims set up properly",
+          tools: ["t1", "t2", "t3", "t4"],
+        },
+        {
+          id: 115,
+          name: "Show-Grade Posi Setup",
+          category: "differential",
+          tier: "Show Grade",
+          diy: 600,
+          mult: 1.7,
+          imp: 35,
+          desc: "Gear ratio swap with a built carrier — limited slip done right",
+          tools: ["t1", "t2", "t3", "t4", "t18"],
+        },
       ];
 
       const SOCAL_TOOL_COSTS = {
@@ -2799,6 +2984,11 @@
           engine: 22,
           transmission: 20,
           brakes: 18,
+          suspension: 18,
+          wheels: 24,
+          tires: 22,
+          electrical: 18,
+          differential: 24,
           body: 28,
           paint: 25,
           interior: 22,
@@ -2817,6 +3007,11 @@
           engine: 18,
           transmission: 16,
           brakes: 20,
+          suspension: 22,
+          wheels: 26,
+          tires: 20,
+          electrical: 16,
+          differential: 26,
           body: 35,
           paint: 20,
           interior: 28,
@@ -4540,6 +4735,11 @@
               engine: 18,
               transmission: 12,
               brakes: 14,
+              suspension: 16,
+              wheels: 20,
+              tires: 18,
+              electrical: 14,
+              differential: 22,
               body: 22,
               paint: 15,
               interior: 20,
@@ -4670,17 +4870,11 @@
             : "#8d8878";
       const placeLabel = (p) =>
         ["🏆 1st", "🥈 2nd", "🥉 3rd", "4th", "5th"][p - 1] || `${p}th`;
-      const getOverall = (c) =>
-        Math.round(
-          (c.engine +
-            c.transmission +
-            c.brakes +
-            c.body +
-            c.paint +
-            c.interior +
-            c.chrome) /
-            7,
-        );
+      const getOverall = (c) => {
+        if (!c) return 0;
+        const sum = CATS.reduce((acc, cat) => acc + (c[cat] || 0), 0);
+        return Math.round(sum / CATS.length);
+      };
 
       function currentCar() {
         return state.cars.find((c) => c.id === state.carId) || null;
@@ -5992,6 +6186,13 @@
           ensureArray("ownedTools");
           ensureArray("giftedTools");
           ensureArray("cars");
+          // Backfill new stat categories on cars from old saves
+          state.cars.forEach((c) => {
+            CATS.forEach((cat) => {
+              if (typeof c[cat] !== "number") c[cat] = 18;
+            });
+            if (!Array.isArray(c.installedParts)) c.installedParts = [];
+          });
           if (!state.recentLines || typeof state.recentLines !== "object") {
             state.recentLines = {};
           }
