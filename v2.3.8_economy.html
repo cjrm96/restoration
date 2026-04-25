@@ -5799,12 +5799,23 @@
 
       function addRemovedPartItem(part, car) {
         const label = `${part.name} take-off from ${car.year} ${car.make}`;
-        const base = Math.max(20, Math.round(part.diy * 0.22));
+        // Take-offs scale with the tier of the part you replaced. A Show
+        // Grade take-off is genuinely worth real money on Marketplace; a
+        // Budget take-off is parking-lot pricing.
+        let base;
+        if (part.tier === "Show Grade") {
+          base = Math.max(180, Math.round(part.diy * 0.42));
+        } else if (part.tier === "Quality") {
+          base = Math.max(80, Math.round(part.diy * 0.32));
+        } else {
+          base = Math.max(25, Math.round(part.diy * 0.25));
+        }
         state.partsInventory.push({
           id: `inv_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
           name: label,
           sourcePart: part.name,
           category: part.category,
+          tier: part.tier,
           askingPrice: Math.round(base * 1.35),
           baselineValue: base,
           listed: false,
@@ -5893,11 +5904,14 @@
               : item.listingTone === "trade"
                 ? -0.02
                 : 0;
+        // Bigger audience = more eyeballs on the listing = higher offers.
+        // Caps at +20% so it doesn't dominate the formula.
+        const reachBonus = Math.min(0.2, (state.followers || 0) / 50000);
         const offer = Math.max(
           10,
           Math.round(
             item.baselineValue *
-              (0.68 + Math.random() * 0.7 + loreBonus + toneBonus),
+              (0.68 + Math.random() * 0.7 + loreBonus + toneBonus + reachBonus),
           ),
         );
         const buyerName =
