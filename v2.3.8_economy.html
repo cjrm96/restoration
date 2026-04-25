@@ -1973,6 +1973,15 @@
             </button>
             <button
               class="audio-toggle"
+              id="fullscreenBtn"
+              onclick="toggleFullscreen()"
+              title="Toggle fullscreen"
+              style="display:none"
+            >
+              ⤢
+            </button>
+            <button
+              class="audio-toggle"
               id="settingsBtn"
               onclick="openSettings()"
               title="Settings"
@@ -8958,6 +8967,57 @@ body{position:relative!important;display:block!important;}
         saveGame();
         requestRender("full");
       }
+      function isFullscreenSupported() {
+        const el = document.documentElement;
+        return !!(
+          el.requestFullscreen ||
+          el.webkitRequestFullscreen ||
+          el.mozRequestFullScreen ||
+          el.msRequestFullscreen
+        );
+      }
+      function isInFullscreen() {
+        return !!(
+          document.fullscreenElement ||
+          document.webkitFullscreenElement ||
+          document.mozFullScreenElement ||
+          document.msFullscreenElement
+        );
+      }
+      function toggleFullscreen() {
+        if (!isFullscreenSupported()) return;
+        if (isInFullscreen()) {
+          const exit =
+            document.exitFullscreen ||
+            document.webkitExitFullscreen ||
+            document.mozCancelFullScreen ||
+            document.msExitFullscreen;
+          if (exit) exit.call(document);
+        } else {
+          const el = document.documentElement;
+          const req =
+            el.requestFullscreen ||
+            el.webkitRequestFullscreen ||
+            el.mozRequestFullScreen ||
+            el.msRequestFullscreen;
+          if (req) req.call(el);
+        }
+        playSfx("click");
+      }
+      function syncFullscreenButtons() {
+        const supported = isFullscreenSupported();
+        const inFs = isInFullscreen();
+        const topBtn = getEl("fullscreenBtn");
+        if (topBtn) {
+          topBtn.style.display = supported ? "" : "none";
+          topBtn.textContent = inFs ? "⤡" : "⤢";
+          topBtn.title = inFs ? "Exit fullscreen" : "Enter fullscreen";
+        }
+        // Settings modal button gets re-rendered when toggled, but
+        // when fullscreen state changes externally (Esc key), we
+        // also need to refresh the modal if it's open.
+        if (state.settingsOpen) requestRender("modal");
+      }
       function resetSaveConfirm() {
         if (
           !confirm(
@@ -8994,6 +9054,7 @@ body{position:relative!important;display:block!important;}
         ${panel("Game",
           `<div class="tiny muted" style="margin-bottom:8px">${pauseHint}</div>
            ${button(pauseLabel, "togglePause()", false, "", "width:100%;margin-bottom:10px")}
+           ${isFullscreenSupported() ? button(isInFullscreen() ? "⤡  Exit Fullscreen" : "⤢  Enter Fullscreen", "toggleFullscreen()", false, "", "width:100%;margin-bottom:10px") : `<div class="tiny muted" style="text-align:center;margin-bottom:10px;line-height:1.6;font-style:italic">Fullscreen isn't supported in iOS Safari. For best experience, rotate to landscape and tap the address bar to hide it.</div>`}
            ${button("📖  Replay Tutorial", "replayTutorial()", false, "", "width:100%;margin-bottom:10px")}
            ${button("🗑  Reset Save (Start Over)", "resetSaveConfirm()", false, "", "width:100%;background:#5a2222;border-color:#a04040;color:#f0c8c8")}`,
           "", "#7da0c2")}
@@ -10654,6 +10715,12 @@ body{position:relative!important;display:block!important;}
 
       setInterval(() => saveGame(false), 15000);
       window.addEventListener("beforeunload", () => saveGame(true));
+
+      // Fullscreen feature detection + state sync
+      ["fullscreenchange", "webkitfullscreenchange", "mozfullscreenchange", "MSFullscreenChange"].forEach((ev) =>
+        document.addEventListener(ev, syncFullscreenButtons),
+      );
+      syncFullscreenButtons();
 
       /* ═══════════════════════════════════════════
      WEB AUDIO MUSIC ENGINE
