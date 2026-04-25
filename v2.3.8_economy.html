@@ -4877,6 +4877,7 @@
           ringPawnPayment: 50,
           weddingRingPawned: false,
           birthdayReceived: false,
+          fakeFollowersBought: false,
           showLoading: false,
           pendingShowId: null,
           showStage: null,
@@ -5804,12 +5805,17 @@
         const dealMarkup = deal
           ? `<div class="info-box" style="background:#291b36;border-color:#6f4d91;margin-top:10px"><div class="small" style="color:var(--purple-bright);font-weight:bold;margin-bottom:4px">📦 Brand Deal · ${deal.brand}</div><div class="tiny" style="color:#cbb9e0;margin-bottom:8px">They'll send a free Budget part in exchange for a sponsored post. +${fmtF(deal.followerBonus)} followers on the campaign.</div><div class="btn-row two">${button("Accept", "acceptBrandDeal()", !!state.freePart, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright)")}${button("Decline", "declineBrandDeal()", false, "", "width:100%;background:#4a3c2e;color:var(--text);border-color:#6b5840")}</div>${state.freePart ? `<div class="tiny warn" style="margin-top:6px">Claim your existing free part before accepting another.</div>` : ""}</div>`
           : "";
+        const fakeCar = currentCar();
+        const fakeRoadworthy = fakeCar && roadworthy(fakeCar);
+        const fakeMarkup = !state.fakeFollowersBought
+          ? `<div class="info-box" style="background:rgba(80,80,80,0.12);border-color:rgba(140,140,140,0.45);margin-top:10px"><div class="small" style="color:var(--text-dim);font-weight:bold;margin-bottom:4px">💀 Shady follower vendor · slid into your DMs</div><div class="tiny" style="color:var(--text);margin-bottom:8px">"1,000 real-looking followers overnight, $200 cash. Nobody has to know." Don't tell your sponsors you bought fake followers — they definitely check this stuff.</div>${button(fakeRoadworthy ? "Buy 1,000 followers · $200" : "Need a roadworthy build first", "buyFakeFollowers()", !fakeRoadworthy || state.money < 200, "", "width:100%;background:#2c2c2c;border-color:#555;color:var(--text-bright)")}</div>`
+          : "";
         const footer = already
           ? "Already dropped content this week."
           : state.followers < BRAND_DEAL_MIN_FOLLOWERS
             ? `One drop per week. Brand deals open at ${fmtF(BRAND_DEAL_MIN_FOLLOWERS)} followers.`
             : "One drop per week. Payouts scale with followers and car quality.";
-        return `<div class="info-box"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Post Content · lifetime $${fmt(earned)}</div><div class="social-actions">${buttons}</div><div class="tiny muted" style="margin-top:8px">${footer}</div>${collabMarkup}${dealMarkup}</div>`;
+        return `<div class="info-box"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Post Content · lifetime $${fmt(earned)}</div><div class="social-actions">${buttons}</div><div class="tiny muted" style="margin-top:8px">${footer}</div>${collabMarkup}${dealMarkup}${fakeMarkup}</div>`;
       }
 
       function renderFollowersTracker() {
@@ -7284,6 +7290,32 @@
         toast(
           `🤝 Collab dropped. The other creator's audience showed up. +${fmtF(gained)} followers.`,
           "event-good",
+        );
+        checkMilestones();
+        saveGame();
+        requestRender("full");
+      }
+
+      function buyFakeFollowers() {
+        if (state.fakeFollowersBought)
+          return toast("Already pulled that stunt. Can't do it twice.", "err");
+        const car = currentCar();
+        if (!car || !roadworthy(car))
+          return toast(
+            "Need a roadworthy build — can't fake credibility you don't have.",
+            "err",
+          );
+        const cost = 200;
+        if (state.money < cost)
+          return toast(`Need $${cost} up front. Don't have it.`, "err");
+        state.money -= cost;
+        state.fakeFollowersBought = true;
+        state.followers += 1000;
+        clampFollowers();
+        recordMoneyChange(-cost, "Bought followers");
+        pushNotice(
+          "💀 Thousand new followers overnight. Every one of them named like a Wi-Fi password. Don't tell your sponsors you bought fake followers — they definitely check this stuff.",
+          "good",
         );
         checkMilestones();
         saveGame();
