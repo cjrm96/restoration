@@ -8470,11 +8470,13 @@ body{position:relative!important;display:block!important;}
               const current = state.workshopLevel === w.id;
               const unlocked = i <= workshopIdx();
               const upcoming = i === workshopIdx() + 1;
+              // Hide old workspaces the player has already moved past — only show current and what's ahead
+              if (unlocked && !current) return "";
               return panel(
                 `${w.emoji} ${w.name}`,
-                `<div class="flex between center" style="gap:10px"><div class="small muted">Active restorations: ${w.maxActive}</div><div style="min-width:150px">${current ? `<div class="good" style="font-weight:bold;text-align:right">CURRENT</div>` : unlocked ? `<div style="color:#a9a194;font-weight:bold;text-align:right">OWNED</div>` : upcoming ? button(`Upgrade · $${fmt(w.cost)}`, "upgradeWorkspace()", state.money < w.cost) : `<div class="tiny" style="color:#72695d;text-align:right">Locked</div>`}</div></div>`,
+                `<div class="flex between center" style="gap:10px"><div class="small muted">Active restorations: ${w.maxActive}</div><div style="min-width:150px">${current ? `<div class="good" style="font-weight:bold;text-align:right">CURRENT</div>` : upcoming ? button(`Upgrade · $${fmt(w.cost)}`, "upgradeWorkspace()", state.money < w.cost) : `<div class="tiny" style="color:#72695d;text-align:right">Locked</div>`}</div></div>`,
                 w.desc,
-                current ? "#9fd18e" : unlocked ? "#9d927e" : "#d8a24f",
+                current ? "#9fd18e" : "#d8a24f",
               );
             }).join("")}`,
             "Bigger spaces let you run more restorations at once.",
