@@ -6880,6 +6880,17 @@
 
       function continueSeason() {
         const car = currentCar();
+        // Surface the winter storage damage as a click-through notice
+        // before clearing it — the recap screen no longer shows it inline.
+        if (
+          Array.isArray(state.winterStorageReport) &&
+          state.winterStorageReport.length
+        ) {
+          pushNotice(
+            `Pulled the cover off after the off-season. ${state.winterStorageReport.join(" · ")}.`,
+            "bad",
+          );
+        }
         state.seasonWrap = false;
         state.week = 1;
         state.view = "workshop";
@@ -8459,7 +8470,7 @@ body{position:relative!important;display:block!important;}
         const bestStr = state.seasonStats.bestPlace
           ? `${placeLabel(state.seasonStats.bestPlace)} at ${state.seasonStats.bestTier}`
           : "None";
-        return `<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div style="max-width:520px;width:100%"><div style="text-align:center;margin-bottom:24px"><div style="font-size:56px;margin-bottom:12px">🏁</div><div style="color:var(--gold);font-weight:bold;font-size:28px;margin-bottom:6px">Season Complete</div><div class="small muted">The season is in the books. Here's how the build went.</div></div>${panel("Season Recap", `${chalkRow("Starting Overall", state.seasonStats.startOverall)}${chalkRow("Final Overall", finalOverall, finalOverall >= state.seasonStats.startOverall ? "good" : "warn")}${chalkRow("Shows Entered", state.seasonStats.showsEntered)}${chalkRow("Best Result", bestStr)}${chalkRow("Net Money Earned", "$" + fmt(state.seasonStats.moneyEarned), state.seasonStats.moneyEarned >= 0 ? "good" : "bad")}${chalkRow("Milestones Hit", `${milestoneDone} / ${MILESTONES.length}`)}${chalkRow("Rival Buck's Score", state.rival.score)}`, "", "#d8a24f")}${state.winterStorageReport ? panel("Winter Storage", state.winterStorageReport.map((r) => `<div class="row"><span class="row-k">Off-Season</span><span class="row-v warn">${r}</span></div>`).join(""), "How the car came out of winter storage.", "#c46d60") : ""}${panel("Milestones", MILESTONES.map((m) => `<div class="milestone-item ${state.milestones[m.id] ? "done" : ""}"><div class="milestone-check">${state.milestones[m.id] ? "✓" : ""}</div><div class="small" style="color:${state.milestones[m.id] ? "#9fd18e" : "#8a7d6a"}">${m.emoji} ${m.label}</div></div>`).join(""), "", "#7da0c2")}<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${button("Play Another Season", "restartGame()", false, "", "width:100%;font-size:14px")}${button("Keep Building", "continueSeason()", false, "", "width:100%;font-size:14px;background:#2a3a1a;border-color:#5a7a3a;color:#c0d8a0")}</div></div></div>`;
+        return `<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div style="max-width:520px;width:100%"><div style="text-align:center;margin-bottom:24px"><div style="font-size:56px;margin-bottom:12px">🏁</div><div style="color:var(--gold);font-weight:bold;font-size:28px;margin-bottom:6px">Season Complete</div><div class="small muted">The season is in the books. Here's how the build went.</div></div>${panel("Season Recap", `${chalkRow("Starting Overall", state.seasonStats.startOverall)}${chalkRow("Final Overall", finalOverall, finalOverall >= state.seasonStats.startOverall ? "good" : "warn")}${chalkRow("Shows Entered", state.seasonStats.showsEntered)}${chalkRow("Best Result", bestStr)}${chalkRow("Net Money Earned", "$" + fmt(state.seasonStats.moneyEarned), state.seasonStats.moneyEarned >= 0 ? "good" : "bad")}${chalkRow("Milestones Hit", `${milestoneDone} / ${MILESTONES.length}`)}${chalkRow("Rival Buck's Score", state.rival.score)}`, "", "#d8a24f")}${panel("Milestones", MILESTONES.map((m) => `<div class="milestone-item ${state.milestones[m.id] ? "done" : ""}"><div class="milestone-check">${state.milestones[m.id] ? "✓" : ""}</div><div class="small" style="color:${state.milestones[m.id] ? "#9fd18e" : "#8a7d6a"}">${m.emoji} ${m.label}</div></div>`).join(""), "", "#7da0c2")}${button("Keep Building", "continueSeason()", false, "", "width:100%;font-size:14px;background:#2a3a1a;border-color:#5a7a3a;color:#c0d8a0")}</div></div>`;
       }
 
       /* ═══════════════════════════════════════════
