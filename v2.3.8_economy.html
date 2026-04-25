@@ -9798,18 +9798,23 @@ body{position:relative!important;display:block!important;}
               .join("") + listedToggle
           : `<div class="small muted">No live listings right now. List a take-off part and it should appear here immediately.</div>`;
 
-        const carBuyMarkup = BUYABLE_CARS
-          .map(
-            (c) => `
+        const carsForSale = BUYABLE_CARS.filter(
+          (c) => !state.cars.find((x) => x.id === c.id),
+        );
+        const carBuyMarkup = carsForSale.length
+          ? carsForSale
+              .map(
+                (c) => `
       <div class="feed-item">
         <div class="feed-kicker">CARS FOR SALE</div>
         <div class="feed-text">${c.year} ${c.make} ${c.model}</div>
-        <div class="feed-meta">$${fmt(c.price)} · Score ${Math.round((c.engine + c.transmission + c.brakes + c.body + c.paint + c.interior + c.chrome) / 7)} starter · ${state.cars.find((x) => x.id === c.id) ? "Already owned" : "Marketplace find"}</div>
-        ${button(state.cars.find((x) => x.id === c.id) ? "Already In Garage" : `Buy for $${fmt(c.price)}`, `buyCar(${c.id})`, state.money < c.price || !!state.cars.find((x) => x.id === c.id), "", "width:100%;margin-top:8px")}
+        <div class="feed-meta">$${fmt(c.price)} · Score ${Math.round((c.engine + c.transmission + c.brakes + c.body + c.paint + c.interior + c.chrome) / 7)} starter · Marketplace find</div>
+        ${button(`Buy for $${fmt(c.price)}`, `buyCar(${c.id})`, state.money < c.price, "", "width:100%;margin-top:8px")}
       </div>
     `,
-          )
-          .join("");
+              )
+              .join("")
+          : `<div class="small muted">Every project on the lot is already in your garage. Move some metal before more comes around.</div>`;
 
         const recentMarkup = recent.length
           ? recent
