@@ -5909,11 +5909,11 @@
               `<div class="feed-item"><div class="feed-kicker">${item.kicker}</div><div class="feed-text">${item.text}</div>${item.meta ? `<div class="feed-meta">${item.meta}</div>` : ""}${item.item && !item.item.listed ? `<div class='btn-row three' style='margin-top:8px'>${button("Firm", `listPartOnMarketplaceWithTone('${item.item.id}','firm')`, false, "", "width:100%;padding:6px 8px;font-size:11px")}${button("Need Gone", `listPartOnMarketplaceWithTone('${item.item.id}','gone')`, false, "", "width:100%;padding:6px 8px;font-size:11px;background:#7da0c2;border-color:var(--blue-bright)")}${button("Trade Bait", `listPartOnMarketplaceWithTone('${item.item.id}','trade')`, false, "", "width:100%;padding:6px 8px;font-size:11px;background:#4a3c2e;color:var(--text);border-color:#6b5840")}</div>` : ""}</div>`,
           )
           .join("");
+        const sponsorActive = SPONSORS.filter((s) => state.followers >= s.req);
+        const sponsorUpcoming = SPONSORS.filter((s) => state.followers < s.req).slice(0, 4);
+        const sponsorRows = [...sponsorActive.slice(-2), ...sponsorUpcoming];
         const sponsorMarkup = showSponsors
-          ? `<div class="info-box"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Sponsor watch</div>${SPONSORS.slice(
-              0,
-              5,
-            )
+          ? `<div class="info-box"><div class="flex between center" style="margin-bottom:8px"><div class="small" style="color:var(--text-bright);font-weight:bold">Sponsor watch</div><div class="tiny muted">${sponsorActive.length}/${SPONSORS.length} active</div></div>${sponsorRows
               .map(
                 (s) =>
                   `<div class="guide-step"><div><div class="small" style="color:var(--text)">${s.emoji} ${s.name}</div><div class="tiny muted" style="margin-top:3px">${s.benefit}</div></div><span class="tiny ${state.followers >= s.req ? "good" : "warn"}">${state.followers >= s.req ? "active" : fmtF(s.req)}</span></div>`,
@@ -9434,12 +9434,10 @@ body{position:relative!important;display:block!important;}
         const activeCar = currentCar();
         return `<div class="grid-main"><div>${activeCar ? renderHeroCallout("Social Media Hub", "All world, rival, marketplace, and posting interactions now run through one live scene board.", "WORLD INTERACTIONS") : ""}${renderFollowersTracker()}${activeCar ? renderUnifiedSocialFeed(activeCar, { showSponsors: false, showHistory: true }) : renderUnifiedSocialFeed(null, { showSponsors: false, showHistory: true })}${renderLegacyTeaser()}</div><div>${renderUpcomingBar()}${panel(
           "Sponsor Watch",
-          `${SPONSORS.slice(0, 6)
-            .map(
+          `${SPONSORS.map(
               (s) =>
                 `<div class="guide-step"><div><div class="small" style="color:var(--text)">${s.emoji} ${s.name}</div><div class="tiny muted" style="margin-top:3px">${s.benefit}</div></div><div style="text-align:right"><div class="tiny ${state.followers >= s.req ? "good" : "warn"}">${state.followers >= s.req ? "ACTIVE" : fmtF(s.req)}</div>${state.followers < s.req ? `<div class="tiny muted" style="margin-top:3px">${fmtF(s.req - state.followers)} away</div>` : ""}</div></div>`,
-            )
-            .join("")}`,
+            ).join("")}`,
           "Know what each sponsor gives you and how close you are.",
           "#d8a24f",
         )}</div></div>`;
