@@ -71,6 +71,10 @@
         gap: 14px;
         flex-wrap: wrap;
         background: linear-gradient(180deg, #312922 0%, #241d17 100%);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
       }
       .brand {
         color: var(--gold);
@@ -1954,6 +1958,7 @@
           </div>
           <div class="top-stats">
             <div class="chip money" id="moneyChip"></div>
+            <div class="chip trend" id="trendChip"></div>
             <div class="chip fuel" id="fuelChip"></div>
             <div class="chip followers" id="followersChip"></div>
             <div class="chip week" id="weekChip"></div>
@@ -5145,6 +5150,7 @@
           birthdayReceived: false,
           fakeFollowersBought: false,
           polishesThisWeek: 0,
+          weekStartMoney: 3000,
           showLoading: false,
           pendingShowId: null,
           showStage: null,
@@ -6741,6 +6747,7 @@
           }
           state.settingsOpen = false;
           if (typeof state.pausedAt !== "number") state.pausedAt = 0;
+          if (typeof state.weekStartMoney !== "number") state.weekStartMoney = state.money || 0;
           if (!currentCar() && state.cars.length) {
             state.carId = state.cars[0].id;
           }
@@ -7334,6 +7341,7 @@
         const previousWeek = state.week;
         const missedSocialPost = state.creatorPostedWeek !== previousWeek;
         state.week += 1;
+        state.weekStartMoney = state.money;
         state.enteredShowsThisWeek = [];
         state.polishesThisWeek = 0;
         state.rival.score = getRivalBaseScore();
@@ -9721,11 +9729,47 @@ body{position:relative!important;display:block!important;}
               });
               const rivalLine =
                 show.tier === "Regional" || show.tier === "National"
-                  ? `<div class="tiny" style="color:var(--red-bright);margin-bottom:8px">🏎 Buck's '67 Stallion will be there · current score ~${getRivalBaseScore()}</div><div class="tiny muted" style="margin-bottom:8px">He is your measuring stick now. If you are not improving, he is.</div>`
+                  ? `<div class="tiny" style="color:var(--red-bright);margin-bottom:8px">🏎 Buck's '67 Stallion will be there · current score ~${getRivalBaseScore()}</div>`
                   : "";
+              // Show-prep checklist — every requirement gets a ✓ or ✗
+              // so the player sees at a glance what's blocking entry.
+              const checks = [];
+              if (show.tier !== "Cars & Coffee") {
+                checks.push({
+                  ok: getOverall(car) >= show.minScore,
+                  pass: `${show.minScore}+ overall ✓`,
+                  fail: `${show.minScore}+ overall (${getOverall(car)} now)`,
+                });
+              }
+              checks.push({
+                ok: roadworthy(car),
+                pass: "Roadworthy ✓",
+                fail: "Not roadworthy yet",
+              });
+              checks.push({
+                ok: state.fuel >= fuelNeed,
+                pass: `${fuelNeed} gal fuel ✓`,
+                fail: `${fuelNeed} gal fuel (have ${state.fuel})`,
+              });
+              if (entryFee > 0) {
+                checks.push({
+                  ok: state.money >= entryFee,
+                  pass: `$${fmt(entryFee)} entry ✓`,
+                  fail: `$${fmt(entryFee)} entry (have $${fmt(state.money)})`,
+                });
+              }
+              checks.push({
+                ok: !hasActiveRestorations(car.id),
+                pass: "No active jobs ✓",
+                fail: "Finish active restoration jobs",
+              });
+              if (!progressReq.ok) {
+                checks.push({ ok: false, pass: "", fail: progressReq.msg });
+              }
+              const checklistMarkup = `<div class="info-box" style="margin-bottom:10px;background:rgba(0,0,0,0.18);padding:10px 12px"><div class="tiny" style="color:var(--gold-soft);letter-spacing:1.5px;font-weight:bold;margin-bottom:6px">SHOW PREP</div>${checks.map((c) => `<div class="tiny" style="line-height:1.7;color:${c.ok ? "#9fd18e" : "#e07a7a"}">${c.ok ? "✓ " + c.pass : "✗ " + c.fail}</div>`).join("")}</div>`;
               return panel(
                 show.name,
-                `<div class="show-prizes" style="margin-bottom:10px">${show.tier === "Cars & Coffee" ? `<div class="show-prize">No judges, no places</div><div class="show-prize">Free part raffle for showing up</div>` : show.prizes.map((p, i) => `<div class="show-prize">${["1st", "2nd", "3rd", "4th", "5th"][i]} · $${p}</div>`).join("")}</div>${show.tier === "Cars & Coffee" ? `<div class="show-prizes" style="margin-bottom:10px"><div class="show-prize">Casual scene · just vibe</div><div class="show-prize">Bring your build, drink your coffee</div></div>` : ""}${show.enteredThisWeek ? `<div class="tiny warn" style="margin-bottom:8px">Already entered this week</div>` : show.weeksUntil === 0 ? `<div class="tiny good" style="margin-bottom:8px">Happening this week</div>` : `<div class="tiny muted" style="margin-bottom:8px">Starts in ${show.weeksUntil} week(s)</div>`}${!progressReq.ok ? `<div class="tiny bad" style="margin-bottom:8px">${progressReq.msg}</div>` : ""}${rivalLine}${localSponsor ? `<div class="tiny good" style="margin-bottom:8px">${localSponsor.name} covers Local entry fee.</div>` : ""}${bonus > 0 && show.tier !== "Cars & Coffee" ? `<div class="tiny good" style="margin-bottom:8px">Sponsor bonus: +$${bonus}</div>` : ""}${getOverall(car) < show.minScore ? `<div class="tiny bad" style="margin-bottom:8px">Requires ${show.minScore}+ overall</div>` : ""}${!roadworthy(car) ? `<div class="tiny bad" style="margin-bottom:8px">Not roadworthy yet</div>` : ""}${hasActiveRestorations(car.id) ? `<div class="tiny bad" style="margin-bottom:8px">Finish your active restoration jobs before taking the car to a show</div>` : ""}${roadworthy(car) && state.fuel < fuelNeed ? `<div class="tiny bad" style="margin-bottom:8px">Not enough fuel</div>` : ""}${button(show.tier === "Cars & Coffee" ? "Roll Up And Hang Out" : `Roll In And Face The Opinions · $${fmt(entryFee)}`, `beginShowEntry(${show.id})`, off, "", "width:100%")}`,
+                `<div class="show-prizes" style="margin-bottom:10px">${show.tier === "Cars & Coffee" ? `<div class="show-prize">No judges, no places</div><div class="show-prize">Free part raffle for showing up</div>` : show.prizes.map((p, i) => `<div class="show-prize">${["1st", "2nd", "3rd", "4th", "5th"][i]} · $${p}</div>`).join("")}</div>${show.enteredThisWeek ? `<div class="tiny warn" style="margin-bottom:8px">Already entered this week</div>` : show.weeksUntil === 0 ? `<div class="tiny good" style="margin-bottom:8px">Happening this week</div>` : `<div class="tiny muted" style="margin-bottom:8px">Starts in ${show.weeksUntil} week(s)</div>`}${rivalLine}${localSponsor ? `<div class="tiny good" style="margin-bottom:8px">${localSponsor.name} covers Local entry fee.</div>` : ""}${bonus > 0 && show.tier !== "Cars & Coffee" ? `<div class="tiny good" style="margin-bottom:8px">Sponsor bonus: +$${bonus}</div>` : ""}${checklistMarkup}${button(show.tier === "Cars & Coffee" ? "Roll Up And Hang Out" : `Roll In And Face The Opinions · $${fmt(entryFee)}`, `beginShowEntry(${show.id})`, off, "", "width:100%")}`,
                 `${show.tier} · ${show.tier === "Cars & Coffee" ? "casual meetup" : `base entry $${fmt(show.fee)}`} · fuel ${fuelNeed} gal`,
                 tc,
               );
@@ -10107,6 +10151,18 @@ body{position:relative!important;display:block!important;}
           state.lastMoneyDelta > 0 && Date.now() - lastMoneyPopAt > 350;
         moneyChip.classList.toggle("money-pop", shouldPopMoney);
         if (shouldPopMoney) lastMoneyPopAt = Date.now();
+        const trendChip = getEl("trendChip");
+        if (trendChip) {
+          const trend = state.money - (state.weekStartMoney || 0);
+          if (trend === 0) {
+            trendChip.textContent = "";
+            trendChip.style.display = "none";
+          } else {
+            trendChip.style.display = "";
+            trendChip.textContent = `${trend > 0 ? "▲" : "▼"} ${trend > 0 ? "+" : "−"}$${fmt(Math.abs(trend))} this wk`;
+            trendChip.style.color = trend > 0 ? "#9fd18e" : "#e07a7a";
+          }
+        }
         getEl("fuelChip").textContent = `⛽ ${state.fuel}/${MAX_FUEL}`;
         getEl("followersChip").textContent = `📣 ${fmtF(state.followers)}`;
         getEl("weekChip").textContent =
