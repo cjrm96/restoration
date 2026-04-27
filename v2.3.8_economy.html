@@ -5030,10 +5030,14 @@
         { min: 6000, chance: 0.22, minCash: 150, maxCash: 300, label: "paid shop spotlight" },
         { min: 1000, chance: 0.18, minCash: 75, maxCash: 150, label: "local parts sponsor shoutout" },
       ];
+      // Each platform now has a clear lane:
+      //   Snapgram → cash king when paint is high (paintMult applied in calcCreatorReward)
+      //   CarTok   → fastest follower growth, modest cash
+      //   YouTube  → biggest single-post cash, but a 2-week cooldown and modest follower gain
       const CREATOR_POSTS = {
-        insta: { label: "Snapgram Pic", emoji: "📸", cashRate: 0.012, cashMin: 2, cashCap: 400, followerFlat: 12, followerRate: 0.02, followerCap: 500, moneyCost: 0, fuelCost: 0, desc: "Quick phone shot from the garage." },
-        reel:  { label: "CarTok Clip", emoji: "🎬", cashRate: 0.035, cashMin: 6, cashCap: 1200, followerFlat: 33, followerRate: 0.036, followerCap: 1400, moneyCost: 10, fuelCost: 0, desc: "Short action clip — revs, reveals, build moments." },
-        youtube:{ label: "MotorTube Video", emoji: "▶️", cashRate: 0.085, cashMin: 15, cashCap: 3000, followerFlat: 90, followerRate: 0.056, followerCap: 4800, moneyCost: 0, fuelCost: 2, desc: "Long form build log — requires a roadworthy car and b-roll drive." },
+        insta: { label: "Snapgram Pic", emoji: "📸", cashRate: 0.06, cashMin: 4, cashCap: 1800, followerFlat: 12, followerRate: 0.02, followerCap: 500, moneyCost: 0, fuelCost: 0, desc: "Photogenic glamour shot — pays best when the paint pops." },
+        reel:  { label: "CarTok Clip", emoji: "🎬", cashRate: 0.035, cashMin: 6, cashCap: 1200, followerFlat: 50, followerRate: 0.06, followerCap: 3000, moneyCost: 10, fuelCost: 0, desc: "Short-form algorithm bait — biggest follower bump, modest cash." },
+        youtube:{ label: "MotorTube Video", emoji: "▶️", cashRate: 0.085, cashMin: 15, cashCap: 3000, followerFlat: 40, followerRate: 0.025, followerCap: 1500, moneyCost: 0, fuelCost: 2, desc: "Long-form build log — fattest single payout, but 2-week production cycle." },
       };
       const BRAND_DEAL_BRANDS = [
         "RevLine Auto Parts",
@@ -5107,6 +5111,7 @@
           lastShowPlace: null,
           creatorPostedWeek: null,
           collabDoneWeek: null,
+          youtubeCooldownUntil: null,
           pendingBrandDeal: null,
           totalCreatorEarnings: 0,
           rival: { score: 32, showsEntered: 0, lastPlace: null },
@@ -7627,8 +7632,14 @@
         const qualityMult = 0.5 + overall / 100;
         const ms = activeSponsors().find((s) => s.socialBoost);
         const sponsorMult = ms ? 1 + ms.socialBoost : 1;
+        // Snapgram is a visual platform — high paint = photogenic = more
+        // engagement = more cash. 0.5x at no paint, 1.0x at 50, 1.5x at 100.
+        const paintMult =
+          type === "insta" && car
+            ? 0.5 + (car.paint || 0) / 100
+            : 1;
         const cashRaw = Math.max(cfg.cashMin, state.followers * cfg.cashRate);
-        const cash = Math.min(cfg.cashCap, Math.round(cashRaw * qualityMult * sponsorMult));
+        const cash = Math.min(cfg.cashCap, Math.round(cashRaw * qualityMult * sponsorMult * paintMult));
         const folRaw = cfg.followerFlat + state.followers * cfg.followerRate;
         const followers = Math.min(cfg.followerCap, Math.max(1, Math.round(folRaw * qualityMult * sponsorMult)));
         return { cash, followers };
@@ -7643,6 +7654,10 @@
         if (type === "youtube") {
           const car = currentCar();
           if (!car || !roadworthy(car)) return "Car must be roadworthy to film a MotorTube build.";
+          if (state.youtubeCooldownUntil && state.week < state.youtubeCooldownUntil) {
+            const wait = state.youtubeCooldownUntil - state.week;
+            return `Production cycle — next MotorTube video in ${wait} week${wait === 1 ? "" : "s"}.`;
+          }
         }
         return null;
       }
@@ -7663,6 +7678,7 @@
         clampFollowers();
         state.totalCreatorEarnings = (state.totalCreatorEarnings || 0) + finalCash;
         state.creatorPostedWeek = state.week;
+        if (type === "youtube") state.youtubeCooldownUntil = state.week + 2;
         recordMoneyChange(finalCash - (cfg.moneyCost || 0), `${cfg.label} payout`);
         addGarageLore(type === "youtube" ? 3 : type === "reel" ? 2 : 1);
         toast(
