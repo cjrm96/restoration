@@ -511,6 +511,18 @@
         z-index: 2;
         display: block;
       }
+      @keyframes cg-smoke-rise {
+        0% { transform: translateY(2px); opacity: 0; }
+        25% { opacity: 1; }
+        100% { transform: translateY(-14px); opacity: 0; }
+      }
+      .cg-smoke-puff {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: cg-smoke-rise 1.6s ease-out infinite;
+      }
+      .cg-smoke-puff-2 { animation-delay: 0.55s; }
+      .cg-smoke-puff-3 { animation-delay: 1.1s; }
       .social-actions {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
@@ -9345,7 +9357,7 @@ body{position:relative!important;display:block!important;}
         const dentOpacity = car.body < 35 ? 0.45 : car.body < 55 ? 0.22 : 0.05;
         const shineOpacity =
           car.paint > 60 && car.chrome > 60 ? 0.35 : car.paint > 40 ? 0.15 : 0;
-        const smokeOpacity = mechHealth < 20 ? 0.7 : mechHealth < 35 ? 0.35 : 0;
+        const smokeOpacity = roadworthy(car) ? 0 : mechHealth < 20 ? 0.7 : 0.35;
         const truckStageLevel =
           overall < 20
             ? 0
@@ -9478,7 +9490,7 @@ body{position:relative!important;display:block!important;}
           });
         }
 
-        return `<div class="car-preview-wrap"><div class="flex between center" style="gap:10px;margin-bottom:8px"><div><div style="color:var(--text-bright);font-weight:bold;font-size:14px">${car.year} ${car.make} ${car.model}</div><div style="color:#a7987f;font-size:11px">Stage: ${stage}</div></div><div style="color:#d2a14b;font-weight:bold;font-size:12px">${overall} overall</div></div><div class="art-backdrop-shell" onclick="popTheHood()" style="cursor:pointer">${workspaceBackdropFrame()}<div class="car-preview-stage"><svg viewBox="0 0 340 190" preserveAspectRatio="xMidYMax meet" style="width:100%;height:100%;display:block;image-rendering:pixelated"><defs><filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity=".35"/></filter></defs><rect x="26" y="30" width="68" height="42" fill="#111" opacity=".15"/><rect x="32" y="36" width="56" height="30" fill="#d7c6a0" opacity=".08"/><g opacity=".18" shape-rendering="crispEdges"><rect x="62" y="148" width="44" height="4" fill="#000"/><rect x="118" y="150" width="104" height="4" fill="#000"/><rect x="232" y="148" width="46" height="4" fill="#000"/></g><g transform="translate(0,${mechHealth < 18 ? 4 : mechHealth < 35 ? 2 : 0})" filter="url(#shadow)">${sprite}</g><g opacity="${rustOpacity}" shape-rendering="crispEdges"><rect x="92" y="102" width="12" height="5" fill="#8a4517"/><rect x="166" y="86" width="10" height="4" fill="#7c3516"/><rect x="218" y="100" width="13" height="5" fill="#8a4517"/></g><g opacity="${dentOpacity}" shape-rendering="crispEdges"><rect x="140" y="103" width="18" height="3" fill="#1a2127"/><rect x="196" y="107" width="10" height="3" fill="#1a2127"/></g><g opacity="${shineOpacity}" shape-rendering="crispEdges"><rect x="102" y="82" width="96" height="2" fill="#fff"/><rect x="118" y="98" width="122" height="2" fill="#fff"/></g>${car.paint < 20 ? `<g opacity=".8" shape-rendering="crispEdges"><rect x="68" y="104" width="16" height="5" fill="#111827"/><rect x="236" y="100" width="18" height="5" fill="#111827"/></g>` : ""}${smokeOpacity > 0 ? `<g opacity="${smokeOpacity}"><rect x="70" y="56" width="6" height="6" fill="#cdd3d8"/><rect x="74" y="50" width="8" height="8" fill="#bcc4cb"/><rect x="82" y="44" width="8" height="8" fill="#d6dde2"/></g>` : ""}</svg></div></div></div>`;
+        return `<div class="car-preview-wrap"><div class="flex between center" style="gap:10px;margin-bottom:8px"><div><div style="color:var(--text-bright);font-weight:bold;font-size:14px">${car.year} ${car.make} ${car.model}</div><div style="color:#a7987f;font-size:11px">Stage: ${stage}</div></div><div style="color:#d2a14b;font-weight:bold;font-size:12px">${overall} overall</div></div><div class="art-backdrop-shell" onclick="popTheHood()" style="cursor:pointer">${workspaceBackdropFrame()}<div class="car-preview-stage"><svg viewBox="0 0 340 190" preserveAspectRatio="xMidYMax meet" style="width:100%;height:100%;display:block;image-rendering:pixelated"><defs><filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity=".35"/></filter></defs><rect x="26" y="30" width="68" height="42" fill="#111" opacity=".15"/><rect x="32" y="36" width="56" height="30" fill="#d7c6a0" opacity=".08"/><g opacity=".18" shape-rendering="crispEdges"><rect x="62" y="148" width="44" height="4" fill="#000"/><rect x="118" y="150" width="104" height="4" fill="#000"/><rect x="232" y="148" width="46" height="4" fill="#000"/></g><g transform="translate(0,${mechHealth < 18 ? 4 : mechHealth < 35 ? 2 : 0})" filter="url(#shadow)">${sprite}</g><g opacity="${rustOpacity}" shape-rendering="crispEdges"><rect x="92" y="102" width="12" height="5" fill="#8a4517"/><rect x="166" y="86" width="10" height="4" fill="#7c3516"/><rect x="218" y="100" width="13" height="5" fill="#8a4517"/></g><g opacity="${dentOpacity}" shape-rendering="crispEdges"><rect x="140" y="103" width="18" height="3" fill="#1a2127"/><rect x="196" y="107" width="10" height="3" fill="#1a2127"/></g><g opacity="${shineOpacity}" shape-rendering="crispEdges"><rect x="102" y="82" width="96" height="2" fill="#fff"/><rect x="118" y="98" width="122" height="2" fill="#fff"/></g>${car.paint < 20 ? `<g opacity=".8" shape-rendering="crispEdges"><rect x="68" y="104" width="16" height="5" fill="#111827"/><rect x="236" y="100" width="18" height="5" fill="#111827"/></g>` : ""}${smokeOpacity > 0 ? `<g opacity="${smokeOpacity}"><rect class="cg-smoke-puff" x="70" y="56" width="6" height="6" fill="#cdd3d8"/><rect class="cg-smoke-puff cg-smoke-puff-2" x="74" y="50" width="8" height="8" fill="#bcc4cb"/><rect class="cg-smoke-puff cg-smoke-puff-3" x="82" y="44" width="8" height="8" fill="#d6dde2"/></g>` : ""}</svg></div></div></div>`;
       }
 
       /* ═══════════════════════════════════════════
