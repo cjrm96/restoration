@@ -366,6 +366,10 @@
       .btn-row.three {
         grid-template-columns: 1fr 1fr 1fr;
       }
+      .btn-row.one {
+        grid-template-columns: minmax(0, 260px);
+        justify-content: center;
+      }
       .info-box {
         background: #181410;
         border: 1px solid #423830;
@@ -10164,7 +10168,7 @@ addEventListener("DOMContentLoaded",function(){
         const root = getEl("modalRoot");
         const scene = state.pendingScene;
         if (!scene || state.showStore || state.showLoading) return false;
-        root.innerHTML = `<div class="modal"><div class="modal-card" style="max-width:520px"><div style="text-align:center;font-size:40px;margin-bottom:8px">${scene.emoji || "🔧"}</div><div style="color:var(--gold);font-weight:bold;font-size:22px;text-align:center;margin-bottom:10px">${scene.title}</div><div class="small muted" style="text-align:center;line-height:1.7;margin-bottom:16px">${scene.text}</div><div class="btn-row ${scene.choices && scene.choices.length === 3 ? "three" : "two"}">${(scene.choices || []).map((choice, idx) => button(choice.label, `resolvePendingScene(${idx})`, false, "", `width:100%;${idx === 1 ? "background:#7da0c2;border-color:var(--blue-bright)" : idx === 2 ? "background:#4a3c2e;border-color:#6b5840;color:var(--text)" : ""}`)).join("")}</div></div></div>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card" style="max-width:520px"><div style="text-align:center;font-size:40px;margin-bottom:8px">${scene.emoji || "🔧"}</div><div style="color:var(--gold);font-weight:bold;font-size:22px;text-align:center;margin-bottom:10px">${scene.title}</div><div class="small muted" style="text-align:center;line-height:1.7;margin-bottom:16px">${scene.text}</div><div class="btn-row ${scene.choices && scene.choices.length === 3 ? "three" : scene.choices && scene.choices.length === 1 ? "one" : "two"}">${(scene.choices || []).map((choice, idx) => button(choice.label, `resolvePendingScene(${idx})`, false, "", `width:100%;${idx === 1 ? "background:#7da0c2;border-color:var(--blue-bright)" : idx === 2 ? "background:#4a3c2e;border-color:#6b5840;color:var(--text)" : ""}`)).join("")}</div></div></div>`;
         return true;
       }
 
