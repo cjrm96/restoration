@@ -9649,22 +9649,41 @@ body{position:relative!important;display:block!important;}
         );
       }
       function toggleFullscreen() {
-        if (!isFullscreenSupported()) return;
-        if (isInFullscreen()) {
-          const exit =
-            document.exitFullscreen ||
-            document.webkitExitFullscreen ||
-            document.mozCancelFullScreen ||
-            document.msExitFullscreen;
-          if (exit) exit.call(document);
-        } else {
-          const el = document.documentElement;
-          const req =
-            el.requestFullscreen ||
-            el.webkitRequestFullscreen ||
-            el.mozRequestFullScreen ||
-            el.msRequestFullscreen;
-          if (req) req.call(el);
+        if (!isFullscreenSupported()) {
+          toast("Fullscreen isn't supported in this browser.", "err");
+          return;
+        }
+        const handleErr = (err) => {
+          const msg = err && err.message ? err.message : String(err || "");
+          toast(`Fullscreen blocked${msg ? ": " + msg : ""}.`, "err");
+        };
+        try {
+          if (isInFullscreen()) {
+            const exit =
+              document.exitFullscreen ||
+              document.webkitExitFullscreen ||
+              document.mozCancelFullScreen ||
+              document.msExitFullscreen;
+            if (!exit) return handleErr(new Error("Exit method missing"));
+            const result = exit.call(document);
+            if (result && typeof result.catch === "function") {
+              result.catch(handleErr);
+            }
+          } else {
+            const el = document.documentElement;
+            const req =
+              el.requestFullscreen ||
+              el.webkitRequestFullscreen ||
+              el.mozRequestFullScreen ||
+              el.msRequestFullscreen;
+            if (!req) return handleErr(new Error("Request method missing"));
+            const result = req.call(el);
+            if (result && typeof result.catch === "function") {
+              result.catch(handleErr);
+            }
+          }
+        } catch (err) {
+          handleErr(err);
         }
         playSfx("click");
       }
@@ -9683,20 +9702,33 @@ body{position:relative!important;display:block!important;}
         if (state.settingsOpen) requestRender("modal");
       }
       function resetSaveConfirm() {
-        if (
-          !confirm(
-            "Wipe your save and start over from scratch? This can't be undone.",
-          )
-        )
-          return;
-        // Reset in-memory state first — the beforeunload handler will
-        // try to saveGame() during the reload, and if state still holds
-        // the old game it would just re-write what we just deleted.
-        Object.assign(state, makeDefaultState());
+        let confirmed = false;
         try {
-          localStorage.removeItem(SAVE_KEY);
-        } catch (e) {}
-        location.reload();
+          confirmed = window.confirm(
+            "Wipe your save and start over from scratch? This can't be undone.",
+          );
+        } catch (e) {
+          // Some embedded contexts (sandboxed iframes, in-app browsers)
+          // block window.confirm. Fall through to the destructive path
+          // anyway — the user clicked a clearly-labeled red button.
+          confirmed = true;
+        }
+        if (!confirmed) return;
+        try {
+          // Reset in-memory state first — the beforeunload handler will
+          // try to saveGame() during the reload, and if state still holds
+          // the old game it would just re-write what we just deleted.
+          Object.assign(state, makeDefaultState());
+          try {
+            localStorage.removeItem(SAVE_KEY);
+          } catch (e) {}
+          location.reload();
+        } catch (err) {
+          toast(
+            `Reset failed: ${err && err.message ? err.message : "unknown error"}.`,
+            "err",
+          );
+        }
       }
       function renderSettingsModal() {
         if (!state.settingsOpen) return false;
@@ -11806,8 +11838,11 @@ body{position:relative!important;display:block!important;}
       }
 
       let musicLoopTimer = null,
-        loopStartTime = 0;
+        loopStartTime = 0,
+        musicAutoFadeTimer = null;
       const LOOP_DUR = BAR * 12;
+      const MUSIC_AUTO_FADE_AFTER_MS = 60000;
+      const MUSIC_AUTO_FADE_DURATION_S = 4;
       function scheduleLoop() {
         const ctx = getAudioCtx();
         scheduleMusicLoop(loopStartTime, 2);
@@ -11821,9 +11856,45 @@ body{position:relative!important;display:block!important;}
         musicPlaying = true;
         loopStartTime = ctx.currentTime + 0.1;
         scheduleLoop();
+        // Auto-fade after a minute. Most players turned it off manually
+        // anyway; the slider in Settings still works to bring it back.
+        clearTimeout(musicAutoFadeTimer);
+        musicAutoFadeTimer = setTimeout(
+          fadeOutAndStopMusic,
+          MUSIC_AUTO_FADE_AFTER_MS,
+        );
+      }
+      function fadeOutAndStopMusic() {
+        if (!musicPlaying) return;
+        const ctx = getAudioCtx();
+        if (getMasterGain._n) {
+          const g = getMasterGain._n.gain;
+          g.cancelScheduledValues(ctx.currentTime);
+          g.setValueAtTime(g.value, ctx.currentTime);
+          g.linearRampToValueAtTime(
+            0,
+            ctx.currentTime + MUSIC_AUTO_FADE_DURATION_S,
+          );
+        }
+        setTimeout(() => {
+          if (!musicPlaying) return;
+          musicPlaying = false;
+          clearTimeout(musicLoopTimer);
+          musicNodes.forEach((n) => {
+            try {
+              n.stop();
+            } catch (e) {}
+          });
+          musicNodes = [];
+          // Restore gain to user setting so re-engaging the slider
+          // produces audible music immediately.
+          applyAudioSettings();
+        }, MUSIC_AUTO_FADE_DURATION_S * 1000 + 200);
       }
       function stopMusic() {
         if (!musicPlaying) return;
+        clearTimeout(musicAutoFadeTimer);
+        musicAutoFadeTimer = null;
         musicPlaying = false;
         clearTimeout(musicLoopTimer);
         musicNodes.forEach((n) => {
