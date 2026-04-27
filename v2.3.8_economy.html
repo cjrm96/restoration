@@ -530,6 +530,11 @@
         .cg-smoke-puff-2 { animation-delay: 0.55s; }
         .cg-smoke-puff-3 { animation-delay: 1.1s; }
       }
+      body.cg-tab-hidden *,
+      body.cg-tab-hidden *::before,
+      body.cg-tab-hidden *::after {
+        animation-play-state: paused !important;
+      }
       .social-actions {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
@@ -10971,7 +10976,7 @@ body{position:relative!important;display:block!important;}
       function renderModalLayer(force = false) {
         const modalRoot = getEl("modalRoot");
         const nextModalSignature = getModalLayerSignature();
-        if (!force && nextModalSignature === modalLayerSignature) return;
+        if (!force && nextModalSignature === modalLayerSignature) return false;
         modalLayerSignature = nextModalSignature;
         modalRoot.innerHTML = "";
         if (!renderCheatModal()) {
@@ -10991,6 +10996,7 @@ body{position:relative!important;display:block!important;}
             }
           }
         }
+        return true;
       }
 
       function getRenderSignature() {
@@ -11049,24 +11055,26 @@ body{position:relative!important;display:block!important;}
 
       function renderMainContent(force = false) {
         const nextSig = getRenderSignature();
-        if (!force && nextSig === lastRenderSignature) return;
+        if (!force && nextSig === lastRenderSignature) return false;
         getEl("appContent").innerHTML = renderContent();
         lastRenderSignature = nextSig;
+        return true;
       }
 
       function render(mode = "full") {
         resolveCompletedRestorations(false);
         processEventQueue();
         updateHeaderChrome(mode === "full");
+        let touched = false;
         if (mode === "full") {
           updateTabsChrome(true);
-          renderMainContent();
-          renderModalLayer(false);
-          mountBackdrops();
+          touched = renderMainContent() || touched;
+          touched = renderModalLayer(false) || touched;
+          if (touched) mountBackdrops();
           return;
         }
-        renderModalLayer(false);
-        mountBackdrops();
+        touched = renderModalLayer(false) || touched;
+        if (touched) mountBackdrops();
       }
 
       function requestRender(mode = "full") {
@@ -11338,6 +11346,7 @@ body{position:relative!important;display:block!important;}
       startWorldTicker();
 
       document.addEventListener("visibilitychange", () => {
+        document.body.classList.toggle("cg-tab-hidden", document.hidden);
         if (backgroundTickTimer) {
           clearTimeout(backgroundTickTimer);
           backgroundTickTimer = null;
@@ -11360,7 +11369,16 @@ body{position:relative!important;display:block!important;}
         if (!document.hidden) scheduleWorldTicker();
       });
 
-      setInterval(() => saveGame(false), 15000);
+      // Auto-save runs in an idle slot so the JSON.stringify + localStorage
+      // write doesn't compete with input events. setTimeout fallback for
+      // browsers without requestIdleCallback (Safari < 16.4).
+      setInterval(() => {
+        if (typeof requestIdleCallback === "function") {
+          requestIdleCallback(() => saveGame(false), { timeout: 2000 });
+        } else {
+          setTimeout(() => saveGame(false), 0);
+        }
+      }, 15000);
       window.addEventListener("beforeunload", () => saveGame(true));
 
       // Fullscreen feature detection + state sync
