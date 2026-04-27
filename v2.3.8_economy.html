@@ -529,6 +529,10 @@
         25% { opacity: 1; }
         100% { transform: translateY(-14px); opacity: 0; }
       }
+      @keyframes splash-truck-bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-2px); }
+      }
       @media (prefers-reduced-motion: no-preference) {
         .cg-smoke-puff {
           transform-box: fill-box;
@@ -537,6 +541,9 @@
         }
         .cg-smoke-puff-2 { animation-delay: 0.55s; }
         .cg-smoke-puff-3 { animation-delay: 1.1s; }
+        .splash-truck-bounce {
+          animation: splash-truck-bounce 1.4s ease-in-out infinite;
+        }
       }
       body.cg-tab-hidden *,
       body.cg-tab-hidden *::before,
@@ -1803,18 +1810,19 @@
         <div class="splash-title">Car Guy Simulator</div>
         <div class="splash-divider"></div>
         <svg
-          viewBox="0 0 340 150"
+          viewBox="0 0 700 240"
           style="
             width: 100%;
-            max-width: 320px;
+            max-width: 400px;
             height: auto;
             display: block;
             margin: 0 auto 24px;
             border-radius: 8px;
             image-rendering: pixelated;
-            background: #1a1511;
+            background: #0f0f1e;
             border: 1px solid #3a3028;
           "
+          shape-rendering="crispEdges"
         >
           <defs>
             <filter id="sp-shadow">
@@ -1825,105 +1833,180 @@
                 flood-opacity="0.4"
               />
             </filter>
-            <linearGradient id="sp-wall" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#6a6256" />
-              <stop offset="100%" stop-color="#433c33" />
-            </linearGradient>
           </defs>
-          <rect x="0" y="0" width="340" height="100" fill="url(#sp-wall)" />
-          <rect
-            x="26"
-            y="0"
-            width="8"
-            height="100"
-            fill="#8a6743"
-            opacity=".65"
-          />
-          <rect
-            x="88"
-            y="0"
-            width="8"
-            height="100"
-            fill="#8a6743"
-            opacity=".65"
-          />
-          <rect
-            x="150"
-            y="0"
-            width="8"
-            height="100"
-            fill="#8a6743"
-            opacity=".65"
-          />
-          <rect
-            x="212"
-            y="0"
-            width="8"
-            height="100"
-            fill="#8a6743"
-            opacity=".65"
-          />
-          <rect
-            x="274"
-            y="0"
-            width="8"
-            height="100"
-            fill="#8a6743"
-            opacity=".65"
-          />
-          <rect
-            x="214"
-            y="18"
-            width="96"
-            height="52"
-            fill="#6f563e"
-            opacity=".55"
-          />
-          <rect x="0" y="100" width="340" height="24" fill="#47433d" />
-          <rect x="0" y="124" width="340" height="26" fill="#312d28" />
-          <rect x="0" y="122" width="340" height="2" fill="#2a251f" />
-          <g filter="url(#sp-shadow)" shape-rendering="crispEdges">
-            <rect x="80" y="58" width="70" height="10" fill="#f5f5f5" />
-            <rect x="70" y="68" width="10" height="10" fill="#f5f5f5" />
-            <rect x="80" y="68" width="60" height="20" fill="#87ceeb" />
-            <rect x="140" y="68" width="10" height="20" fill="#f5f5f5" />
-            <rect x="20" y="88" width="10" height="30" fill="#cccccc" />
-            <rect x="30" y="88" width="232" height="10" fill="#2B7A78" />
-            <rect x="20" y="98" width="10" height="10" fill="#cccccc" />
-            <rect x="30" y="98" width="232" height="10" fill="#2B7A78" />
-            <rect x="30" y="108" width="30" height="10" fill="#2B7A78" />
-            <rect x="84" y="108" width="136" height="10" fill="#2B7A78" />
-            <rect x="224" y="108" width="38" height="10" fill="#2B7A78" />
-            <rect x="34" y="99" width="220" height="5" fill="#f5f5f5" />
-            <rect x="250" y="99" width="8" height="5" fill="#CC0000" />
-            <rect x="30" y="99" width="8" height="5" fill="#FF9900" />
-            <rect
-              x="44"
-              y="131"
-              width="220"
-              height="4"
-              fill="#2e3d4d"
-              opacity=".8"
-            />
-            <rect x="66" y="109" width="24" height="24" fill="#111214" />
-            <rect x="68" y="111" width="20" height="20" fill="#f29d1f" />
-            <rect x="72" y="111" width="4" height="20" fill="#cf6f00" />
-            <rect x="80" y="111" width="4" height="20" fill="#cf6f00" />
-            <rect x="68" y="117" width="20" height="4" fill="#cf6f00" />
-            <rect x="68" y="125" width="20" height="4" fill="#cf6f00" />
-            <rect x="74" y="119" width="8" height="8" fill="#ffd7a6" />
-            <rect x="194" y="109" width="24" height="24" fill="#111214" />
-            <rect x="196" y="111" width="20" height="20" fill="#f29d1f" />
-            <rect x="200" y="111" width="4" height="20" fill="#cf6f00" />
-            <rect x="208" y="111" width="4" height="20" fill="#cf6f00" />
-            <rect x="196" y="117" width="20" height="4" fill="#cf6f00" />
-            <rect x="196" y="125" width="20" height="4" fill="#cf6f00" />
-            <rect x="202" y="119" width="8" height="8" fill="#ffd7a6" />
+          <!-- National show backdrop -->
+          <rect x="0" y="0" width="700" height="240" fill="#0f0f1e" />
+          <rect x="50" y="0" width="20" height="150" fill="#2d3142" opacity="0.4" />
+          <rect x="630" y="0" width="20" height="150" fill="#2d3142" opacity="0.4" />
+          <rect x="200" y="0" width="300" height="10" fill="#2d3142" />
+          <rect x="220" y="10" width="10" height="10" fill="#6b7280" />
+          <rect x="470" y="10" width="10" height="10" fill="#6b7280" />
+          <rect x="180" y="20" width="340" height="90" fill="#2d3142" />
+          <rect x="185" y="25" width="330" height="80" fill="#cdd6dd" />
+          <rect x="190" y="30" width="320" height="70" fill="#0f0f1e" />
+          <rect x="192" y="32" width="316" height="66" fill="#1a3d8f" />
+          <g transform="translate(320, 36)">
+            <rect x="15" y="0" width="30" height="10" fill="#ffcc00" />
+            <rect x="20" y="10" width="20" height="25" fill="#ffcc00" />
+            <rect x="25" y="35" width="10" height="15" fill="#e8b04b" />
+            <rect x="10" y="50" width="40" height="8" fill="#ffcc00" />
+            <rect x="5" y="5" width="10" height="4" fill="#e8b04b" />
+            <rect x="5" y="5" width="4" height="20" fill="#e8b04b" />
+            <rect x="5" y="21" width="15" height="4" fill="#e8b04b" />
+            <rect x="45" y="5" width="10" height="4" fill="#e8b04b" />
+            <rect x="51" y="5" width="4" height="20" fill="#e8b04b" />
+            <rect x="40" y="21" width="15" height="4" fill="#e8b04b" />
+            <rect x="22" y="10" width="4" height="20" fill="#fff8e7" />
+            <rect x="15" y="52" width="30" height="2" fill="#fff8e7" />
           </g>
-          <g opacity=".06" shape-rendering="crispEdges">
-            <rect x="60" y="128" width="44" height="4" fill="#000" />
-            <rect x="118" y="130" width="104" height="4" fill="#000" />
-            <rect x="230" y="128" width="46" height="4" fill="#000" />
+          <rect x="210" y="50" width="80" height="25" fill="#3a86ff" />
+          <rect x="215" y="60" width="70" height="5" fill="#fff8e7" />
+          <rect x="410" y="50" width="80" height="25" fill="#a83232" />
+          <rect x="415" y="60" width="70" height="5" fill="#f25c54" />
+          <rect x="0" y="90" width="170" height="50" fill="#2d3142" opacity="0.6" />
+          <line x1="0" y1="95" x2="160" y2="95" stroke="#a83232" stroke-width="6" stroke-dasharray="4 8" />
+          <line x1="0" y1="95" x2="160" y2="95" stroke="#3a86ff" stroke-width="6" stroke-dasharray="6 14" opacity="0.7"/>
+          <line x1="0" y1="105" x2="170" y2="105" stroke="#f25c54" stroke-width="6" stroke-dasharray="5 9" />
+          <line x1="0" y1="105" x2="170" y2="105" stroke="#e8b04b" stroke-width="6" stroke-dasharray="4 15" opacity="0.7"/>
+          <line x1="0" y1="115" x2="180" y2="115" stroke="#3a86ff" stroke-width="6" stroke-dasharray="6 10" />
+          <line x1="0" y1="115" x2="180" y2="115" stroke="#fff8e7" stroke-width="6" stroke-dasharray="3 17" opacity="0.8"/>
+          <line x1="0" y1="125" x2="190" y2="125" stroke="#e8b04b" stroke-width="6" stroke-dasharray="7 9" />
+          <line x1="0" y1="125" x2="190" y2="125" stroke="#1a3d8f" stroke-width="6" stroke-dasharray="5 13" opacity="0.8"/>
+          <line x1="0" y1="135" x2="200" y2="135" stroke="#a83232" stroke-width="6" stroke-dasharray="5 8" />
+          <rect x="530" y="90" width="170" height="50" fill="#2d3142" opacity="0.6" />
+          <line x1="540" y1="95" x2="700" y2="95" stroke="#3a86ff" stroke-width="6" stroke-dasharray="5 9" />
+          <line x1="540" y1="95" x2="700" y2="95" stroke="#f25c54" stroke-width="6" stroke-dasharray="6 15" opacity="0.7"/>
+          <line x1="530" y1="105" x2="700" y2="105" stroke="#e8b04b" stroke-width="6" stroke-dasharray="4 10" />
+          <line x1="530" y1="105" x2="700" y2="105" stroke="#1a3d8f" stroke-width="6" stroke-dasharray="4 14" opacity="0.7"/>
+          <line x1="520" y1="115" x2="700" y2="115" stroke="#a83232" stroke-width="6" stroke-dasharray="6 8" />
+          <line x1="520" y1="115" x2="700" y2="115" stroke="#fff8e7" stroke-width="6" stroke-dasharray="3 16" opacity="0.8"/>
+          <line x1="510" y1="125" x2="700" y2="125" stroke="#f25c54" stroke-width="6" stroke-dasharray="5 11" />
+          <line x1="510" y1="125" x2="700" y2="125" stroke="#3a86ff" stroke-width="6" stroke-dasharray="6 14" opacity="0.8"/>
+          <line x1="500" y1="135" x2="700" y2="135" stroke="#e8b04b" stroke-width="6" stroke-dasharray="4 9" />
+          <rect x="0" y="140" width="700" height="100" fill="#2d3142" />
+          <rect x="0" y="140" width="700" height="4" fill="#1a3d8f" />
+          <rect x="0" y="144" width="700" height="6" fill="#cdd6dd" opacity="0.1" />
+          <polygon points="190,140 100,240 600,240 510,140" fill="#3a86ff" opacity="0.05" />
+          <g fill="#0f0f1e" opacity="0.3">
+            <rect x="0" y="170" width="700" height="2" />
+            <rect x="0" y="200" width="700" height="2" />
+            <rect x="0" y="230" width="700" height="2" />
+            <polygon points="350,140 352,140 300,240 298,240" />
+            <polygon points="350,140 352,140 400,240 398,240" />
+            <polygon points="150,140 152,140 0,240 0,238" />
+            <polygon points="550,140 552,140 700,240 700,238" />
+          </g>
+          <g>
+            <path d="M10,135 Q30,145 50,135" fill="none" stroke="#a83232" stroke-width="4" />
+            <path d="M50,135 Q90,145 130,135" fill="none" stroke="#a83232" stroke-width="4" />
+            <path d="M130,135 Q170,145 210,135" fill="none" stroke="#a83232" stroke-width="4" />
+            <path d="M210,135 Q250,145 290,135" fill="none" stroke="#a83232" stroke-width="4" />
+            <path d="M290,135 Q330,145 370,135" fill="none" stroke="#a83232" stroke-width="4" />
+            <path d="M370,135 Q410,145 450,135" fill="none" stroke="#a83232" stroke-width="4" />
+            <path d="M450,135 Q490,145 530,135" fill="none" stroke="#a83232" stroke-width="4" />
+            <path d="M530,135 Q570,145 610,135" fill="none" stroke="#a83232" stroke-width="4" />
+            <path d="M610,135 Q650,145 690,135" fill="none" stroke="#a83232" stroke-width="4" />
+            <rect x="8" y="125" width="4" height="15" fill="#e8b04b" />
+            <circle cx="10" cy="125" r="3" fill="#ffcc00" />
+            <rect x="48" y="125" width="4" height="15" fill="#e8b04b" />
+            <circle cx="50" cy="125" r="3" fill="#ffcc00" />
+            <rect x="128" y="125" width="4" height="15" fill="#e8b04b" />
+            <circle cx="130" cy="125" r="3" fill="#ffcc00" />
+            <rect x="208" y="125" width="4" height="15" fill="#e8b04b" />
+            <circle cx="210" cy="125" r="3" fill="#ffcc00" />
+            <rect x="288" y="125" width="4" height="15" fill="#e8b04b" />
+            <circle cx="290" cy="125" r="3" fill="#ffcc00" />
+            <rect x="368" y="125" width="4" height="15" fill="#e8b04b" />
+            <circle cx="370" cy="125" r="3" fill="#ffcc00" />
+            <rect x="448" y="125" width="4" height="15" fill="#e8b04b" />
+            <circle cx="450" cy="125" r="3" fill="#ffcc00" />
+            <rect x="528" y="125" width="4" height="15" fill="#e8b04b" />
+            <circle cx="530" cy="125" r="3" fill="#ffcc00" />
+            <rect x="608" y="125" width="4" height="15" fill="#e8b04b" />
+            <circle cx="610" cy="125" r="3" fill="#ffcc00" />
+            <rect x="688" y="125" width="4" height="15" fill="#e8b04b" />
+            <circle cx="690" cy="125" r="3" fill="#ffcc00" />
+          </g>
+          <g transform="translate(480, 100)">
+            <rect x="0" y="30" width="200" height="10" fill="#1a3d8f" />
+            <rect x="0" y="30" width="200" height="2" fill="#3a86ff" />
+            <rect x="140" y="15" width="40" height="15" fill="#6b7280" />
+            <rect x="140" y="15" width="40" height="2" fill="#cdd6dd" />
+            <rect x="155" y="20" width="10" height="10" fill="#e8b04b" />
+            <rect x="157" y="5" width="6" height="10" fill="#e8b04b" />
+            <polygon points="152,5 168,5 165,0 155,0" fill="#e8b04b" />
+            <rect x="20" y="10" width="40" height="20" fill="#6b7280" />
+            <rect x="20" y="10" width="40" height="2" fill="#cdd6dd" />
+            <rect x="35" y="15" width="10" height="15" fill="#cdd6dd" />
+            <rect x="37" y="-2" width="6" height="12" fill="#cdd6dd" />
+            <polygon points="32,-2 48,-2 45,-8 35,-8" fill="#cdd6dd" />
+            <rect x="38" y="-12" width="4" height="4" fill="#cdd6dd" />
+            <rect x="60" y="0" width="80" height="30" fill="#6b7280" />
+            <rect x="60" y="0" width="80" height="2" fill="#cdd6dd" />
+            <rect x="95" y="8" width="10" height="22" fill="#ffcc00" />
+            <rect x="92" y="-15" width="16" height="15" fill="#ffcc00" />
+            <polygon points="85,-15 115,-15 108,-25 92,-25" fill="#ffcc00" />
+            <polygon points="80,-25 120,-25 115,-35 85,-35" fill="#ffcc00" />
+            <rect x="75" y="-30" width="5" height="15" fill="#e8b04b" />
+            <rect x="120" y="-30" width="5" height="15" fill="#e8b04b" />
+            <rect x="95" y="-35" width="4" height="20" fill="#fff8e7" />
+          </g>
+          <polygon points="0,0 250,240 350,240" fill="#fff8e7" opacity="0.12" />
+          <polygon points="50,0 300,240 450,240" fill="#3a86ff" opacity="0.08" />
+          <polygon points="700,0 450,240 350,240" fill="#fff8e7" opacity="0.12" />
+          <!-- Stage podium under the truck -->
+          <rect x="200" y="195" width="300" height="14" fill="#1a1410" opacity="0.6" />
+          <rect x="200" y="195" width="300" height="2" fill="#e8b04b" opacity="0.7" />
+          <!-- Fully restored F100 (bouncing) -->
+          <g class="splash-truck-bounce">
+            <g transform="translate(220, 70)" filter="url(#sp-shadow)" shape-rendering="crispEdges">
+              <!-- Tailpipe -->
+              <rect x="258" y="123" width="10" height="5" fill="#2a2a2a" />
+              <rect x="258" y="123" width="10" height="2" fill="#9aa0a6" />
+              <!-- Roof and cab -->
+              <rect x="80" y="58" width="70" height="10" fill="#f5f5f5" />
+              <rect x="70" y="68" width="10" height="10" fill="#f5f5f5" />
+              <rect x="80" y="68" width="60" height="20" fill="#9bc8e8" />
+              <rect x="140" y="68" width="10" height="20" fill="#f5f5f5" />
+              <!-- Body (Calypso Coral show red) -->
+              <rect x="20" y="88" width="10" height="30" fill="#e8edf2" />
+              <rect x="30" y="88" width="232" height="10" fill="#c8332e" />
+              <rect x="20" y="98" width="10" height="10" fill="#e8edf2" />
+              <rect x="30" y="98" width="232" height="10" fill="#c8332e" />
+              <rect x="30" y="108" width="30" height="10" fill="#c8332e" />
+              <rect x="84" y="108" width="136" height="10" fill="#c8332e" />
+              <rect x="224" y="108" width="38" height="10" fill="#c8332e" />
+              <!-- Chrome side trim and gloss highlight -->
+              <rect x="34" y="89" width="220" height="2" fill="#ffffff" opacity="0.35" />
+              <rect x="34" y="99" width="220" height="5" fill="#e8edf2" />
+              <!-- Lights -->
+              <rect x="250" y="99" width="8" height="5" fill="#d64536" />
+              <rect x="30" y="99" width="8" height="5" fill="#efa12f" />
+              <!-- Ground shadow under car -->
+              <rect x="44" y="131" width="220" height="4" fill="#0f0f1e" opacity=".55" />
+              <!-- Front wheel (chrome) -->
+              <rect x="66" y="109" width="24" height="24" fill="#111214" />
+              <rect x="68" y="111" width="20" height="20" fill="#d8dde2" />
+              <rect x="72" y="111" width="4" height="20" fill="#7c8088" />
+              <rect x="80" y="111" width="4" height="20" fill="#7c8088" />
+              <rect x="68" y="117" width="20" height="4" fill="#7c8088" />
+              <rect x="68" y="125" width="20" height="4" fill="#7c8088" />
+              <rect x="74" y="119" width="8" height="8" fill="#f5f5f5" />
+              <!-- Rear wheel (chrome) -->
+              <rect x="194" y="109" width="24" height="24" fill="#111214" />
+              <rect x="196" y="111" width="20" height="20" fill="#d8dde2" />
+              <rect x="200" y="111" width="4" height="20" fill="#7c8088" />
+              <rect x="208" y="111" width="4" height="20" fill="#7c8088" />
+              <rect x="196" y="117" width="20" height="4" fill="#7c8088" />
+              <rect x="196" y="125" width="20" height="4" fill="#7c8088" />
+              <rect x="202" y="119" width="8" height="8" fill="#f5f5f5" />
+            </g>
+          </g>
+          <!-- Tailpipe exhaust puffs (rise from rear of bouncing truck) -->
+          <g shape-rendering="crispEdges">
+            <rect class="cg-smoke-puff" x="488" y="190" width="6" height="6" fill="#cdd3d8" />
+            <rect class="cg-smoke-puff cg-smoke-puff-2" x="492" y="184" width="8" height="8" fill="#bcc4cb" />
+            <rect class="cg-smoke-puff cg-smoke-puff-3" x="500" y="178" width="8" height="8" fill="#d6dde2" />
           </g>
         </svg>
         <div class="splash-tagline">
