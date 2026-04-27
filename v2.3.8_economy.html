@@ -5933,17 +5933,19 @@
         } else if (buckJustWon && Math.random() < 0.7) {
           msg = pickFresh(BUCK_POSTS_AFTER_WIN, "buckPostWin");
         } else {
+          const buckPaintLine = `Someone at Cars & Coffee says Buck's paint finally stopped looking terrible. Unfortunately.`;
           const beats = [
             `Buck posted a smug photo from his garage. His Stallion looks a little cleaner this week.`,
             `Word at the parts counter is Buck just finished another late-night wrench session.`,
             `Buck is telling people he already has the Regional field figured out.`,
-            `Someone at Cars & Coffee says Buck's paint finally stopped looking terrible. Unfortunately.`,
+            ...(state.seenBuckPaintLine ? [] : [buckPaintLine]),
             `Buck told the whole coffee line your build sheet reads like a cry for help.`,
             `Rumor says Buck bought fresh white-letter tires and now will not stop talking about stance.`,
             `Buck says he is not worried about your truck yet. The yet part is doing a lot of work.`,
             pickFresh(BUCK_SOCIAL_POSTS, "buckSocial"),
           ];
           msg = beats[Math.floor(Math.random() * beats.length)];
+          if (msg === buckPaintLine) state.seenBuckPaintLine = true;
         }
         pushRivalNote(msg);
         toast(msg, "event-bad");
