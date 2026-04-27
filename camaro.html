@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>1969 Camaro SS — Stage Viewer</title>
+<style>
+    body {
+        background-color: #17120f;
+        color: #efe2c6;
+        font-family: Georgia, serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px;
+        margin: 0;
+    }
+    .car-section {
+        margin-bottom: 60px;
+        width: 100%;
+        max-width: 1800px;
+    }
+    .section-title {
+        border-bottom: 2px solid #4b4036;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        color: #d19a3f;
+    }
+    .grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: flex-start;
+    }
+    .preview-card {
+        background: #241d17;
+        border: 1px solid #4b4036;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    }
+    .preview-card-title {
+        margin-bottom: 12px;
+        font-weight: bold;
+        color: #a99b84;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+    }
+    svg {
+        width: 340px;
+        height: 190px;
+        background: linear-gradient(180deg, #6a6256 0%, #433c33 100%);
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+</style>
+</head>
+<body>
+
+<h1>Car Guy Simulator — 1969 Camaro SS</h1>
+<p style="margin-bottom: 40px; color: #a99b84;">Dev team: Copy the camaroSprite function from the source of this file and place it next to f100Sprite.</p>
+
+<div id="appRoot" style="width: 100%; max-width: 1800px;"></div>
+
+<script>
+// ---------------------------------------------------------
+// HELPER: Wheel Renderer (Already in game)
+// ---------------------------------------------------------
+function pixelWheel(cx, cy, color, rim, spoke) {
+    return `<rect x="${cx - 12}" y="${cy - 12}" width="24" height="24" fill="#111214"/><rect x="${cx - 10}" y="${cy - 10}" width="20" height="20" fill="${color}"/><rect x="${cx - 6}" y="${cy - 10}" width="4" height="20" fill="${spoke}"/><rect x="${cx + 2}" y="${cy - 10}" width="4" height="20" fill="${spoke}"/><rect x="${cx - 10}" y="${cy - 6}" width="20" height="4" fill="${spoke}"/><rect x="${cx - 10}" y="${cy + 2}" width="20" height="4" fill="${spoke}"/><rect x="${cx - 4}" y="${cy - 4}" width="8" height="8" fill="${rim}"/>`;
+}
+
+// ---------------------------------------------------------
+// 1969 CAMARO SS
+// ---------------------------------------------------------
+function camaroSprite(stageLevel, colors) {
+    const { baseColor: body, roofColor: roof, windowColor: glass, trimColor: chrome, wheelColor: wheel, wheelSpoke: spoke, wheelHub: hub, wheelTire: tire, primerColor: primer, rustColor: rusty, shadowColor: dark } = colors;
+    const yo = -stageLevel * 2;
+    const groundY = 124 + yo, rockerY = 116 + yo, bodyTop = 108 + yo, fenderTop = 102 + yo, hoodY = 104 + yo, cowlY = 98 + yo, cowlBulgeY = 96 + yo, rearDeckY = 102 + yo, sailY = 96 + yo, aPillarY = 84 + yo, roofY = 80 + yo, wheelY = 128 + yo;
+
+    if (stageLevel <= 0) {
+        return `<g shape-rendering="crispEdges">
+            <rect x="136" y="${roofY + 4}" width="50" height="6" fill="${primer}"/>
+            <rect x="116" y="${aPillarY + 6}" width="24" height="14" fill="#2c3137"/>
+            <rect x="140" y="${aPillarY + 6}" width="46" height="14" fill="#2c3137"/>
+            <rect x="186" y="${aPillarY + 6}" width="30" height="14" fill="${rusty}"/>
+            <rect x="210" y="${aPillarY + 8}" width="16" height="12" fill="#2c3137"/>
+            <rect x="80" y="${hoodY - 4}" width="36" height="4" fill="${primer}"/>
+            <rect x="46" y="${hoodY}" width="70" height="4" fill="${rusty}"/>
+            <rect x="216" y="${rearDeckY + 2}" width="60" height="4" fill="${primer}"/>
+            <rect x="46" y="${bodyTop}" width="230" height="10" fill="${rusty}"/>
+            <rect x="276" y="${bodyTop}" width="8" height="14" fill="${primer}"/>
+            <rect x="36" y="${bodyTop + 8}" width="10" height="12" fill="${rusty}"/>
+            <rect x="38" y="${bodyTop - 2}" width="8" height="10" fill="#111827"/>
+            <rect x="46" y="${bodyTop + 10}" width="32" height="14" fill="${primer}"/>
+            <rect x="106" y="${bodyTop + 10}" width="120" height="14" fill="${rusty}"/>
+            <rect x="254" y="${bodyTop + 10}" width="22" height="14" fill="${primer}"/>
+            <rect x="46" y="${rockerY + 16}" width="230" height="4" fill="${primer}"/>
+            <rect x="46" y="${rockerY + 20}" width="230" height="4" fill="${dark}" opacity="0.8"/>
+            ${pixelWheel(92, wheelY + 2, "#3a342f", "#2a241f", "#1c1815")}
+            ${pixelWheel(240, wheelY + 2, "#3a342f", "#2a241f", "#1c1815")}
+        </g>`;
+    }
+    if (stageLevel === 1) {
+        return `<g shape-rendering="crispEdges">
+            <rect x="136" y="${roofY + 2}" width="50" height="6" fill="${roof}"/>
+            <rect x="116" y="${aPillarY + 4}" width="24" height="14" fill="${glass}"/>
+            <rect x="140" y="${aPillarY + 4}" width="46" height="14" fill="${glass}"/>
+            <rect x="186" y="${aPillarY + 4}" width="30" height="14" fill="${primer}"/>
+            <rect x="210" y="${aPillarY + 6}" width="16" height="12" fill="${glass}"/>
+            <rect x="80" y="${hoodY - 4}" width="36" height="4" fill="${primer}"/>
+            <rect x="46" y="${hoodY}" width="70" height="4" fill="${body}"/>
+            <rect x="216" y="${rearDeckY + 2}" width="60" height="4" fill="${body}"/>
+            <rect x="46" y="${bodyTop}" width="120" height="10" fill="${body}"/>
+            <rect x="166" y="${bodyTop}" width="110" height="10" fill="${primer}"/>
+            <rect x="276" y="${bodyTop}" width="8" height="14" fill="${body}"/>
+            <rect x="36" y="${bodyTop + 8}" width="10" height="12" fill="${chrome}" opacity="0.5"/>
+            <rect x="38" y="${bodyTop - 2}" width="8" height="10" fill="#111827"/>
+            <rect x="46" y="${bodyTop + 10}" width="32" height="14" fill="${body}"/>
+            <rect x="106" y="${bodyTop + 10}" width="120" height="14" fill="${primer}"/>
+            <rect x="254" y="${bodyTop + 10}" width="22" height="14" fill="${body}"/>
+            <rect x="46" y="${rockerY + 16}" width="230" height="4" fill="${chrome}" opacity="0.5"/>
+            <rect x="46" y="${rockerY + 20}" width="230" height="4" fill="${dark}" opacity="0.8"/>
+            ${pixelWheel(92, wheelY + 2, tire, "#565d63", "#34383d")}
+            ${pixelWheel(240, wheelY + 2, wheel, hub, spoke)}
+        </g>`;
+    }
+    if (stageLevel === 2) {
+        return `<g shape-rendering="crispEdges">
+            <rect x="136" y="${roofY}" width="50" height="6" fill="${roof}"/>
+            <rect x="116" y="${aPillarY + 2}" width="24" height="14" fill="${glass}"/>
+            <rect x="140" y="${aPillarY + 2}" width="46" height="14" fill="${glass}"/>
+            <rect x="186" y="${aPillarY + 2}" width="30" height="14" fill="${body}"/>
+            <rect x="210" y="${aPillarY + 4}" width="16" height="12" fill="${glass}"/>
+            <rect x="80" y="${hoodY - 4}" width="36" height="4" fill="${body}"/>
+            <rect x="46" y="${hoodY}" width="70" height="4" fill="${body}"/>
+            <rect x="216" y="${rearDeckY + 2}" width="60" height="4" fill="${body}"/>
+            <rect x="46" y="${bodyTop}" width="230" height="10" fill="${body}"/>
+            <rect x="276" y="${bodyTop}" width="8" height="14" fill="${body}"/>
+            <rect x="36" y="${bodyTop + 8}" width="10" height="12" fill="${chrome}"/>
+            <rect x="38" y="${bodyTop - 2}" width="8" height="10" fill="#111827"/>
+            <rect x="282" y="${bodyTop + 8}" width="6" height="8" fill="${chrome}"/>
+            <rect x="46" y="${bodyTop + 10}" width="32" height="14" fill="${body}"/>
+            <rect x="106" y="${bodyTop + 10}" width="120" height="14" fill="${body}"/>
+            <rect x="254" y="${bodyTop + 10}" width="22" height="14" fill="${body}"/>
+            <rect x="46" y="${rockerY + 16}" width="230" height="4" fill="${chrome}"/>
+            <rect x="46" y="${rockerY + 20}" width="230" height="4" fill="${dark}" opacity="0.8"/>
+            ${pixelWheel(92, wheelY + 2, wheel, hub, spoke)}
+            ${pixelWheel(240, wheelY + 2, wheel, hub, spoke)}
+        </g>`;
+    }
+    if (stageLevel === 3) {
+        return `<g shape-rendering="crispEdges">
+            <rect x="136" y="${roofY}" width="50" height="6" fill="${roof}"/>
+            <rect x="116" y="${aPillarY + 2}" width="24" height="14" fill="${glass}"/>
+            <rect x="140" y="${aPillarY + 2}" width="46" height="14" fill="${glass}"/>
+            <rect x="186" y="${aPillarY + 2}" width="30" height="14" fill="${body}"/>
+            <rect x="210" y="${aPillarY + 4}" width="16" height="12" fill="${glass}"/>
+            <rect x="80" y="${hoodY - 4}" width="36" height="4" fill="${body}"/>
+            <rect x="46" y="${hoodY}" width="70" height="4" fill="${body}"/>
+            <rect x="216" y="${rearDeckY + 2}" width="60" height="4" fill="${body}"/>
+            <rect x="46" y="${bodyTop}" width="230" height="10" fill="${body}"/>
+            <rect x="276" y="${bodyTop}" width="8" height="14" fill="${body}"/>
+            <rect x="36" y="${bodyTop + 8}" width="10" height="12" fill="${chrome}"/>
+            <rect x="38" y="${bodyTop - 2}" width="8" height="10" fill="#111827"/>
+            <rect x="42" y="${bodyTop}" width="4" height="6" fill="#fff8e7"/>
+            <rect x="280" y="${bodyTop + 2}" width="4" height="6" fill="#f25c54"/>
+            <rect x="282" y="${bodyTop + 8}" width="6" height="8" fill="${chrome}"/>
+            <rect x="46" y="${bodyTop + 10}" width="32" height="14" fill="${body}"/>
+            <rect x="106" y="${bodyTop + 10}" width="120" height="14" fill="${body}"/>
+            <rect x="254" y="${bodyTop + 10}" width="22" height="14" fill="${body}"/>
+            <rect x="46" y="${rockerY + 16}" width="230" height="4" fill="${chrome}"/>
+            <rect x="46" y="${rockerY + 20}" width="230" height="4" fill="${dark}" opacity="0.8"/>
+            ${pixelWheel(92, wheelY + 2, wheel, hub, spoke)}
+            ${pixelWheel(240, wheelY + 2, wheel, hub, spoke)}
+        </g>`;
+    }
+    return `<g shape-rendering="crispEdges">
+        <rect x="136" y="${roofY}" width="50" height="6" fill="${roof}"/>
+        <rect x="116" y="${aPillarY + 2}" width="24" height="14" fill="${glass}"/>
+        <rect x="140" y="${aPillarY + 2}" width="46" height="14" fill="${glass}"/>
+        <rect x="186" y="${aPillarY + 2}" width="30" height="14" fill="${body}"/>
+        <rect x="210" y="${aPillarY + 4}" width="16" height="12" fill="${glass}"/>
+        <rect x="80" y="${hoodY - 4}" width="36" height="4" fill="${body}"/>
+        <rect x="46" y="${hoodY}" width="70" height="4" fill="${body}"/>
+        <rect x="216" y="${rearDeckY + 2}" width="60" height="4" fill="${body}"/>
+        <rect x="46" y="${bodyTop}" width="230" height="10" fill="${body}"/>
+        <rect x="276" y="${bodyTop}" width="8" height="14" fill="${body}"/>
+        <rect x="36" y="${bodyTop + 8}" width="10" height="12" fill="${chrome}"/>
+        <rect x="38" y="${bodyTop - 2}" width="8" height="10" fill="#111827"/>
+        <rect x="42" y="${bodyTop}" width="4" height="6" fill="#fff8e7"/>
+        <rect x="280" y="${bodyTop + 2}" width="4" height="6" fill="#f25c54"/>
+        <rect x="282" y="${bodyTop + 8}" width="6" height="8" fill="${chrome}"/>
+        <rect x="46" y="${bodyTop + 10}" width="32" height="14" fill="${body}"/>
+        <rect x="106" y="${bodyTop + 10}" width="120" height="14" fill="${body}"/>
+        <rect x="254" y="${bodyTop + 10}" width="22" height="14" fill="${body}"/>
+        <rect x="46" y="${rockerY + 16}" width="230" height="4" fill="${chrome}"/>
+        <rect x="46" y="${rockerY + 20}" width="230" height="4" fill="${dark}" opacity="0.8"/>
+        <rect x="50" y="${hoodY - 3}" width="60" height="1" fill="#ffffff" opacity="0.4"/>
+        <rect x="140" y="${roofY + 1}" width="40" height="1" fill="#ffffff" opacity="0.4"/>
+        ${pixelWheel(92, wheelY + 2, wheel, hub, spoke)}
+        ${pixelWheel(240, wheelY + 2, wheel, hub, spoke)}
+    </g>`;
+}
+
+// ---------------------------------------------------------
+// RUNTIME RENDER LOGIC
+// ---------------------------------------------------------
+const car = {
+    id: "camaro",
+    name: "1969 Camaro SS",
+    func: camaroSprite,
+    colors: { baseColor: "#c8323a", roofColor: "#1a1416", trimColor: "#f3d2d4", wheelColor: "#e8b65a" }
+};
+
+const commonColors = {
+    wheelSpoke: "#cf6f00", wheelHub: "#ffd7a6", wheelTire: "#1A1A1A",
+    primerColor: "#7f848b", rustColor: "#8a4517", shadowColor: "#2e3d4d", windowColor: "#4b5967"
+};
+
+const labels = ["Stage 0: Barn Find", "Stage 1: Project", "Stage 2: Driver", "Stage 3: Restored", "Stage 4: Show Car"];
+const root = document.getElementById("appRoot");
+
+const section = document.createElement('div');
+section.className = 'car-section';
+section.innerHTML = `<h2 class="section-title">${car.name}</h2><div class="grid"></div>`;
+const grid = section.querySelector('.grid');
+
+for (let stage = 0; stage <= 4; stage++) {
+    let sc = { ...commonColors, ...car.colors };
+    if (stage < 2) sc.wheelTire = "#23262b";
+    if (stage === 0) sc.windowColor = "#2c3137";
+
+    const svg = `<svg viewBox="0 0 340 190"><g transform="translate(0, 10)">${car.func(stage, sc)}</g></svg>`;
+    const card = document.createElement('div');
+    card.className = 'preview-card';
+    card.innerHTML = `<div class="preview-card-title">${labels[stage]}</div>${svg}`;
+    grid.appendChild(card);
+}
+root.appendChild(section);
+</script>
+</body>
+</html>
