@@ -5106,6 +5106,7 @@
           lastShowTier: null,
           lastShowPlace: null,
           creatorPostedWeek: null,
+          collabDoneWeek: null,
           pendingBrandDeal: null,
           totalCreatorEarnings: 0,
           rival: { score: 32, showsEntered: 0, lastPlace: null },
@@ -6088,6 +6089,7 @@
 
       function renderCreatorPanel() {
         const already = state.creatorPostedWeek === state.week;
+        const collabAlready = state.collabDoneWeek === state.week;
         const earned = state.totalCreatorEarnings || 0;
         const buttons = Object.entries(CREATOR_POSTS).map(([type, cfg]) => {
           const blocked = already || !!creatorPostBlockedReason(type);
@@ -6099,7 +6101,7 @@
           return button(label, `doCreatorPost('${type}')`, blocked, "", "width:100%");
         }).join("");
         const collabMarkup = state.collabAvailable
-          ? `<div class="info-box" style="background:rgba(143,203,126,0.08);border-color:rgba(143,203,126,0.45);margin-top:10px"><div class="small" style="color:var(--green-bright);font-weight:bold;margin-bottom:4px">🤝 Collab Opportunity</div><div class="tiny" style="color:var(--text);margin-bottom:8px">Another scene creator wants to build a video together. Big follower bump, one-time deal.</div>${button("Do a Collab · +1,000 followers", "doCollab()", already, "", "width:100%;background:linear-gradient(180deg,#93c884 0%,#5d8b4f 100%);border-color:#a7d998;color:#11180d")}</div>`
+          ? `<div class="info-box" style="background:rgba(143,203,126,0.08);border-color:rgba(143,203,126,0.45);margin-top:10px"><div class="small" style="color:var(--green-bright);font-weight:bold;margin-bottom:4px">🤝 Collab Opportunity</div><div class="tiny" style="color:var(--text);margin-bottom:8px">Another scene creator wants to build a video together. Big follower bump, one-time deal.</div>${button(`Do a Collab · +${fmtF(calcCollabReward())} followers`, "doCollab()", collabAlready, "", "width:100%;background:linear-gradient(180deg,#93c884 0%,#5d8b4f 100%);border-color:#a7d998;color:#11180d")}</div>`
           : "";
         const deal = state.pendingBrandDeal;
         const dealMarkup = deal
@@ -7336,7 +7338,9 @@
         resolveCompletedRestorations(false);
         state.pendingAdvanceReason = null;
         const previousWeek = state.week;
-        const missedSocialPost = state.creatorPostedWeek !== previousWeek;
+        const missedSocialPost =
+          state.creatorPostedWeek !== previousWeek &&
+          state.collabDoneWeek !== previousWeek;
         state.week += 1;
         state.weekStartMoney = state.money;
         state.enteredShowsThisWeek = [];
@@ -7608,6 +7612,13 @@
       /* ═══════════════════════════════════════════
      SOCIAL
   ═══════════════════════════════════════════ */
+      function calcCollabReward() {
+        const base = 1500;
+        const rate = 0.08;
+        const cap = 12000;
+        return Math.min(cap, Math.round(base + (state.followers || 0) * rate));
+      }
+
       function calcCreatorReward(type) {
         const cfg = CREATOR_POSTS[type];
         if (!cfg) return { cash: 0, followers: 0 };
@@ -7665,13 +7676,13 @@
 
       function doCollab() {
         if (!state.collabAvailable) return;
-        if (state.creatorPostedWeek === state.week)
-          return toast("You already dropped content this week.", "err");
-        const gained = 1000;
+        if (state.collabDoneWeek === state.week)
+          return toast("You already locked in a collab this week.", "err");
+        const gained = calcCollabReward();
         state.followers += gained;
         clampFollowers();
         state.collabAvailable = false;
-        state.creatorPostedWeek = state.week;
+        state.collabDoneWeek = state.week;
         addGarageLore(4);
         toast(
           `🤝 Collab dropped. The other creator's audience showed up. +${fmtF(gained)} followers.`,
@@ -8070,7 +8081,14 @@
         recordMoneyChange(totalEarned - entryFee, `${show.name} payout`);
         state.fuel = Math.max(0, state.fuel - fuelNeed);
 
-        const gained = show.followers[place - 1] || 0;
+        // Off-podium finishes still meet some fans at the show. Tail
+        // gain is half of the 5th-place value, with a hard floor of 3.
+        const podiumFollowers = show.followers[place - 1];
+        const tailFollowers = Math.max(
+          3,
+          Math.floor((show.followers[show.followers.length - 1] || 0) * 0.5),
+        );
+        const gained = podiumFollowers ?? tailFollowers;
         const newFollowers = state.followers + gained;
         let showReward = null;
         if (show.tier === "Cars & Coffee") {
