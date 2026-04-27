@@ -8920,6 +8920,133 @@
       </g>`;
       }
 
+      function mustangSprite(stageLevel, colors) {
+        const body = colors.baseColor;
+        const roof = colors.roofColor;
+        const glass = colors.windowColor;
+        const chrome = colors.trimColor;
+        const wheel = colors.wheelColor;
+        const spoke = colors.wheelSpoke;
+        const hub = colors.wheelHub;
+        const tire = colors.wheelTire;
+        const primer = colors.primerColor;
+        const rusty = colors.rustColor;
+        const dark = colors.shadowColor;
+        const yo = -stageLevel * 2;
+        const gY = 124 + yo;
+        const rkY = 116 + yo;
+        const bY = 108 + yo;
+        const hY = 104 + yo;
+        const rfY = 82 + yo;
+        const wY = 128 + yo;
+
+        if (stageLevel <= 0) {
+          return `<g shape-rendering="crispEdges">
+        <rect x="140" y="${rfY + 4}" width="36" height="6" fill="${rusty}"/>
+        <rect x="176" y="${rfY + 8}" width="20" height="8" fill="${primer}"/>
+        <rect x="196" y="${rfY + 14}" width="24" height="8" fill="${rusty}"/>
+        <rect x="130" y="${rfY + 10}" width="44" height="14" fill="#2c3137"/>
+        <rect x="46" y="${hY}" width="80" height="4" fill="${primer}"/>
+        <rect x="40" y="${bY}" width="240" height="10" fill="${rusty}"/>
+        <rect x="40" y="${bY + 10}" width="44" height="14" fill="${primer}"/>
+        <rect x="116" y="${bY + 10}" width="114" height="14" fill="${rusty}"/>
+        <rect x="262" y="${bY + 10}" width="18" height="14" fill="${primer}"/>
+        <rect x="40" y="${rkY + 16}" width="240" height="4" fill="${primer}"/>
+        <rect x="40" y="${gY + 4}" width="246" height="4" fill="${dark}" opacity="0.8"/>
+        ${pixelWheel(96, wY + 2, "#3a342f", "#2a241f", "#1c1815")}
+        ${pixelWheel(244, wY + 2, "#3a342f", "#2a241f", "#1c1815")}
+      </g>`;
+        }
+
+        if (stageLevel === 1) {
+          return `<g shape-rendering="crispEdges">
+        <rect x="140" y="${rfY + 2}" width="36" height="6" fill="${roof}"/>
+        <rect x="176" y="${rfY + 6}" width="20" height="8" fill="${primer}"/>
+        <rect x="196" y="${rfY + 12}" width="24" height="8" fill="${body}"/>
+        <rect x="130" y="${rfY + 8}" width="44" height="14" fill="${glass}"/>
+        <rect x="46" y="${hY - 2}" width="80" height="4" fill="${primer}"/>
+        <rect x="40" y="${bY}" width="140" height="10" fill="${body}"/>
+        <rect x="180" y="${bY}" width="100" height="10" fill="${primer}"/>
+        <rect x="40" y="${bY + 10}" width="44" height="14" fill="${body}"/>
+        <rect x="116" y="${bY + 10}" width="114" height="14" fill="${primer}"/>
+        <rect x="262" y="${bY + 10}" width="18" height="14" fill="${body}"/>
+        <rect x="40" y="${rkY + 16}" width="240" height="4" fill="${chrome}" opacity="0.5"/>
+        <rect x="40" y="${gY + 4}" width="246" height="4" fill="${dark}" opacity="0.8"/>
+        ${pixelWheel(96, wY + 2, tire, "#565d63", "#34383d")}
+        ${pixelWheel(244, wY + 2, wheel, hub, spoke)}
+      </g>`;
+        }
+
+        if (stageLevel === 2) {
+          return `<g shape-rendering="crispEdges">
+        <rect x="140" y="${rfY}" width="36" height="6" fill="${roof}"/>
+        <rect x="176" y="${rfY + 4}" width="20" height="8" fill="${roof}"/>
+        <rect x="196" y="${rfY + 10}" width="24" height="8" fill="${body}"/>
+        <rect x="130" y="${rfY + 6}" width="44" height="14" fill="${glass}"/>
+        <rect x="46" y="${hY - 4}" width="80" height="4" fill="${body}"/>
+        <rect x="40" y="${bY}" width="240" height="10" fill="${body}"/>
+        <rect x="206" y="${bY + 6}" width="12" height="10" fill="${dark}" opacity="0.6"/>
+        <rect x="40" y="${bY + 10}" width="44" height="14" fill="${body}"/>
+        <rect x="116" y="${bY + 10}" width="114" height="14" fill="${body}"/>
+        <rect x="262" y="${bY + 10}" width="18" height="14" fill="${body}"/>
+        <rect x="40" y="${rkY + 16}" width="240" height="4" fill="${chrome}"/>
+        <rect x="36" y="${bY + 4}" width="6" height="10" fill="${chrome}"/>
+        <rect x="280" y="${bY + 4}" width="6" height="10" fill="${chrome}"/>
+        <rect x="40" y="${gY + 4}" width="246" height="4" fill="${dark}" opacity="0.8"/>
+        ${pixelWheel(96, wY + 2, wheel, hub, spoke)}
+        ${pixelWheel(244, wY + 2, wheel, hub, spoke)}
+      </g>`;
+        }
+
+        if (stageLevel === 3) {
+          return `<g shape-rendering="crispEdges">
+        <rect x="140" y="${rfY}" width="36" height="6" fill="${roof}"/>
+        <rect x="176" y="${rfY + 4}" width="20" height="8" fill="${roof}"/>
+        <rect x="196" y="${rfY + 10}" width="24" height="8" fill="${body}"/>
+        <rect x="130" y="${rfY + 6}" width="44" height="14" fill="${glass}"/>
+        <rect x="46" y="${hY - 4}" width="80" height="4" fill="${body}"/>
+        <rect x="40" y="${bY}" width="240" height="10" fill="${body}"/>
+        <rect x="206" y="${bY + 6}" width="12" height="10" fill="${dark}" opacity="0.6"/>
+        <rect x="40" y="${bY + 10}" width="44" height="14" fill="${body}"/>
+        <rect x="116" y="${bY + 10}" width="114" height="14" fill="${body}"/>
+        <rect x="262" y="${bY + 10}" width="18" height="14" fill="${body}"/>
+        <rect x="40" y="${bY - 2}" width="240" height="2" fill="${chrome}"/>
+        <rect x="40" y="${rkY + 16}" width="240" height="4" fill="${chrome}"/>
+        <rect x="36" y="${bY + 4}" width="6" height="10" fill="${chrome}"/>
+        <rect x="280" y="${bY + 4}" width="6" height="10" fill="${chrome}"/>
+        <rect x="34" y="${bY + 6}" width="4" height="6" fill="#fff8e7"/>
+        <rect x="284" y="${bY + 6}" width="4" height="6" fill="#f25c54"/>
+        <rect x="40" y="${gY + 4}" width="246" height="4" fill="${dark}" opacity="0.8"/>
+        ${pixelWheel(96, wY + 2, wheel, hub, spoke)}
+        ${pixelWheel(244, wY + 2, wheel, hub, spoke)}
+      </g>`;
+        }
+
+        return `<g shape-rendering="crispEdges">
+        <rect x="140" y="${rfY}" width="36" height="6" fill="${roof}"/>
+        <rect x="176" y="${rfY + 4}" width="20" height="8" fill="${roof}"/>
+        <rect x="196" y="${rfY + 10}" width="24" height="8" fill="${body}"/>
+        <rect x="130" y="${rfY + 6}" width="44" height="14" fill="${glass}"/>
+        <rect x="46" y="${hY - 4}" width="80" height="4" fill="${body}"/>
+        <rect x="40" y="${bY}" width="240" height="10" fill="${body}"/>
+        <rect x="206" y="${bY + 6}" width="12" height="10" fill="${dark}" opacity="0.8"/>
+        <rect x="40" y="${bY + 10}" width="44" height="14" fill="${body}"/>
+        <rect x="116" y="${bY + 10}" width="114" height="14" fill="${body}"/>
+        <rect x="262" y="${bY + 10}" width="18" height="14" fill="${body}"/>
+        <rect x="40" y="${bY - 2}" width="240" height="2" fill="${chrome}"/>
+        <rect x="40" y="${rkY + 16}" width="240" height="4" fill="${chrome}"/>
+        <rect x="36" y="${bY + 4}" width="6" height="10" fill="${chrome}"/>
+        <rect x="280" y="${bY + 4}" width="6" height="10" fill="${chrome}"/>
+        <rect x="34" y="${bY + 6}" width="4" height="6" fill="#fff8e7"/>
+        <rect x="284" y="${bY + 6}" width="4" height="6" fill="#f25c54"/>
+        <rect x="50" y="${hY - 3}" width="70" height="1" fill="#ffffff" opacity="0.5"/>
+        <rect x="144" y="${rfY + 1}" width="28" height="1" fill="#ffffff" opacity="0.5"/>
+        <rect x="40" y="${gY + 4}" width="246" height="4" fill="${dark}" opacity="0.8"/>
+        ${pixelWheel(96, wY + 2, wheel, hub, spoke)}
+        ${pixelWheel(244, wY + 2, wheel, hub, spoke)}
+      </g>`;
+      }
+
       function escapeHtmlAttr(value) {
         return String(value || "")
           .replace(/&/g, "&amp;")
@@ -9210,10 +9337,19 @@ body{position:relative!important;display:block!important;}
           });
         }
         if (car.style === "mustang") {
-          // Stallion fastback profile: long hood, short roof, sloping
-          // fastback rear, rear quarter side scoop. Used by '65-'70
-          // Stallions / Shelbys / Marauders.
-          sprite = `<g shape-rendering="crispEdges"><rect x="40" y="113" width="248" height="12" fill="${baseColor}"/><rect x="50" y="107" width="60" height="6" fill="${baseColor}"/><rect x="64" y="101" width="74" height="6" fill="${baseColor}"/><rect x="138" y="95" width="14" height="6" fill="${baseColor}"/><rect x="148" y="89" width="14" height="6" fill="${roofColor}"/><rect x="160" y="83" width="14" height="6" fill="${roofColor}"/><rect x="172" y="79" width="36" height="6" fill="${roofColor}"/><rect x="206" y="83" width="18" height="6" fill="${roofColor}"/><rect x="220" y="89" width="18" height="6" fill="${baseColor}"/><rect x="234" y="95" width="22" height="6" fill="${baseColor}"/><rect x="252" y="101" width="20" height="6" fill="${baseColor}"/><rect x="268" y="107" width="22" height="6" fill="${baseColor}"/><rect x="156" y="83" width="20" height="14" fill="${windowColor}"/><rect x="174" y="81" width="32" height="16" fill="${windowColor}"/><rect x="206" y="85" width="18" height="12" fill="${windowColor}"/><rect x="206" y="105" width="18" height="6" fill="${shadowColor}" opacity=".7"/><rect x="208" y="106" width="14" height="2" fill="${baseColor}" opacity=".8"/><rect x="50" y="119" width="240" height="3" fill="${trimColor}"/><rect x="40" y="113" width="6" height="9" fill="${trimColor}"/><rect x="284" y="113" width="6" height="9" fill="${trimColor}"/><rect x="46" y="115" width="6" height="3" fill="${windowColor}"/><rect x="284" y="115" width="6" height="3" fill="${trimColor}"/><rect x="40" y="125" width="248" height="3" fill="${shadowColor}" opacity=".8"/>${pixelWheel(94, 128, wheelColor, wheelHub, wheelSpoke)}${pixelWheel(244, 128, wheelColor, wheelHub, wheelSpoke)}</g>`;
+          sprite = mustangSprite(truckStageLevel, {
+            baseColor,
+            roofColor,
+            windowColor,
+            trimColor,
+            wheelColor,
+            wheelSpoke,
+            wheelHub,
+            wheelTire: mechHealth < 25 ? "#23262b" : wheelColor,
+            primerColor,
+            rustColor,
+            shadowColor,
+          });
         }
         if (car.style === "corvette") {
           // C3 Corvet profile: pointed nose extending past front
