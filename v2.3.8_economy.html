@@ -10458,7 +10458,7 @@ body{position:relative!important;display:block!important;}
           heroBody,
           "",
           placeColor,
-        )}${panel("Final Standings", standingsBody, "", "#7da0c2")}${panel("Show Story", storyBody, "How the night played out", "#a79a86")}</div><div>${renderUpcomingBar()}${panel("After the Show", `${button("Back to Garage", "state.postShowWeekLocked=false; setView('garage')", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "Return to the garage and keep building.", "#d8a24f")}</div></div>`;
+        )}${panel(r.tier === "Cars & Coffee" ? "Crowd Pleasers" : "Final Standings", standingsBody, "", "#7da0c2")}${panel("Show Story", storyBody, "How the night played out", "#a79a86")}</div><div>${renderUpcomingBar()}${panel("After the Show", `${button("Back to Garage", "state.postShowWeekLocked=false; setView('garage')", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "Return to the garage and keep building.", "#d8a24f")}</div></div>`;
       }
 
       function renderDealership() {
