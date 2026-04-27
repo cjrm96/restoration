@@ -488,6 +488,11 @@
         pointer-events: none;
         background: transparent;
       }
+      .cg-backdrop-mount {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
       .art-backdrop-shade {
         position: absolute;
         inset: 0;
@@ -6546,11 +6551,16 @@
         state.winterAppliedForSeason = true;
       }
       function formatRemaining(ms) {
-        const total = Math.max(0, Math.ceil(ms / 1000));
-        const h = String(Math.floor(total / 3600)).padStart(2, "0");
-        const m = String(Math.floor((total % 3600) / 60)).padStart(2, "0");
-        const s = String(total % 60).padStart(2, "0");
-        return `${h}:${m}:${s}`;
+        if (ms <= 0) return "ready now";
+        const sec = Math.ceil(ms / 1000);
+        if (sec < 30) return "almost done";
+        if (sec < 60) return "~30 sec left";
+        const min = Math.round(sec / 60);
+        if (min < 2) return "~1 min left";
+        if (min < 60) return `~${min} min left`;
+        const hr = Math.floor(min / 60);
+        const remMin = Math.round((min % 60) / 5) * 5;
+        return remMin === 0 ? `~${hr}h left` : `~${hr}h ${remMin}m left`;
       }
       function getRestorationProgress(task) {
         const total = Math.max(1, task.finishTime - task.startTime);
@@ -9197,35 +9207,78 @@ body{position:relative!important;display:block!important;}
         return `<iframe class="art-backdrop-frame" title="${title || "Scene backdrop"}" aria-hidden="true" tabindex="-1" loading="eager" srcdoc="${escapeHtmlAttr(normalizeBackdropSrcdoc(srcdoc, scale, yOffset))}"></iframe><div class="art-backdrop-shade"></div>`;
       }
 
+      const _workspaceBackdropConfig = {
+        curb: { scale: 0.86, yOffset: 0 },
+        carport: { scale: 0.86, yOffset: 2 },
+        storage: { scale: 0.86, yOffset: 2 },
+        garage: { scale: 0.86, yOffset: 2 },
+        warehouse: { scale: 0.86, yOffset: 2 },
+      };
+      const _backdropCache = Object.create(null);
+
       function workspaceBackdropFrame() {
-        const config = {
-          curb: { scale: 0.86, yOffset: 0 },
-          carport: { scale: 0.86, yOffset: 2 },
-          storage: { scale: 0.86, yOffset: 2 },
-          garage: { scale: 0.86, yOffset: 2 },
-          warehouse: { scale: 0.86, yOffset: 2 },
-        }[state.workshopLevel] || { scale: 0.86, yOffset: 0 };
-        return artBackdropFrame(
-          WORKSPACE_ART_SRCDOC[state.workshopLevel] || "",
-          `${workspaceData().name} backdrop`,
-          config.scale,
-          config.yOffset,
-        );
+        const key = state.workshopLevel || "garage";
+        return `<div class="cg-backdrop-mount" data-backdrop-kind="workspace" data-backdrop-key="${escapeHtmlAttr(key)}"></div>`;
       }
 
       function showBackdropFrame(tier) {
-        const config = {
-          carsandcoffee: { scale: 0.86, yOffset: 0 },
-          local: { scale: 0.86, yOffset: 0 },
-          regional: { scale: 0.86, yOffset: 0 },
-          national: { scale: 0.86, yOffset: 0 },
-        }[tier] || { scale: 0.86, yOffset: 0 };
-        return artBackdropFrame(
-          SHOW_ART_SRCDOC[tier] || "",
-          `${tier} show backdrop`,
-          config.scale,
-          config.yOffset,
-        );
+        const key = tier || "";
+        return `<div class="cg-backdrop-mount" data-backdrop-kind="show" data-backdrop-key="${escapeHtmlAttr(key)}"></div>`;
+      }
+
+      function _buildBackdropEntry(kind, key) {
+        let srcdoc, scale, yOffset, title;
+        if (kind === "workspace") {
+          srcdoc = WORKSPACE_ART_SRCDOC[key] || "";
+          const cfg = _workspaceBackdropConfig[key] || { scale: 0.86, yOffset: 0 };
+          scale = cfg.scale;
+          yOffset = cfg.yOffset;
+          title = `${key} backdrop`;
+        } else if (kind === "show") {
+          srcdoc = SHOW_ART_SRCDOC[key] || "";
+          scale = 0.86;
+          yOffset = 0;
+          title = `${key} show backdrop`;
+        }
+        if (!srcdoc) return null;
+        const iframe = document.createElement("iframe");
+        iframe.className = "art-backdrop-frame";
+        iframe.title = title;
+        iframe.setAttribute("aria-hidden", "true");
+        iframe.setAttribute("tabindex", "-1");
+        iframe.loading = "eager";
+        iframe.srcdoc = normalizeBackdropSrcdoc(srcdoc, scale, yOffset);
+        const shade = document.createElement("div");
+        shade.className = "art-backdrop-shade";
+        return { iframe, shade };
+      }
+
+      function mountBackdrops() {
+        const mounts = document.querySelectorAll(".cg-backdrop-mount");
+        for (const mount of mounts) {
+          const kind = mount.dataset.backdropKind;
+          const key = mount.dataset.backdropKey;
+          if (!kind || !key) continue;
+          const cacheKey = `${kind}:${key}`;
+          // Already populated with the right backdrop — leave alone.
+          if (mount.firstChild && mount._cgBackdropKey === cacheKey) continue;
+          let entry = _backdropCache[cacheKey];
+          if (!entry) {
+            entry = _buildBackdropEntry(kind, key);
+            if (!entry) continue;
+            _backdropCache[cacheKey] = entry;
+          }
+          // Reparent the cached iframe + shade. Detaching and re-inserting an
+          // iframe in the same task tick preserves the document in all modern
+          // browsers, so the SVG inside doesn't re-parse or re-render.
+          if (entry.iframe.parentNode)
+            entry.iframe.parentNode.removeChild(entry.iframe);
+          if (entry.shade.parentNode)
+            entry.shade.parentNode.removeChild(entry.shade);
+          mount.appendChild(entry.iframe);
+          mount.appendChild(entry.shade);
+          mount._cgBackdropKey = cacheKey;
+        }
       }
 
       function carPreview(car) {
@@ -11009,9 +11062,11 @@ body{position:relative!important;display:block!important;}
           updateTabsChrome(true);
           renderMainContent();
           renderModalLayer(false);
+          mountBackdrops();
           return;
         }
         renderModalLayer(false);
+        mountBackdrops();
       }
 
       function requestRender(mode = "full") {
@@ -11072,10 +11127,12 @@ body{position:relative!important;display:block!important;}
 
       function runBackgroundTick() {
         const interval = document.hidden
-          ? 4000
-          : state.activeRestorations.length || state.showLoading
+          ? 10000
+          : state.showLoading
             ? 1000
-            : 1600;
+            : state.activeRestorations.length
+              ? 5000
+              : 4000;
         const isPaused = state.settings && state.settings.paused;
         const changed = isPaused ? false : resolveCompletedRestorations(true);
         if (changed || state.showLoading) {
