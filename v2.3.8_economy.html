@@ -10557,7 +10557,7 @@ addEventListener("DOMContentLoaded",function(){
               // Show-prep checklist — every requirement gets a ✓ or ✗
               // so the player sees at a glance what's blocking entry.
               const checks = [];
-              if (show.tier !== "Cars & Coffee") {
+              if (show.tier !== "Cars & Coffee" && show.minScore > 0) {
                 checks.push({
                   ok: getOverall(car) >= show.minScore,
                   pass: `${show.minScore}+ overall ✓`,
