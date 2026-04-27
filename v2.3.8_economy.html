@@ -11161,10 +11161,10 @@ body{position:relative!important;display:block!important;}
         const changed = isPaused ? false : resolveCompletedRestorations(true);
         if (changed || state.showLoading) {
           // Only do the heavy full re-render when something actually changed
-          // (a task completed, or the show is loading). Per-second timer ticks
-          // are now handled by updateRestorationTimers below — surgical DOM
-          // updates only on the timer text and progress bar, leaving the SVG
-          // car art and the rest of the page untouched.
+          // (a task completed, or the show is loading). Idle ticks just touch
+          // the timer text and progress bar via updateRestorationTimers below
+          // — surgical DOM updates that leave the SVG car art and the rest
+          // of the page alone.
           requestRender("full");
         } else if (state.activeRestorations.length) {
           updateRestorationTimers();
