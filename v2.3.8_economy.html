@@ -8638,9 +8638,7 @@
         const primer = colors.primerColor;
         const rusty = colors.rustColor;
         const dark = colors.shadowColor;
-        // Lift the car 2px per stage as it cleans up.
         const yo = -stageLevel * 2;
-        // Y anchors (stage 0 baseline)
         const groundY = 124 + yo;
         const rockerY = 116 + yo;
         const bodyTop = 108 + yo;
@@ -8655,137 +8653,131 @@
         const wheelY = 128 + yo;
 
         if (stageLevel <= 0) {
-          // Barn find: primer/rust dominant, no chrome, dark glass,
-          // sagged stance. Body color shows through in a few panels.
           return `<g shape-rendering="crispEdges">
-        <rect x="42" y="${rockerY}" width="240" height="8" fill="${primer}"/>
-        <rect x="42" y="${bodyTop}" width="240" height="8" fill="${rusty}"/>
-        <rect x="74" y="${fenderTop}" width="42" height="6" fill="${primer}"/>
-        <rect x="46" y="${hoodY}" width="84" height="6" fill="${rusty}"/>
-        <rect x="82" y="${cowlBulgeY}" width="30" height="${hoodY - cowlBulgeY}" fill="${primer}"/>
-        <rect x="120" y="${cowlY}" width="14" height="6" fill="${rusty}"/>
-        <rect x="138" y="${aPillarY}" width="10" height="${cowlY - aPillarY}" fill="${primer}"/>
-        <rect x="148" y="${roofY}" width="62" height="4" fill="${primer}" opacity=".85"/>
-        <rect x="210" y="${aPillarY}" width="10" height="${cowlY - aPillarY}" fill="${primer}"/>
-        <rect x="220" y="${sailY}" width="60" height="${rearDeckY - sailY}" fill="${rusty}"/>
-        <rect x="240" y="${rearDeckY}" width="42" height="4" fill="${primer}"/>
-        <rect x="132" y="${aPillarY + 4}" width="18" height="${cowlY - aPillarY - 4}" fill="${dark}" opacity=".7"/>
-        <rect x="150" y="${roofY + 4}" width="58" height="${cowlY - roofY - 4}" fill="${dark}" opacity=".7"/>
-        <rect x="212" y="${aPillarY + 4}" width="18" height="${cowlY - aPillarY - 4}" fill="${dark}" opacity=".7"/>
-        <rect x="40" y="${groundY}" width="246" height="3" fill="${dark}" opacity=".7"/>
-        ${pixelWheel(92, wheelY, "#3a342f", "#2a241f", "#1c1815")}
-        ${pixelWheel(240, wheelY, "#3a342f", "#2a241f", "#1c1815")}
+        <rect x="136" y="${roofY + 4}" width="50" height="6" fill="${primer}"/>
+        <rect x="116" y="${aPillarY + 6}" width="24" height="14" fill="#2c3137"/>
+        <rect x="140" y="${aPillarY + 6}" width="46" height="14" fill="#2c3137"/>
+        <rect x="186" y="${aPillarY + 6}" width="30" height="14" fill="${rusty}"/>
+        <rect x="210" y="${aPillarY + 8}" width="16" height="12" fill="#2c3137"/>
+        <rect x="80" y="${hoodY - 4}" width="36" height="4" fill="${primer}"/>
+        <rect x="46" y="${hoodY}" width="70" height="4" fill="${rusty}"/>
+        <rect x="216" y="${rearDeckY + 2}" width="60" height="4" fill="${primer}"/>
+        <rect x="46" y="${bodyTop}" width="230" height="10" fill="${rusty}"/>
+        <rect x="276" y="${bodyTop}" width="8" height="14" fill="${primer}"/>
+        <rect x="36" y="${bodyTop + 8}" width="10" height="12" fill="${rusty}"/>
+        <rect x="38" y="${bodyTop - 2}" width="8" height="10" fill="#111827"/>
+        <rect x="46" y="${bodyTop + 10}" width="32" height="14" fill="${primer}"/>
+        <rect x="106" y="${bodyTop + 10}" width="120" height="14" fill="${rusty}"/>
+        <rect x="254" y="${bodyTop + 10}" width="22" height="14" fill="${primer}"/>
+        <rect x="46" y="${rockerY + 16}" width="230" height="4" fill="${primer}"/>
+        <rect x="46" y="${rockerY + 20}" width="230" height="4" fill="${dark}" opacity="0.8"/>
+        ${pixelWheel(92, wheelY + 2, "#3a342f", "#2a241f", "#1c1815")}
+        ${pixelWheel(240, wheelY + 2, "#3a342f", "#2a241f", "#1c1815")}
       </g>`;
         }
 
         if (stageLevel === 1) {
-          // Project: mismatched panels, primer mixed with body color,
-          // chrome present at low opacity, glass cleaned up some.
           return `<g shape-rendering="crispEdges">
-        <rect x="42" y="${rockerY}" width="240" height="8" fill="${body}"/>
-        <rect x="42" y="${bodyTop}" width="120" height="8" fill="${body}"/>
-        <rect x="162" y="${bodyTop}" width="120" height="8" fill="${primer}"/>
-        <rect x="74" y="${fenderTop}" width="42" height="6" fill="${body}"/>
-        <rect x="46" y="${hoodY}" width="84" height="6" fill="${primer}"/>
-        <rect x="82" y="${cowlBulgeY}" width="30" height="${hoodY - cowlBulgeY}" fill="${primer}"/>
-        <rect x="120" y="${cowlY}" width="14" height="6" fill="${body}"/>
-        <rect x="138" y="${aPillarY}" width="10" height="${cowlY - aPillarY}" fill="${body}"/>
-        <rect x="148" y="${roofY}" width="62" height="4" fill="${roof}"/>
-        <rect x="210" y="${aPillarY}" width="10" height="${cowlY - aPillarY}" fill="${body}"/>
-        <rect x="220" y="${sailY}" width="60" height="${rearDeckY - sailY}" fill="${body}"/>
-        <rect x="240" y="${rearDeckY}" width="42" height="4" fill="${body}"/>
-        <rect x="132" y="${aPillarY + 4}" width="18" height="${cowlY - aPillarY - 4}" fill="${glass}"/>
-        <rect x="150" y="${roofY + 4}" width="58" height="${cowlY - roofY - 4}" fill="${glass}"/>
-        <rect x="212" y="${aPillarY + 4}" width="18" height="${cowlY - aPillarY - 4}" fill="${glass}"/>
-        <rect x="50" y="${rockerY + 8}" width="232" height="2" fill="${chrome}" opacity=".55"/>
-        <rect x="40" y="${groundY}" width="246" height="3" fill="${dark}" opacity=".75"/>
-        ${pixelWheel(92, wheelY, tire, "#565d63", "#34383d")}
-        ${pixelWheel(240, wheelY, wheel, hub, spoke)}
+        <rect x="136" y="${roofY + 2}" width="50" height="6" fill="${roof}"/>
+        <rect x="116" y="${aPillarY + 4}" width="24" height="14" fill="${glass}"/>
+        <rect x="140" y="${aPillarY + 4}" width="46" height="14" fill="${glass}"/>
+        <rect x="186" y="${aPillarY + 4}" width="30" height="14" fill="${primer}"/>
+        <rect x="210" y="${aPillarY + 6}" width="16" height="12" fill="${glass}"/>
+        <rect x="80" y="${hoodY - 4}" width="36" height="4" fill="${primer}"/>
+        <rect x="46" y="${hoodY}" width="70" height="4" fill="${body}"/>
+        <rect x="216" y="${rearDeckY + 2}" width="60" height="4" fill="${body}"/>
+        <rect x="46" y="${bodyTop}" width="120" height="10" fill="${body}"/>
+        <rect x="166" y="${bodyTop}" width="110" height="10" fill="${primer}"/>
+        <rect x="276" y="${bodyTop}" width="8" height="14" fill="${body}"/>
+        <rect x="36" y="${bodyTop + 8}" width="10" height="12" fill="${chrome}" opacity="0.5"/>
+        <rect x="38" y="${bodyTop - 2}" width="8" height="10" fill="#111827"/>
+        <rect x="46" y="${bodyTop + 10}" width="32" height="14" fill="${body}"/>
+        <rect x="106" y="${bodyTop + 10}" width="120" height="14" fill="${primer}"/>
+        <rect x="254" y="${bodyTop + 10}" width="22" height="14" fill="${body}"/>
+        <rect x="46" y="${rockerY + 16}" width="230" height="4" fill="${chrome}" opacity="0.5"/>
+        <rect x="46" y="${rockerY + 20}" width="230" height="4" fill="${dark}" opacity="0.8"/>
+        ${pixelWheel(92, wheelY + 2, tire, "#565d63", "#34383d")}
+        ${pixelWheel(240, wheelY + 2, wheel, hub, spoke)}
       </g>`;
         }
 
         if (stageLevel === 2) {
-          // Driver: full body color, basic chrome, clean glass.
           return `<g shape-rendering="crispEdges">
-        <rect x="42" y="${rockerY}" width="240" height="8" fill="${body}"/>
-        <rect x="42" y="${bodyTop}" width="240" height="8" fill="${body}"/>
-        <rect x="74" y="${fenderTop}" width="42" height="6" fill="${body}"/>
-        <rect x="46" y="${hoodY}" width="84" height="6" fill="${body}"/>
-        <rect x="82" y="${cowlBulgeY}" width="30" height="${hoodY - cowlBulgeY}" fill="${body}"/>
-        <rect x="120" y="${cowlY}" width="14" height="6" fill="${body}"/>
-        <rect x="138" y="${aPillarY}" width="10" height="${cowlY - aPillarY}" fill="${body}"/>
-        <rect x="148" y="${roofY}" width="62" height="4" fill="${roof}"/>
-        <rect x="210" y="${aPillarY}" width="10" height="${cowlY - aPillarY}" fill="${body}"/>
-        <rect x="220" y="${sailY}" width="60" height="${rearDeckY - sailY}" fill="${body}"/>
-        <rect x="240" y="${rearDeckY}" width="42" height="4" fill="${body}"/>
-        <rect x="132" y="${aPillarY + 4}" width="18" height="${cowlY - aPillarY - 4}" fill="${glass}"/>
-        <rect x="150" y="${roofY + 4}" width="58" height="${cowlY - roofY - 4}" fill="${glass}"/>
-        <rect x="212" y="${aPillarY + 4}" width="18" height="${cowlY - aPillarY - 4}" fill="${glass}"/>
-        <rect x="50" y="${rockerY + 8}" width="232" height="2" fill="${chrome}"/>
-        <rect x="42" y="${rockerY}" width="2" height="8" fill="${chrome}"/>
-        <rect x="280" y="${rockerY}" width="2" height="8" fill="${chrome}"/>
-        <rect x="40" y="${groundY}" width="246" height="3" fill="${dark}" opacity=".78"/>
-        ${pixelWheel(92, wheelY, wheel, hub, spoke)}
-        ${pixelWheel(240, wheelY, wheel, hub, spoke)}
+        <rect x="136" y="${roofY}" width="50" height="6" fill="${roof}"/>
+        <rect x="116" y="${aPillarY + 2}" width="24" height="14" fill="${glass}"/>
+        <rect x="140" y="${aPillarY + 2}" width="46" height="14" fill="${glass}"/>
+        <rect x="186" y="${aPillarY + 2}" width="30" height="14" fill="${body}"/>
+        <rect x="210" y="${aPillarY + 4}" width="16" height="12" fill="${glass}"/>
+        <rect x="80" y="${hoodY - 4}" width="36" height="4" fill="${body}"/>
+        <rect x="46" y="${hoodY}" width="70" height="4" fill="${body}"/>
+        <rect x="216" y="${rearDeckY + 2}" width="60" height="4" fill="${body}"/>
+        <rect x="46" y="${bodyTop}" width="230" height="10" fill="${body}"/>
+        <rect x="276" y="${bodyTop}" width="8" height="14" fill="${body}"/>
+        <rect x="36" y="${bodyTop + 8}" width="10" height="12" fill="${chrome}"/>
+        <rect x="38" y="${bodyTop - 2}" width="8" height="10" fill="#111827"/>
+        <rect x="282" y="${bodyTop + 8}" width="6" height="8" fill="${chrome}"/>
+        <rect x="46" y="${bodyTop + 10}" width="32" height="14" fill="${body}"/>
+        <rect x="106" y="${bodyTop + 10}" width="120" height="14" fill="${body}"/>
+        <rect x="254" y="${bodyTop + 10}" width="22" height="14" fill="${body}"/>
+        <rect x="46" y="${rockerY + 16}" width="230" height="4" fill="${chrome}"/>
+        <rect x="46" y="${rockerY + 20}" width="230" height="4" fill="${dark}" opacity="0.8"/>
+        ${pixelWheel(92, wheelY + 2, wheel, hub, spoke)}
+        ${pixelWheel(240, wheelY + 2, wheel, hub, spoke)}
       </g>`;
         }
 
         if (stageLevel === 3) {
-          // Restored: polished chrome, headlight + taillight accents,
-          // chrome strip extends to bumper caps.
           return `<g shape-rendering="crispEdges">
-        <rect x="42" y="${rockerY}" width="240" height="8" fill="${body}"/>
-        <rect x="42" y="${bodyTop}" width="240" height="8" fill="${body}"/>
-        <rect x="74" y="${fenderTop}" width="42" height="6" fill="${body}"/>
-        <rect x="46" y="${hoodY}" width="84" height="6" fill="${body}"/>
-        <rect x="82" y="${cowlBulgeY}" width="30" height="${hoodY - cowlBulgeY}" fill="${body}"/>
-        <rect x="120" y="${cowlY}" width="14" height="6" fill="${body}"/>
-        <rect x="138" y="${aPillarY}" width="10" height="${cowlY - aPillarY}" fill="${body}"/>
-        <rect x="148" y="${roofY}" width="62" height="4" fill="${roof}"/>
-        <rect x="210" y="${aPillarY}" width="10" height="${cowlY - aPillarY}" fill="${body}"/>
-        <rect x="220" y="${sailY}" width="60" height="${rearDeckY - sailY}" fill="${body}"/>
-        <rect x="240" y="${rearDeckY}" width="42" height="4" fill="${body}"/>
-        <rect x="132" y="${aPillarY + 4}" width="18" height="${cowlY - aPillarY - 4}" fill="${glass}"/>
-        <rect x="150" y="${roofY + 4}" width="58" height="${cowlY - roofY - 4}" fill="${glass}"/>
-        <rect x="212" y="${aPillarY + 4}" width="18" height="${cowlY - aPillarY - 4}" fill="${glass}"/>
-        <rect x="50" y="${rockerY + 8}" width="232" height="2" fill="${chrome}"/>
-        <rect x="42" y="${rockerY}" width="6" height="8" fill="${chrome}"/>
-        <rect x="276" y="${rockerY}" width="6" height="8" fill="${chrome}"/>
-        <rect x="42" y="${rockerY + 2}" width="6" height="2" fill="#e8b04b"/>
-        <rect x="276" y="${rockerY + 2}" width="6" height="2" fill="#a83232"/>
-        <rect x="40" y="${groundY}" width="246" height="3" fill="${dark}" opacity=".8"/>
-        ${pixelWheel(92, wheelY, wheel, hub, spoke)}
-        ${pixelWheel(240, wheelY, wheel, hub, spoke)}
+        <rect x="136" y="${roofY}" width="50" height="6" fill="${roof}"/>
+        <rect x="116" y="${aPillarY + 2}" width="24" height="14" fill="${glass}"/>
+        <rect x="140" y="${aPillarY + 2}" width="46" height="14" fill="${glass}"/>
+        <rect x="186" y="${aPillarY + 2}" width="30" height="14" fill="${body}"/>
+        <rect x="210" y="${aPillarY + 4}" width="16" height="12" fill="${glass}"/>
+        <rect x="80" y="${hoodY - 4}" width="36" height="4" fill="${body}"/>
+        <rect x="46" y="${hoodY}" width="70" height="4" fill="${body}"/>
+        <rect x="216" y="${rearDeckY + 2}" width="60" height="4" fill="${body}"/>
+        <rect x="46" y="${bodyTop}" width="230" height="10" fill="${body}"/>
+        <rect x="276" y="${bodyTop}" width="8" height="14" fill="${body}"/>
+        <rect x="36" y="${bodyTop + 8}" width="10" height="12" fill="${chrome}"/>
+        <rect x="38" y="${bodyTop - 2}" width="8" height="10" fill="#111827"/>
+        <rect x="42" y="${bodyTop}" width="4" height="6" fill="#fff8e7"/>
+        <rect x="280" y="${bodyTop + 2}" width="4" height="6" fill="#f25c54"/>
+        <rect x="282" y="${bodyTop + 8}" width="6" height="8" fill="${chrome}"/>
+        <rect x="46" y="${bodyTop + 10}" width="32" height="14" fill="${body}"/>
+        <rect x="106" y="${bodyTop + 10}" width="120" height="14" fill="${body}"/>
+        <rect x="254" y="${bodyTop + 10}" width="22" height="14" fill="${body}"/>
+        <rect x="46" y="${rockerY + 16}" width="230" height="4" fill="${chrome}"/>
+        <rect x="46" y="${rockerY + 20}" width="230" height="4" fill="${dark}" opacity="0.8"/>
+        ${pixelWheel(92, wheelY + 2, wheel, hub, spoke)}
+        ${pixelWheel(240, wheelY + 2, wheel, hub, spoke)}
       </g>`;
         }
 
-        // Stage 4 — show car: shine highlights on hood + roof,
-        // brighter accent strip running the side trim.
         return `<g shape-rendering="crispEdges">
-        <rect x="42" y="${rockerY}" width="240" height="8" fill="${body}"/>
-        <rect x="42" y="${bodyTop}" width="240" height="8" fill="${body}"/>
-        <rect x="74" y="${fenderTop}" width="42" height="6" fill="${body}"/>
-        <rect x="46" y="${hoodY}" width="84" height="6" fill="${body}"/>
-        <rect x="82" y="${cowlBulgeY}" width="30" height="${hoodY - cowlBulgeY}" fill="${body}"/>
-        <rect x="120" y="${cowlY}" width="14" height="6" fill="${body}"/>
-        <rect x="138" y="${aPillarY}" width="10" height="${cowlY - aPillarY}" fill="${body}"/>
-        <rect x="148" y="${roofY}" width="62" height="4" fill="${roof}"/>
-        <rect x="210" y="${aPillarY}" width="10" height="${cowlY - aPillarY}" fill="${body}"/>
-        <rect x="220" y="${sailY}" width="60" height="${rearDeckY - sailY}" fill="${body}"/>
-        <rect x="240" y="${rearDeckY}" width="42" height="4" fill="${body}"/>
-        <rect x="132" y="${aPillarY + 4}" width="18" height="${cowlY - aPillarY - 4}" fill="${glass}"/>
-        <rect x="150" y="${roofY + 4}" width="58" height="${cowlY - roofY - 4}" fill="${glass}"/>
-        <rect x="212" y="${aPillarY + 4}" width="18" height="${cowlY - aPillarY - 4}" fill="${glass}"/>
-        <rect x="50" y="${rockerY + 8}" width="232" height="3" fill="${chrome}"/>
-        <rect x="42" y="${rockerY}" width="6" height="8" fill="${chrome}"/>
-        <rect x="276" y="${rockerY}" width="6" height="8" fill="${chrome}"/>
-        <rect x="42" y="${rockerY + 2}" width="6" height="3" fill="#ffcc00"/>
-        <rect x="276" y="${rockerY + 2}" width="6" height="3" fill="#f25c54"/>
-        <rect x="60" y="${hoodY + 1}" width="64" height="1" fill="#fff" opacity=".5"/>
-        <rect x="156" y="${roofY + 1}" width="48" height="1" fill="#fff" opacity=".55"/>
-        <rect x="40" y="${groundY}" width="246" height="3" fill="${dark}" opacity=".8"/>
-        ${pixelWheel(92, wheelY, wheel, hub, spoke)}
-        ${pixelWheel(240, wheelY, wheel, hub, spoke)}
+        <rect x="136" y="${roofY}" width="50" height="6" fill="${roof}"/>
+        <rect x="116" y="${aPillarY + 2}" width="24" height="14" fill="${glass}"/>
+        <rect x="140" y="${aPillarY + 2}" width="46" height="14" fill="${glass}"/>
+        <rect x="186" y="${aPillarY + 2}" width="30" height="14" fill="${body}"/>
+        <rect x="210" y="${aPillarY + 4}" width="16" height="12" fill="${glass}"/>
+        <rect x="80" y="${hoodY - 4}" width="36" height="4" fill="${body}"/>
+        <rect x="46" y="${hoodY}" width="70" height="4" fill="${body}"/>
+        <rect x="216" y="${rearDeckY + 2}" width="60" height="4" fill="${body}"/>
+        <rect x="46" y="${bodyTop}" width="230" height="10" fill="${body}"/>
+        <rect x="276" y="${bodyTop}" width="8" height="14" fill="${body}"/>
+        <rect x="36" y="${bodyTop + 8}" width="10" height="12" fill="${chrome}"/>
+        <rect x="38" y="${bodyTop - 2}" width="8" height="10" fill="#111827"/>
+        <rect x="42" y="${bodyTop}" width="4" height="6" fill="#fff8e7"/>
+        <rect x="280" y="${bodyTop + 2}" width="4" height="6" fill="#f25c54"/>
+        <rect x="282" y="${bodyTop + 8}" width="6" height="8" fill="${chrome}"/>
+        <rect x="46" y="${bodyTop + 10}" width="32" height="14" fill="${body}"/>
+        <rect x="106" y="${bodyTop + 10}" width="120" height="14" fill="${body}"/>
+        <rect x="254" y="${bodyTop + 10}" width="22" height="14" fill="${body}"/>
+        <rect x="46" y="${rockerY + 16}" width="230" height="4" fill="${chrome}"/>
+        <rect x="46" y="${rockerY + 20}" width="230" height="4" fill="${dark}" opacity="0.8"/>
+        <rect x="50" y="${hoodY - 3}" width="60" height="1" fill="#ffffff" opacity="0.4"/>
+        <rect x="140" y="${roofY + 1}" width="40" height="1" fill="#ffffff" opacity="0.4"/>
+        ${pixelWheel(92, wheelY + 2, wheel, hub, spoke)}
+        ${pixelWheel(240, wheelY + 2, wheel, hub, spoke)}
       </g>`;
       }
 
