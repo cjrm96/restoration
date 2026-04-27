@@ -10554,12 +10554,12 @@ body{position:relative!important;display:block!important;}
           <div class="cinematic-line"><div class="hero-kicker">ARRIVAL</div><div class="small" style="color:var(--text);line-height:1.6">${r.arrivalLine || ""}</div></div>
           <div class="cinematic-line"><div class="hero-kicker">JUDGING</div><div class="small" style="color:var(--text);line-height:1.6">${r.judgingLine || ""}</div></div>
           <div class='taped-note' style='margin-top:4px'><div class='feed-kicker'>NIGHT OF THE SHOW</div><div class='feed-text'>${vibeLine}</div>${buckVibe ? `<div class='feed-meta'>${buckVibe}</div>` : ""}</div>`;
-        return `<div class="grid-main"><div>${panel(
+        return `<div class="grid-main"><div>${panel("Show Story", storyBody, "How the night played out", "#a79a86")}${panel(
           placeLabel(r.place) + " · " + r.show,
           heroBody,
           "",
           placeColor,
-        )}${panel(r.tier === "Cars & Coffee" ? "Crowd Pleasers" : "Final Standings", standingsBody, "", "#7da0c2")}${panel("Show Story", storyBody, "How the night played out", "#a79a86")}</div><div>${renderUpcomingBar()}${panel("After the Show", `${button("Back to Garage", "state.postShowWeekLocked=false; setView('garage')", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "Return to the garage and keep building.", "#d8a24f")}</div></div>`;
+        )}${panel(r.tier === "Cars & Coffee" ? "Crowd Pleasers" : "Final Standings", standingsBody, "", "#7da0c2")}</div><div>${renderUpcomingBar()}${panel("After the Show", `${button("Back to Garage", "state.postShowWeekLocked=false; setView('garage')", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "Return to the garage and keep building.", "#d8a24f")}</div></div>`;
       }
 
       function renderDealership() {
