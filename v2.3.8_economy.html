@@ -2994,7 +2994,7 @@
           tier: "Local",
           fee: 35,
           fuel: 4,
-          prizes: [300, 150, 75, 35, 15],
+          prizes: [600, 300, 150, 70, 30],
           minScore: 0,
           followers: [220, 140, 80, 40, 18],
           cadence: 2,
@@ -3005,7 +3005,7 @@
           tier: "Regional",
           fee: 75,
           fuel: 12,
-          prizes: [1000, 400, 200, 100, 50],
+          prizes: [2000, 800, 400, 200, 100],
           minScore: 40,
           followers: [1500, 1000, 600, 300, 150],
           cadence: 4,
@@ -3016,7 +3016,7 @@
           tier: "National",
           fee: 300,
           fuel: 35,
-          prizes: [10000, 4000, 2000, 1000, 500],
+          prizes: [20000, 8000, 4000, 2000, 1000],
           minScore: 70,
           followers: [12000, 8000, 5000, 2500, 1000],
           cadence: 1,
@@ -5031,9 +5031,9 @@
         { min: 1000, chance: 0.18, minCash: 75, maxCash: 150, label: "local parts sponsor shoutout" },
       ];
       const CREATOR_POSTS = {
-        insta: { label: "Snapgram Pic", emoji: "📸", cashRate: 0.012, cashMin: 2, cashCap: 400, followerFlat: 8, followerRate: 0.01, followerCap: 250, moneyCost: 0, fuelCost: 0, desc: "Quick phone shot from the garage." },
-        reel:  { label: "CarTok Clip", emoji: "🎬", cashRate: 0.035, cashMin: 6, cashCap: 1200, followerFlat: 22, followerRate: 0.018, followerCap: 700, moneyCost: 10, fuelCost: 0, desc: "Short action clip — revs, reveals, build moments." },
-        youtube:{ label: "MotorTube Video", emoji: "▶️", cashRate: 0.085, cashMin: 15, cashCap: 3000, followerFlat: 60, followerRate: 0.028, followerCap: 2400, moneyCost: 0, fuelCost: 2, desc: "Long form build log — requires a roadworthy car and b-roll drive." },
+        insta: { label: "Snapgram Pic", emoji: "📸", cashRate: 0.012, cashMin: 2, cashCap: 400, followerFlat: 12, followerRate: 0.02, followerCap: 500, moneyCost: 0, fuelCost: 0, desc: "Quick phone shot from the garage." },
+        reel:  { label: "CarTok Clip", emoji: "🎬", cashRate: 0.035, cashMin: 6, cashCap: 1200, followerFlat: 33, followerRate: 0.036, followerCap: 1400, moneyCost: 10, fuelCost: 0, desc: "Short action clip — revs, reveals, build moments." },
+        youtube:{ label: "MotorTube Video", emoji: "▶️", cashRate: 0.085, cashMin: 15, cashCap: 3000, followerFlat: 90, followerRate: 0.056, followerCap: 4800, moneyCost: 0, fuelCost: 2, desc: "Long form build log — requires a roadworthy car and b-roll drive." },
       };
       const BRAND_DEAL_BRANDS = [
         "RevLine Auto Parts",
@@ -6326,7 +6326,12 @@
       function maybeGenerateMarketplaceOffer(rollChance = 0.68) {
         if (modalBusy()) return false;
         const listed = state.partsInventory.filter((i) => i.listed && !i.sold);
-        if (!listed.length || Math.random() > rollChance) return false;
+        if (!listed.length) return false;
+        // Bigger stash on the market = more eyeballs per tick. Each
+        // listing adds 4% to the roll, capped at 95% so there's still
+        // an occasional quiet tick.
+        const scaledChance = Math.min(0.95, rollChance + listed.length * 0.04);
+        if (Math.random() > scaledChance) return false;
         const item = listed[Math.floor(Math.random() * listed.length)];
         const buckEligible =
           state.buck &&
@@ -11118,7 +11123,7 @@ body{position:relative!important;display:block!important;}
         }
         marketplacePingTimer = setTimeout(
           runMarketplacePingTick,
-          document.hidden ? 240000 : 45000,
+          document.hidden ? 240000 : 25000,
         );
       }
 
