@@ -441,11 +441,19 @@
         max-height: calc(100vh - 32px);
         overflow-y: auto;
         overscroll-behavior: contain;
-        background: linear-gradient(180deg, #2b241e 0%, #1d1814 100%);
-        border: 1px solid #5a4b3d;
+        background:
+          radial-gradient(
+            ellipse at top,
+            rgba(209, 154, 63, 0.12) 0%,
+            transparent 60%
+          ),
+          linear-gradient(180deg, #2b241e 0%, #1d1814 100%);
+        border: 1px solid var(--gold-soft);
         border-radius: 12px;
         padding: 20px;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        box-shadow:
+          0 0 0 1px rgba(209, 154, 63, 0.14) inset,
+          0 20px 50px rgba(0, 0, 0, 0.45);
       }
       .close-x {
         background: none;
