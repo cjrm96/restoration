@@ -9216,25 +9216,31 @@
           .replace(/>/g, "&gt;");
       }
 
-      function normalizeBackdropSrcdoc(srcdoc, scale = 1, yOffset = 0) {
+      function normalizeBackdropSrcdoc(srcdoc) {
         if (!srcdoc) return "";
+        // Make the scene fill the iframe edge-to-edge and force the inner
+        // SVG into "cover" (xMidYMid slice) aspect-ratio handling so the
+        // backdrop fills any shell width without letterbox bars on the
+        // sides — at the cost of cropping equal slivers from left/right
+        // when the shell is narrower than the scene's 700×240 aspect.
         const shell = `
 <style id="cg-backdrop-normalize">
 html,body{margin:0!important;width:100%!important;height:100%!important;overflow:hidden!important;background:#0f0c0a!important;}
 body{position:relative!important;display:block!important;}
-.scene{position:absolute!important;left:50%!important;bottom:${yOffset}px!important;top:auto!important;transform:translateX(-50%) scale(${scale})!important;transform-origin:center bottom!important;margin:0!important;box-sizing:border-box!important;max-width:none!important;max-height:none!important;}
+.scene{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;transform:none!important;margin:0!important;box-sizing:border-box!important;max-width:none!important;max-height:none!important;background:transparent!important;}
+.scene > svg{width:100%!important;height:100%!important;display:block!important;}
 </style>
+<script>
+addEventListener("DOMContentLoaded",function(){
+  document.querySelectorAll(".scene svg").forEach(function(s){
+    s.setAttribute("preserveAspectRatio","xMidYMid slice");
+  });
+});
+<\/script>
 `;
         return srcdoc.replace(/<\/head>/i, `${shell}</head>`);
       }
 
-      const _workspaceBackdropConfig = {
-        curb: { scale: 0.86, yOffset: 0 },
-        carport: { scale: 0.86, yOffset: 2 },
-        storage: { scale: 0.86, yOffset: 2 },
-        garage: { scale: 0.86, yOffset: 2 },
-        warehouse: { scale: 0.86, yOffset: 2 },
-      };
       const _backdropCache = Object.create(null);
 
       function workspaceBackdropFrame() {
@@ -9248,17 +9254,12 @@ body{position:relative!important;display:block!important;}
       }
 
       function _buildBackdropEntry(kind, key) {
-        let srcdoc, scale, yOffset, title;
+        let srcdoc, title;
         if (kind === "workspace") {
           srcdoc = WORKSPACE_ART_SRCDOC[key] || "";
-          const cfg = _workspaceBackdropConfig[key] || { scale: 0.86, yOffset: 0 };
-          scale = cfg.scale;
-          yOffset = cfg.yOffset;
           title = `${key} backdrop`;
         } else if (kind === "show") {
           srcdoc = SHOW_ART_SRCDOC[key] || "";
-          scale = 0.86;
-          yOffset = 0;
           title = `${key} show backdrop`;
         }
         if (!srcdoc) return null;
@@ -9268,7 +9269,7 @@ body{position:relative!important;display:block!important;}
         iframe.setAttribute("aria-hidden", "true");
         iframe.setAttribute("tabindex", "-1");
         iframe.loading = "eager";
-        iframe.srcdoc = normalizeBackdropSrcdoc(srcdoc, scale, yOffset);
+        iframe.srcdoc = normalizeBackdropSrcdoc(srcdoc);
         const shade = document.createElement("div");
         shade.className = "art-backdrop-shade";
         return { iframe, shade };
