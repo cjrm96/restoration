@@ -1687,49 +1687,6 @@
         color: #7a6e5e;
         margin-top: 14px;
       }
-      .garage-sign {
-        position: relative;
-        margin-bottom: 14px;
-        padding: 14px 16px;
-        background: linear-gradient(180deg, #3b2c1f 0%, #24180f 100%);
-        border: 1px solid #7d5c37;
-        border-radius: 10px;
-        box-shadow:
-          0 10px 28px rgba(0, 0, 0, 0.28),
-          inset 0 1px 0 rgba(255, 255, 255, 0.04);
-      }
-      .garage-sign:before,
-      .garage-sign:after {
-        content: "";
-        position: absolute;
-        top: -8px;
-        width: 12px;
-        height: 12px;
-        border-radius: 999px;
-        background: #1a1512;
-        border: 1px solid #5b4832;
-      }
-      .garage-sign:before {
-        left: 18px;
-      }
-      .garage-sign:after {
-        right: 18px;
-      }
-      .garage-sign .headline {
-        color: var(--text-bright);
-        font-size: 14px;
-        font-weight: bold;
-        letter-spacing: 0.9px;
-      }
-      .garage-sign .sub {
-        color: #baa78b;
-        font-size: 11px;
-        margin-top: 5px;
-        line-height: 1.5;
-      }
-      .tilt-a {
-        transform: rotate(-0.35deg);
-      }
       .feed-item {
         background: #181410;
         border: 1px solid #41372f;
@@ -5953,11 +5910,6 @@
         return items.slice(0, 5);
       }
 
-      function renderGarageSign(car = currentCar()) {
-        if (!car) return "";
-        return `<div class="garage-sign tilt-a"><div class="headline">${car.year} ${car.make} ${car.model} · BUILT AFTER HOURS</div><div class="sub">${getWorkspaceFlavor()} Late-night parking lot deals, wrong parts, blocked numbers, and just enough confidence to keep the ratchet moving.</div></div>`;
-      }
-
 
 
       function maybeTriggerRivalBeat() {
@@ -9207,11 +9159,6 @@ body{position:relative!important;display:block!important;}
         return srcdoc.replace(/<\/head>/i, `${shell}</head>`);
       }
 
-      function artBackdropFrame(srcdoc, title, scale = 1, yOffset = 0) {
-        if (!srcdoc) return "";
-        return `<iframe class="art-backdrop-frame" title="${title || "Scene backdrop"}" aria-hidden="true" tabindex="-1" loading="eager" srcdoc="${escapeHtmlAttr(normalizeBackdropSrcdoc(srcdoc, scale, yOffset))}"></iframe><div class="art-backdrop-shade"></div>`;
-      }
-
       const _workspaceBackdropConfig = {
         curb: { scale: 0.86, yOffset: 0 },
         carport: { scale: 0.86, yOffset: 2 },
@@ -10060,38 +10007,6 @@ body{position:relative!important;display:block!important;}
         root.innerHTML = `<div class="modal"><div class="modal-card" style="max-width:500px"><div style="text-align:center;font-size:40px;margin-bottom:8px">💬</div><div style="color:#7da0c2;font-weight:bold;font-size:22px;text-align:center;margin-bottom:8px">Marketplace Message</div><div class="small muted" style="text-align:center;margin-bottom:14px">${offer.buyer || "Buyer"} wants ${item.name}</div><div class="info-box" style="margin-bottom:10px"><div class="tiny muted" style="margin-bottom:6px">Message</div><div class="small" style="color:var(--text);line-height:1.6">"${offer.message}"</div></div><div class="info-box" style="margin-bottom:14px"><div class="tiny" style="color:var(--gold-soft);font-weight:bold;letter-spacing:1px;margin-bottom:6px">THE NUMBERS</div>${compareRow("Their offer", offerAmount, verdict.color)}${compareRow("Your asking price", asking)}${baseline > 0 ? compareRow("Baseline value", baseline, "var(--text-dim)") : ""}<div style="margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.08);text-align:center"><div class="small" style="color:${verdict.color};font-weight:bold">${verdict.label}</div>${verdict.tone ? `<div class="tiny muted" style="margin-top:3px">${verdict.tone}</div>` : ""}</div></div><div class="btn-row two">${button(`Take the deal · $${fmt(offerAmount)}`, "respondMarketplaceOffer(true)", false, "", "width:100%")}${button("Pass for now", "respondMarketplaceOffer(false)", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:var(--text)")}</div><div class="tiny muted" style="margin-top:12px;text-align:center">Buyer type: <span style="color:var(--gold)">${offer.buyerType}</span> · Garage Lore perk: ${Math.round(garageLoreDiscount() * 100)}% better offers</div></div></div>`;
         return true;
       }
-      function renderFineTuningPanel(car) {
-        if (!car) return "";
-        const eligible = CATS.map((cat) => ({ cat, ...getCategoryCompletion(car, cat) }))
-          .filter((row) => row && row.allDone);
-        if (!eligible.length) return "";
-        const remainingPolishes = Math.max(
-          0,
-          POLISH_PER_WEEK - (state.polishesThisWeek || 0),
-        );
-        const allMaxed = eligible.every((row) => row.current >= 100);
-        const rows = eligible
-          .map((row) => {
-            const action = POLISH_ACTIONS[row.cat] || { verb: "Polish", emoji: "✨" };
-            const maxed = row.current >= 100;
-            const blocked =
-              maxed ||
-              remainingPolishes <= 0 ||
-              state.money < POLISH_COST;
-            return `<div class="flex between center" style="gap:10px;padding:8px 0;border-bottom:1px dashed #3a3128"><div><div class="small" style="color:var(--text-bright);font-weight:bold">${action.emoji} ${action.verb}</div><div class="tiny muted">${CAT_LABELS[row.cat]} · ${row.current}/100${maxed ? " · maxed" : ""}</div></div><div style="min-width:120px">${button(maxed ? "Maxed" : `+${POLISH_GAIN} · $${POLISH_COST}`, `polishCategory('${row.cat}')`, blocked, "", "width:100%;padding:6px 8px;font-size:11px")}</div></div>`;
-          })
-          .join("");
-        const subtitle = allMaxed
-          ? "Every completed category is maxed out. Build is concours-clean."
-          : `${remainingPolishes}/${POLISH_PER_WEEK} fine-tuning sessions left this week. Pre-show pass.`;
-        return panel(
-          "Fine Tuning",
-          rows,
-          subtitle,
-          "#a984dd",
-        );
-      }
-
       function renderRestorationPanel(car) {
         const tasks = activeTasksForCar(car.id);
         if (!tasks.length)
