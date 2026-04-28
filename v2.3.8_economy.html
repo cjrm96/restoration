@@ -3116,6 +3116,7 @@
           followers: [12000, 8000, 5000, 2500, 1000],
           cadence: 1,
           onDemand: true,
+          postEntryCooldown: 4,
         },
       ];
 
@@ -5280,6 +5281,7 @@
           gloveBoxFound: false,
           bribeActive: false,
           noticeQueue: [],
+          nextShowAvailableWeek: {},
           tickerCollapsed: false,
           postShowWeekLocked: false,
           starterHelpReceived: false,
@@ -6675,12 +6677,18 @@
 
       function getCurrentShows() {
         return SHOWS_MASTER.map((show) => {
-          // On-demand shows (National) aren't on a fixed schedule — once the
-          // player meets the prerequisites, the show is available every week.
-          // showProgressRequirement still gates entry until those reqs are met.
+          // On-demand shows aren't on a fixed schedule — once the player
+          // meets the prerequisites the show is available, with an optional
+          // postEntryCooldown that gates re-entry for N weeks after each
+          // run (so e.g. National can't be repeated week-after-week).
+          // showProgressRequirement still gates first entry until reqs are met.
           let weeksUntil;
           if (show.onDemand) {
-            weeksUntil = 0;
+            const cooldownEnd =
+              (state.nextShowAvailableWeek &&
+                state.nextShowAvailableWeek[show.id]) ||
+              0;
+            weeksUntil = Math.max(0, cooldownEnd - state.week);
           } else {
             const offset = state.week % show.cadence;
             weeksUntil = offset === 0 ? 0 : show.cadence - offset;
@@ -6780,6 +6788,13 @@
             }
           });
           ensureArray("noticeQueue");
+          if (
+            !state.nextShowAvailableWeek ||
+            typeof state.nextShowAvailableWeek !== "object" ||
+            Array.isArray(state.nextShowAvailableWeek)
+          ) {
+            state.nextShowAvailableWeek = {};
+          }
           ensureArray("eventQueue");
           ensureArray("history");
           ensureArray("rivalFeed");
@@ -8230,6 +8245,11 @@
         state.lastShowTier = show.tier;
         state.lastShowPlace = place;
         state.enteredShowsThisWeek.push(show.id);
+        if (show.postEntryCooldown) {
+          if (!state.nextShowAvailableWeek) state.nextShowAvailableWeek = {};
+          state.nextShowAvailableWeek[show.id] =
+            state.week + show.postEntryCooldown;
+        }
 
         state.seasonStats.moneyEarned += totalEarned - entryFee;
         state.seasonStats.showsEntered++;
@@ -10596,7 +10616,7 @@ addEventListener("DOMContentLoaded",function(){
               const checklistMarkup = `<div class="info-box" style="margin-bottom:10px;background:rgba(0,0,0,0.18);padding:10px 12px"><div class="tiny" style="color:var(--gold-soft);letter-spacing:1.5px;font-weight:bold;margin-bottom:6px">${show.tier === "Cars & Coffee" ? "PREP" : "SHOW PREP"}</div>${checks.map((c) => `<div class="tiny" style="line-height:1.7;color:${c.ok ? "#9fd18e" : "#e07a7a"}">${c.ok ? "✓ " + c.pass : "✗ " + c.fail}</div>`).join("")}</div>`;
               return panel(
                 show.name,
-                `<div class="show-prizes" style="margin-bottom:10px">${show.tier === "Cars & Coffee" ? `<div class="show-prize">No judges, no places</div><div class="show-prize">Free part raffle for showing up</div>` : show.prizes.map((p, i) => `<div class="show-prize">${["1st", "2nd", "3rd", "4th", "5th"][i]} · $${p}</div>`).join("")}</div>${show.enteredThisWeek ? `<div class="tiny warn" style="margin-bottom:8px">Already entered this week</div>` : show.weeksUntil === 0 ? `<div class="tiny good" style="margin-bottom:8px">Happening this week</div>` : `<div class="tiny muted" style="margin-bottom:8px">Starts in ${show.weeksUntil} week(s)</div>`}${rivalLine}${localSponsor ? `<div class="tiny good" style="margin-bottom:8px">${localSponsor.name} covers Local entry fee.</div>` : ""}${bonus > 0 && show.tier !== "Cars & Coffee" ? `<div class="tiny good" style="margin-bottom:8px">Sponsor bonus: +$${bonus}</div>` : ""}${checklistMarkup}${button(show.tier === "Cars & Coffee" ? "Roll Up And Hang Out" : `Roll In And Face The Opinions · $${fmt(entryFee)}`, `beginShowEntry(${show.id})`, off, "", "width:100%")}`,
+                `<div class="show-prizes" style="margin-bottom:10px">${show.tier === "Cars & Coffee" ? `<div class="show-prize">No judges, no places</div><div class="show-prize">Free part raffle for showing up</div>` : show.prizes.map((p, i) => `<div class="show-prize">${["1st", "2nd", "3rd", "4th", "5th"][i]} · $${p}</div>`).join("")}</div>${show.enteredThisWeek ? `<div class="tiny warn" style="margin-bottom:8px">Already entered this week</div>` : show.weeksUntil === 0 ? `<div class="tiny good" style="margin-bottom:8px">Happening this week</div>` : `<div class="tiny muted" style="margin-bottom:8px">${show.onDemand ? "Next slot in" : "Starts in"} ${show.weeksUntil} week(s)</div>`}${rivalLine}${localSponsor ? `<div class="tiny good" style="margin-bottom:8px">${localSponsor.name} covers Local entry fee.</div>` : ""}${bonus > 0 && show.tier !== "Cars & Coffee" ? `<div class="tiny good" style="margin-bottom:8px">Sponsor bonus: +$${bonus}</div>` : ""}${checklistMarkup}${button(show.tier === "Cars & Coffee" ? "Roll Up And Hang Out" : `Roll In And Face The Opinions · $${fmt(entryFee)}`, `beginShowEntry(${show.id})`, off, "", "width:100%")}`,
                 `${show.tier} · ${show.tier === "Cars & Coffee" ? "casual meetup" : `base entry $${fmt(show.fee)}`} · fuel ${fuelNeed} gal`,
                 tc,
               );
