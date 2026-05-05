@@ -2086,7 +2086,6 @@
             <div class="chip fuel" id="fuelChip"></div>
             <div class="chip followers" id="followersChip"></div>
             <div class="chip week" id="weekChip"></div>
-            <div class="chip pay" id="payChip"></div>
             <button class="btn" id="openStoreBtn">Bank Loan</button>
             <button
               class="btn"
@@ -8717,18 +8716,10 @@
           totalLoan > 0
             ? chalkRow("Loan Balance", `$${fmt(totalLoan)}`, "warn")
             : chalkRow("Loan", "None");
-        const moneyClass = state.lastMoneyDelta >= 0 ? "good" : "bad";
-        const moneyLine = state.lastMoneyReason
-          ? chalkRow(
-              "Last Money Move",
-              `${state.lastMoneyDelta >= 0 ? "+" : "-"}$${fmt(Math.abs(state.lastMoneyDelta))}`,
-              moneyClass,
-            )
-          : "";
         return panel(
           "Upcoming",
-          `${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}${chalkRow("Paycheck", `${PAYCHECK_CYCLE - state.paycheckProgress} week(s)`)}${chalkRow("Next Event", nextShowText, nextShow.weeksUntil === 0 ? "good" : "warn")}${loanLine}${moneyLine}${state.lastMoneyReason ? `<div class="tiny muted" style="margin-top:4px">${state.lastMoneyReason}</div>` : ""}`,
-          "Compact season timeline",
+          `${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}${chalkRow("Paycheck", `${PAYCHECK_CYCLE - state.paycheckProgress} week(s)`)}${chalkRow("Next Event", nextShowText, nextShow.weeksUntil === 0 ? "good" : "warn")}${loanLine}`,
+          "",
           "#f5efe0",
           "chalkboard",
         );
@@ -11099,8 +11090,6 @@ addEventListener("DOMContentLoaded",function(){
             : `${seasonPhase.remaining} wk${seasonPhase.remaining === 1 ? "" : "s"} until season end`;
         getEl("weekChip").textContent =
           `📅 Wk ${state.week} · ${seasonPhase.phase} · ${remainingTxt}`;
-        getEl("payChip").textContent =
-          `💵 ${PAYCHECK_CYCLE - state.paycheckProgress} weeks until paycheck`;
         const advanceWeekTopBtn = getEl("advanceWeekTopBtn");
         if (advanceWeekTopBtn) {
           const advanceBlocked = !!(
