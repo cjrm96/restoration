@@ -1851,6 +1851,441 @@
         color: #a9b2a3;
         font-style: italic;
       }
+
+      /* ── Clipboard (Shop Notes) ── */
+      .panel.clipboard {
+        background:
+          linear-gradient(
+            to right,
+            transparent 0,
+            transparent 22px,
+            rgba(196, 109, 96, 0.65) 22px,
+            rgba(196, 109, 96, 0.65) 23px,
+            transparent 23px
+          ),
+          repeating-linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent 21px,
+            rgba(125, 160, 194, 0.28) 21px,
+            rgba(125, 160, 194, 0.28) 22px
+          ),
+          linear-gradient(180deg, #f5efe0 0%, #e8dcc1 100%);
+        border: 1px solid #b9a87f;
+        border-radius: 4px;
+        padding: 34px 16px 14px 32px;
+        position: relative;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+        font-family: "Courier New", "Lucida Console", monospace;
+        color: #2a2218;
+      }
+      .panel.clipboard::before {
+        content: "";
+        position: absolute;
+        top: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 70px;
+        height: 22px;
+        background: linear-gradient(
+          180deg,
+          #b9c0c7 0%,
+          #6f7780 60%,
+          #4f565d 100%
+        );
+        border-radius: 3px 3px 6px 6px;
+        box-shadow:
+          0 2px 4px rgba(0, 0, 0, 0.45),
+          inset 0 1px 0 rgba(255, 255, 255, 0.45),
+          inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+      }
+      .panel.clipboard::after {
+        content: "";
+        position: absolute;
+        top: -2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #d8dde2 0%, #6b7178 80%);
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+      }
+      .panel.clipboard .panel-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+      }
+      .panel.clipboard .panel-title {
+        color: #1d1611 !important;
+        font-family: inherit;
+        letter-spacing: 0.5px;
+      }
+      .panel.clipboard .panel-sub {
+        color: #5d503e;
+        font-family: inherit;
+      }
+      .panel.clipboard .row-k {
+        color: #4a3f30;
+        font-family: inherit;
+      }
+      .panel.clipboard .row-v {
+        color: #1d1611;
+        font-family: inherit;
+      }
+      .panel.clipboard .row-v.good {
+        color: #2f6b1f;
+      }
+      .panel.clipboard .row-v.warn {
+        color: #a36300;
+      }
+      .panel.clipboard .row-v.bad {
+        color: #8a2a1c;
+      }
+      .panel.clipboard .dots,
+      .panel.loan-form .dots,
+      .panel.loan-shark .dots,
+      .panel.pawn-ticket .dots {
+        display: none;
+      }
+      .panel.clipboard .dot {
+        background: #4a3f30;
+      }
+
+      /* ── Bank Loan: stamped form ── */
+      .panel.loan-form {
+        background: linear-gradient(180deg, #ecdfc1 0%, #d9c89e 100%);
+        border: 1px solid #6b5840;
+        border-radius: 3px;
+        padding: 16px 16px 14px;
+        font-family: "Courier New", monospace;
+        color: #2a1f12;
+        position: relative;
+        box-shadow:
+          inset 0 0 0 4px rgba(255, 255, 255, 0.35),
+          inset 0 0 0 5px #6b5840,
+          0 6px 16px rgba(0, 0, 0, 0.45);
+      }
+      .panel.loan-form::after {
+        content: "APPROVED";
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        font-family: "Courier New", monospace;
+        font-weight: bold;
+        font-size: 14px;
+        color: rgba(125, 60, 50, 0.32);
+        border: 2.5px solid rgba(125, 60, 50, 0.32);
+        padding: 3px 8px;
+        letter-spacing: 2px;
+        transform: rotate(-9deg);
+        pointer-events: none;
+        border-radius: 2px;
+      }
+      .panel.loan-form .panel-title {
+        color: #1d1208 !important;
+        font-family: inherit;
+        letter-spacing: 1px;
+      }
+      .panel.loan-form .panel-sub {
+        color: #5d4a30;
+        font-family: inherit;
+      }
+      .panel.loan-form .panel-header {
+        border-bottom: 1px dashed rgba(0, 0, 0, 0.3);
+      }
+      .panel.loan-form .row-k {
+        color: #5d4a30;
+        font-family: inherit;
+      }
+      .panel.loan-form .row-v {
+        color: #1d1208;
+        font-family: inherit;
+      }
+      .panel.loan-form .row-v.good {
+        color: #2f6b1f;
+      }
+      .panel.loan-form .row-v.warn {
+        color: #a36300;
+      }
+      .panel.loan-form .row-v.bad {
+        color: #8a2a1c;
+      }
+      .panel.loan-form .dot {
+        background: #5d4a30;
+      }
+
+      /* ── Loan Shark: torn diner napkin ── */
+      .panel.loan-shark {
+        background:
+          radial-gradient(
+            ellipse at 18% 28%,
+            rgba(170, 80, 40, 0.14),
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 82% 72%,
+            rgba(110, 70, 30, 0.2),
+            transparent 28%
+          ),
+          radial-gradient(
+            circle at 60% 18%,
+            rgba(80, 50, 20, 0.12),
+            transparent 18%
+          ),
+          linear-gradient(180deg, #efdfc4 0%, #ddc8a4 100%);
+        border: none;
+        padding: 20px 18px 16px;
+        color: #3a2410;
+        font-family: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
+        position: relative;
+        clip-path: polygon(
+          0% 4%,
+          5% 0%,
+          14% 3%,
+          24% 0%,
+          36% 2%,
+          50% 0%,
+          63% 3%,
+          76% 0%,
+          88% 4%,
+          100% 1%,
+          98% 18%,
+          100% 36%,
+          97% 55%,
+          100% 72%,
+          99% 90%,
+          100% 100%,
+          88% 97%,
+          72% 100%,
+          56% 96%,
+          38% 100%,
+          22% 97%,
+          8% 100%,
+          0% 96%,
+          2% 78%,
+          0% 60%,
+          3% 40%,
+          0% 20%
+        );
+        filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.45));
+      }
+      .panel.loan-shark .panel-title {
+        color: #3a1810 !important;
+        font-family: inherit;
+        font-size: 20px;
+      }
+      .panel.loan-shark .panel-sub {
+        color: #5d3220;
+        font-family: inherit;
+        font-style: italic;
+      }
+      .panel.loan-shark .panel-header {
+        border-bottom: 1px dashed rgba(0, 0, 0, 0.3);
+      }
+      .panel.loan-shark .row-k {
+        color: #4a2818;
+        font-family: inherit;
+        font-size: 14px;
+      }
+      .panel.loan-shark .row-v {
+        color: #2a1408;
+        font-family: inherit;
+        font-size: 14px;
+      }
+      .panel.loan-shark .row-v.good {
+        color: #2f6b1f;
+      }
+      .panel.loan-shark .row-v.warn {
+        color: #8a4f10;
+      }
+      .panel.loan-shark .row-v.bad {
+        color: #7a1c10;
+      }
+      .panel.loan-shark .dot {
+        background: #5d3220;
+      }
+
+      /* ── Pawn Ticket: kraft slip with dashed perforation ── */
+      .panel.pawn-ticket {
+        background:
+          repeating-linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent 21px,
+            rgba(0, 0, 0, 0.07) 21px,
+            rgba(0, 0, 0, 0.07) 22px
+          ),
+          linear-gradient(180deg, #d8b779 0%, #c19e5e 100%);
+        border: 2px dashed rgba(40, 20, 10, 0.55);
+        border-radius: 3px;
+        padding: 14px 18px 12px;
+        color: #2a1810;
+        font-family: "Courier New", monospace;
+        position: relative;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+      }
+      .panel.pawn-ticket::after {
+        content: "TICKET";
+        position: absolute;
+        top: 10px;
+        right: 14px;
+        background: rgba(122, 42, 34, 0.85);
+        color: #f5e9d8;
+        font-weight: bold;
+        font-family: "Courier New", monospace;
+        letter-spacing: 2px;
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 2px;
+        transform: rotate(2deg);
+      }
+      .panel.pawn-ticket .panel-title {
+        color: #2a1810 !important;
+        font-family: inherit;
+      }
+      .panel.pawn-ticket .panel-sub {
+        color: #4a2f18;
+        font-family: inherit;
+      }
+      .panel.pawn-ticket .panel-header {
+        border-bottom: 1px dashed rgba(0, 0, 0, 0.35);
+      }
+      .panel.pawn-ticket .row-k {
+        color: #4a2f18;
+        font-family: inherit;
+      }
+      .panel.pawn-ticket .row-v {
+        color: #1a0f08;
+        font-family: inherit;
+      }
+      .panel.pawn-ticket .row-v.good {
+        color: #2f6b1f;
+      }
+      .panel.pawn-ticket .row-v.warn {
+        color: #8a4f10;
+      }
+      .panel.pawn-ticket .row-v.bad {
+        color: #8a2a1c;
+      }
+      .panel.pawn-ticket .dot {
+        background: #4a2f18;
+      }
+
+      /* ── Cork board (Show Prep hero variant) ── */
+      .hero-panel.corkboard {
+        background:
+          radial-gradient(
+            circle at 18% 22%,
+            rgba(0, 0, 0, 0.09) 1px,
+            transparent 2px
+          ),
+          radial-gradient(
+            circle at 62% 68%,
+            rgba(0, 0, 0, 0.08) 1px,
+            transparent 2px
+          ),
+          radial-gradient(
+            circle at 82% 32%,
+            rgba(0, 0, 0, 0.06) 1px,
+            transparent 2px
+          ),
+          radial-gradient(
+            circle at 32% 82%,
+            rgba(0, 0, 0, 0.07) 1px,
+            transparent 2px
+          ),
+          radial-gradient(
+            circle at 88% 88%,
+            rgba(255, 255, 255, 0.05) 1px,
+            transparent 2px
+          ),
+          linear-gradient(180deg, #b88656 0%, #9d6c3f 100%);
+        background-size:
+          24px 24px,
+          30px 30px,
+          22px 22px,
+          26px 26px,
+          28px 28px,
+          100% 100%;
+        border: 6px solid #4a3320;
+        box-shadow:
+          0 0 0 1px #2c1d10,
+          inset 0 0 0 1px rgba(0, 0, 0, 0.3),
+          0 12px 36px rgba(0, 0, 0, 0.5);
+      }
+      .hero-panel.corkboard .hero-panel-kicker {
+        color: #f5e9d8;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
+      }
+      .hero-panel.corkboard .hero-panel-title {
+        color: #fffaeb;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+      }
+      .hero-panel.corkboard .hero-panel-sub {
+        color: #f0d8b2;
+      }
+
+      /* Show cards pinned to the cork */
+      .panel.show-card {
+        position: relative;
+        margin-top: 18px;
+      }
+      .panel.show-card::before {
+        content: "";
+        position: absolute;
+        top: -9px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 35% 30%,
+          #f08070 0%,
+          #c4453a 50%,
+          #7a1f15 100%
+        );
+        box-shadow:
+          0 2px 4px rgba(0, 0, 0, 0.55),
+          inset 0 -2px 3px rgba(0, 0, 0, 0.35);
+        z-index: 2;
+      }
+
+      /* ── Marketplace (phone-screen card style) ── */
+      .hero-panel.marketplace .feed-item {
+        background: #ffffff;
+        color: #050505;
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        border: none;
+        box-shadow:
+          0 1px 0 rgba(0, 0, 0, 0.06),
+          0 4px 14px rgba(0, 0, 0, 0.4);
+      }
+      .hero-panel.marketplace .feed-item .feed-kicker {
+        color: #1877f2;
+        font-size: 10px;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+      .hero-panel.marketplace .feed-item .feed-text {
+        color: #050505;
+        font-weight: 600;
+        font-size: 14px;
+        margin-top: 2px;
+      }
+      .hero-panel.marketplace .feed-item .feed-meta {
+        color: #65676b;
+        font-size: 12px;
+        margin-top: 4px;
+      }
+      .hero-panel.marketplace .feed-item .tiny.muted {
+        color: #65676b;
+      }
+      .hero-panel.marketplace .feed-item .small.muted {
+        color: #65676b;
+      }
     </style>
   </head>
   <body>
@@ -8685,9 +9120,9 @@
       function panel(title, body, subtitle = "", accent = "#c99842", extraClass = "") {
         return `<div class="panel ${extraClass}"><div class="panel-header"><div><div class="panel-title" style="color:${accent}">${title}</div>${subtitle ? `<div class="panel-sub">${subtitle}</div>` : ""}</div><div class="dots"><div class="dot"></div><div class="dot"></div></div></div>${body}</div>`;
       }
-      function heroPanel(kicker, title, sub, body, tone = "gold") {
+      function heroPanel(kicker, title, sub, body, tone = "gold", extraClass = "") {
         const toneCls = tone === "blue" ? "hero-blue" : "";
-        return `<div class="hero-panel ${toneCls}">${kicker ? `<div class="hero-panel-kicker">${kicker}</div>` : ""}${title ? `<div class="hero-panel-title">${title}</div>` : ""}${sub ? `<div class="hero-panel-sub">${sub}</div>` : ""}${body}</div>`;
+        return `<div class="hero-panel ${toneCls} ${extraClass}">${kicker ? `<div class="hero-panel-kicker">${kicker}</div>` : ""}${title ? `<div class="hero-panel-title">${title}</div>` : ""}${sub ? `<div class="hero-panel-sub">${sub}</div>` : ""}${body}</div>`;
       }
       function tab(label, active, onclick) {
         return `<button class="tab ${active ? "active" : ""}" onclick="${onclick}">${label}</button>`;
@@ -9981,7 +10416,7 @@ addEventListener("DOMContentLoaded",function(){
           root.innerHTML = "";
           return;
         }
-        root.innerHTML = `<div class="modal"><div class="modal-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">Borrow just enough to keep the build alive — or make a worse decision.</div>${panel("Bank Loan", `${chalkRow("Cash Now", "+$4,000", "good")}${chalkRow("Payday Hit", "-$400 every paycheck", "warn")}${state.bankLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.bankLoanBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $400", "payOffLoan('bank', 400)", state.money < Math.min(400, state.bankLoanBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.bankLoanBalance)}`, "payOffLoan('bank')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Bank Loan", "takeBankLoan()", false, "", "width:100%")}`, "Legit paperwork, standard pain.", "#7da0c2")}${panel("Loan Shark", `${chalkRow("Cash Now", "+$6,000", "good")}${chalkRow("You Owe", "$7,800 total", "bad")}${chalkRow("Payday Hit", "-$750 every paycheck", "bad")}${state.sharkLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.sharkLoanBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $750", "payOffLoan('shark', 750)", state.money < Math.min(750, state.sharkLoanBalance), "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}${button(`Pay Off $${fmt(state.sharkLoanBalance)}`, "payOffLoan('shark')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Shark Loan", "takeSharkLoan()", false, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "Fast money, ugly terms.", "#c46d60")}${panel("Tool Truck Tab", `${chalkRow("Cash Now", "+$3,500", "good")}${chalkRow("You Owe", "$3,600 total", "warn")}${chalkRow("Weekly Hit", "-$90 for 40 weeks", "warn")}${state.toolTruckBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.toolTruckBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $90", "payOffLoan('truck', 90)", state.money < Math.min(90, state.toolTruckBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.toolTruckBalance)}`, "payOffLoan('truck')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Open Tool Truck Tab", "takeToolTruckLoan()", false, "", "width:100%")}`, "Snap-it truck regular. Slow squeeze, low pressure.", "#c99842")}${state.weddingRingPawned && state.ringPawnBalance > 0 ? panel("Pawn Ticket", `${chalkRow("You Owe", `$${fmt(state.ringPawnBalance)}`, "bad")}${chalkRow("Weekly Hit", "-$50 weekly", "warn")}${chalkRow("Outstanding", `$${fmt(state.ringPawnBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $50", "payOffLoan('ring', 50)", state.money < Math.min(50, state.ringPawnBalance), "", "width:100%")}${button(`Pick Up Ring · $${fmt(state.ringPawnBalance)}`, "payOffLoan('ring')", state.money < state.ringPawnBalance, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}</div>`, "Get the ring back before the next anniversary. You know the drill.", "#a984dd") : ""}</div></div>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">Borrow just enough to keep the build alive — or make a worse decision.</div>${panel("Bank Loan", `${chalkRow("Cash Now", "+$4,000", "good")}${chalkRow("Payday Hit", "-$400 every paycheck", "warn")}${state.bankLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.bankLoanBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $400", "payOffLoan('bank', 400)", state.money < Math.min(400, state.bankLoanBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.bankLoanBalance)}`, "payOffLoan('bank')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Bank Loan", "takeBankLoan()", false, "", "width:100%")}`, "Legit paperwork, standard pain.", "#1d1208", "loan-form")}${panel("Loan Shark", `${chalkRow("Cash Now", "+$6,000", "good")}${chalkRow("You Owe", "$7,800 total", "bad")}${chalkRow("Payday Hit", "-$750 every paycheck", "bad")}${state.sharkLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.sharkLoanBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $750", "payOffLoan('shark', 750)", state.money < Math.min(750, state.sharkLoanBalance), "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}${button(`Pay Off $${fmt(state.sharkLoanBalance)}`, "payOffLoan('shark')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Shark Loan", "takeSharkLoan()", false, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "Fast money, ugly terms.", "#3a1810", "loan-shark")}${panel("Tool Truck Tab", `${chalkRow("Cash Now", "+$3,500", "good")}${chalkRow("You Owe", "$3,600 total", "warn")}${chalkRow("Weekly Hit", "-$90 for 40 weeks", "warn")}${state.toolTruckBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.toolTruckBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $90", "payOffLoan('truck', 90)", state.money < Math.min(90, state.toolTruckBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.toolTruckBalance)}`, "payOffLoan('truck')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Open Tool Truck Tab", "takeToolTruckLoan()", false, "", "width:100%")}`, "Snap-it truck regular. Slow squeeze, low pressure.", "#c99842")}${state.weddingRingPawned && state.ringPawnBalance > 0 ? panel("Pawn Ticket", `${chalkRow("You Owe", `$${fmt(state.ringPawnBalance)}`, "bad")}${chalkRow("Weekly Hit", "-$50 weekly", "warn")}${chalkRow("Outstanding", `$${fmt(state.ringPawnBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $50", "payOffLoan('ring', 50)", state.money < Math.min(50, state.ringPawnBalance), "", "width:100%")}${button(`Pick Up Ring · $${fmt(state.ringPawnBalance)}`, "payOffLoan('ring')", state.money < state.ringPawnBalance, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}</div>`, "Get the ring back before the next anniversary. You know the drill.", "#2a1810", "pawn-ticket") : ""}</div></div>`;
       }
 
       function renderTutorialModal() {
@@ -10601,7 +11036,7 @@ addEventListener("DOMContentLoaded",function(){
             }
             return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">⚠️</span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " ✓"} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " ✓"} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " ✓"}</div></div></div>`;
           })()}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 Free Budget part ready — tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${subcontent}`,
-        )}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#7da0c2")}</div></div>`;
+        )}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#1d1611", "clipboard")}</div></div>`;
       }
 
       function renderShows() {
@@ -10613,7 +11048,7 @@ addEventListener("DOMContentLoaded",function(){
           "Show Prep Board",
           "Load the truck, check the fuel, roll it out",
           "Every show the car runs is one more story on the build.",
-          `${carPreview(car)}${panel("Travel & Fuel", `<div class="info-box"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>Buy 5 Gal ($20)</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright)" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill Tank ($${fmt(fillAmount * FUEL_PRICE)})</button></div></div>`, "", "#7da0c2")}<div class="cards">${shows
+          `${carPreview(car)}${panel("Travel & Fuel", `<div class="info-box"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>Buy 5 Gal ($20)</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright)" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill Tank ($${fmt(fillAmount * FUEL_PRICE)})</button></div></div>`, "", "#7da0c2", "show-card")}<div class="cards">${shows
             .map((show) => {
               const progressReq = showProgressRequirement(show);
               const locked = getOverall(car) < show.minScore || !progressReq.ok;
@@ -10689,9 +11124,12 @@ addEventListener("DOMContentLoaded",function(){
                 `<div class="show-prizes" style="margin-bottom:10px">${show.tier === "Cars & Coffee" ? `<div class="show-prize">No judges, no places</div><div class="show-prize">Free part raffle for showing up</div>` : show.prizes.map((p, i) => `<div class="show-prize">${["1st", "2nd", "3rd", "4th", "5th"][i]} · $${p}</div>`).join("")}</div>${show.enteredThisWeek ? `<div class="tiny warn" style="margin-bottom:8px">Already entered this week</div>` : show.seasonClosed ? `<div class="tiny warn" style="margin-bottom:8px">Closed until next spring</div>` : show.weeksUntil === 0 ? `<div class="tiny good" style="margin-bottom:8px">${show.seasonWindow ? `Nationals open · closes after week ${show.seasonWindow.end}` : "Happening this week"}</div>` : `<div class="tiny muted" style="margin-bottom:8px">${show.seasonWindow ? `Opens week ${show.seasonWindow.start} · ${show.weeksUntil} week(s) out` : `Starts in ${show.weeksUntil} week(s)`}</div>`}${rivalLine}${localSponsor ? `<div class="tiny good" style="margin-bottom:8px">${localSponsor.name} covers Local entry fee.</div>` : ""}${bonus > 0 && show.tier !== "Cars & Coffee" ? `<div class="tiny good" style="margin-bottom:8px">Sponsor bonus: +$${bonus}</div>` : ""}${checklistMarkup}${button(show.tier === "Cars & Coffee" ? "Roll Up And Hang Out" : `Roll In And Face The Opinions · $${fmt(entryFee)}`, `beginShowEntry(${show.id})`, off, "", "width:100%")}`,
                 `${show.tier} · ${show.tier === "Cars & Coffee" ? "casual meetup" : `base entry $${fmt(show.fee)}`} · fuel ${fuelNeed} gal`,
                 tc,
+                "show-card",
               );
             })
             .join("")}</div>`,
+          "gold",
+          "corkboard",
         );
         const { nextShow, nextShowText } = getUpcomingSummary();
         const showNotes = panel(
@@ -10857,6 +11295,8 @@ addEventListener("DOMContentLoaded",function(){
         ${listedMarkup}
       </div>
     `,
+          "gold",
+          "marketplace",
         )}${panel(
           "Recent Buyers",
           `
@@ -10877,6 +11317,7 @@ addEventListener("DOMContentLoaded",function(){
       </div>
     `,
           "blue",
+          "marketplace",
         )}</div></div>`;
       }
 
