@@ -6190,7 +6190,7 @@
         const fakeCar = currentCar();
         const fakeRoadworthy = fakeCar && roadworthy(fakeCar);
         const fakeMarkup = !state.fakeFollowersBought
-          ? `<div class="info-box" style="background:rgba(80,80,80,0.12);border-color:rgba(140,140,140,0.45);margin-top:10px"><div class="small" style="color:var(--text-dim);font-weight:bold;margin-bottom:4px">💀 Shady follower vendor · slid into your DMs</div><div class="tiny" style="color:var(--text);margin-bottom:8px">"1,000 real-looking followers overnight, $200 cash. Nobody has to know." Don't tell your sponsors you bought fake followers — they definitely check this stuff.</div>${button(fakeRoadworthy ? "Buy 1,000 followers · $200" : "Need a roadworthy build first", "buyFakeFollowers()", !fakeRoadworthy || state.money < 200, "", "width:100%;background:#2c2c2c;border-color:#555;color:var(--text-bright)")}</div>`
+          ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border-color:rgba(196,109,96,0.4);margin-top:10px"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:4px">💀 Shady follower vendor · slid into your DMs</div><div class="tiny" style="color:var(--text);margin-bottom:8px">"1,000 real-looking followers overnight, $200 cash. Nobody has to know." Don't tell your sponsors you bought fake followers — they definitely check this stuff.</div>${button(fakeRoadworthy ? "Buy 1,000 followers · $200" : "Need a roadworthy build first", "buyFakeFollowers()", !fakeRoadworthy || state.money < 200, "", "width:100%;background:linear-gradient(180deg,#c97d70 0%,#8c4e44 100%);border-color:#d99a8f;color:#1a120a;font-weight:bold")}</div>`
           : "";
         const footer = already
           ? "Already dropped content this week."
