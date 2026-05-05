@@ -8657,7 +8657,7 @@
           : "";
         return panel(
           "Upcoming",
-          `${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}${chalkRow("Paycheck", `${PAYCHECK_CYCLE - state.paycheckProgress} week(s)`)}${chalkRow("Next Event", nextShowText, nextShow.weeksUntil === 0 ? "good" : "warn")}${chalkRow("Scene Rep", getReputationTitle(currentCar()))}${loanLine}${moneyLine}${state.lastMoneyReason ? `<div class="tiny muted" style="margin-top:4px">${state.lastMoneyReason}</div>` : ""}`,
+          `${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}${chalkRow("Paycheck", `${PAYCHECK_CYCLE - state.paycheckProgress} week(s)`)}${chalkRow("Next Event", nextShowText, nextShow.weeksUntil === 0 ? "good" : "warn")}${loanLine}${moneyLine}${state.lastMoneyReason ? `<div class="tiny muted" style="margin-top:4px">${state.lastMoneyReason}</div>` : ""}`,
           "Compact season timeline",
           "#7da0c2",
         );
