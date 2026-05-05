@@ -1781,6 +1781,76 @@
         font-weight: bold;
         color: var(--text-bright);
       }
+      .panel.chalkboard {
+        background:
+          radial-gradient(
+            ellipse at 22% 18%,
+            rgba(255, 255, 255, 0.05),
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse at 78% 82%,
+            rgba(255, 255, 255, 0.035),
+            transparent 55%
+          ),
+          radial-gradient(
+            ellipse at 60% 40%,
+            rgba(255, 255, 255, 0.02),
+            transparent 70%
+          ),
+          linear-gradient(180deg, #1f2e26 0%, #15201b 100%);
+        border: 1px solid #2c1d10;
+        box-shadow:
+          0 0 0 6px #4a3320,
+          0 0 0 7px #2c1d10,
+          0 8px 22px rgba(0, 0, 0, 0.5),
+          inset 0 0 60px rgba(0, 0, 0, 0.35);
+        font-family: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
+        margin: 4px 7px 22px;
+      }
+      .panel.chalkboard .panel-header {
+        border-bottom: 1px dashed rgba(245, 239, 224, 0.3);
+      }
+      .panel.chalkboard .panel-title {
+        color: #f5efe0 !important;
+        font-family: inherit;
+        font-size: 18px;
+        letter-spacing: 1px;
+        text-shadow: 0 0 1px rgba(255, 255, 255, 0.4);
+      }
+      .panel.chalkboard .panel-sub {
+        color: #b8c2b0;
+        font-style: italic;
+        font-family: inherit;
+      }
+      .panel.chalkboard .dot {
+        background: #d8d0bd;
+      }
+      .panel.chalkboard .row {
+        font-size: 13px;
+      }
+      .panel.chalkboard .row-k {
+        color: #d4ccb6;
+        font-family: inherit;
+      }
+      .panel.chalkboard .row-v {
+        color: #fffbe6;
+        font-family: inherit;
+        text-shadow: 0 0 1px rgba(255, 255, 255, 0.25);
+      }
+      .panel.chalkboard .row-v.good {
+        color: #b6e8a3;
+      }
+      .panel.chalkboard .row-v.warn {
+        color: #ffd07a;
+      }
+      .panel.chalkboard .row-v.bad {
+        color: #ff9d85;
+      }
+      .panel.chalkboard .tiny.muted {
+        color: #a9b2a3;
+        font-style: italic;
+      }
     </style>
   </head>
   <body>
@@ -6190,7 +6260,7 @@
         const fakeCar = currentCar();
         const fakeRoadworthy = fakeCar && roadworthy(fakeCar);
         const fakeMarkup = !state.fakeFollowersBought
-          ? `<div class="info-box" style="background:rgba(80,80,80,0.12);border-color:rgba(140,140,140,0.45);margin-top:10px"><div class="small" style="color:var(--text-dim);font-weight:bold;margin-bottom:4px">💀 Shady follower vendor · slid into your DMs</div><div class="tiny" style="color:var(--text);margin-bottom:8px">"1,000 real-looking followers overnight, $200 cash. Nobody has to know." Don't tell your sponsors you bought fake followers — they definitely check this stuff.</div>${button(fakeRoadworthy ? "Buy 1,000 followers · $200" : "Need a roadworthy build first", "buyFakeFollowers()", !fakeRoadworthy || state.money < 200, "", "width:100%;background:#2c2c2c;border-color:#555;color:var(--text-bright)")}</div>`
+          ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border-color:rgba(196,109,96,0.4);margin-top:10px"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:4px">💀 Shady follower vendor · slid into your DMs</div><div class="tiny" style="color:var(--text);margin-bottom:8px">"1,000 real-looking followers overnight, $200 cash. Nobody has to know." Don't tell your sponsors you bought fake followers — they definitely check this stuff.</div>${button(fakeRoadworthy ? "Buy 1,000 followers · $200" : "Need a roadworthy build first", "buyFakeFollowers()", !fakeRoadworthy || state.money < 200, "", "width:100%;background:linear-gradient(180deg,#c97d70 0%,#8c4e44 100%);border-color:#d99a8f;color:#1a120a;font-weight:bold")}</div>`
           : "";
         const footer = already
           ? "Already dropped content this week."
@@ -8613,12 +8683,12 @@
       /* ═══════════════════════════════════════════
      UI BUILDING BLOCKS
   ═══════════════════════════════════════════ */
-      function panel(title, body, subtitle = "", accent = "#c99842") {
-        return `<div class="panel"><div class="panel-header"><div><div class="panel-title" style="color:${accent}">${title}</div>${subtitle ? `<div class="panel-sub">${subtitle}</div>` : ""}</div><div class="dots"><div class="dot"></div><div class="dot"></div></div></div>${body}</div>`;
+      function panel(title, body, subtitle = "", accent = "#c99842", extraClass = "") {
+        return `<div class="panel ${extraClass}"><div class="panel-header"><div><div class="panel-title" style="color:${accent}">${title}</div>${subtitle ? `<div class="panel-sub">${subtitle}</div>` : ""}</div><div class="dots"><div class="dot"></div><div class="dot"></div></div></div>${body}</div>`;
       }
       function heroPanel(kicker, title, sub, body, tone = "gold") {
         const toneCls = tone === "blue" ? "hero-blue" : "";
-        return `<div class="hero-panel ${toneCls}"><div class="hero-panel-kicker">${kicker}</div><div class="hero-panel-title">${title}</div>${sub ? `<div class="hero-panel-sub">${sub}</div>` : ""}${body}</div>`;
+        return `<div class="hero-panel ${toneCls}">${kicker ? `<div class="hero-panel-kicker">${kicker}</div>` : ""}${title ? `<div class="hero-panel-title">${title}</div>` : ""}${sub ? `<div class="hero-panel-sub">${sub}</div>` : ""}${body}</div>`;
       }
       function tab(label, active, onclick) {
         return `<button class="tab ${active ? "active" : ""}" onclick="${onclick}">${label}</button>`;
@@ -8657,9 +8727,10 @@
           : "";
         return panel(
           "Upcoming",
-          `${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}${chalkRow("Paycheck", `${PAYCHECK_CYCLE - state.paycheckProgress} week(s)`)}${chalkRow("Next Event", nextShowText, nextShow.weeksUntil === 0 ? "good" : "warn")}${chalkRow("Scene Rep", getReputationTitle(currentCar()))}${loanLine}${moneyLine}${state.lastMoneyReason ? `<div class="tiny muted" style="margin-top:4px">${state.lastMoneyReason}</div>` : ""}`,
+          `${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}${chalkRow("Paycheck", `${PAYCHECK_CYCLE - state.paycheckProgress} week(s)`)}${chalkRow("Next Event", nextShowText, nextShow.weeksUntil === 0 ? "good" : "warn")}${loanLine}${moneyLine}${state.lastMoneyReason ? `<div class="tiny muted" style="margin-top:4px">${state.lastMoneyReason}</div>` : ""}`,
           "Compact season timeline",
-          "#7da0c2",
+          "#f5efe0",
+          "chalkboard",
         );
       }
 
@@ -10835,7 +10906,8 @@ addEventListener("DOMContentLoaded",function(){
 
       function renderCareer() {
         const activeCar = currentCar();
-        return `<div class="grid-main"><div>${activeCar ? renderHeroCallout("Social Media Hub", "All world, rival, marketplace, and posting interactions now run through one live scene board.", "WORLD INTERACTIONS") : ""}${renderFollowersTracker()}${activeCar ? renderUnifiedSocialFeed(activeCar, { showSponsors: false, showHistory: true }) : renderUnifiedSocialFeed(null, { showSponsors: false, showHistory: true })}${renderLegacyTeaser()}</div><div>${renderUpcomingBar()}${panel(
+        const socialHubBody = `${renderFollowersTracker()}${renderUnifiedSocialFeed(activeCar, { showSponsors: false, showHistory: true })}`;
+        return `<div class="grid-main"><div>${heroPanel("", "Social Media Hub", "", socialHubBody)}${renderLegacyTeaser()}</div><div>${renderUpcomingBar()}${panel(
           "Sponsor Watch",
           `${SPONSORS.map(
               (s) =>
