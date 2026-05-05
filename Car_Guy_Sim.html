@@ -8688,7 +8688,7 @@
       }
       function heroPanel(kicker, title, sub, body, tone = "gold") {
         const toneCls = tone === "blue" ? "hero-blue" : "";
-        return `<div class="hero-panel ${toneCls}"><div class="hero-panel-kicker">${kicker}</div><div class="hero-panel-title">${title}</div>${sub ? `<div class="hero-panel-sub">${sub}</div>` : ""}${body}</div>`;
+        return `<div class="hero-panel ${toneCls}">${kicker ? `<div class="hero-panel-kicker">${kicker}</div>` : ""}${title ? `<div class="hero-panel-title">${title}</div>` : ""}${sub ? `<div class="hero-panel-sub">${sub}</div>` : ""}${body}</div>`;
       }
       function tab(label, active, onclick) {
         return `<button class="tab ${active ? "active" : ""}" onclick="${onclick}">${label}</button>`;
@@ -10906,7 +10906,8 @@ addEventListener("DOMContentLoaded",function(){
 
       function renderCareer() {
         const activeCar = currentCar();
-        return `<div class="grid-main"><div>${activeCar ? renderHeroCallout("Social Media Hub", "All world, rival, marketplace, and posting interactions now run through one live scene board.", "WORLD INTERACTIONS") : ""}${renderFollowersTracker()}${activeCar ? renderUnifiedSocialFeed(activeCar, { showSponsors: false, showHistory: true }) : renderUnifiedSocialFeed(null, { showSponsors: false, showHistory: true })}${renderLegacyTeaser()}</div><div>${renderUpcomingBar()}${panel(
+        const socialHubBody = `${renderFollowersTracker()}${renderUnifiedSocialFeed(activeCar, { showSponsors: false, showHistory: true })}`;
+        return `<div class="grid-main"><div>${heroPanel("", "Social Media Hub", "", socialHubBody)}${renderLegacyTeaser()}</div><div>${renderUpcomingBar()}${panel(
           "Sponsor Watch",
           `${SPONSORS.map(
               (s) =>
