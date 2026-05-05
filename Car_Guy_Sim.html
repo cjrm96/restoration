@@ -170,48 +170,122 @@
       }
       .tabs,
       .car-tabs {
-        padding: 10px 14px;
+        padding: 12px 14px 14px;
         display: flex;
-        gap: 8px;
+        gap: 10px;
         overflow-x: auto;
-        border-bottom: 1px solid #40362d;
-        background: #241d17;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            transparent 0,
+            transparent 4px,
+            rgba(255, 255, 255, 0.012) 4px,
+            rgba(255, 255, 255, 0.012) 5px
+          ),
+          linear-gradient(180deg, #2a1d12 0%, #1a1108 100%);
+        border-bottom: 2px solid #4a3320;
+        box-shadow:
+          inset 0 -1px 0 rgba(217, 162, 79, 0.22),
+          0 2px 6px rgba(0, 0, 0, 0.4);
       }
       .car-tabs {
-        background: #201915;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            transparent 0,
+            transparent 4px,
+            rgba(255, 255, 255, 0.01) 4px,
+            rgba(255, 255, 255, 0.01) 5px
+          ),
+          linear-gradient(180deg, #221610 0%, #140d08 100%);
       }
       .tab {
-        padding: 10px 14px;
-        background: #312821;
-        color: #b2a48a;
-        border: 1px solid #4a3e34;
-        border-radius: 6px;
+        padding: 11px 20px 11px 20px;
+        background:
+          repeating-linear-gradient(
+            180deg,
+            transparent 0,
+            transparent 1px,
+            rgba(255, 255, 255, 0.04) 1px,
+            rgba(255, 255, 255, 0.04) 2px
+          ),
+          linear-gradient(180deg, #5a4a3a 0%, #3a2e22 100%);
+        color: #d8c8a8;
+        border: 1px solid #2a1d10;
+        border-radius: 3px;
         cursor: pointer;
+        font-family: "Courier New", "Lucida Console", monospace;
         font-weight: bold;
-        font-size: 12px;
+        font-size: 11px;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
         white-space: nowrap;
         position: relative;
-        transition: background 0.15s, border-color 0.15s, color 0.15s;
-      }
-      .tab.active {
-        background: #9c6f3d;
-        color: #fff7e0;
-        border-color: var(--gold);
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
         box-shadow:
-          inset 0 1px 0 rgba(255, 255, 255, 0.18),
-          0 0 0 1px rgba(217, 162, 79, 0.45),
-          0 2px 8px rgba(217, 162, 79, 0.35);
+          inset 0 1px 0 rgba(255, 255, 255, 0.12),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+          0 2px 4px rgba(0, 0, 0, 0.5);
+        transition:
+          filter 0.15s,
+          color 0.15s;
       }
-      .tab.active::after {
+      .tab::before,
+      .tab::after {
         content: "";
         position: absolute;
-        left: 14%;
-        right: 14%;
-        bottom: -7px;
-        height: 3px;
-        background: var(--gold);
-        border-radius: 2px;
-        box-shadow: 0 0 6px rgba(217, 162, 79, 0.7);
+        top: 4px;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 35% 30%,
+          #d8d2c4 0%,
+          #6e6657 70%
+        );
+        box-shadow:
+          0 0 0 0.5px rgba(0, 0, 0, 0.5),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      }
+      .tab::before {
+        left: 5px;
+      }
+      .tab::after {
+        right: 5px;
+      }
+      .tab:hover:not(.active) {
+        filter: brightness(1.1);
+        color: #f0e0c0;
+      }
+      .tab.active {
+        background:
+          repeating-linear-gradient(
+            180deg,
+            transparent 0,
+            transparent 1px,
+            rgba(255, 255, 255, 0.08) 1px,
+            rgba(255, 255, 255, 0.08) 2px
+          ),
+          linear-gradient(180deg, #d6a040 0%, #9a6e2c 100%);
+        color: #1a0f04;
+        border-color: #f4c863;
+        text-shadow: 0 1px 0 rgba(255, 235, 180, 0.45);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 235, 180, 0.7),
+          inset 0 -2px 4px rgba(80, 40, 10, 0.4),
+          0 0 12px rgba(217, 162, 79, 0.4),
+          0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+      .tab.active::before,
+      .tab.active::after {
+        background: radial-gradient(
+          circle at 35% 30%,
+          #fff5d0 0%,
+          #c69845 70%
+        );
+        box-shadow:
+          0 0 0 0.5px rgba(60, 30, 5, 0.5),
+          inset 0 1px 0 rgba(255, 245, 200, 0.6);
       }
       .content {
         min-height: calc(100vh - 180px);
@@ -1953,6 +2027,7 @@
       .panel.loan-shark .dots,
       .panel.pawn-ticket .dots,
       .panel.tool-truck .dots,
+      .panel.work-order .dots,
       .panel.chalkboard .dots {
         display: none;
       }
@@ -2258,6 +2333,86 @@
       }
       .panel.tool-truck .row-v.bad {
         color: #8a2a1c;
+      }
+
+      /* ── Work order: Active Restorations as a taped-up manila slip ── */
+      .panel.work-order {
+        background:
+          repeating-linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent 21px,
+            rgba(0, 0, 0, 0.05) 21px,
+            rgba(0, 0, 0, 0.05) 22px
+          ),
+          linear-gradient(180deg, #f0d990 0%, #e0c170 100%);
+        border: 1px solid #9c8540;
+        border-radius: 2px;
+        padding: 28px 16px 14px;
+        font-family: "Courier New", "Lucida Console", monospace;
+        color: #2a1d10;
+        position: relative;
+        margin-top: 20px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+      }
+      .panel.work-order::before,
+      .panel.work-order::after {
+        content: "";
+        position: absolute;
+        top: -10px;
+        width: 64px;
+        height: 18px;
+        background: rgba(255, 230, 200, 0.55);
+        border-left: 1px dashed rgba(0, 0, 0, 0.18);
+        border-right: 1px dashed rgba(0, 0, 0, 0.18);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+      }
+      .panel.work-order::before {
+        left: 16px;
+        transform: rotate(-3deg);
+      }
+      .panel.work-order::after {
+        right: 16px;
+        transform: rotate(2deg);
+      }
+      .panel.work-order .panel-header {
+        border-bottom: 1px dashed rgba(0, 0, 0, 0.3);
+      }
+      .panel.work-order .panel-title {
+        color: #1a0f08 !important;
+        font-family: inherit;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+      }
+      .panel.work-order .panel-sub {
+        color: #5d4a30;
+        font-family: inherit;
+      }
+      .panel.work-order .info-box {
+        background: rgba(255, 250, 235, 0.45);
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        color: #2a1d10;
+      }
+      .panel.work-order .small {
+        color: #1a0f08;
+      }
+      .panel.work-order .small.muted,
+      .panel.work-order .tiny.muted {
+        color: #5d4a30;
+      }
+      .panel.work-order .small.good {
+        color: #2f6b1f;
+      }
+      .panel.work-order .gauge-wrap {
+        background: rgba(0, 0, 0, 0.18);
+        border-color: rgba(0, 0, 0, 0.28);
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+      }
+      .panel.work-order .gauge-label {
+        color: #5d4a30;
+      }
+      .panel.work-order [style*="color:var(--text-bright)"] {
+        color: #1a0f08 !important;
       }
 
       /* ── Cork board (Show Prep hero variant) ── */
@@ -11111,7 +11266,8 @@ addEventListener("DOMContentLoaded",function(){
             "Active Restorations",
             `<div class="small muted">No active work orders. Start one in the Auto Shop.</div>`,
             "Real-time timers continue while offline.",
-            "#7da0c2",
+            "#1a0f08",
+            "work-order",
           );
         return panel(
           "Active Restorations",
@@ -11123,7 +11279,8 @@ addEventListener("DOMContentLoaded",function(){
             })
             .join("")}`,
           "Real-time timers continue while offline.",
-          "#7da0c2",
+          "#1a0f08",
+          "work-order",
         );
       }
 
