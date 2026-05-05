@@ -10898,7 +10898,7 @@ addEventListener("DOMContentLoaded",function(){
       function renderCareer() {
         const activeCar = currentCar();
         const socialHubBody = `${renderFollowersTracker()}${renderUnifiedSocialFeed(activeCar, { showSponsors: false, showHistory: true })}`;
-        return `<div class="grid-main"><div>${heroPanel("", "Social Media Hub", "", socialHubBody)}${renderLegacyTeaser()}</div><div>${renderUpcomingBar()}${panel(
+        return `<div class="grid-main"><div>${heroPanel("Social Media Hub", "", "", socialHubBody)}${renderLegacyTeaser()}</div><div>${renderUpcomingBar()}${panel(
           "Sponsor Watch",
           `${SPONSORS.map(
               (s) =>
