@@ -76,6 +76,241 @@
         z-index: 50;
         box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
       }
+      .topbar.topbar-ornate {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        padding: 0;
+        gap: 0;
+        background:
+          repeating-linear-gradient(
+            45deg,
+            transparent 0,
+            transparent 22px,
+            rgba(255, 255, 255, 0.012) 22px,
+            rgba(255, 255, 255, 0.012) 23px
+          ),
+          linear-gradient(180deg, #1f1610 0%, #14100a 100%);
+        border: 1px solid #2c1d10;
+        box-shadow:
+          inset 0 0 0 3px rgba(212, 160, 66, 0.55),
+          inset 0 0 0 4px #2c1d10,
+          0 6px 20px rgba(0, 0, 0, 0.55);
+      }
+      .topbar-ornate .topbar-row {
+        display: flex;
+        align-items: stretch;
+        padding: 8px 14px;
+        gap: 0;
+        flex-wrap: wrap;
+      }
+      .topbar-ornate .topbar-row-top {
+        border-bottom: 1px solid rgba(212, 160, 66, 0.32);
+      }
+      .topbar-ornate .topbar-row-bottom {
+        gap: 8px;
+        align-items: center;
+      }
+      .topbar-ornate .topbar-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 18px;
+        border-right: 1px solid rgba(212, 160, 66, 0.18);
+      }
+      .topbar-ornate .topbar-cell:last-child {
+        border-right: none;
+      }
+      .topbar-ornate .topbar-cell-body {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+      }
+      .topbar-ornate .topbar-icon {
+        font-size: 26px;
+        line-height: 1;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+      }
+      .topbar-ornate .topbar-label {
+        color: #d4a042;
+        font-size: 10px;
+        font-weight: bold;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+      }
+      .topbar-ornate .topbar-cell-value {
+        color: #f4e4c1;
+        font-size: 14px;
+        font-weight: bold;
+        white-space: nowrap;
+      }
+      .topbar-ornate .topbar-cell-cash-value {
+        color: #f4c863;
+        font-size: 26px;
+        font-weight: 900;
+        letter-spacing: 0.5px;
+        line-height: 1;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        white-space: nowrap;
+      }
+      .topbar-ornate .topbar-cash-side {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        font-size: 12px;
+        font-weight: bold;
+        white-space: nowrap;
+        margin-left: 4px;
+      }
+      .topbar-ornate .topbar-cash-side:empty {
+        display: none;
+      }
+      .topbar-ornate .topbar-cash-side .topbar-trend-line {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .topbar-ornate .topbar-cash-side .topbar-trend-tag {
+        font-size: 9px;
+        letter-spacing: 1.5px;
+        font-weight: bold;
+        color: #d6c3a4;
+      }
+      .topbar-ornate .topbar-cash-side .topbar-trend-tag.bad {
+        color: #e57b7b;
+      }
+      .topbar-ornate .topbar-stat-row {
+        display: flex;
+        gap: 18px;
+      }
+      .topbar-ornate .topbar-stat {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+      }
+      .topbar-ornate .topbar-stat-icon {
+        font-size: 22px;
+        line-height: 1;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+      }
+      .topbar-ornate .topbar-stat-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .topbar-ornate .topbar-stat-label {
+        color: #d4a042;
+        font-size: 9px;
+        font-weight: bold;
+        letter-spacing: 1.4px;
+      }
+      .topbar-ornate .topbar-stat-meta > #fuelChip,
+      .topbar-ornate .topbar-stat-meta > #followersChip {
+        color: #f4e4c1;
+        font-size: 13px;
+        font-weight: bold;
+      }
+      .topbar-ornate .topbar-cell-tier {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        background: linear-gradient(180deg, #2a1f15 0%, #14100a 100%);
+        border: 1px solid rgba(212, 160, 66, 0.45);
+        border-radius: 4px;
+        padding: 7px 14px;
+        box-shadow: inset 0 1px 0 rgba(255, 220, 160, 0.08);
+        white-space: nowrap;
+      }
+      .topbar-ornate .topbar-tier-label {
+        color: #d4a042;
+        font-size: 10px;
+        font-weight: bold;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+      }
+      .topbar-ornate .topbar-tier-value {
+        color: #f4c863;
+        font-size: 13px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+      .topbar-ornate .topbar-cell-activity {
+        flex: 1;
+        background: linear-gradient(180deg, #2a1f15 0%, #14100a 100%);
+        border: 1px solid rgba(212, 160, 66, 0.3);
+        border-radius: 4px;
+        padding: 9px 14px;
+        color: #b5a994;
+        font-size: 12px;
+        font-style: italic;
+        min-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .topbar-ornate .topbar-decision {
+        background: linear-gradient(
+          180deg,
+          #f4c863 0%,
+          #c69845 50%,
+          #8b6f30 100%
+        );
+        border: 2px solid #f4c863;
+        color: #1a1209;
+        font-weight: bold;
+        padding: 8px 18px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 235, 180, 0.7),
+          inset 0 -2px 4px rgba(70, 40, 10, 0.4),
+          0 3px 8px rgba(0, 0, 0, 0.5);
+        min-width: 130px;
+        text-align: center;
+        transition:
+          filter 0.1s,
+          transform 0.08s;
+      }
+      .topbar-ornate .topbar-decision:hover:not(:disabled) {
+        filter: brightness(1.08);
+      }
+      .topbar-ornate .topbar-decision:active:not(:disabled) {
+        transform: translateY(1px);
+      }
+      .topbar-ornate .topbar-decision:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        filter: grayscale(0.5);
+      }
+      .topbar-ornate .topbar-decision-label {
+        font-size: 10px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+      }
+      .topbar-ornate .topbar-decision-value {
+        font-size: 14px;
+        font-weight: 900;
+        letter-spacing: 0.5px;
+      }
+      .topbar-ornate .topbar-utility {
+        display: flex;
+        gap: 6px;
+        margin-left: 4px;
+      }
+      .topbar-ornate .topbar-utility .audio-toggle {
+        background: linear-gradient(180deg, #2a1f15 0%, #14100a 100%);
+        border: 1px solid rgba(212, 160, 66, 0.55);
+        color: #d4a042;
+      }
       .topbar-state {
         display: flex;
         flex-direction: column;
@@ -2851,43 +3086,69 @@
 
     <div class="app">
       <div class="shell">
-        <div class="topbar">
-          <div class="topbar-state">
-            <div class="topbar-state-main" id="topStateMain"></div>
-            <div class="topbar-state-sub" id="topStateSub"></div>
+        <div class="topbar topbar-ornate">
+          <div class="topbar-row topbar-row-top">
+            <div class="topbar-cell topbar-cell-schedule">
+              <span class="topbar-icon">📅</span>
+              <div class="topbar-cell-body">
+                <div class="topbar-label">CLUB SCHEDULE</div>
+                <div class="topbar-cell-value" id="topStateMain"></div>
+              </div>
+            </div>
+            <div class="topbar-cell topbar-cell-cash">
+              <span class="topbar-icon">🪙</span>
+              <div class="topbar-cell-body">
+                <div class="topbar-label">CASH LEDGER</div>
+                <div class="topbar-cell-cash-value" id="moneyChip"></div>
+              </div>
+              <div class="topbar-cash-side" id="trendChip"></div>
+            </div>
+            <div class="topbar-cell topbar-cell-stats">
+              <div class="topbar-cell-body">
+                <div class="topbar-label">PLAYER STATS</div>
+                <div class="topbar-stat-row">
+                  <span class="topbar-stat"><span class="topbar-stat-icon">⛽</span><span class="topbar-stat-meta"><span class="topbar-stat-label">ENERGY</span><span id="fuelChip"></span></span></span>
+                  <span class="topbar-stat"><span class="topbar-stat-icon">📣</span><span class="topbar-stat-meta"><span class="topbar-stat-label">REPUTATION</span><span id="followersChip"></span></span></span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="top-stats">
-            <div class="chip money" id="moneyChip"></div>
-            <div class="chip trend" id="trendChip"></div>
-            <div class="chip fuel" id="fuelChip"></div>
-            <div class="chip followers" id="followersChip"></div>
-          </div>
-          <div class="top-actions">
-            <button class="btn" id="openStoreBtn">Bank Loan</button>
+          <div class="topbar-row topbar-row-bottom">
+            <div class="topbar-cell-tier">
+              <span class="topbar-tier-label">BUILD TIER:</span>
+              <span class="topbar-tier-value" id="buildTierValue"></span>
+            </div>
+            <div class="topbar-cell-activity" id="topActivity"></div>
+            <button class="topbar-decision" id="openStoreBtn">
+              <span class="topbar-decision-label">LOAN DECISIONS</span>
+              <span class="topbar-decision-value" id="loanBalanceValue">OPEN</span>
+            </button>
             <button
-              class="btn"
+              class="topbar-decision topbar-decision-primary"
               id="advanceWeekTopBtn"
               onclick="promptAdvanceWeek('manual')"
             >
-              ⏩ Advance Week
+              <span class="topbar-decision-label">ADVANCE WEEK</span>
+              <span class="topbar-decision-value">»»</span>
             </button>
-            <button
-              class="audio-toggle"
-              id="fullscreenBtn"
-              onclick="toggleFullscreen()"
-              title="Toggle fullscreen"
-              style="display:none"
-            >
-              ⤢
-            </button>
-            <button
-              class="audio-toggle"
-              id="settingsBtn"
-              onclick="openSettings()"
-              title="Settings"
-            >
-              ⚙️
-            </button>
+            <div class="topbar-utility">
+              <button
+                class="audio-toggle"
+                id="fullscreenBtn"
+                onclick="toggleFullscreen()"
+                title="Toggle fullscreen"
+                style="display:none"
+              >
+                ⤢
+              </button>
+              <button
+                class="audio-toggle"
+                id="settingsBtn"
+                onclick="openSettings()"
+                title="Settings"
+              >
+                ⚙️
+              </button>
           </div>
         </div>
         <div class="tabs" id="mainTabs"></div>
@@ -11932,9 +12193,15 @@ addEventListener("DOMContentLoaded",function(){
             ? "season finale"
             : `${seasonPhaseTop.remaining} wk${seasonPhaseTop.remaining === 1 ? "" : "s"} left`;
         getEl("topStateMain").textContent =
-          `📅 Wk ${state.week}/${state.seasonLength} · ${seasonPhaseTop.phase} · ${remainingTopTxt}`;
-        getEl("topStateSub").innerHTML =
-          `Build Tier: <span style="color:#e8d8b2;font-weight:bold">${headerTier}</span> · <span style="color:var(--gold-soft);font-weight:bold">${garageLoreTier()}</span>${state.freshHeadline ? " · " + state.freshHeadline : ""}${Date.now() < state.saveFlashUntil ? " · Saving…" : state.lastSaved ? " · Saved" : ""}`;
+          `Wk ${state.week}/${state.seasonLength} · ${seasonPhaseTop.phase} · ${remainingTopTxt}`;
+        getEl("buildTierValue").textContent = headerTier;
+        const activityBits = [];
+        activityBits.push(garageLoreTier());
+        if (state.freshHeadline) activityBits.push(state.freshHeadline);
+        const saveFlashing = Date.now() < state.saveFlashUntil;
+        if (saveFlashing) activityBits.push("Saving…");
+        else if (state.lastSaved) activityBits.push("Saved");
+        getEl("topActivity").textContent = activityBits.join(" · ");
         const moneyChip = getEl("moneyChip");
         moneyChip.textContent = `$${fmt(state.money)}`;
         const shouldPopMoney =
@@ -11945,32 +12212,41 @@ addEventListener("DOMContentLoaded",function(){
         if (trendChip) {
           const trend = state.money - (state.weekStartMoney || 0);
           if (trend === 0) {
-            trendChip.textContent = "";
-            trendChip.style.display = "none";
+            trendChip.innerHTML = "";
           } else {
-            trendChip.style.display = "";
-            trendChip.textContent = `${trend > 0 ? "▲" : "▼"} ${trend > 0 ? "+" : "−"}$${fmt(Math.abs(trend))} this wk`;
-            trendChip.style.color = trend > 0 ? "#9fd18e" : "#e07a7a";
+            const arrow = trend > 0 ? "▲" : "▼";
+            const sign = trend > 0 ? "+" : "−";
+            const trendColor = trend > 0 ? "#9fd18e" : "#e07a7a";
+            const burnTag =
+              trend < 0 && Math.abs(trend) > 2000
+                ? `<span class="topbar-trend-tag bad">CRITICAL BURN</span>`
+                : trend < 0
+                  ? `<span class="topbar-trend-tag">weekly loss</span>`
+                  : `<span class="topbar-trend-tag">weekly gain</span>`;
+            trendChip.innerHTML =
+              `<span class="topbar-trend-line" style="color:${trendColor}">${arrow} ${sign}$${fmt(Math.abs(trend))}</span>${burnTag}`;
           }
         }
-        getEl("fuelChip").textContent = `⛽ ${state.fuel}/${MAX_FUEL}`;
-        getEl("followersChip").textContent = `📣 ${fmtF(state.followers)}`;
+        getEl("fuelChip").textContent = `${state.fuel}/${MAX_FUEL}`;
+        getEl("followersChip").textContent = `+${fmtF(state.followers)}`;
         const advanceWeekTopBtn = getEl("advanceWeekTopBtn");
         if (advanceWeekTopBtn) {
           const advanceBlocked = !!(
             currentCar() && hasActiveRestorations(currentCar().id)
           );
           advanceWeekTopBtn.disabled = advanceBlocked;
-          advanceWeekTopBtn.textContent = "⏩ Advance Week";
         }
         const loanBtn = getEl("openStoreBtn");
         const totalLoan = state.bankLoanBalance + state.sharkLoanBalance;
-        loanBtn.textContent =
-          totalLoan > 0
-            ? `Loans $${fmt(totalLoan)}`
-            : isEarlyGame()
-              ? "Emergency Cash"
-              : "Loans";
+        const loanValueEl = getEl("loanBalanceValue");
+        if (loanValueEl) {
+          loanValueEl.textContent =
+            totalLoan > 0
+              ? `$${fmt(totalLoan)}`
+              : isEarlyGame()
+                ? "EMERGENCY"
+                : "OPEN";
+        }
         if (loanBtn.onclick !== openStore) loanBtn.onclick = openStore;
       }
 
