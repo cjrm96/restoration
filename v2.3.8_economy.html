@@ -1992,7 +1992,8 @@
         </svg>
         <div class="splash-tagline">
           Congratulations on pissing off your wife — you just came home with a
-          new project car. Go get it ready for the National Show!
+          new project car. It's early spring. Get it ready for Nationals at
+          the end of summer.
         </div>
         <button class="splash-btn" onclick="startGame()">Start Game</button>
         <div class="splash-hint">
@@ -3091,9 +3092,9 @@
           prizes: [20000, 8000, 4000, 2000, 1000],
           minScore: 70,
           followers: [12000, 8000, 5000, 2500, 1000],
-          cadence: 1,
-          onDemand: true,
-          postEntryCooldown: 4,
+          // The Nationals are the season finale — a fixed late-summer
+          // window rather than a recurring slot. One shot, end of season.
+          seasonWindow: { start: 18, end: 20 },
         },
       ];
 
@@ -6654,18 +6655,22 @@
 
       function getCurrentShows() {
         return SHOWS_MASTER.map((show) => {
-          // On-demand shows aren't on a fixed schedule — once the player
-          // meets the prerequisites the show is available, with an optional
-          // postEntryCooldown that gates re-entry for N weeks after each
-          // run (so e.g. National can't be repeated week-after-week).
-          // showProgressRequirement still gates first entry until reqs are met.
+          // Shows fall into two scheduling models:
+          //   - Fixed weekly cadence (Cars & Coffee, Local, Regional)
+          //   - Late-season window (National) — only available within a
+          //     specific stretch of weeks at the end of the season,
+          //     mirroring how real-world Nationals cluster in late summer.
           let weeksUntil;
-          if (show.onDemand) {
-            const cooldownEnd =
-              (state.nextShowAvailableWeek &&
-                state.nextShowAvailableWeek[show.id]) ||
-              0;
-            weeksUntil = Math.max(0, cooldownEnd - state.week);
+          let seasonClosed = false;
+          if (show.seasonWindow) {
+            if (state.week < show.seasonWindow.start) {
+              weeksUntil = show.seasonWindow.start - state.week;
+            } else if (state.week <= show.seasonWindow.end) {
+              weeksUntil = 0;
+            } else {
+              weeksUntil = null;
+              seasonClosed = true;
+            }
           } else {
             const offset = state.week % show.cadence;
             weeksUntil = offset === 0 ? 0 : show.cadence - offset;
@@ -6673,23 +6678,45 @@
           return {
             ...show,
             weeksUntil,
+            seasonClosed,
             enteredThisWeek: state.enteredShowsThisWeek.includes(show.id),
           };
         });
       }
 
+      // The 20-week season runs early spring → late summer. Rather than
+      // bare "Week 4/20", surface where in the calendar the player sits
+      // and what's about to close.
+      function getSeasonPhase() {
+        const w = state.week;
+        const len = state.seasonLength;
+        const remaining = Math.max(0, len - w);
+        let phase;
+        if (w <= 4) phase = "Early Spring";
+        else if (w <= 9) phase = "Spring";
+        else if (w <= 13) phase = "Early Summer";
+        else if (w <= 17) phase = "Summer";
+        else phase = "Late Summer · Nationals";
+        return { phase, remaining };
+      }
+
       function getUpcomingSummary() {
         const shows = getCurrentShows();
-        const sorted = [...shows].sort(
-          (a, b) => a.weeksUntil - b.weeksUntil || a.fee - b.fee,
+        const open = shows.filter((s) => s.weeksUntil !== null);
+        const sorted = (open.length ? open : shows).slice().sort(
+          (a, b) => (a.weeksUntil ?? 99) - (b.weeksUntil ?? 99) || a.fee - b.fee,
         );
         const next = sorted[0];
-        let txt =
-          next.weeksUntil === 0
-            ? `${next.name} this week`
-            : next.weeksUntil === 1
-              ? `${next.name} next week`
-              : `${next.name} in ${next.weeksUntil} weeks`;
+        let txt;
+        if (next.weeksUntil === null) {
+          txt = `${next.name} closed for the season`;
+        } else if (next.weeksUntil === 0) {
+          txt = `${next.name} this week`;
+        } else if (next.weeksUntil === 1) {
+          txt = `${next.name} next week`;
+        } else {
+          txt = `${next.name} in ${next.weeksUntil} weeks`;
+        }
         return { shows, nextShow: next, nextShowText: txt };
       }
 
@@ -8063,6 +8090,8 @@
         const sponsors = activeSponsors();
 
         if (!car) return toast("Buy a car first.", "err");
+        if (show.seasonClosed)
+          return toast(`${show.name} is closed for the season.`, "err");
         if (show.weeksUntil !== 0)
           return toast(
             `That show starts in ${show.weeksUntil} week(s).`,
@@ -8359,7 +8388,7 @@
           art: "🚚",
           headline: "Every car guy story starts the same way.",
           body:
-            "You found a project. You're five grand in. Your driveway is now a garage. The question isn't whether you can finish it — it's how badly you want to.",
+            "It's early spring. You found a project. You're five grand in. Your driveway is now a garage. The car-show calendar is about to wake up — and the Nationals are at the end of summer. The question isn't whether you can finish it. It's whether you can finish it in time.",
         },
         {
           kicker: "Step 1 · Build it",
@@ -8378,7 +8407,7 @@
           art: "🏁",
           headline: "Take it to shows. Earn cash and reputation.",
           body:
-            "Four tiers of show — Cars & Coffee, Local, Regional, and National — escalate in stakes. Place well and the money, followers, and sponsors all start rolling.",
+            "Four tiers of show — Cars & Coffee, Local, Regional, and National — escalate in stakes. Cars & Coffee, Local, and Regional run all season on a fixed cadence. Nationals are the late-summer capstone: a three-week window at the end of the season, and only after you've earned your way in through Regionals.",
           points: [
             { icon: "⛽", text: "Shows cost fuel to attend. Keep the tank topped off." },
             { icon: "🏎", text: "A guy named Buck enters every show on the schedule. He's the rival. Beat him." },
@@ -8402,7 +8431,7 @@
           art: "🚚🔥",
           headline: "Your '65 F-100 is on jack stands. The clock is on you now.",
           body:
-            "Twenty weeks per season. Paychecks land every four. Don't run out of fuel, don't take the shark loan unless you have to, and remember: 'while I'm in there' has ended more budgets than inflation.",
+            "Twenty weeks from early spring to late summer. Nationals open at week 18 and close at week 20. Paychecks land every four. Don't run out of fuel, don't take the shark loan unless you have to, and remember: 'while I'm in there' has ended more budgets than inflation.",
         },
       ];
 
@@ -10537,6 +10566,7 @@ addEventListener("DOMContentLoaded",function(){
                 state.money < entryFee ||
                 state.fuel < fuelNeed ||
                 show.weeksUntil !== 0 ||
+                show.seasonClosed ||
                 show.enteredThisWeek ||
                 state.showLoading ||
                 hasActiveRestorations(car.id);
@@ -10594,7 +10624,7 @@ addEventListener("DOMContentLoaded",function(){
               const checklistMarkup = `<div class="info-box" style="margin-bottom:10px;background:rgba(0,0,0,0.18);padding:10px 12px"><div class="tiny" style="color:var(--gold-soft);letter-spacing:1.5px;font-weight:bold;margin-bottom:6px">${show.tier === "Cars & Coffee" ? "PREP" : "SHOW PREP"}</div>${checks.map((c) => `<div class="tiny" style="line-height:1.7;color:${c.ok ? "#9fd18e" : "#e07a7a"}">${c.ok ? "✓ " + c.pass : "✗ " + c.fail}</div>`).join("")}</div>`;
               return panel(
                 show.name,
-                `<div class="show-prizes" style="margin-bottom:10px">${show.tier === "Cars & Coffee" ? `<div class="show-prize">No judges, no places</div><div class="show-prize">Free part raffle for showing up</div>` : show.prizes.map((p, i) => `<div class="show-prize">${["1st", "2nd", "3rd", "4th", "5th"][i]} · $${p}</div>`).join("")}</div>${show.enteredThisWeek ? `<div class="tiny warn" style="margin-bottom:8px">Already entered this week</div>` : show.weeksUntil === 0 ? `<div class="tiny good" style="margin-bottom:8px">Happening this week</div>` : `<div class="tiny muted" style="margin-bottom:8px">${show.onDemand ? "Next slot in" : "Starts in"} ${show.weeksUntil} week(s)</div>`}${rivalLine}${localSponsor ? `<div class="tiny good" style="margin-bottom:8px">${localSponsor.name} covers Local entry fee.</div>` : ""}${bonus > 0 && show.tier !== "Cars & Coffee" ? `<div class="tiny good" style="margin-bottom:8px">Sponsor bonus: +$${bonus}</div>` : ""}${checklistMarkup}${button(show.tier === "Cars & Coffee" ? "Roll Up And Hang Out" : `Roll In And Face The Opinions · $${fmt(entryFee)}`, `beginShowEntry(${show.id})`, off, "", "width:100%")}`,
+                `<div class="show-prizes" style="margin-bottom:10px">${show.tier === "Cars & Coffee" ? `<div class="show-prize">No judges, no places</div><div class="show-prize">Free part raffle for showing up</div>` : show.prizes.map((p, i) => `<div class="show-prize">${["1st", "2nd", "3rd", "4th", "5th"][i]} · $${p}</div>`).join("")}</div>${show.enteredThisWeek ? `<div class="tiny warn" style="margin-bottom:8px">Already entered this week</div>` : show.seasonClosed ? `<div class="tiny warn" style="margin-bottom:8px">Closed until next spring</div>` : show.weeksUntil === 0 ? `<div class="tiny good" style="margin-bottom:8px">${show.seasonWindow ? `Nationals open · closes after week ${show.seasonWindow.end}` : "Happening this week"}</div>` : `<div class="tiny muted" style="margin-bottom:8px">${show.seasonWindow ? `Opens week ${show.seasonWindow.start} · ${show.weeksUntil} week(s) out` : `Starts in ${show.weeksUntil} week(s)`}</div>`}${rivalLine}${localSponsor ? `<div class="tiny good" style="margin-bottom:8px">${localSponsor.name} covers Local entry fee.</div>` : ""}${bonus > 0 && show.tier !== "Cars & Coffee" ? `<div class="tiny good" style="margin-bottom:8px">Sponsor bonus: +$${bonus}</div>` : ""}${checklistMarkup}${button(show.tier === "Cars & Coffee" ? "Roll Up And Hang Out" : `Roll In And Face The Opinions · $${fmt(entryFee)}`, `beginShowEntry(${show.id})`, off, "", "width:100%")}`,
                 `${show.tier} · ${show.tier === "Cars & Coffee" ? "casual meetup" : `base entry $${fmt(show.fee)}`} · fuel ${fuelNeed} gal`,
                 tc,
               );
@@ -10990,8 +11020,13 @@ addEventListener("DOMContentLoaded",function(){
         }
         getEl("fuelChip").textContent = `⛽ ${state.fuel}/${MAX_FUEL}`;
         getEl("followersChip").textContent = `📣 ${fmtF(state.followers)}`;
+        const seasonPhase = getSeasonPhase();
+        const remainingTxt =
+          seasonPhase.remaining === 0
+            ? "season finale"
+            : `${seasonPhase.remaining} wk${seasonPhase.remaining === 1 ? "" : "s"} until season end`;
         getEl("weekChip").textContent =
-          `📅 Week ${state.week}/${state.seasonLength}`;
+          `📅 Wk ${state.week} · ${seasonPhase.phase} · ${remainingTxt}`;
         getEl("payChip").textContent =
           `💵 ${PAYCHECK_CYCLE - state.paycheckProgress} weeks until paycheck`;
         const advanceWeekTopBtn = getEl("advanceWeekTopBtn");
