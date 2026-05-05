@@ -2284,6 +2284,259 @@
       .hero-panel.marketplace .feed-item .small.muted {
         color: #6b5840;
       }
+
+      /* ── Marketplace Messenger popup ── */
+      .mp-card {
+        max-width: 460px;
+        width: 95%;
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 0;
+        overflow: hidden;
+        color: #050505;
+        font-family:
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Helvetica,
+          Arial,
+          sans-serif;
+        border: 1px solid #ccd0d5;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
+      }
+      .mp-card .mp-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-bottom: 1px solid #e4e6eb;
+      }
+      .mp-card .mp-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, #f0a050, #c46d60);
+        color: #fff;
+        font-weight: bold;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .mp-card .mp-avatar.shop {
+        background: linear-gradient(135deg, #7da0c2, #486b8c);
+      }
+      .mp-card .mp-avatar.sm {
+        width: 26px;
+        height: 26px;
+        font-size: 12px;
+      }
+      .mp-card .mp-header-title {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 600;
+        color: #050505;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .mp-card .mp-header-title .mp-chev {
+        margin-left: 4px;
+        color: #65676b;
+        font-weight: normal;
+      }
+      .mp-card .mp-header-controls {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        color: #65676b;
+        font-size: 18px;
+      }
+      .mp-card .mp-header-controls .mp-x {
+        background: none;
+        border: none;
+        color: #b349d4;
+        font-size: 22px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0;
+      }
+      .mp-card .mp-listing-strip {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+      }
+      .mp-card .mp-listing-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .mp-card .mp-listing-label {
+        font-size: 12px;
+        color: #65676b;
+      }
+      .mp-card .mp-listing-text {
+        font-size: 13px;
+        color: #050505;
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .mp-card .mp-listing-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 0 14px 12px;
+      }
+      .mp-card .mp-pill {
+        background: #e4e6eb;
+        color: #050505;
+        border: none;
+        border-radius: 18px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: center;
+        cursor: default;
+        font-family: inherit;
+      }
+      .mp-card .mp-divider {
+        height: 1px;
+        background: #e4e6eb;
+        margin: 0;
+      }
+      .mp-card .mp-conversation {
+        background: #ffffff;
+        padding: 12px 14px 10px;
+        max-height: 50vh;
+        overflow-y: auto;
+      }
+      .mp-card .mp-buyer-name {
+        font-size: 12px;
+        color: #65676b;
+        margin-left: 36px;
+        margin-bottom: 4px;
+      }
+      .mp-card .mp-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .mp-card .mp-row.right {
+        justify-content: flex-end;
+      }
+      .mp-card .mp-bubble {
+        max-width: 78%;
+        padding: 10px 14px;
+        border-radius: 18px;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+      .mp-card .mp-bubble.gray {
+        background: #f0f2f5;
+        color: #050505;
+      }
+      .mp-card .mp-bubble.blue {
+        background: #0084ff;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        font-family: inherit;
+        transition: background 0.15s;
+      }
+      .mp-card .mp-bubble.blue:hover {
+        background: #0073e6;
+      }
+      .mp-card .mp-bubble.outlined {
+        background: #ffffff;
+        color: #050505;
+        border: 1px solid #ccd0d5;
+        cursor: pointer;
+        font-weight: 600;
+        font-family: inherit;
+        transition: background 0.15s;
+      }
+      .mp-card .mp-bubble.outlined:hover {
+        background: #f0f2f5;
+      }
+      .mp-card .mp-numbers {
+        background: #f0f2f5;
+        border-radius: 14px;
+        padding: 10px 14px;
+        margin: 0 0 10px 34px;
+        max-width: 78%;
+        font-size: 12.5px;
+        color: #050505;
+      }
+      .mp-card .mp-numbers-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 3px 0;
+      }
+      .mp-card .mp-numbers-row span:first-child {
+        color: #65676b;
+      }
+      .mp-card .mp-verdict {
+        text-align: center;
+        font-weight: 700;
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px dashed #ccd0d5;
+      }
+      .mp-card .mp-verdict-tone {
+        font-size: 11px;
+        color: #65676b;
+        font-weight: normal;
+        margin-top: 2px;
+      }
+      .mp-card .mp-buyer-tag {
+        font-size: 11px;
+        color: #65676b;
+        text-align: center;
+        margin: 4px 0 8px;
+        font-style: italic;
+      }
+      .mp-card .mp-footer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-top: 1px solid #e4e6eb;
+        background: #ffffff;
+      }
+      .mp-card .mp-footer-icons {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #0084ff;
+        font-size: 18px;
+      }
+      .mp-card .mp-footer-icons .mp-gif {
+        font-size: 11px;
+        font-weight: bold;
+        border: 1.5px solid #0084ff;
+        border-radius: 4px;
+        padding: 1px 4px;
+      }
+      .mp-card .mp-input-pill {
+        flex: 1;
+        background: #f0f2f5;
+        border-radius: 18px;
+        padding: 7px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: #65676b;
+        font-size: 14px;
+      }
+      .mp-card .mp-thumb {
+        color: #0084ff;
+        font-size: 24px;
+      }
     </style>
   </head>
   <body>
@@ -10721,9 +10974,73 @@ addEventListener("DOMContentLoaded",function(){
                 : baselinePct >= 75
                   ? { label: `Under baseline · -${Math.round(100 - baselinePct)}%`, color: "#e9c46a", tone: "A little low." }
                   : { label: `Lowball · -${Math.round(100 - baselinePct)}%`, color: "#e57b7b", tone: "Way under value." };
-        const compareRow = (label, amount, color = "var(--text)") =>
-          `<div class="flex between center" style="padding:5px 0"><span class="tiny muted">${label}</span><span class="small" style="color:${color};font-weight:bold">$${fmt(amount)}</span></div>`;
-        root.innerHTML = `<div class="modal"><div class="modal-card" style="max-width:500px"><div style="text-align:center;font-size:40px;margin-bottom:8px">💬</div><div style="color:#7da0c2;font-weight:bold;font-size:22px;text-align:center;margin-bottom:8px">Marketplace Message</div><div class="small muted" style="text-align:center;margin-bottom:14px">${offer.buyer || "Buyer"} wants ${item.name}</div><div class="info-box" style="margin-bottom:10px"><div class="tiny muted" style="margin-bottom:6px">Message</div><div class="small" style="color:var(--text);line-height:1.6">"${offer.message}"</div></div><div class="info-box" style="margin-bottom:14px"><div class="tiny" style="color:var(--gold-soft);font-weight:bold;letter-spacing:1px;margin-bottom:6px">THE NUMBERS</div>${compareRow("Their offer", offerAmount, verdict.color)}${compareRow("Your asking price", asking)}${baseline > 0 ? compareRow("Baseline value", baseline, "var(--text-dim)") : ""}<div style="margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.08);text-align:center"><div class="small" style="color:${verdict.color};font-weight:bold">${verdict.label}</div>${verdict.tone ? `<div class="tiny muted" style="margin-top:3px">${verdict.tone}</div>` : ""}</div></div><div class="btn-row two">${button(`Take the deal · $${fmt(offerAmount)}`, "respondMarketplaceOffer(true)", false, "", "width:100%")}${button("Pass for now", "respondMarketplaceOffer(false)", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:var(--text)")}</div><div class="tiny muted" style="margin-top:12px;text-align:center">Buyer type: <span style="color:var(--gold)">${offer.buyerType}</span> · Garage Lore perk: ${Math.round(garageLoreDiscount() * 100)}% better offers</div></div></div>`;
+        const buyerName = offer.buyer || "Buyer";
+        const buyerInitial = buyerName.replace(/^@/, "").charAt(0).toUpperCase() || "?";
+        const headerTitle = `${buyerName} · ${item.name}`;
+        const verdictColor =
+          verdict.color === "var(--text-dim)"
+            ? "#65676b"
+            : verdict.color === "#9fd18e"
+              ? "#1a7f37"
+              : verdict.color === "#e8d8b2"
+                ? "#7a5b00"
+                : verdict.color === "#e9c46a"
+                  ? "#9a6b00"
+                  : verdict.color === "#e57b7b"
+                    ? "#b3261e"
+                    : "#050505";
+        root.innerHTML = `
+<div class="modal">
+  <div class="mp-card">
+    <div class="mp-header">
+      <div class="mp-avatar">${buyerInitial}</div>
+      <div class="mp-header-title">${buyerName} · ${item.name}<span class="mp-chev">⌄</span></div>
+      <div class="mp-header-controls">
+        <span>—</span>
+        <button class="mp-x" onclick="respondMarketplaceOffer(false)">✕</button>
+      </div>
+    </div>
+    <div class="mp-listing-strip">
+      <div class="mp-avatar shop">🔧</div>
+      <div class="mp-listing-info">
+        <div class="mp-listing-label">Marketplace</div>
+        <div class="mp-listing-text">$${fmt(asking)} · ${item.name}</div>
+      </div>
+    </div>
+    <div class="mp-listing-actions">
+      <div class="mp-pill">See details</div>
+      <div class="mp-pill">More options</div>
+    </div>
+    <div class="mp-divider"></div>
+    <div class="mp-conversation">
+      <div class="mp-buyer-name">${buyerName}</div>
+      <div class="mp-row">
+        <div class="mp-avatar sm">${buyerInitial}</div>
+        <div class="mp-bubble gray">${offer.message}</div>
+      </div>
+      <div class="mp-numbers">
+        <div class="mp-numbers-row"><span>Their offer</span><strong>$${fmt(offerAmount)}</strong></div>
+        <div class="mp-numbers-row"><span>Your asking</span><span>$${fmt(asking)}</span></div>
+        ${baseline > 0 ? `<div class="mp-numbers-row"><span>Baseline</span><span>$${fmt(baseline)}</span></div>` : ""}
+        <div class="mp-verdict" style="color:${verdictColor}">${verdict.label}${verdict.tone ? `<div class="mp-verdict-tone">${verdict.tone}</div>` : ""}</div>
+      </div>
+      ${offer.buyerType ? `<div class="mp-buyer-tag">Buyer type · ${offer.buyerType}</div>` : ""}
+      <div class="mp-row right">
+        <button class="mp-bubble blue" onclick="respondMarketplaceOffer(true)">Take the deal · $${fmt(offerAmount)}</button>
+      </div>
+      <div class="mp-row right">
+        <button class="mp-bubble outlined" onclick="respondMarketplaceOffer(false)">Pass for now</button>
+      </div>
+    </div>
+    <div class="mp-footer">
+      <div class="mp-footer-icons">
+        <span>🎤</span><span>🖼</span><span>💬</span><span class="mp-gif">GIF</span>
+      </div>
+      <div class="mp-input-pill"><span>Aa</span><span>😊</span></div>
+      <span class="mp-thumb">👍</span>
+    </div>
+  </div>
+</div>`;
         return true;
       }
       function renderRestorationPanel(car) {
