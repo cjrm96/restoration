@@ -1781,6 +1781,76 @@
         font-weight: bold;
         color: var(--text-bright);
       }
+      .panel.chalkboard {
+        background:
+          radial-gradient(
+            ellipse at 22% 18%,
+            rgba(255, 255, 255, 0.05),
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse at 78% 82%,
+            rgba(255, 255, 255, 0.035),
+            transparent 55%
+          ),
+          radial-gradient(
+            ellipse at 60% 40%,
+            rgba(255, 255, 255, 0.02),
+            transparent 70%
+          ),
+          linear-gradient(180deg, #1f2e26 0%, #15201b 100%);
+        border: 1px solid #2c1d10;
+        box-shadow:
+          0 0 0 6px #4a3320,
+          0 0 0 7px #2c1d10,
+          0 8px 22px rgba(0, 0, 0, 0.5),
+          inset 0 0 60px rgba(0, 0, 0, 0.35);
+        font-family: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
+        margin: 4px 7px 22px;
+      }
+      .panel.chalkboard .panel-header {
+        border-bottom: 1px dashed rgba(245, 239, 224, 0.3);
+      }
+      .panel.chalkboard .panel-title {
+        color: #f5efe0 !important;
+        font-family: inherit;
+        font-size: 18px;
+        letter-spacing: 1px;
+        text-shadow: 0 0 1px rgba(255, 255, 255, 0.4);
+      }
+      .panel.chalkboard .panel-sub {
+        color: #b8c2b0;
+        font-style: italic;
+        font-family: inherit;
+      }
+      .panel.chalkboard .dot {
+        background: #d8d0bd;
+      }
+      .panel.chalkboard .row {
+        font-size: 13px;
+      }
+      .panel.chalkboard .row-k {
+        color: #d4ccb6;
+        font-family: inherit;
+      }
+      .panel.chalkboard .row-v {
+        color: #fffbe6;
+        font-family: inherit;
+        text-shadow: 0 0 1px rgba(255, 255, 255, 0.25);
+      }
+      .panel.chalkboard .row-v.good {
+        color: #b6e8a3;
+      }
+      .panel.chalkboard .row-v.warn {
+        color: #ffd07a;
+      }
+      .panel.chalkboard .row-v.bad {
+        color: #ff9d85;
+      }
+      .panel.chalkboard .tiny.muted {
+        color: #a9b2a3;
+        font-style: italic;
+      }
     </style>
   </head>
   <body>
@@ -8613,8 +8683,8 @@
       /* ═══════════════════════════════════════════
      UI BUILDING BLOCKS
   ═══════════════════════════════════════════ */
-      function panel(title, body, subtitle = "", accent = "#c99842") {
-        return `<div class="panel"><div class="panel-header"><div><div class="panel-title" style="color:${accent}">${title}</div>${subtitle ? `<div class="panel-sub">${subtitle}</div>` : ""}</div><div class="dots"><div class="dot"></div><div class="dot"></div></div></div>${body}</div>`;
+      function panel(title, body, subtitle = "", accent = "#c99842", extraClass = "") {
+        return `<div class="panel ${extraClass}"><div class="panel-header"><div><div class="panel-title" style="color:${accent}">${title}</div>${subtitle ? `<div class="panel-sub">${subtitle}</div>` : ""}</div><div class="dots"><div class="dot"></div><div class="dot"></div></div></div>${body}</div>`;
       }
       function heroPanel(kicker, title, sub, body, tone = "gold") {
         const toneCls = tone === "blue" ? "hero-blue" : "";
@@ -8659,7 +8729,8 @@
           "Upcoming",
           `${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}${chalkRow("Paycheck", `${PAYCHECK_CYCLE - state.paycheckProgress} week(s)`)}${chalkRow("Next Event", nextShowText, nextShow.weeksUntil === 0 ? "good" : "warn")}${loanLine}${moneyLine}${state.lastMoneyReason ? `<div class="tiny muted" style="margin-top:4px">${state.lastMoneyReason}</div>` : ""}`,
           "Compact season timeline",
-          "#7da0c2",
+          "#f5efe0",
+          "chalkboard",
         );
       }
 
