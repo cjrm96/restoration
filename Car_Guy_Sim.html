@@ -6556,6 +6556,7 @@
           marketplaceListings: [],
           marketplaceStashExpanded: false,
           marketplaceListedExpanded: false,
+          lotExpanded: false,
           pendingMarketplaceOffer: null,
           scavengeChoice: null,
           atTrip: false,
@@ -7646,6 +7647,11 @@
       }
       function toggleListedExpanded() {
         state.marketplaceListedExpanded = !state.marketplaceListedExpanded;
+        playSfx("click");
+        requestRender("full");
+      }
+      function toggleLotExpanded() {
+        state.lotExpanded = !state.lotExpanded;
         playSfx("click");
         requestRender("full");
       }
@@ -12544,8 +12550,17 @@ addEventListener("DOMContentLoaded",function(){
         const carsForSale = BUYABLE_CARS.filter(
           (c) => !state.cars.find((x) => x.id === c.id),
         );
-        const carBuyMarkup = carsForSale.length
+        const LOT_PREVIEW = 3;
+        const lotExpanded = !!state.lotExpanded;
+        const lotShown = lotExpanded
           ? carsForSale
+          : carsForSale.slice(0, LOT_PREVIEW);
+        const lotHidden = Math.max(0, carsForSale.length - lotShown.length);
+        const lotToggle = carsForSale.length > LOT_PREVIEW
+          ? `<div style="text-align:center;margin-top:8px">${button(lotExpanded ? "Show less" : `Show all ${carsForSale.length} listings`, "toggleLotExpanded()", false, "", "padding:6px 14px;font-size:11px;background:transparent;color:var(--gold-soft);border:1px solid rgba(217,162,79,0.4)")}</div>`
+          : "";
+        const carBuyMarkup = carsForSale.length
+          ? lotShown
               .map(
                 (c) => `
       <div class="feed-item">
@@ -12556,7 +12571,7 @@ addEventListener("DOMContentLoaded",function(){
       </div>
     `,
               )
-              .join("")
+              .join("") + lotToggle
           : `<div class="small muted">Every project on the lot is already in your garage. Move some metal before more comes around.</div>`;
 
         return `${renderScavengeTrip()}<div class="grid-main"><div>${heroPanel(
