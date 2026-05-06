@@ -12764,11 +12764,14 @@ addEventListener("DOMContentLoaded",function(){
           : "";
         carTabsEl.style.display = showCarTabs ? "" : "none";
 
+        // Tab order reads left-to-right like a week: Build the car,
+        // Social posts about it, Marketplace funds it (sell parts /
+        // Saturday scavenge), Compete is Saturday show day at the end.
         getEl("mainTabs").innerHTML = [
           ["workshop", "🔧 Build"],
-          ["shows", "🏁 Compete"],
-          ["dealership", "📘 Marketplace"],
           ["career", "📱 Social"],
+          ["dealership", "📘 Marketplace"],
+          ["shows", "🏁 Compete"],
         ]
           .map(([id, label]) =>
             tab(
