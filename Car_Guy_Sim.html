@@ -2787,23 +2787,24 @@
         margin: 4px 0 8px;
         font-style: italic;
       }
-      /* Anchor the Marketplace Messenger popup to the bottom-right corner,
-         like the real Facebook chat windows. No screen dim — clicks pass
-         through the wrapper so the rest of the UI stays visible. */
-      .modal.mp-modal {
-        background: transparent;
-        align-items: flex-end;
-        justify-content: flex-end;
-        padding: 0 16px 76px;
+      /* Marketplace Messenger popup: fixed to the bottom-right like a real
+         Facebook chat window. Lives in its own root (#mpPopupRoot) instead
+         of the modal stack, so the rest of the game keeps running and
+         centered modals can layer over it. */
+      #mpPopupRoot {
+        position: fixed;
+        right: 16px;
+        bottom: 76px;
+        z-index: 100;
         pointer-events: none;
       }
-      .modal.mp-modal .mp-card {
+      #mpPopupRoot .mp-card {
         pointer-events: auto;
         width: 360px;
         max-width: calc(100vw - 32px);
         animation: mp-pop-in 0.22s ease-out;
       }
-      .modal.mp-modal .mp-conversation {
+      #mpPopupRoot .mp-conversation {
         max-height: min(50vh, 360px);
       }
       @keyframes mp-pop-in {
@@ -2811,10 +2812,11 @@
         to { transform: translateY(0); opacity: 1; }
       }
       @media (max-width: 520px) {
-        .modal.mp-modal {
-          padding: 0 8px 64px;
+        #mpPopupRoot {
+          right: 8px;
+          bottom: 64px;
         }
-        .modal.mp-modal .mp-card {
+        #mpPopupRoot .mp-card {
           width: 100%;
         }
       }
@@ -3088,6 +3090,7 @@
     </div>
 
     <div id="modalRoot"></div>
+    <div id="mpPopupRoot"></div>
     <div id="toastRoot"></div>
     <div id="worldTicker" class="world-ticker" hidden>
       <div class="world-ticker-history" id="worldTickerHistory" hidden>
@@ -6463,10 +6466,11 @@
         return true;
       }
       function hasBlockingPopup() {
+        // Marketplace popup intentionally excluded — it sits in the
+        // corner without freezing other game state.
         return !!(
           state.pendingScene ||
           state.pendingEvent ||
-          state.pendingMarketplaceOffer ||
           state.showStore ||
           state.showLoading
         );
@@ -7159,6 +7163,10 @@
         toast(`${tier.title} — ${tier.sub}`, "event-good");
       }
       function modalBusy() {
+        // The Marketplace popup intentionally lives outside the modal
+        // stack — it sits in its own bottom-right anchored root and
+        // does not block the rest of the game while it's up. Other
+        // centered modals still gate everything as usual.
         return (
           !state.tutorialComplete ||
           !!state.pendingVictory ||
@@ -7166,8 +7174,7 @@
           state.showLoading ||
           state.showStore ||
           !!state.pendingScene ||
-          !!state.pendingEvent ||
-          !!state.pendingMarketplaceOffer
+          !!state.pendingEvent
         );
       }
       function queueEvent(kind, payload) {
@@ -7179,7 +7186,14 @@
       function processEventQueue() {
         if (!state.eventQueue || !state.eventQueue.length) return;
         if (modalBusy()) return;
-        const next = state.eventQueue.shift();
+        // Find the next item we can actually show. Marketplace offers
+        // get held back if a popup is already up — they don't block
+        // other modals and shouldn't be skipped, just deferred.
+        const idx = state.eventQueue.findIndex(
+          (e) => !(e.kind === "marketplace" && state.pendingMarketplaceOffer),
+        );
+        if (idx === -1) return;
+        const next = state.eventQueue.splice(idx, 1)[0];
         if (!next) return;
         if (next.kind === "scene") state.pendingScene = next.payload;
         else if (next.kind === "event") state.pendingEvent = next.payload;
@@ -7197,7 +7211,8 @@
         else state.pendingEvent = ev;
       }
       function queueMarketplaceOffer(offer) {
-        if (modalBusy()) queueEvent("marketplace", offer);
+        if (modalBusy() || state.pendingMarketplaceOffer)
+          queueEvent("marketplace", offer);
         else {
           state.pendingMarketplaceOffer = offer;
           playSfx("ding");
@@ -7450,6 +7465,10 @@
       }
       function maybeGenerateMarketplaceOffer(rollChance = 0.68) {
         if (modalBusy()) return false;
+        // Don't roll a new buyer message while the player still has one
+        // sitting in their DMs. Real Facebook will keep messaging you,
+        // but in-game it just feels like noise.
+        if (state.pendingMarketplaceOffer) return false;
         const listed = state.partsInventory.filter((i) => i.listed && !i.sold);
         if (!listed.length) return false;
         // Bigger stash on the market = more eyeballs per tick. Each
@@ -10964,12 +10983,7 @@ addEventListener("DOMContentLoaded",function(){
 
       function renderStoreModal() {
         const root = getEl("modalRoot");
-        if (
-          !state.showStore ||
-          state.pendingEvent ||
-          state.showLoading ||
-          state.pendingMarketplaceOffer
-        ) {
+        if (!state.showStore || state.pendingEvent || state.showLoading) {
           root.innerHTML = "";
           return;
         }
@@ -11128,7 +11142,6 @@ addEventListener("DOMContentLoaded",function(){
           state.showStage ||
           state.pendingScene ||
           state.pendingEvent ||
-          state.pendingMarketplaceOffer ||
           state.showStore
         )
           return false;
@@ -11253,19 +11266,24 @@ addEventListener("DOMContentLoaded",function(){
         return true;
       }
 
-      function renderMarketplaceOfferModal() {
-        const root = getEl("modalRoot");
+      let renderedMpSignature = "";
+      function renderMarketplacePopup() {
+        const root = getEl("mpPopupRoot");
+        if (!root) return;
         const offer = state.pendingMarketplaceOffer;
-        if (
-          !offer ||
-          state.pendingEvent ||
-          state.pendingScene ||
-          state.showStore ||
-          state.showLoading
-        )
-          return false;
-        const item = state.partsInventory.find((i) => i.id === offer.itemId);
-        if (!item) return false;
+        const item = offer
+          ? state.partsInventory.find((i) => i.id === offer.itemId)
+          : null;
+        const sig =
+          offer && item
+            ? `${offer.buyerType || ""}:${offer.itemId || ""}:${offer.offer || ""}`
+            : "";
+        if (sig === renderedMpSignature) return;
+        renderedMpSignature = sig;
+        if (!offer || !item) {
+          root.innerHTML = "";
+          return;
+        }
         const baseline = item.baselineValue || 0;
         const asking = item.askingPrice || 0;
         const offerAmount = offer.offer || 0;
@@ -11296,51 +11314,48 @@ addEventListener("DOMContentLoaded",function(){
                     ? "#b3261e"
                     : "#2a1f12";
         root.innerHTML = `
-<div class="modal mp-modal">
-  <div class="mp-card">
-    <div class="mp-header">
-      <div class="mp-avatar">${buyerInitial}</div>
-      <div class="mp-header-title">${buyerName} · ${item.name}<span class="mp-chev">⌄</span></div>
-      <div class="mp-header-controls">
-        <span>—</span>
-        <button class="mp-x" onclick="respondMarketplaceOffer(false)">✕</button>
-      </div>
+<div class="mp-card">
+  <div class="mp-header">
+    <div class="mp-avatar">${buyerInitial}</div>
+    <div class="mp-header-title">${buyerName} · ${item.name}<span class="mp-chev">⌄</span></div>
+    <div class="mp-header-controls">
+      <span>—</span>
+      <button class="mp-x" onclick="respondMarketplaceOffer(false)">✕</button>
     </div>
-    <div class="mp-listing-strip">
-      <div class="mp-avatar shop">🔧</div>
-      <div class="mp-listing-info">
-        <div class="mp-listing-label">Marketplace</div>
-        <div class="mp-listing-text">$${fmt(asking)} · ${item.name}</div>
-      </div>
+  </div>
+  <div class="mp-listing-strip">
+    <div class="mp-avatar shop">🔧</div>
+    <div class="mp-listing-info">
+      <div class="mp-listing-label">Marketplace</div>
+      <div class="mp-listing-text">$${fmt(asking)} · ${item.name}</div>
     </div>
-    <div class="mp-listing-actions">
-      <div class="mp-pill">See details</div>
-      <div class="mp-pill">More options</div>
+  </div>
+  <div class="mp-listing-actions">
+    <div class="mp-pill">See details</div>
+    <div class="mp-pill">More options</div>
+  </div>
+  <div class="mp-divider"></div>
+  <div class="mp-conversation">
+    <div class="mp-buyer-name">${buyerName}</div>
+    <div class="mp-row">
+      <div class="mp-avatar sm">${buyerInitial}</div>
+      <div class="mp-bubble gray">${offer.message}</div>
     </div>
-    <div class="mp-divider"></div>
-    <div class="mp-conversation">
-      <div class="mp-buyer-name">${buyerName}</div>
-      <div class="mp-row">
-        <div class="mp-avatar sm">${buyerInitial}</div>
-        <div class="mp-bubble gray">${offer.message}</div>
-      </div>
-      <div class="mp-numbers">
-        <div class="mp-numbers-row"><span>Their offer</span><strong>$${fmt(offerAmount)}</strong></div>
-        <div class="mp-numbers-row"><span>Your asking</span><span>$${fmt(asking)}</span></div>
-        ${baseline > 0 ? `<div class="mp-numbers-row"><span>Baseline</span><span>$${fmt(baseline)}</span></div>` : ""}
-        <div class="mp-verdict" style="color:${verdictColor}">${verdict.label}${verdict.tone ? `<div class="mp-verdict-tone">${verdict.tone}</div>` : ""}</div>
-      </div>
-      ${offer.buyerType ? `<div class="mp-buyer-tag">Buyer type · ${offer.buyerType}</div>` : ""}
-      <div class="mp-row right">
-        <button class="mp-bubble blue" onclick="respondMarketplaceOffer(true)">Take the deal · $${fmt(offerAmount)}</button>
-      </div>
-      <div class="mp-row right">
-        <button class="mp-bubble outlined" onclick="respondMarketplaceOffer(false)">Pass for now</button>
-      </div>
+    <div class="mp-numbers">
+      <div class="mp-numbers-row"><span>Their offer</span><strong>$${fmt(offerAmount)}</strong></div>
+      <div class="mp-numbers-row"><span>Your asking</span><span>$${fmt(asking)}</span></div>
+      ${baseline > 0 ? `<div class="mp-numbers-row"><span>Baseline</span><span>$${fmt(baseline)}</span></div>` : ""}
+      <div class="mp-verdict" style="color:${verdictColor}">${verdict.label}${verdict.tone ? `<div class="mp-verdict-tone">${verdict.tone}</div>` : ""}</div>
+    </div>
+    ${offer.buyerType ? `<div class="mp-buyer-tag">Buyer type · ${offer.buyerType}</div>` : ""}
+    <div class="mp-row right">
+      <button class="mp-bubble blue" onclick="respondMarketplaceOffer(true)">Take the deal · $${fmt(offerAmount)}</button>
+    </div>
+    <div class="mp-row right">
+      <button class="mp-bubble outlined" onclick="respondMarketplaceOffer(false)">Pass for now</button>
     </div>
   </div>
 </div>`;
-        return true;
       }
       function renderRestorationPanel(car) {
         const tasks = activeTasksForCar(car.id);
@@ -12238,7 +12253,12 @@ addEventListener("DOMContentLoaded",function(){
       function renderModalLayer(force = false) {
         const modalRoot = getEl("modalRoot");
         const nextModalSignature = getModalLayerSignature();
-        if (!force && nextModalSignature === modalLayerSignature) return false;
+        const signatureChanged = nextModalSignature !== modalLayerSignature;
+        // Marketplace popup lives in its own root and self-dedupes,
+        // so it always gets a chance to sync regardless of whether
+        // the centered-modal signature changed.
+        renderMarketplacePopup();
+        if (!force && !signatureChanged) return false;
         modalLayerSignature = nextModalSignature;
         modalRoot.innerHTML = "";
         if (!renderCheatModal()) {
@@ -12250,7 +12270,6 @@ addEventListener("DOMContentLoaded",function(){
                     if (!renderNoticeModal()) {
                       renderStoreModal();
                       renderEventModal();
-                      renderMarketplaceOfferModal();
                     }
                   }
                 }
