@@ -2857,6 +2857,439 @@
           width: 100%;
         }
       }
+      /* ── Social Media Hub: phone-shaped chrome ───────────────────
+         The Social tab renders inside a "phone on the workbench"
+         frame. Home screen → tap an app → see that app's feed. */
+      .phone-frame {
+        max-width: 400px;
+        margin: 0 auto;
+        background: linear-gradient(180deg, #1a1410 0%, #0d0a08 100%);
+        border: 1px solid #3a2f24;
+        border-radius: 36px;
+        padding: 14px;
+        box-shadow:
+          0 0 0 2px #0a0805,
+          0 18px 40px rgba(0, 0, 0, 0.55),
+          inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        position: relative;
+      }
+      .phone-frame::before {
+        content: "";
+        position: absolute;
+        top: 22px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 110px;
+        height: 24px;
+        background: #050403;
+        border-radius: 14px;
+        z-index: 3;
+      }
+      .phone-screen {
+        background:
+          radial-gradient(ellipse at 30% 12%, rgba(217, 162, 79, 0.12), transparent 55%),
+          radial-gradient(ellipse at 80% 88%, rgba(125, 160, 194, 0.08), transparent 55%),
+          linear-gradient(180deg, #1d1814 0%, #15110d 100%);
+        border-radius: 26px;
+        min-height: 580px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #2a221a;
+      }
+      .phone-status-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 22px 8px;
+        font-size: 11px;
+        color: #d8c8a8;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+      .phone-status-bar .ps-time {
+        font-feature-settings: "tnum";
+      }
+      .phone-status-bar .ps-icons {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        opacity: 0.85;
+      }
+      .phone-app-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 4px 18px 12px;
+      }
+      .phone-app-bar .pab-back {
+        appearance: none;
+        background: rgba(217, 162, 79, 0.08);
+        border: 1px solid rgba(217, 162, 79, 0.3);
+        color: var(--gold-soft);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        font-size: 16px;
+        cursor: pointer;
+        font-family: inherit;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .phone-app-bar .pab-back:hover {
+        background: rgba(217, 162, 79, 0.18);
+      }
+      .phone-app-bar .pab-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: var(--text-bright);
+        flex: 1;
+      }
+      .phone-app-bar .pab-handle {
+        font-size: 11px;
+        color: var(--gold-soft);
+      }
+      .phone-content {
+        padding: 6px 16px 20px;
+        max-height: 60vh;
+        overflow-y: auto;
+      }
+      /* Home screen widget — fed by the live follower count + sponsor unlock */
+      .phone-widget {
+        background: linear-gradient(180deg, rgba(182, 138, 230, 0.18) 0%, rgba(182, 138, 230, 0.06) 100%);
+        border: 1px solid rgba(182, 138, 230, 0.4);
+        border-radius: 16px;
+        padding: 14px 16px;
+        margin: 4px 16px 16px;
+        color: var(--text-bright);
+      }
+      .phone-widget .pw-label {
+        font-size: 10px;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        color: var(--purple-bright);
+        font-weight: bold;
+        margin-bottom: 6px;
+      }
+      .phone-widget .pw-value {
+        font-size: 28px;
+        font-weight: bold;
+        line-height: 1;
+        margin-bottom: 6px;
+      }
+      .phone-widget .pw-progress {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 6px;
+      }
+      .phone-widget .pw-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #b68ae6, #d19a3f);
+        border-radius: 3px;
+        transition: width 0.25s;
+      }
+      .phone-widget .pw-sub {
+        font-size: 11px;
+        color: var(--gold-soft);
+      }
+      .phone-app-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px 10px;
+        padding: 4px 16px 18px;
+      }
+      .phone-app-icon {
+        appearance: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        position: relative;
+      }
+      .phone-app-icon .pai-tile {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.18),
+          0 4px 10px rgba(0, 0, 0, 0.3);
+        transition: transform 0.12s;
+      }
+      .phone-app-icon:hover .pai-tile {
+        transform: translateY(-2px);
+      }
+      .phone-app-icon.snapgram .pai-tile {
+        background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+      }
+      .phone-app-icon.cartok .pai-tile {
+        background: linear-gradient(135deg, #25f4ee 0%, #000 50%, #fe2c55 100%);
+      }
+      .phone-app-icon.motortube .pai-tile {
+        background: linear-gradient(135deg, #ff0000 0%, #c10000 100%);
+      }
+      .phone-app-icon.messages .pai-tile {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      }
+      .phone-app-icon .pai-label {
+        font-size: 11px;
+        color: var(--text);
+        font-weight: 600;
+        letter-spacing: 0.2px;
+      }
+      .phone-app-icon .pai-badge {
+        position: absolute;
+        top: -4px;
+        right: 6px;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9px;
+        background: #ff3b30;
+        color: #fff;
+        font-size: 10px;
+        font-weight: bold;
+        line-height: 18px;
+        text-align: center;
+        padding: 0 5px;
+        box-shadow: 0 0 0 2px #15110d;
+      }
+      .phone-section-title {
+        font-size: 10px;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        color: var(--gold);
+        font-weight: bold;
+        margin: 8px 16px 8px;
+      }
+      .phone-home-bar {
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 110px;
+        height: 4px;
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.35);
+        cursor: pointer;
+      }
+      .phone-home-bar:hover {
+        background: rgba(255, 255, 255, 0.55);
+      }
+      /* Post / DM cards */
+      .phone-post {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        margin-bottom: 14px;
+        overflow: hidden;
+      }
+      .phone-post-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+      }
+      .phone-post-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f09433, #bc1888);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+      }
+      .phone-post-handle {
+        font-size: 12px;
+        font-weight: bold;
+        color: var(--text-bright);
+      }
+      .phone-post-meta {
+        font-size: 10px;
+        color: var(--text-dim);
+      }
+      .phone-post-photo {
+        width: 100%;
+        background: linear-gradient(135deg, #322517 0%, #1b1510 100%);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 6px;
+        color: #f0d4a0;
+        font-weight: bold;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      }
+      .phone-post-photo.aspect-square { aspect-ratio: 1 / 1; }
+      .phone-post-photo.aspect-tall { aspect-ratio: 9 / 13; }
+      .phone-post-photo.aspect-wide { aspect-ratio: 16 / 9; }
+      .phone-post-photo.snapgram {
+        background:
+          radial-gradient(circle at 25% 30%, rgba(240, 148, 51, 0.35), transparent 55%),
+          radial-gradient(circle at 75% 80%, rgba(188, 24, 136, 0.3), transparent 55%),
+          linear-gradient(180deg, #2b1f15 0%, #1d1510 100%);
+      }
+      .phone-post-photo.cartok {
+        background:
+          radial-gradient(circle at 30% 25%, rgba(37, 244, 238, 0.25), transparent 55%),
+          radial-gradient(circle at 70% 80%, rgba(254, 44, 85, 0.3), transparent 55%),
+          linear-gradient(180deg, #1f1a17 0%, #0e0c0a 100%);
+      }
+      .phone-post-photo.motortube {
+        background:
+          radial-gradient(ellipse at 50% 50%, rgba(255, 0, 0, 0.18), transparent 60%),
+          linear-gradient(180deg, #2a1612 0%, #190b09 100%);
+      }
+      .phone-post-photo .ppp-icon {
+        font-size: 38px;
+        line-height: 1;
+        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+      }
+      .phone-post-photo .ppp-caption {
+        font-size: 12px;
+        letter-spacing: 0.4px;
+        text-align: center;
+        padding: 0 14px;
+        color: #f5e9d8;
+      }
+      .phone-post-photo .ppp-play {
+        position: absolute;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.55);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: #fff;
+        border: 2px solid rgba(255, 255, 255, 0.25);
+      }
+      .phone-post-engagement {
+        padding: 10px 12px;
+        display: flex;
+        gap: 14px;
+        font-size: 12px;
+        color: var(--text);
+      }
+      .phone-post-engagement .ppe-good {
+        color: #9fd18e;
+      }
+      .phone-post-engagement .ppe-purple {
+        color: var(--purple-bright);
+      }
+      .phone-post-cap {
+        padding: 0 12px 10px;
+        font-size: 12px;
+        color: var(--text);
+        line-height: 1.5;
+      }
+      /* Compose card on each app screen */
+      .phone-compose {
+        background: linear-gradient(180deg, rgba(217, 162, 79, 0.08) 0%, rgba(217, 162, 79, 0.02) 100%);
+        border: 1px solid rgba(217, 162, 79, 0.35);
+        border-radius: 14px;
+        padding: 14px;
+        margin-bottom: 14px;
+      }
+      .phone-compose .pc-title {
+        font-size: 13px;
+        font-weight: bold;
+        color: var(--text-bright);
+        margin-bottom: 4px;
+      }
+      .phone-compose .pc-sub {
+        font-size: 11px;
+        color: var(--gold-soft);
+        line-height: 1.5;
+        margin-bottom: 10px;
+      }
+      .phone-compose .pc-blocked {
+        font-size: 11px;
+        color: var(--text-dim);
+        margin-top: 8px;
+        font-style: italic;
+      }
+      /* DM list */
+      .phone-dm {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        margin-bottom: 10px;
+      }
+      .phone-dm-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, #4facfe, #00f2fe);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+      }
+      .phone-dm-avatar.purple { background: linear-gradient(135deg, #a47ed4, #6f4d91); }
+      .phone-dm-avatar.green { background: linear-gradient(135deg, #93c884, #5d8b4f); }
+      .phone-dm-avatar.red { background: linear-gradient(135deg, #c97d70, #8c4e44); }
+      .phone-dm-body {
+        flex: 1;
+        min-width: 0;
+      }
+      .phone-dm-handle {
+        font-size: 12px;
+        font-weight: bold;
+        color: var(--text-bright);
+        margin-bottom: 2px;
+      }
+      .phone-dm-text {
+        font-size: 11px;
+        color: var(--text);
+        line-height: 1.45;
+        margin-bottom: 8px;
+      }
+      .phone-empty {
+        text-align: center;
+        padding: 28px 18px;
+        color: var(--text-dim);
+        font-size: 12px;
+        font-style: italic;
+        line-height: 1.6;
+      }
+      @media (max-width: 520px) {
+        .phone-frame {
+          padding: 8px;
+          border-radius: 28px;
+        }
+        .phone-frame::before {
+          top: 16px;
+          width: 80px;
+          height: 18px;
+        }
+        .phone-screen {
+          border-radius: 22px;
+          min-height: 540px;
+        }
+        .phone-app-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
     </style>
   </head>
   <body>
@@ -6537,6 +6970,8 @@
           installsDone: 0,
           diyTried: false,
           shopTried: false,
+          phoneApp: "home",
+          postHistory: [],
           collabAvailable: false,
           wifeCarSold: false,
           gloveBoxFound: false,
@@ -8413,6 +8848,7 @@
           ensureArray("junkyardStock");
           ensureArray("swapMeetStock");
           ensureArray("yardPulls");
+          ensureArray("postHistory");
           ensureArray("cars");
           // Backfill new stat categories on cars from old saves
           state.cars.forEach((c) => {
@@ -9414,6 +9850,24 @@
         state.totalCreatorEarnings = (state.totalCreatorEarnings || 0) + finalCash;
         state.creatorPostedWeek = state.week;
         if (type === "youtube") state.youtubeCooldownUntil = state.week + 2;
+        // Capture the post for the phone's per-app feeds. Newest first
+        // so the latest drop sits at the top of the Snapgram/CarTok/
+        // MotorTube screens. Capped to keep the list scrollable.
+        const carForPost = currentCar();
+        if (!Array.isArray(state.postHistory)) state.postHistory = [];
+        state.postHistory.unshift({
+          id: `post_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          type,
+          week: state.week,
+          cash: finalCash,
+          followers: finalFollowers,
+          carYear: carForPost ? carForPost.year : null,
+          carMake: carForPost ? carForPost.make : null,
+          carModel: carForPost ? carForPost.model : null,
+          carEmoji: carForPost ? carForPost.emoji : "🚗",
+          carPalette: carForPost ? carForPost.palette : "truck",
+        });
+        if (state.postHistory.length > 30) state.postHistory.length = 30;
         recordMoneyChange(finalCash - (cfg.moneyCost || 0), `${cfg.label} payout`);
         addGarageLore(type === "youtube" ? 3 : type === "reel" ? 2 : 1);
         toast(
@@ -12628,10 +13082,232 @@ addEventListener("DOMContentLoaded",function(){
         </div>`;
       }
 
+      // Phone-shaped Social tab. The Social Media Hub now lives inside
+      // a phone frame; tapping an app tile drills into a per-platform
+      // feed of past posts plus a compose card. Brand deals, collabs,
+      // and the shady-follower DM all live in the Messages app.
+
+      function setPhoneApp(app) {
+        state.phoneApp = app;
+        playSfx("click");
+        requestRender("full");
+      }
+
+      function renderPhoneStatusBar() {
+        return `<div class="phone-status-bar"><span class="ps-time">8:24 AM</span><span class="ps-icons">📶 🔋</span></div>`;
+      }
+
+      function renderPhoneHomeScreen() {
+        const next = SPONSORS.find((s) => state.followers < s.req);
+        const current = activeSponsors().slice(-1)[0];
+        const prevReq = current ? current.req : 0;
+        const nextReq = next ? next.req : current ? current.req : 100;
+        const denom = Math.max(1, nextReq - prevReq);
+        const progress = next
+          ? Math.max(0, Math.min(100, ((state.followers - prevReq) / denom) * 100))
+          : 100;
+        const widgetSub = next
+          ? `${fmtF(Math.max(0, next.req - state.followers))} to ${next.emoji} ${next.name}`
+          : "All sponsors unlocked";
+        const widget = `<div class="phone-widget">
+          <div class="pw-label">Total Followers</div>
+          <div class="pw-value">${fmtF(state.followers)}</div>
+          <div class="pw-progress"><div class="pw-progress-fill" style="width:${progress}%"></div></div>
+          <div class="pw-sub">${widgetSub}</div>
+        </div>`;
+        const canPostThisWeek = state.creatorPostedWeek !== state.week;
+        const ytReady = canPostThisWeek && (!state.youtubeCooldownUntil || state.week >= state.youtubeCooldownUntil);
+        const car = currentCar();
+        const fakeOfferOpen = !state.fakeFollowersBought && car && roadworthy(car);
+        const dmCount =
+          (state.pendingBrandDeal ? 1 : 0) +
+          (state.collabAvailable ? 1 : 0) +
+          (fakeOfferOpen ? 1 : 0);
+        const apps = [
+          { id: "snapgram", emoji: "📸", label: "Snapgram", badge: canPostThisWeek ? "" : 0 },
+          { id: "cartok", emoji: "🎬", label: "CarTok", badge: canPostThisWeek ? "" : 0 },
+          { id: "motortube", emoji: "▶️", label: "MotorTube", badge: ytReady ? "" : 0 },
+          { id: "messages", emoji: "💬", label: "Messages", badge: dmCount },
+        ];
+        const grid = `<div class="phone-app-grid">${apps
+          .map(
+            (a) =>
+              `<button class="phone-app-icon ${a.id}" onclick="setPhoneApp('${a.id}')">
+                <span class="pai-tile">${a.emoji}</span>
+                <span class="pai-label">${a.label}</span>
+                ${a.badge ? `<span class="pai-badge">${a.badge === "" ? "•" : a.badge}</span>` : ""}
+              </button>`,
+          )
+          .join("")}</div>`;
+        const lifetime = state.totalCreatorEarnings || 0;
+        const stats = `<div class="phone-section-title">Creator stats</div>
+          <div style="margin:0 16px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:12px 14px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div><div class="tiny muted" style="letter-spacing:0.6px;text-transform:uppercase">Lifetime payout</div><div style="color:#9fd18e;font-weight:bold;font-size:15px">$${fmt(lifetime)}</div></div>
+              <div><div class="tiny muted" style="letter-spacing:0.6px;text-transform:uppercase">Posts dropped</div><div style="color:var(--text-bright);font-weight:bold;font-size:15px">${(state.postHistory || []).length}</div></div>
+            </div>
+          </div>`;
+        return widget + grid + stats;
+      }
+
+      function renderPhoneCompose(platform) {
+        const platformMap = {
+          snapgram: "insta",
+          cartok: "reel",
+          motortube: "youtube",
+        };
+        const postType = platformMap[platform];
+        const cfg = CREATOR_POSTS[postType];
+        if (!cfg) return "";
+        const blocked = creatorPostBlockedReason(postType);
+        const reward = calcCreatorReward(postType);
+        const costBits = [];
+        if (cfg.moneyCost) costBits.push(`-$${cfg.moneyCost}`);
+        if (cfg.fuelCost) costBits.push(`-${cfg.fuelCost} gal`);
+        const costText = costBits.length ? costBits.join(" · ") : "Free to post";
+        return `<div class="phone-compose">
+          <div class="pc-title">${cfg.emoji} Drop a ${cfg.label.split(" ")[0]}</div>
+          <div class="pc-sub">${cfg.desc}</div>
+          <div class="tiny muted" style="margin-bottom:10px">Estimated: <span style="color:#9fd18e">+$${fmt(reward.cash)}</span> · <span style="color:var(--purple-bright)">+${fmtF(reward.followers)}</span> · ${costText}</div>
+          ${button(blocked || "Post now", `doCreatorPost('${postType}')`, !!blocked, "", "width:100%")}
+          ${blocked ? `<div class="pc-blocked">${blocked}</div>` : ""}
+        </div>`;
+      }
+
+      function renderPhonePostFeed(platform) {
+        const platformMap = {
+          snapgram: "insta",
+          cartok: "reel",
+          motortube: "youtube",
+        };
+        const postType = platformMap[platform];
+        const posts = (state.postHistory || []).filter((p) => p.type === postType);
+        if (!posts.length) {
+          return `<div class="phone-empty">No ${platform} posts yet. The first one shows up here once you tap Post.</div>`;
+        }
+        return posts
+          .map((p) => {
+            const carLabel =
+              p.carYear && p.carMake
+                ? `${p.carYear} ${p.carMake}${p.carModel ? " " + p.carModel : ""}`
+                : "the build";
+            const aspect =
+              platform === "snapgram"
+                ? "aspect-square"
+                : platform === "cartok"
+                  ? "aspect-tall"
+                  : "aspect-wide";
+            const photoIcon =
+              platform === "snapgram" ? "📸" : platform === "cartok" ? "🎬" : "▶️";
+            const playOverlay =
+              platform === "motortube" || platform === "cartok"
+                ? `<div class="ppp-play">▶</div>`
+                : "";
+            return `<div class="phone-post">
+              <div class="phone-post-head">
+                <div class="phone-post-avatar">${p.carEmoji || "🚗"}</div>
+                <div style="flex:1;min-width:0">
+                  <div class="phone-post-handle">@your_garage</div>
+                  <div class="phone-post-meta">Week ${p.week} · ${carLabel}</div>
+                </div>
+              </div>
+              <div class="phone-post-photo ${platform} ${aspect}">
+                <span class="ppp-icon">${photoIcon}</span>
+                <span class="ppp-caption">${carLabel}</span>
+                ${playOverlay}
+              </div>
+              <div class="phone-post-engagement">
+                <span class="ppe-good">+$${fmt(p.cash)}</span>
+                <span class="ppe-purple">+${fmtF(p.followers)} followers</span>
+              </div>
+            </div>`;
+          })
+          .join("");
+      }
+
+      function renderPhoneMessagesApp() {
+        const dms = [];
+        const deal = state.pendingBrandDeal;
+        if (deal) {
+          dms.push(`<div class="phone-dm">
+            <div class="phone-dm-avatar purple">📦</div>
+            <div class="phone-dm-body">
+              <div class="phone-dm-handle">${deal.brand}</div>
+              <div class="phone-dm-text">Hey! We'd send a free Budget part for a sponsored post. +${fmtF(deal.followerBonus)} followers on the campaign.</div>
+              <div class="btn-row two">${button("Accept", "acceptBrandDeal()", !!state.freePart, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright)")}${button("Decline", "declineBrandDeal()", false, "", "width:100%;background:#4a3c2e;color:var(--text);border-color:#6b5840")}</div>
+              ${state.freePart ? `<div class="tiny warn" style="margin-top:6px">Claim your existing free part before accepting another.</div>` : ""}
+            </div>
+          </div>`);
+        }
+        if (state.collabAvailable) {
+          const reward = calcCollabReward();
+          const collabAlready = state.collabDoneWeek === state.week;
+          dms.push(`<div class="phone-dm">
+            <div class="phone-dm-avatar green">🤝</div>
+            <div class="phone-dm-body">
+              <div class="phone-dm-handle">@scene_creator</div>
+              <div class="phone-dm-text">Want to do a collab build video? Big follower bump, one-time deal.</div>
+              ${button(`Do a Collab · +${fmtF(reward)} followers`, "doCollab()", collabAlready, "", "width:100%;background:linear-gradient(180deg,#93c884 0%,#5d8b4f 100%);border-color:#a7d998;color:#11180d")}
+            </div>
+          </div>`);
+        }
+        if (!state.fakeFollowersBought) {
+          const car = currentCar();
+          const fakeRoadworthy = car && roadworthy(car);
+          dms.push(`<div class="phone-dm">
+            <div class="phone-dm-avatar red">💀</div>
+            <div class="phone-dm-body">
+              <div class="phone-dm-handle">@FollowVendor73</div>
+              <div class="phone-dm-text">"1,000 real-looking followers overnight, $200 cash. Nobody has to know." Don't tell your sponsors — they definitely check this stuff.</div>
+              ${button(fakeRoadworthy ? "Buy 1,000 followers · $200" : "Need a roadworthy build first", "buyFakeFollowers()", !fakeRoadworthy || state.money < 200, "", "width:100%;background:linear-gradient(180deg,#c97d70 0%,#8c4e44 100%);border-color:#d99a8f;color:#1a120a;font-weight:bold")}
+            </div>
+          </div>`);
+        }
+        if (!dms.length) {
+          return `<div class="phone-empty">No new DMs. Brand deals open at ${fmtF(BRAND_DEAL_MIN_FOLLOWERS)} followers.</div>`;
+        }
+        return dms.join("");
+      }
+
+      function renderPhoneAppShell(title, body) {
+        return `<div class="phone-app-bar">
+          <button class="pab-back" onclick="setPhoneApp('home')" title="Home">←</button>
+          <div class="pab-title">${title}</div>
+          <div class="pab-handle">@your_garage</div>
+        </div><div class="phone-content">${body}</div>`;
+      }
+
       function renderCareer() {
-        const activeCar = currentCar();
-        const socialHubBody = `${renderFollowersTracker()}${renderUnifiedSocialFeed(activeCar, { showSponsors: false, showHistory: true })}`;
-        return `<div class="grid-main"><div>${heroPanel("Social Media Hub", "", "", socialHubBody)}</div><div>${renderUpcomingBar()}${panel(
+        const app = state.phoneApp || "home";
+        let body;
+        if (app === "snapgram") {
+          body = renderPhoneAppShell(
+            "📸 Snapgram",
+            renderPhoneCompose("snapgram") + renderPhonePostFeed("snapgram"),
+          );
+        } else if (app === "cartok") {
+          body = renderPhoneAppShell(
+            "🎬 CarTok",
+            renderPhoneCompose("cartok") + renderPhonePostFeed("cartok"),
+          );
+        } else if (app === "motortube") {
+          body = renderPhoneAppShell(
+            "▶️ MotorTube",
+            renderPhoneCompose("motortube") + renderPhonePostFeed("motortube"),
+          );
+        } else if (app === "messages") {
+          body = renderPhoneAppShell("💬 Messages", renderPhoneMessagesApp());
+        } else {
+          body = renderPhoneHomeScreen();
+        }
+        const phone = `<div class="phone-frame">
+          <div class="phone-screen">
+            ${renderPhoneStatusBar()}
+            ${body}
+            <div class="phone-home-bar" onclick="setPhoneApp('home')" title="Home"></div>
+          </div>
+        </div>`;
+        return `<div class="grid-main"><div>${phone}</div><div>${renderUpcomingBar()}${panel(
           "Sponsor Watch",
           `${SPONSORS.map(
               (s) =>
