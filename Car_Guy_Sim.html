@@ -6480,6 +6480,7 @@
           scavengeChoice: null,
           scavengeChoiceWeek: 0,
           scavengeStockWeek: 0,
+          atTrip: false,
           junkyardStock: [],
           swapMeetStock: [],
           pendingScene: null,
@@ -7861,6 +7862,7 @@
       function refreshScavengeIfDue() {
         if (scavengeAvailable() && state.scavengeChoice) {
           state.scavengeChoice = null;
+          state.atTrip = false;
           regenerateScavengeStock(true);
           return;
         }
@@ -7884,6 +7886,7 @@
         );
         state.scavengeChoice = location;
         state.scavengeChoiceWeek = state.week;
+        state.atTrip = true;
         playSfx("click");
         toast(
           location === "junkyard"
@@ -10071,6 +10074,11 @@
      VIEW SETTERS
   ═══════════════════════════════════════════ */
       function setView(v) {
+        // Leaving the Marketplace tab while at a Saturday trip ends
+        // the session — you can't be "at the swap" if you're across
+        // town at a show. The cooldown still holds you out for the
+        // rest of the cycle.
+        if (v !== "dealership" && state.atTrip) state.atTrip = false;
         state.view = v;
         requestRender("full");
       }
@@ -12222,44 +12230,29 @@ addEventListener("DOMContentLoaded",function(){
         )}${panel(r.tier === "Cars & Coffee" ? "Crowd Pleasers" : "Final Standings", standingsBody, "", "#7da0c2")}</div><div>${renderUpcomingBar()}${panel("After the Show", `${button("Back to Garage", "state.postShowWeekLocked=false; setView('garage')", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "Return to the garage and keep building.", "#d8a24f")}</div></div>`;
       }
 
+      function headHomeFromTrip() {
+        if (!state.atTrip) return;
+        state.atTrip = false;
+        toast(
+          state.scavengeChoice === "junkyard"
+            ? "Threw the haul in the truck and rolled out. Done at the yard for the cycle."
+            : "Walked back to the truck. Pomona's done with you for the cycle.",
+          "ok",
+        );
+        saveGame();
+        requestRender("full");
+      }
+
       function renderScavengeTrip() {
         refreshScavengeIfDue();
-        const isAvailable = scavengeAvailable();
         const choice = state.scavengeChoice;
+        const isAvailable = scavengeAvailable();
+        const atTrip = !!state.atTrip && !!choice;
         const weeksLeft = Math.max(
           0,
           state.scavengeChoiceWeek + SCAVENGE_COOLDOWN_WEEKS - state.week,
         );
-        if (isAvailable) {
-          const yardCount = state.junkyardStock.length;
-          const swapCount = state.swapMeetStock.length;
-          const ride = canMakeScavengeTrip();
-          const noRideBanner = ride.ok
-            ? ""
-            : `<div class="info-box" style="background:rgba(196,109,96,0.07);border:1px solid rgba(196,109,96,0.4);margin-bottom:12px;padding:10px 12px"><div class="tiny" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">🚫 No way to get there</div><div class="tiny muted" style="line-height:1.5">${ride.msg} Get the project running (engine ${ROADWORTHY_ENGINE}+, transmission ${ROADWORTHY_TRANSMISSION}+, brakes ${ROADWORTHY_BRAKES}+) and the trip opens up.</div></div>`;
-          const yardCard = `<div style="background:rgba(125,160,194,0.07);border:1px solid rgba(125,160,194,0.4);border-radius:8px;padding:12px">
-              <div class="small" style="color:var(--blue-bright);font-weight:bold;margin-bottom:6px">🔩 Pick-A-Part</div>
-              <div class="tiny muted" style="line-height:1.5;margin-bottom:8px">Used parts ~40% off. Lower stat lift than new — they're already lived in.</div>
-              <div class="tiny" style="color:var(--text);margin-bottom:8px">${yardCount} part${yardCount === 1 ? "" : "s"} on the lot today</div>
-              <div class="tiny muted" style="margin-bottom:8px">$${JUNKYARD_GAS_COST} gas + $${JUNKYARD_ENTRY_FEE} entry = <span style="color:var(--text)">$${JUNKYARD_TRIP_COST}</span></div>
-              ${button(`Hit the Yard · $${JUNKYARD_TRIP_COST}`, "commitScavengeTrip('junkyard')", !ride.ok || state.money < JUNKYARD_TRIP_COST || !yardCount, "", "width:100%;background:#7da0c2;border-color:var(--blue-bright)")}
-            </div>`;
-          const swapCard = `<div style="background:rgba(217,162,79,0.07);border:1px solid rgba(217,162,79,0.4);border-radius:8px;padding:12px">
-              <div class="small" style="color:var(--gold);font-weight:bold;margin-bottom:6px">🛠 Pomona Swap</div>
-              <div class="tiny muted" style="line-height:1.5;margin-bottom:8px">Used tools ~50% off. Cash only, no Tool Truck plan. Random selection.</div>
-              <div class="tiny" style="color:var(--text);margin-bottom:8px">${swapCount} tool${swapCount === 1 ? "" : "s"} on tables today</div>
-              <div class="tiny muted" style="margin-bottom:8px">$${SWAP_GAS_COST} gas + $${SWAP_ENTRY_FEE} entry + $${SWAP_PARKING_COST} parking = <span style="color:var(--text)">$${SWAP_TRIP_COST}</span></div>
-              ${button(`Hit the Swap · $${SWAP_TRIP_COST}`, "commitScavengeTrip('swap')", !ride.ok || state.money < SWAP_TRIP_COST || !swapCount, "", "width:100%")}
-            </div>`;
-          return `<div style="margin-bottom:14px">${heroPanel(
-            "Saturday Road Trip",
-            "Pick-A-Part or Pomona Swap",
-            "One trip every two weeks. Bring cash. Whichever you pick, the other one's gone for the cycle.",
-            `${noRideBanner}<div class="info-box" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;background:transparent;border:none;padding:0">${yardCard}${swapCard}</div>`,
-            "blue",
-          )}</div>`;
-        }
-        if (choice === "junkyard") {
+        if (atTrip && choice === "junkyard") {
           const yardItems = state.junkyardStock
             .map((s) => {
               const part = PARTS.find((p) => p.id === s.partId);
@@ -12287,16 +12280,16 @@ addEventListener("DOMContentLoaded",function(){
               </div>`;
             })
             .join("");
-          const cooldownNote = `Pomona Swap is closed for you this cycle — next trip in ${weeksLeft} week${weeksLeft === 1 ? "" : "s"}.`;
+          const headHome = `<div style="margin-top:12px">${button("Head home", "headHomeFromTrip()", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:var(--text);font-size:12px")}</div>`;
           return `<div style="margin-bottom:14px">${heroPanel(
             "Pick-A-Part · Saturday Run",
             "Walk the rows, pull what you can use",
-            `Yard parts give ~30% less stat lift than new. ${cooldownNote}`,
-            yardItems || `<div class="small muted">Picked clean. Rough day at the yard.</div>`,
+            "Yard parts give ~30% less stat lift than new. Head home when you're done — leaving the tab counts as leaving.",
+            (yardItems || `<div class="small muted">Picked clean. Rough day at the yard.</div>`) + headHome,
             "blue",
           )}</div>`;
         }
-        if (choice === "swap") {
+        if (atTrip && choice === "swap") {
           const swapItems = state.swapMeetStock
             .map((s) => {
               const tool = TOOLS_LIST.find((t) => t.id === s.toolId);
@@ -12311,13 +12304,55 @@ addEventListener("DOMContentLoaded",function(){
               </div>`;
             })
             .join("");
-          const cooldownNote = `Pick-A-Part is closed for you this cycle — next trip in ${weeksLeft} week${weeksLeft === 1 ? "" : "s"}.`;
+          const headHome = `<div style="margin-top:12px">${button("Head home", "headHomeFromTrip()", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:var(--text);font-size:12px")}</div>`;
           return `<div style="margin-bottom:14px">${heroPanel(
             "Pomona Swap · Saturday Run",
             "Cash only, no receipts, no warranty",
-            `Tool deals you'll regret skipping. ${cooldownNote}`,
-            swapItems || `<div class="small muted">Tables are bare. Came too late.</div>`,
+            "Tool deals you'll regret skipping. Head home when you're done — leaving the tab counts as leaving.",
+            (swapItems || `<div class="small muted">Tables are bare. Came too late.</div>`) + headHome,
             "gold",
+          )}</div>`;
+        }
+        if (!isAvailable && choice) {
+          const sub =
+            choice === "junkyard"
+              ? `Already burned this cycle's trip on Pick-A-Part. Next Saturday Road Trip available in ${weeksLeft} week${weeksLeft === 1 ? "" : "s"}.`
+              : `Already burned this cycle's trip on Pomona Swap. Next Saturday Road Trip available in ${weeksLeft} week${weeksLeft === 1 ? "" : "s"}.`;
+          return `<div style="margin-bottom:14px">${heroPanel(
+            "Saturday Road Trip",
+            "On the bench until next cycle",
+            sub,
+            `<div class="small muted" style="line-height:1.7">You already went this cycle — Pick-A-Part on a Saturday is the rule, not Pick-A-Part on a Saturday <em>and again on Wednesday</em>. Come back in ${weeksLeft} week${weeksLeft === 1 ? "" : "s"}.</div>`,
+            "blue",
+          )}</div>`;
+        }
+        if (isAvailable) {
+          const yardCount = state.junkyardStock.length;
+          const swapCount = state.swapMeetStock.length;
+          const ride = canMakeScavengeTrip();
+          const noRideBanner = ride.ok
+            ? ""
+            : `<div class="info-box" style="background:rgba(196,109,96,0.07);border:1px solid rgba(196,109,96,0.4);margin-bottom:12px;padding:10px 12px"><div class="tiny" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">🚫 No way to get there</div><div class="tiny muted" style="line-height:1.5">${ride.msg} Get the project running (engine ${ROADWORTHY_ENGINE}+, transmission ${ROADWORTHY_TRANSMISSION}+, brakes ${ROADWORTHY_BRAKES}+) and the trip opens up.</div></div>`;
+          const yardCard = `<div style="background:rgba(125,160,194,0.07);border:1px solid rgba(125,160,194,0.4);border-radius:8px;padding:12px">
+              <div class="small" style="color:var(--blue-bright);font-weight:bold;margin-bottom:6px">🔩 Pick-A-Part</div>
+              <div class="tiny muted" style="line-height:1.5;margin-bottom:8px">Used parts ~40% off. Lower stat lift than new — they're already lived in.</div>
+              <div class="tiny" style="color:var(--text);margin-bottom:8px">${yardCount} part${yardCount === 1 ? "" : "s"} on the lot today</div>
+              <div class="tiny muted" style="margin-bottom:8px">$${JUNKYARD_GAS_COST} gas + $${JUNKYARD_ENTRY_FEE} entry = <span style="color:var(--text)">$${JUNKYARD_TRIP_COST}</span></div>
+              ${button(`Hit the Yard · $${JUNKYARD_TRIP_COST}`, "commitScavengeTrip('junkyard')", !ride.ok || state.money < JUNKYARD_TRIP_COST || !yardCount, "", "width:100%;background:#7da0c2;border-color:var(--blue-bright)")}
+            </div>`;
+          const swapCard = `<div style="background:rgba(217,162,79,0.07);border:1px solid rgba(217,162,79,0.4);border-radius:8px;padding:12px">
+              <div class="small" style="color:var(--gold);font-weight:bold;margin-bottom:6px">🛠 Pomona Swap</div>
+              <div class="tiny muted" style="line-height:1.5;margin-bottom:8px">Used tools ~50% off. Cash only, no Tool Truck plan. Random selection.</div>
+              <div class="tiny" style="color:var(--text);margin-bottom:8px">${swapCount} tool${swapCount === 1 ? "" : "s"} on tables today</div>
+              <div class="tiny muted" style="margin-bottom:8px">$${SWAP_GAS_COST} gas + $${SWAP_ENTRY_FEE} entry + $${SWAP_PARKING_COST} parking = <span style="color:var(--text)">$${SWAP_TRIP_COST}</span></div>
+              ${button(`Hit the Swap · $${SWAP_TRIP_COST}`, "commitScavengeTrip('swap')", !ride.ok || state.money < SWAP_TRIP_COST || !swapCount, "", "width:100%")}
+            </div>`;
+          return `<div style="margin-bottom:14px">${heroPanel(
+            "Saturday Road Trip",
+            "Pick-A-Part or Pomona Swap",
+            "One trip every two weeks. Bring cash. Whichever you pick, the other one's gone for the cycle.",
+            `${noRideBanner}<div class="info-box" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;background:transparent;border:none;padding:0">${yardCard}${swapCard}</div>`,
+            "blue",
           )}</div>`;
         }
         return "";
