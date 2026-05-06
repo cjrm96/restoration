@@ -287,6 +287,48 @@
           0 0 0 0.5px rgba(60, 30, 5, 0.5),
           inset 0 1px 0 rgba(255, 245, 200, 0.6);
       }
+      /* Compact pill style for sub-filters that hang under a primary
+         tab row (currently the build-category strip). Smaller, rounded,
+         lower-contrast — they read as filter chips, not navigation. */
+      .cat-pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+      .cat-pill {
+        appearance: none;
+        background: linear-gradient(180deg, #2a221c 0%, #1a1410 100%);
+        color: #b4a790;
+        border: 1px solid #3a3128;
+        border-radius: 999px;
+        padding: 6px 12px 6px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+        cursor: pointer;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-family: inherit;
+        transition: color 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      }
+      .cat-pill:hover:not(.active) {
+        color: var(--gold-soft);
+        border-color: rgba(217, 162, 79, 0.4);
+      }
+      .cat-pill.active {
+        background: linear-gradient(180deg, #5a4a30 0%, #3d2f1c 100%);
+        color: var(--text-bright);
+        border-color: var(--gold);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.08),
+          0 2px 6px rgba(217, 162, 79, 0.18);
+      }
+      .cat-pill .cat-pill-icon {
+        font-size: 12px;
+      }
       .content {
         min-height: calc(100vh - 180px);
         padding: 18px;
@@ -12049,7 +12091,7 @@ addEventListener("DOMContentLoaded",function(){
                 : `${remaining}/${POLISH_PER_WEEK} sessions left this week. +${POLISH_GAIN} per pass.`;
             fineTuneMarkup = `<div class="info-box" style="background:rgba(168,132,221,0.06);border-color:rgba(168,132,221,0.45);margin-bottom:14px"><div class="flex between center" style="gap:10px;margin-bottom:6px"><div><div class="small" style="color:var(--purple-bright);font-weight:bold">${action.emoji} ${action.verb} · pre-show polish</div><div class="tiny muted" style="margin-top:2px">${sub}</div></div><div style="min-width:140px">${button(maxed ? "Maxed" : `+${POLISH_GAIN} · $${POLISH_COST}`, `polishCategory('${state.shopCat}')`, blocked, "", "width:100%;padding:7px 8px;font-size:12px")}</div></div></div>`;
           }
-          subcontent = `<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">${CATS.map((cat) => tab(`${CAT_ICONS[cat]} ${CAT_LABELS[cat]}`, state.shopCat === cat, `setShopCat('${cat}')`)).join("")}</div><div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div><div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>${fineTuneMarkup}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}${avail
+          subcontent = `<div class="cat-pill-row">${CATS.map((cat) => `<button class="cat-pill ${state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')"><span class="cat-pill-icon">${CAT_ICONS[cat]}</span>${CAT_LABELS[cat]}</button>`).join("")}</div><div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div><div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>${fineTuneMarkup}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}${avail
             .map((p) => {
               const rq = p.tools || [];
               const miss = rq.filter((tid) => !state.ownedTools.includes(tid));
@@ -12442,7 +12484,6 @@ addEventListener("DOMContentLoaded",function(){
         resolveCompletedRestorations(false);
         const stash = state.partsInventory.filter((i) => !i.listed && !i.sold);
         const listed = state.partsInventory.filter((i) => i.listed && !i.sold);
-        const recent = (state.buyerHistory || []).slice(0, 4);
 
         const STASH_PREVIEW = 5;
         const LISTED_PREVIEW = 5;
@@ -12518,19 +12559,6 @@ addEventListener("DOMContentLoaded",function(){
               .join("")
           : `<div class="small muted">Every project on the lot is already in your garage. Move some metal before more comes around.</div>`;
 
-        const recentMarkup = recent.length
-          ? recent
-              .map(
-                (entry) => `
-      <div class="guide-step">
-        <span class="small" style="color:var(--text)">${entry.item}</span>
-        <span class="tiny good">$${fmt(entry.amount)}</span>
-      </div>
-    `,
-              )
-              .join("")
-          : `<div class="small muted">No deals closed yet this season.</div>`;
-
         return `${renderScavengeTrip()}<div class="grid-main"><div>${heroPanel(
           "Sell on Marketplace",
           "Move the parts you're done with",
@@ -12548,15 +12576,6 @@ addEventListener("DOMContentLoaded",function(){
     `,
           "gold",
           "marketplace",
-        )}${panel(
-          "Recent Buyers",
-          `
-      <div class="info-box">
-        ${recentMarkup}
-      </div>
-    `,
-          "Who's been showing up in your DMs.",
-          "#b68ae6",
         )}</div><div>${heroPanel(
           "On the Lot",
           "Someone else's project, yours for the right price",
