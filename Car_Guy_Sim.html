@@ -3469,6 +3469,11 @@
         chrome: "✨",
       };
 
+      // Tier ordering for display: Budget jobs are the entry point,
+      // Quality is the middle, Show Grade is the deep-end. The list
+      // sorts to that order regardless of where parts sit in source.
+      const TIER_ORDER = { Budget: 0, Quality: 1, "Show Grade": 2 };
+
       const PARTS = [
         {
           id: 1,
@@ -11917,7 +11922,11 @@ addEventListener("DOMContentLoaded",function(){
             (p) =>
               p.category === state.shopCat &&
               !car.installedParts.includes(p.id),
-          );
+          ).sort((a, b) => {
+            const t =
+              (TIER_ORDER[a.tier] ?? 99) - (TIER_ORDER[b.tier] ?? 99);
+            return t !== 0 ? t : a.id - b.id;
+          });
           // Fine-tuning card for the active category — appears once every part
           // in this silo is installed. Replaces the old standalone Fine Tuning
           // panel so the polish action lives next to the parts that earn it.
