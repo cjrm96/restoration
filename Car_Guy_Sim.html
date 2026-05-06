@@ -7901,6 +7901,27 @@
         requestRender("full");
       }
 
+      // Find the best car in the garage to drop a yard part onto.
+      // Prefers the currently active car (the tab the player is looking
+      // at) if it can take the part; otherwise falls back to any other
+      // eligible car so a finished build doesn't block a pull meant
+      // for a different project.
+      function pickPullTargetCar(part) {
+        if (!state.cars || !state.cars.length) return null;
+        const cap = workspaceData().maxActive;
+        const eligible = state.cars.filter((c) => {
+          if (c.installedParts.includes(part.id)) return false;
+          if ((c[part.category] || 0) >= 100) return false;
+          if (findActiveTask(c.id, part.id)) return false;
+          if (activeTasksByMethod(c.id, "shop").length) return false;
+          if (activeTasksForCar(c.id).length >= cap) return false;
+          return true;
+        });
+        if (!eligible.length) return null;
+        const active = eligible.find((c) => c.id === state.carId);
+        return active || eligible[0];
+      }
+
       function pullYardPart(partId) {
         if (state.scavengeChoice !== "junkyard")
           return toast("You're not at the yard right now.", "err");
@@ -7909,13 +7930,8 @@
         const stock = state.junkyardStock[stockIdx];
         const part = PARTS.find((p) => p.id === partId);
         if (!part) return;
-        const car = currentCar();
-        if (!car) return toast("No car to drop it onto.", "err");
-        if (car.installedParts.includes(part.id))
-          return toast("Already installed that part.", "err");
-        if (findActiveTask(car.id, part.id))
-          return toast("That job is already on the bench.", "err");
-        if (car[part.category] >= 100) return toast("Already maxed out.", "err");
+        if (!state.cars || !state.cars.length)
+          return toast("No car to drop it onto.", "err");
         const missing = (part.tools || []).filter(
           (tid) => !state.ownedTools.includes(tid),
         );
@@ -7927,16 +7943,10 @@
         }
         if (state.money < stock.price)
           return toast("Not enough cash at the gate.", "err");
-        if (
-          activeTasksForCar(car.id).length >= workspaceData().maxActive
-        )
+        const car = pickPullTargetCar(part);
+        if (!car)
           return toast(
-            `${workspaceData().name} is already full. Finish or abandon a job first.`,
-            "err",
-          );
-        if (activeTasksByMethod(car.id, "shop").length)
-          return toast(
-            "Car is at the shop right now. You can't drop yard parts in mid-job.",
+            "Nothing in the garage can take this right now — already installed, maxed out, or the bench is full.",
             "err",
           );
         state.money -= stock.price;
@@ -7960,8 +7970,11 @@
         });
         state.junkyardStock.splice(stockIdx, 1);
         playSfx("wrench");
+        const activeMatch = car.id === state.carId;
         toast(
-          `Pulled the ${part.name} off a donor and threw it in the truck.`,
+          activeMatch
+            ? `Pulled the ${part.name} off a donor and threw it in the truck.`
+            : `Pulled the ${part.name} off a donor — heading onto your ${car.year} ${car.make}, not the one in the active tab.`,
           "ok",
         );
         saveGame();
@@ -12258,12 +12271,19 @@ addEventListener("DOMContentLoaded",function(){
               const missingNote = missing.length
                 ? `<div class="tiny" style="color:var(--red-bright);margin-top:4px">Need ${missing.map((id) => TOOLS_LIST.find((t) => t.id === id)?.name).join(", ")}</div>`
                 : "";
+              const target = pickPullTargetCar(part);
+              const noTarget = !target;
+              const noTargetNote = noTarget
+                ? `<div class="tiny muted" style="margin-top:4px">No car in the garage can take it right now.</div>`
+                : target.id !== state.carId
+                  ? `<div class="tiny muted" style="margin-top:4px">→ Will land on your ${target.year} ${target.make} (other tab).</div>`
+                  : "";
               return `<div class="feed-item">
                 <div class="feed-kicker">PICK-A-PART · ${(part.tier || "").toUpperCase()}</div>
                 <div class="feed-text">${part.name}</div>
                 <div class="feed-meta">+${yardImp} ${CAT_LABELS[part.category]} (vs +${part.imp} new) · normally $${fmt(part.diy)} new</div>
-                ${missingNote}
-                ${button(`Pull it · $${fmt(s.price)}`, `pullYardPart(${part.id})`, state.money < s.price || missing.length > 0, "", "width:100%;margin-top:8px;font-size:12px")}
+                ${missingNote}${noTargetNote}
+                ${button(`Pull it · $${fmt(s.price)}`, `pullYardPart(${part.id})`, state.money < s.price || missing.length > 0 || noTarget, "", "width:100%;margin-top:8px;font-size:12px")}
               </div>`;
             })
             .join("");
