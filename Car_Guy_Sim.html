@@ -11377,6 +11377,7 @@ addEventListener("DOMContentLoaded",function(){
            ${button("📖  Replay Tutorial", "replayTutorial()", false, "", "width:100%;margin-bottom:10px")}
            ${button("🗑  Reset Save (Start Over)", "resetSaveConfirm()", false, "", "width:100%;background:#5a2222;border-color:#a04040;color:#f0c8c8")}`,
           "", "#7da0c2")}
+        ${panel("Legacy", renderLegacySettingsCard(), "", "#d8a24f")}
         ${panel("About",
           `<div style="text-align:center;padding:6px 0 14px">
              <div style="color:var(--gold);font-weight:bold;font-size:20px;letter-spacing:0.4px;margin-bottom:6px">Car Guy Simulator</div>
@@ -12502,25 +12503,28 @@ addEventListener("DOMContentLoaded",function(){
         )}</div></div>`;
       }
 
-      function renderLegacyTeaser() {
+      // Settings modal hosts the Legacy Wall entry point — out-of-game
+      // career meta lives next to other meta controls (audio, pause,
+      // tutorial replay) rather than crowding the Social tab.
+      function renderLegacySettingsCard() {
         const builds = state.legacyBuilds || [];
         const count = builds.length;
         const nationals = builds.filter((b) => b.wonNational).length;
         const subtitle = count
           ? `${count} build${count === 1 ? "" : "s"} retired · ${nationals} National title${nationals === 1 ? "" : "s"}`
           : "No retired builds yet. Win Nationals or start a Legacy run to unlock.";
-        return `<div class="legacy-hero" style="margin-bottom:14px;padding:20px 20px 18px">
+        return `<div class="legacy-hero" style="padding:18px 18px 16px">
           <div class="legacy-hero-kicker">Legacy Wall</div>
-          <div style="font-size:20px;font-weight:bold;color:var(--text-bright);margin-bottom:4px;letter-spacing:.2px">Your career so far</div>
+          <div style="font-size:18px;font-weight:bold;color:var(--text-bright);margin-bottom:4px;letter-spacing:.2px">Your career so far</div>
           <div style="font-size:13px;color:var(--gold-soft);font-style:italic;line-height:1.6;margin-bottom:14px">${subtitle}</div>
-          <button class="victory-primary" style="padding:11px 22px;font-size:14px" onclick="openLegacyWall()">${count ? "Open the wall →" : "Preview the wall →"}</button>
+          <button class="victory-primary" style="padding:10px 20px;font-size:13px" onclick="closeSettings();openLegacyWall();">${count ? "Open the wall →" : "Preview the wall →"}</button>
         </div>`;
       }
 
       function renderCareer() {
         const activeCar = currentCar();
         const socialHubBody = `${renderFollowersTracker()}${renderUnifiedSocialFeed(activeCar, { showSponsors: false, showHistory: true })}`;
-        return `<div class="grid-main"><div>${heroPanel("Social Media Hub", "", "", socialHubBody)}${renderLegacyTeaser()}</div><div>${renderUpcomingBar()}${panel(
+        return `<div class="grid-main"><div>${heroPanel("Social Media Hub", "", "", socialHubBody)}</div><div>${renderUpcomingBar()}${panel(
           "Sponsor Watch",
           `${SPONSORS.map(
               (s) =>
