@@ -214,10 +214,10 @@
         border: 1px solid #2a1d10;
         border-radius: 3px;
         cursor: pointer;
-        font-family: "Courier New", "Lucida Console", monospace;
+        font-family: inherit;
         font-weight: bold;
-        font-size: 11px;
-        letter-spacing: 1.6px;
+        font-size: 12px;
+        letter-spacing: 1.2px;
         text-transform: uppercase;
         white-space: nowrap;
         position: relative;
@@ -2740,6 +2740,37 @@
         text-align: center;
         margin: 4px 0 8px;
         font-style: italic;
+      }
+      /* Anchor the Marketplace Messenger popup to the bottom-right corner,
+         like the real Facebook chat windows. No screen dim — clicks pass
+         through the wrapper so the rest of the UI stays visible. */
+      .modal.mp-modal {
+        background: transparent;
+        align-items: flex-end;
+        justify-content: flex-end;
+        padding: 0 16px 76px;
+        pointer-events: none;
+      }
+      .modal.mp-modal .mp-card {
+        pointer-events: auto;
+        width: 360px;
+        max-width: calc(100vw - 32px);
+        animation: mp-pop-in 0.22s ease-out;
+      }
+      .modal.mp-modal .mp-conversation {
+        max-height: min(50vh, 360px);
+      }
+      @keyframes mp-pop-in {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      @media (max-width: 520px) {
+        .modal.mp-modal {
+          padding: 0 8px 64px;
+        }
+        .modal.mp-modal .mp-card {
+          width: 100%;
+        }
       }
     </style>
   </head>
@@ -11213,7 +11244,7 @@ addEventListener("DOMContentLoaded",function(){
                     ? "#b3261e"
                     : "#2a1f12";
         root.innerHTML = `
-<div class="modal">
+<div class="modal mp-modal">
   <div class="mp-card">
     <div class="mp-header">
       <div class="mp-avatar">${buyerInitial}</div>
