@@ -6524,6 +6524,7 @@
           atTrip: false,
           junkyardStock: [],
           swapMeetStock: [],
+          yardPulls: [],
           pendingScene: null,
           garageLore: 0,
           buyerHistory: [],
@@ -7935,6 +7936,7 @@
           if (c.installedParts.includes(part.id)) return false;
           if ((c[part.category] || 0) >= 100) return false;
           if (findActiveTask(c.id, part.id)) return false;
+          if (findYardPull(c.id, part.id)) return false;
           if (activeTasksByMethod(c.id, "shop").length) return false;
           if (activeTasksForCar(c.id).length >= cap) return false;
           return true;
@@ -7942,6 +7944,12 @@
         if (!eligible.length) return null;
         const active = eligible.find((c) => c.id === state.carId);
         return active || eligible[0];
+      }
+
+      function findYardPull(carId, partId) {
+        return (state.yardPulls || []).find(
+          (p) => p.carId === carId && p.partId === partId,
+        );
       }
 
       function pullYardPart(partId) {
@@ -7968,7 +7976,7 @@
         const car = pickPullTargetCar(part);
         if (!car)
           return toast(
-            "Nothing in the garage can take this right now — already installed, maxed out, or the bench is full.",
+            "Nothing in the garage can take this right now — already installed, already pulled, or maxed out.",
             "err",
           );
         state.money -= stock.price;
@@ -7976,6 +7984,70 @@
           -stock.price,
           `Pick-A-Part pull: ${part.name}`,
         );
+        // The pulled part rides home with you. It doesn't start a
+        // restoration job until you're back at the bench — same way a
+        // free part from a sponsor or Cars & Coffee waits in the build
+        // view until you choose to install it.
+        state.yardPulls.push({
+          id: `pull_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          carId: car.id,
+          partId: part.id,
+          conditionMult: stock.conditionMult,
+          addedWeek: state.week,
+        });
+        state.junkyardStock.splice(stockIdx, 1);
+        playSfx("wrench");
+        const sameCar = car.id === state.carId;
+        toast(
+          sameCar
+            ? `Pulled the ${part.name} off a donor and threw it in the truck. Install it back at the garage.`
+            : `Pulled the ${part.name} off a donor — riding home for your ${car.year} ${car.make} (other tab).`,
+          "ok",
+        );
+        saveGame();
+        requestRender("full");
+      }
+
+      function installYardPull(pullId) {
+        const pullIdx = (state.yardPulls || []).findIndex(
+          (p) => p.id === pullId,
+        );
+        if (pullIdx === -1) return toast("That pull is already installed or gone.", "err");
+        const pull = state.yardPulls[pullIdx];
+        const car = state.cars.find((c) => c.id === pull.carId);
+        if (!car)
+          return toast(
+            "The car this part was pulled for isn't in the garage anymore.",
+            "err",
+          );
+        const part = PARTS.find((p) => p.id === pull.partId);
+        if (!part) return;
+        if (car.installedParts.includes(part.id))
+          return toast("Part's already installed on that car.", "err");
+        if (findActiveTask(car.id, part.id))
+          return toast("That job is already on the bench.", "err");
+        if (car[part.category] >= 100) return toast("Already maxed out.", "err");
+        const missing = (part.tools || []).filter(
+          (tid) => !state.ownedTools.includes(tid),
+        );
+        if (missing.length) {
+          const names = missing
+            .map((id) => TOOLS_LIST.find((t) => t.id === id)?.name)
+            .join(", ");
+          return toast(`Missing tools to install: ${names}`, "err");
+        }
+        if (
+          activeTasksForCar(car.id).length >= workspaceData().maxActive
+        )
+          return toast(
+            `${workspaceData().name} is already full. Finish or abandon a job first.`,
+            "err",
+          );
+        if (activeTasksByMethod(car.id, "shop").length)
+          return toast(
+            "Car is at the shop right now. Wait for that job to finish first.",
+            "err",
+          );
         const now = Date.now();
         const duration = taskDurationMs(part, "diy");
         state.activeRestorations.push({
@@ -7987,16 +8059,13 @@
           finishTime: now + duration,
           weeksRequired: taskWeeks(part),
           completed: false,
-          conditionMult: stock.conditionMult,
+          conditionMult: pull.conditionMult,
           source: "junkyard",
         });
-        state.junkyardStock.splice(stockIdx, 1);
+        state.yardPulls.splice(pullIdx, 1);
         playSfx("wrench");
-        const activeMatch = car.id === state.carId;
         toast(
-          activeMatch
-            ? `Pulled the ${part.name} off a donor and threw it in the truck.`
-            : `Pulled the ${part.name} off a donor — heading onto your ${car.year} ${car.make}, not the one in the active tab.`,
+          `Started installing the ${part.name} you pulled. Bench is busy.`,
           "ok",
         );
         saveGame();
@@ -8298,6 +8367,7 @@
           ensureArray("giftedTools");
           ensureArray("junkyardStock");
           ensureArray("swapMeetStock");
+          ensureArray("yardPulls");
           ensureArray("cars");
           // Backfill new stat categories on cars from old saves
           state.cars.forEach((c) => {
@@ -11998,7 +12068,11 @@ addEventListener("DOMContentLoaded",function(){
                 state.starterHelpReceived &&
                 p.id === 2 &&
                 !state.starterCarbUsed;
-              const title = `${p.name}${disc > 0 ? ` <span class="badge" style="color:var(--gold)">-${Math.round(disc * 100)}%</span>` : ""}${starterFree ? ` <span class="badge" style="color:var(--green)">NEIGHBOR GIFT</span>` : ""}`;
+              const yardPull = findYardPull(car.id, p.id);
+              const yardImp = yardPull
+                ? Math.max(1, Math.round(p.imp * yardPull.conditionMult))
+                : 0;
+              const title = `${p.name}${disc > 0 ? ` <span class="badge" style="color:var(--gold)">-${Math.round(disc * 100)}%</span>` : ""}${starterFree ? ` <span class="badge" style="color:var(--green)">NEIGHBOR GIFT</span>` : ""}${yardPull ? ` <span class="badge" style="color:var(--purple-bright)">YARD PULL</span>` : ""}`;
               return panel(
                 title,
                 `<div class="small muted" style="margin-bottom:8px">Improvement: <span class="good" style="font-weight:bold">+${p.imp} ${CAT_LABELS[state.shopCat]}</span></div><div class="info-box"><div class="tiny muted" style="margin-bottom:6px">DIY tool requirements</div>${rq
@@ -12010,7 +12084,7 @@ addEventListener("DOMContentLoaded",function(){
                   })
                   .join(
                     "",
-                  )}</div>${activeTask ? `<div class="info-box" data-task-id="${activeTask.id}"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:6px">Already in progress</div>${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>` : `<div class="btn-row ${state.freePart && p.tier === "Budget" && !maxed ? "three" : "two"}">${button(maxed ? "Maxed" : `Start DIY · $${fmt(starterFree ? 0 : dc)}`, `installPart(${p.id},'diy',false)`, !hasAll || state.money < (starterFree ? 0 : dc) || maxed || activeTasksByMethod(car.id, "shop").length)}${button(maxed ? "Maxed" : `Send to Shop · $${fmt(starterFree ? 0 : sc)}`, `installPart(${p.id},'shop',false)`, state.money < (starterFree ? 0 : sc) || maxed || activeTasksByMethod(car.id, "diy").length, "", "background:#7da0c2;border-color:var(--blue-bright)")}${state.freePart && p.tier === "Budget" && !maxed ? button("Sponsored · FREE", `installPart(${p.id},'shop',true)`, false, "", "background:#a47ed4;border-color:var(--purple-bright)") : ""}</div>`}`,
+                  )}</div>${activeTask ? `<div class="info-box" data-task-id="${activeTask.id}"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:6px">Already in progress</div>${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>` : yardPull ? `<div class="info-box" style="background:rgba(168,132,221,0.08);border-color:rgba(168,132,221,0.4)"><div class="small" style="color:var(--purple-bright);font-weight:bold;margin-bottom:6px">📦 Yard pull in the truck</div><div class="tiny muted" style="margin-bottom:8px;line-height:1.5">Pulled this off a donor at Pick-A-Part — install gives +${yardImp} ${CAT_LABELS[p.category]} (vs +${p.imp} new). You bought the part, install it yourself.</div>${button("Install yard pull · DIY", `installYardPull('${yardPull.id}')`, !hasAll || maxed || activeTasksByMethod(car.id, "shop").length, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright)")}</div>` : `<div class="btn-row ${state.freePart && p.tier === "Budget" && !maxed ? "three" : "two"}">${button(maxed ? "Maxed" : `Start DIY · $${fmt(starterFree ? 0 : dc)}`, `installPart(${p.id},'diy',false)`, !hasAll || state.money < (starterFree ? 0 : dc) || maxed || activeTasksByMethod(car.id, "shop").length)}${button(maxed ? "Maxed" : `Send to Shop · $${fmt(starterFree ? 0 : sc)}`, `installPart(${p.id},'shop',false)`, state.money < (starterFree ? 0 : sc) || maxed || activeTasksByMethod(car.id, "diy").length, "", "background:#7da0c2;border-color:var(--blue-bright)")}${state.freePart && p.tier === "Budget" && !maxed ? button("Sponsored · FREE", `installPart(${p.id},'shop',true)`, false, "", "background:#a47ed4;border-color:var(--purple-bright)") : ""}</div>`}`,
                 `${p.tier} · ${p.desc}`,
                 tierCol(p.tier),
               );
@@ -12098,7 +12172,7 @@ addEventListener("DOMContentLoaded",function(){
               return `<div style="display:flex;align-items:center;gap:10px;background:rgba(143,203,126,0.1);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">✅</span><div><div class="small" style="color:var(--green-bright);font-weight:bold">Roadworthy</div><div class="tiny muted">The car can drive itself to a show. Time to compete.</div></div></div>`;
             }
             return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">⚠️</span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " ✓"} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " ✓"} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " ✓"}</div></div></div>`;
-          })()}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 Free Budget part ready — tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${subcontent}`,
+          })()}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 Free Budget part ready — tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div style="background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px"><span>📦 ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck — find them in <strong style="color:var(--text-bright)">All Builds</strong> with the YARD PULL badge.</span></div>` : ""; })()}${subcontent}`,
         )}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#1d1611", "clipboard")}</div></div>`;
       }
 
