@@ -6284,6 +6284,16 @@
       const SWAP_DISCOUNT = 0.5; // 50% off list price
       const SWAP_STOCK_MIN = 3;
       const SWAP_STOCK_MAX = 5;
+      // Wry car-guy grumble when the wife's reliable daily gets pressed
+      // into Saturday-trip duty. Reliable transportation = the enemy.
+      const WIFE_DAILY_TRIP_LINES = [
+        "Reliable transportation is nice, but the wife's daily just feels like money wasted in the driveway.",
+        "Drove the daily. It started first try. Disgusting.",
+        "Climate control. Working radio. Seats not held together with prayer. You hate it a little.",
+        "Air conditioning. Electric windows. Functional speedometer. The wife's car insults you all the way there.",
+        "Pulled up in something that already runs. Nobody talks to you when you arrive in a car that works.",
+        "Twelve smooth, insulting minutes. Not a single noise that meant something. What's even the point.",
+      ];
 
       const FOLLOWER_PAYOUT_TIERS = [
         { min: 25000, chance: 0.3, minCash: 300, maxCash: 600, label: "brand feature" },
@@ -7876,6 +7886,12 @@
             : "Pulled into Pomona. Coffee, cash, and a long row of tables.",
           "ok",
         );
+        // Took the wife's daily? You hate that it works. Rotating
+        // grumble each trip until that car finally hits Marketplace.
+        if (!state.wifeCarSold) {
+          const grumble = pickFresh(WIFE_DAILY_TRIP_LINES, "wifeDaily");
+          if (grumble) setTimeout(() => toast(grumble, "ok"), 1100);
+        }
         saveGame();
         requestRender("full");
       }
