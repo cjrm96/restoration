@@ -7830,6 +7830,19 @@
         );
       }
 
+      function canMakeScavengeTrip() {
+        // Until the wife's car is sold, the daily driver gets you to
+        // the yard or the swap. After it's gone, you need at least
+        // one roadworthy project in the garage to actually drive there.
+        if (!state.wifeCarSold) return { ok: true };
+        const drivable = (state.cars || []).find((c) => roadworthy(c));
+        if (drivable) return { ok: true };
+        return {
+          ok: false,
+          msg: "No roadworthy car in the garage — you can't drive to either spot.",
+        };
+      }
+
       function refreshScavengeIfDue() {
         if (scavengeAvailable() && state.scavengeChoice) {
           state.scavengeChoice = null;
@@ -7842,6 +7855,8 @@
       function commitScavengeTrip(location) {
         if (!scavengeAvailable())
           return toast("Already burned this trip — wait it out.", "err");
+        const ride = canMakeScavengeTrip();
+        if (!ride.ok) return toast(ride.msg, "err");
         const cost =
           location === "junkyard" ? JUNKYARD_TRIP_COST : SWAP_TRIP_COST;
         if (state.money < cost) return toast("Not enough cash for the trip.", "err");
@@ -9855,6 +9870,7 @@
             { icon: "💸", text: "Sell take-off parts on Marketplace. Buyers DM you in real time." },
             { icon: "🎬", text: "Drop content as an influencer. Payouts scale with your follower count." },
             { icon: "📦", text: "Land brand deals once you cross 500 followers — free Budget parts in exchange for posts." },
+            { icon: "🛻", text: "Saturday road trips: Pick-A-Part for cheap used parts, Pomona Swap for cheap used tools. One trip every two weeks." },
           ],
         },
         {
@@ -12179,25 +12195,29 @@ addEventListener("DOMContentLoaded",function(){
         if (isAvailable) {
           const yardCount = state.junkyardStock.length;
           const swapCount = state.swapMeetStock.length;
+          const ride = canMakeScavengeTrip();
+          const noRideBanner = ride.ok
+            ? ""
+            : `<div class="info-box" style="background:rgba(196,109,96,0.07);border:1px solid rgba(196,109,96,0.4);margin-bottom:12px;padding:10px 12px"><div class="tiny" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">🚫 No way to get there</div><div class="tiny muted" style="line-height:1.5">${ride.msg} Get the project running (engine ${ROADWORTHY_ENGINE}+, transmission ${ROADWORTHY_TRANSMISSION}+, brakes ${ROADWORTHY_BRAKES}+) and the trip opens up.</div></div>`;
           const yardCard = `<div style="background:rgba(125,160,194,0.07);border:1px solid rgba(125,160,194,0.4);border-radius:8px;padding:12px">
               <div class="small" style="color:var(--blue-bright);font-weight:bold;margin-bottom:6px">🔩 Pick-A-Part</div>
               <div class="tiny muted" style="line-height:1.5;margin-bottom:8px">Used parts ~40% off. Lower stat lift than new — they're already lived in.</div>
               <div class="tiny" style="color:var(--text);margin-bottom:8px">${yardCount} part${yardCount === 1 ? "" : "s"} on the lot today</div>
               <div class="tiny muted" style="margin-bottom:8px">$${JUNKYARD_GAS_COST} gas + $${JUNKYARD_ENTRY_FEE} entry = <span style="color:var(--text)">$${JUNKYARD_TRIP_COST}</span></div>
-              ${button(`Hit the Yard · $${JUNKYARD_TRIP_COST}`, "commitScavengeTrip('junkyard')", state.money < JUNKYARD_TRIP_COST || !yardCount, "", "width:100%;background:#7da0c2;border-color:var(--blue-bright)")}
+              ${button(`Hit the Yard · $${JUNKYARD_TRIP_COST}`, "commitScavengeTrip('junkyard')", !ride.ok || state.money < JUNKYARD_TRIP_COST || !yardCount, "", "width:100%;background:#7da0c2;border-color:var(--blue-bright)")}
             </div>`;
           const swapCard = `<div style="background:rgba(217,162,79,0.07);border:1px solid rgba(217,162,79,0.4);border-radius:8px;padding:12px">
               <div class="small" style="color:var(--gold);font-weight:bold;margin-bottom:6px">🛠 Pomona Swap</div>
               <div class="tiny muted" style="line-height:1.5;margin-bottom:8px">Used tools ~50% off. Cash only, no Tool Truck plan. Random selection.</div>
               <div class="tiny" style="color:var(--text);margin-bottom:8px">${swapCount} tool${swapCount === 1 ? "" : "s"} on tables today</div>
               <div class="tiny muted" style="margin-bottom:8px">$${SWAP_GAS_COST} gas + $${SWAP_ENTRY_FEE} entry + $${SWAP_PARKING_COST} parking = <span style="color:var(--text)">$${SWAP_TRIP_COST}</span></div>
-              ${button(`Hit the Swap · $${SWAP_TRIP_COST}`, "commitScavengeTrip('swap')", state.money < SWAP_TRIP_COST || !swapCount, "", "width:100%")}
+              ${button(`Hit the Swap · $${SWAP_TRIP_COST}`, "commitScavengeTrip('swap')", !ride.ok || state.money < SWAP_TRIP_COST || !swapCount, "", "width:100%")}
             </div>`;
           return `<div style="margin-bottom:14px">${heroPanel(
             "Saturday Road Trip",
             "Pick-A-Part or Pomona Swap",
             "One trip every two weeks. Bring cash. Whichever you pick, the other one's gone for the cycle.",
-            `<div class="info-box" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;background:transparent;border:none;padding:0">${yardCard}${swapCard}</div>`,
+            `${noRideBanner}<div class="info-box" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;background:transparent;border:none;padding:0">${yardCard}${swapCard}</div>`,
             "blue",
           )}</div>`;
         }
