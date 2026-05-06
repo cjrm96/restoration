@@ -6535,6 +6535,8 @@
             milestoneSeen: false,
           },
           installsDone: 0,
+          diyTried: false,
+          shopTried: false,
           collabAvailable: false,
           wifeCarSold: false,
           gloveBoxFound: false,
@@ -8656,6 +8658,8 @@
           weeksRequired: taskWeeks(part),
           completed: false,
         });
+        if (method === "diy") state.diyTried = true;
+        else if (method === "shop") state.shopTried = true;
         if (
           Math.random() < 0.16 &&
           (part.tier === "Quality" || part.tier === "Show Grade")
@@ -12097,7 +12101,7 @@ addEventListener("DOMContentLoaded",function(){
                 : `${remaining}/${POLISH_PER_WEEK} sessions left this week. +${POLISH_GAIN} per pass.`;
             fineTuneMarkup = `<div class="info-box" style="background:rgba(168,132,221,0.06);border-color:rgba(168,132,221,0.45);margin-bottom:14px"><div class="flex between center" style="gap:10px;margin-bottom:6px"><div><div class="small" style="color:var(--purple-bright);font-weight:bold">${action.emoji} ${action.verb} · pre-show polish</div><div class="tiny muted" style="margin-top:2px">${sub}</div></div><div style="min-width:140px">${button(maxed ? "Maxed" : `+${POLISH_GAIN} · $${POLISH_COST}`, `polishCategory('${state.shopCat}')`, blocked, "", "width:100%;padding:7px 8px;font-size:12px")}</div></div></div>`;
           }
-          subcontent = `<div class="cat-pill-row">${CATS.map((cat) => `<button class="cat-pill ${state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')"><span class="cat-pill-icon">${CAT_ICONS[cat]}</span>${CAT_LABELS[cat]}</button>`).join("")}</div><div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div><div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>${fineTuneMarkup}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}${avail
+          subcontent = `<div class="cat-pill-row">${CATS.map((cat) => `<button class="cat-pill ${state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')"><span class="cat-pill-icon">${CAT_ICONS[cat]}</span>${CAT_LABELS[cat]}</button>`).join("")}</div><div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div>${state.diyTried && state.shopTried ? "" : `<div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>`}${fineTuneMarkup}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}${avail
             .map((p) => {
               const rq = p.tools || [];
               const miss = rq.filter((tid) => !state.ownedTools.includes(tid));
