@@ -4265,7 +4265,7 @@
           followers: [12000, 8000, 5000, 2500, 1000],
           // The Nationals are the season finale — a fixed late-summer
           // window rather than a recurring slot. One shot, end of season.
-          seasonWindow: { start: 18, end: 20 },
+          seasonWindow: { start: 20, end: 22 },
         },
       ];
 
@@ -6341,7 +6341,7 @@
           fuelPurchase: 10,
           paycheckProgress: 0,
           week: 1,
-          seasonLength: 20,
+          seasonLength: 22,
           cars: [
             {
               id: 1,
@@ -8112,9 +8112,10 @@
         });
       }
 
-      // The 20-week season runs early spring → late summer. Rather than
-      // bare "Week 4/20", surface where in the calendar the player sits
-      // and what's about to close.
+      // The 22-week season runs early spring → late summer. Rather
+      // than bare "Week 4/22", surface where in the calendar the
+      // player sits and what's about to close. Phases line up with
+      // the Nationals window (weeks 20–22) at the back end.
       function getSeasonPhase() {
         const w = state.week;
         const len = state.seasonLength;
@@ -8123,7 +8124,7 @@
         if (w <= 4) phase = "Early Spring";
         else if (w <= 9) phase = "Spring";
         else if (w <= 13) phase = "Early Summer";
-        else if (w <= 17) phase = "Summer";
+        else if (w <= 19) phase = "Summer";
         else phase = "Late Summer · Nationals";
         return { phase, remaining };
       }
@@ -9890,7 +9891,7 @@
           art: "🚚🔥",
           headline: "Your '65 F-100 is on jack stands. The clock is on you now.",
           body:
-            "Twenty weeks from early spring to late summer. Nationals open at week 18 and close at week 20. Paychecks land every four. Don't run out of fuel, don't take the shark loan unless you have to, and remember: 'while I'm in there' has ended more budgets than inflation.",
+            "Twenty-two weeks from early spring to late summer. Nationals open at week 20 and close at week 22. Paychecks land every four. Don't run out of fuel, don't take the shark loan unless you have to, and remember: 'while I'm in there' has ended more budgets than inflation.",
         },
       ];
 
