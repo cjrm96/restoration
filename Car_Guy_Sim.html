@@ -6265,6 +6265,26 @@
         PAYCHECK_AMOUNT = 1000,
         PAYCHECK_CYCLE = 4;
 
+      // Saturday Road Trip — Pick-A-Part / Pomona Swap.
+      // Player picks one location every 2 weeks. Cooldown starts the
+      // moment they commit to going (driving out is the commitment,
+      // even if they don't buy anything).
+      const SCAVENGE_COOLDOWN_WEEKS = 2;
+      const JUNKYARD_GAS_COST = 10;
+      const JUNKYARD_ENTRY_FEE = 5;
+      const JUNKYARD_TRIP_COST = JUNKYARD_GAS_COST + JUNKYARD_ENTRY_FEE;
+      const JUNKYARD_DISCOUNT = 0.4; // 40% off DIY price
+      const JUNKYARD_CONDITION = 0.7; // 30% reduced impact (used part)
+      const JUNKYARD_STOCK_MIN = 4;
+      const JUNKYARD_STOCK_MAX = 6;
+      const SWAP_GAS_COST = 10;
+      const SWAP_ENTRY_FEE = 10;
+      const SWAP_PARKING_COST = 20;
+      const SWAP_TRIP_COST = SWAP_GAS_COST + SWAP_ENTRY_FEE + SWAP_PARKING_COST;
+      const SWAP_DISCOUNT = 0.5; // 50% off list price
+      const SWAP_STOCK_MIN = 3;
+      const SWAP_STOCK_MAX = 5;
+
       const FOLLOWER_PAYOUT_TIERS = [
         { min: 25000, chance: 0.3, minCash: 300, maxCash: 600, label: "brand feature" },
         { min: 6000, chance: 0.22, minCash: 150, maxCash: 300, label: "paid shop spotlight" },
@@ -6442,6 +6462,11 @@
           marketplaceStashExpanded: false,
           marketplaceListedExpanded: false,
           pendingMarketplaceOffer: null,
+          scavengeChoice: null,
+          scavengeChoiceWeek: 0,
+          scavengeStockWeek: 0,
+          junkyardStock: [],
+          swapMeetStock: [],
           pendingScene: null,
           garageLore: 0,
           buyerHistory: [],
@@ -7750,6 +7775,200 @@
         saveGame();
         requestRender("full");
       }
+
+      /* ═══════════════════════════════════════════
+     SATURDAY ROAD TRIP — Pick-A-Part / Pomona Swap
+  ═══════════════════════════════════════════ */
+      function pickN(arr, n) {
+        if (!arr.length) return [];
+        const pool = arr.slice();
+        const out = [];
+        const take = Math.min(n, pool.length);
+        for (let i = 0; i < take; i++) {
+          const idx = Math.floor(Math.random() * pool.length);
+          out.push(pool.splice(idx, 1)[0]);
+        }
+        return out;
+      }
+
+      function regenerateScavengeStock(force = false) {
+        const dueWeek = state.scavengeStockWeek + SCAVENGE_COOLDOWN_WEEKS;
+        if (!force && state.junkyardStock.length && state.week < dueWeek) return;
+        // Junkyard: Budget + Quality parts only — no Show Grade pulls.
+        // Used parts at the yard never come out factory-fresh.
+        const yardCandidates = PARTS.filter(
+          (p) => p.tier === "Budget" || p.tier === "Quality",
+        );
+        const yardCount =
+          JUNKYARD_STOCK_MIN +
+          Math.floor(Math.random() * (JUNKYARD_STOCK_MAX - JUNKYARD_STOCK_MIN + 1));
+        state.junkyardStock = pickN(yardCandidates, yardCount).map((p) => ({
+          partId: p.id,
+          price: Math.max(20, Math.round(p.diy * (1 - JUNKYARD_DISCOUNT))),
+          conditionMult: JUNKYARD_CONDITION,
+        }));
+        // Swap meet: tools, weighted away from warehouse-tier so the
+        // big-ticket items still mostly come from the new store.
+        const swapCandidates = TOOLS_LIST.filter(
+          (t) => t.workshop !== "warehouse" && !t.id.startsWith("t_"),
+        );
+        const swapCount =
+          SWAP_STOCK_MIN +
+          Math.floor(Math.random() * (SWAP_STOCK_MAX - SWAP_STOCK_MIN + 1));
+        state.swapMeetStock = pickN(swapCandidates, swapCount).map((t) => ({
+          toolId: t.id,
+          price: Math.max(15, Math.round(t.cost * (1 - SWAP_DISCOUNT))),
+        }));
+        state.scavengeStockWeek = state.week;
+        state.scavengeChoice = null;
+      }
+
+      function scavengeAvailable() {
+        if (!state.scavengeChoice) return true;
+        return (
+          state.week >= state.scavengeChoiceWeek + SCAVENGE_COOLDOWN_WEEKS
+        );
+      }
+
+      function refreshScavengeIfDue() {
+        if (scavengeAvailable() && state.scavengeChoice) {
+          state.scavengeChoice = null;
+          regenerateScavengeStock(true);
+          return;
+        }
+        regenerateScavengeStock(false);
+      }
+
+      function commitScavengeTrip(location) {
+        if (!scavengeAvailable())
+          return toast("Already burned this trip — wait it out.", "err");
+        const cost =
+          location === "junkyard" ? JUNKYARD_TRIP_COST : SWAP_TRIP_COST;
+        if (state.money < cost) return toast("Not enough cash for the trip.", "err");
+        state.money -= cost;
+        recordMoneyChange(
+          -cost,
+          location === "junkyard"
+            ? "Pick-A-Part trip (gas + entry)"
+            : "Pomona Swap trip (gas + entry + parking)",
+        );
+        state.scavengeChoice = location;
+        state.scavengeChoiceWeek = state.week;
+        playSfx("click");
+        toast(
+          location === "junkyard"
+            ? "Drove out to Pick-A-Part. Boots on, nothing's clean."
+            : "Pulled into Pomona. Coffee, cash, and a long row of tables.",
+          "ok",
+        );
+        saveGame();
+        requestRender("full");
+      }
+
+      function pullYardPart(partId) {
+        if (state.scavengeChoice !== "junkyard")
+          return toast("You're not at the yard right now.", "err");
+        const stockIdx = state.junkyardStock.findIndex((s) => s.partId === partId);
+        if (stockIdx === -1) return toast("Already pulled or gone.", "err");
+        const stock = state.junkyardStock[stockIdx];
+        const part = PARTS.find((p) => p.id === partId);
+        if (!part) return;
+        const car = currentCar();
+        if (!car) return toast("No car to drop it onto.", "err");
+        if (car.installedParts.includes(part.id))
+          return toast("Already installed that part.", "err");
+        if (findActiveTask(car.id, part.id))
+          return toast("That job is already on the bench.", "err");
+        if (car[part.category] >= 100) return toast("Already maxed out.", "err");
+        const missing = (part.tools || []).filter(
+          (tid) => !state.ownedTools.includes(tid),
+        );
+        if (missing.length) {
+          const names = missing
+            .map((id) => TOOLS_LIST.find((t) => t.id === id)?.name)
+            .join(", ");
+          return toast(`You'd pull it but you didn't bring: ${names}`, "err");
+        }
+        if (state.money < stock.price)
+          return toast("Not enough cash at the gate.", "err");
+        if (
+          activeTasksForCar(car.id).length >= workspaceData().maxActive
+        )
+          return toast(
+            `${workspaceData().name} is already full. Finish or abandon a job first.`,
+            "err",
+          );
+        if (activeTasksByMethod(car.id, "shop").length)
+          return toast(
+            "Car is at the shop right now. You can't drop yard parts in mid-job.",
+            "err",
+          );
+        state.money -= stock.price;
+        recordMoneyChange(
+          -stock.price,
+          `Pick-A-Part pull: ${part.name}`,
+        );
+        const now = Date.now();
+        const duration = taskDurationMs(part, "diy");
+        state.activeRestorations.push({
+          id: `task_${now}_${Math.random().toString(36).slice(2, 7)}`,
+          carId: car.id,
+          partId: part.id,
+          method: "diy",
+          startTime: now,
+          finishTime: now + duration,
+          weeksRequired: taskWeeks(part),
+          completed: false,
+          conditionMult: stock.conditionMult,
+          source: "junkyard",
+        });
+        state.junkyardStock.splice(stockIdx, 1);
+        playSfx("wrench");
+        toast(
+          `Pulled the ${part.name} off a donor and threw it in the truck.`,
+          "ok",
+        );
+        saveGame();
+        requestRender("full");
+      }
+
+      function buySwapTool(toolId) {
+        if (state.scavengeChoice !== "swap")
+          return toast("You're not at the swap right now.", "err");
+        const stockIdx = state.swapMeetStock.findIndex((s) => s.toolId === toolId);
+        if (stockIdx === -1) return toast("Already gone.", "err");
+        const stock = state.swapMeetStock[stockIdx];
+        const tool = TOOLS_LIST.find((t) => t.id === toolId);
+        if (!tool) return;
+        const wd = toolStorageData();
+        if (state.ownedTools.includes(tool.id))
+          return toast("You already own one.", "err");
+        if (state.money < stock.price)
+          return toast("Cash only at the swap.", "err");
+        if (state.ownedTools.length >= wd.maxTools)
+          return toast(`${wd.name} is out of tool space.`, "err");
+        if (
+          getWorkspaceIndex(state.workshopLevel) <
+          getWorkspaceIndex(tool.workshop)
+        ) {
+          const req = WORKSPACE_LEVELS.find(
+            (w) => w.id === tool.workshop,
+          )?.name;
+          return toast(`Won't fit your shop yet. Needs ${req}.`, "err");
+        }
+        state.money -= stock.price;
+        recordMoneyChange(-stock.price, `Pomona Swap: ${tool.name}`);
+        state.ownedTools.push(tool.id);
+        state.swapMeetStock.splice(stockIdx, 1);
+        playSfx("click");
+        toast(
+          `Walked off with the ${tool.name} for $${fmt(stock.price)}. Seller didn't even pretend to count.`,
+          "ok",
+        );
+        saveGame();
+        requestRender("full");
+      }
+
       function applyWinterStorageDamage() {
         if (state.winterAppliedForSeason) return;
         const car = currentCar();
@@ -8005,6 +8224,8 @@
           ensureArray("buyerHistory");
           ensureArray("ownedTools");
           ensureArray("giftedTools");
+          ensureArray("junkyardStock");
+          ensureArray("swapMeetStock");
           ensureArray("cars");
           // Backfill new stat categories on cars from old saves
           state.cars.forEach((c) => {
@@ -8084,17 +8305,26 @@
         const part = PARTS.find((p) => p.id === task.partId);
         if (!car || !part) return;
         if (!car.installedParts.includes(part.id)) {
-          car[part.category] = clamp(car[part.category] + part.imp);
+          // Yard pulls and other used parts apply a permanent condition
+          // discount on the stat lift. New = 1.0, used yard part = 0.7.
+          const conditionMult = task.conditionMult || 1;
+          const appliedImp = Math.max(1, Math.round(part.imp * conditionMult));
+          car[part.category] = clamp(car[part.category] + appliedImp);
           car.installedParts.push(part.id);
-          addRemovedPartItem(part, car);
+          if (task.source !== "junkyard") addRemovedPartItem(part, car);
           state.freshHeadline = `${part.name} finished`;
           maybeTriggerBuildTierMoment(car);
           if (showToast) playSfx("wrench");
-          if (showToast)
+          if (showToast) {
+            const conditionNote =
+              conditionMult < 1
+                ? ` (yard part — +${appliedImp} instead of the +${part.imp} a new one would've given)`
+                : "";
             toast(
-              `${part.name} wrapped up on your ${car.year} ${car.make}. It feels a little more legit now. +${part.imp} ${CAT_LABELS[part.category]}.`,
+              `${part.name} wrapped up on your ${car.year} ${car.make}. It feels a little more legit now. +${appliedImp} ${CAT_LABELS[part.category]}${conditionNote}.`,
               "ok",
             );
+          }
           if (task.method === "diy" && !state.starterHelpReceived) {
             maybeTriggerNeighborHelp(car);
           }
@@ -8736,6 +8966,7 @@
         maybeRollEvent();
         maybeTriggerGarageMoment();
         maybeGenerateMarketplaceOffer();
+        refreshScavengeIfDue();
         maybeTriggerFollowerPayout();
         maybeOfferBrandDeal();
         maybeOfferCollab();
@@ -11937,6 +12168,96 @@ addEventListener("DOMContentLoaded",function(){
         )}${panel(r.tier === "Cars & Coffee" ? "Crowd Pleasers" : "Final Standings", standingsBody, "", "#7da0c2")}</div><div>${renderUpcomingBar()}${panel("After the Show", `${button("Back to Garage", "state.postShowWeekLocked=false; setView('garage')", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "Return to the garage and keep building.", "#d8a24f")}</div></div>`;
       }
 
+      function renderScavengeTrip() {
+        refreshScavengeIfDue();
+        const isAvailable = scavengeAvailable();
+        const choice = state.scavengeChoice;
+        const weeksLeft = Math.max(
+          0,
+          state.scavengeChoiceWeek + SCAVENGE_COOLDOWN_WEEKS - state.week,
+        );
+        if (isAvailable) {
+          const yardCount = state.junkyardStock.length;
+          const swapCount = state.swapMeetStock.length;
+          const yardCard = `<div style="background:rgba(125,160,194,0.07);border:1px solid rgba(125,160,194,0.4);border-radius:8px;padding:12px">
+              <div class="small" style="color:var(--blue-bright);font-weight:bold;margin-bottom:6px">🔩 Pick-A-Part</div>
+              <div class="tiny muted" style="line-height:1.5;margin-bottom:8px">Used parts ~40% off. Lower stat lift than new — they're already lived in.</div>
+              <div class="tiny" style="color:var(--text);margin-bottom:8px">${yardCount} part${yardCount === 1 ? "" : "s"} on the lot today</div>
+              <div class="tiny muted" style="margin-bottom:8px">$${JUNKYARD_GAS_COST} gas + $${JUNKYARD_ENTRY_FEE} entry = <span style="color:var(--text)">$${JUNKYARD_TRIP_COST}</span></div>
+              ${button(`Hit the Yard · $${JUNKYARD_TRIP_COST}`, "commitScavengeTrip('junkyard')", state.money < JUNKYARD_TRIP_COST || !yardCount, "", "width:100%;background:#7da0c2;border-color:var(--blue-bright)")}
+            </div>`;
+          const swapCard = `<div style="background:rgba(217,162,79,0.07);border:1px solid rgba(217,162,79,0.4);border-radius:8px;padding:12px">
+              <div class="small" style="color:var(--gold);font-weight:bold;margin-bottom:6px">🛠 Pomona Swap</div>
+              <div class="tiny muted" style="line-height:1.5;margin-bottom:8px">Used tools ~50% off. Cash only, no Tool Truck plan. Random selection.</div>
+              <div class="tiny" style="color:var(--text);margin-bottom:8px">${swapCount} tool${swapCount === 1 ? "" : "s"} on tables today</div>
+              <div class="tiny muted" style="margin-bottom:8px">$${SWAP_GAS_COST} gas + $${SWAP_ENTRY_FEE} entry + $${SWAP_PARKING_COST} parking = <span style="color:var(--text)">$${SWAP_TRIP_COST}</span></div>
+              ${button(`Hit the Swap · $${SWAP_TRIP_COST}`, "commitScavengeTrip('swap')", state.money < SWAP_TRIP_COST || !swapCount, "", "width:100%")}
+            </div>`;
+          return `<div style="margin-bottom:14px">${heroPanel(
+            "Saturday Road Trip",
+            "Pick-A-Part or Pomona Swap",
+            "One trip every two weeks. Bring cash. Whichever you pick, the other one's gone for the cycle.",
+            `<div class="info-box" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;background:transparent;border:none;padding:0">${yardCard}${swapCard}</div>`,
+            "blue",
+          )}</div>`;
+        }
+        if (choice === "junkyard") {
+          const yardItems = state.junkyardStock
+            .map((s) => {
+              const part = PARTS.find((p) => p.id === s.partId);
+              if (!part) return "";
+              const yardImp = Math.max(1, Math.round(part.imp * s.conditionMult));
+              const missing = (part.tools || []).filter(
+                (tid) => !state.ownedTools.includes(tid),
+              );
+              const missingNote = missing.length
+                ? `<div class="tiny" style="color:var(--red-bright);margin-top:4px">Need ${missing.map((id) => TOOLS_LIST.find((t) => t.id === id)?.name).join(", ")}</div>`
+                : "";
+              return `<div class="feed-item">
+                <div class="feed-kicker">PICK-A-PART · ${(part.tier || "").toUpperCase()}</div>
+                <div class="feed-text">${part.name}</div>
+                <div class="feed-meta">+${yardImp} ${CAT_LABELS[part.category]} (vs +${part.imp} new) · normally $${fmt(part.diy)} new</div>
+                ${missingNote}
+                ${button(`Pull it · $${fmt(s.price)}`, `pullYardPart(${part.id})`, state.money < s.price || missing.length > 0, "", "width:100%;margin-top:8px;font-size:12px")}
+              </div>`;
+            })
+            .join("");
+          const cooldownNote = `Pomona Swap is closed for you this cycle — next trip in ${weeksLeft} week${weeksLeft === 1 ? "" : "s"}.`;
+          return `<div style="margin-bottom:14px">${heroPanel(
+            "Pick-A-Part · Saturday Run",
+            "Walk the rows, pull what you can use",
+            `Yard parts give ~30% less stat lift than new. ${cooldownNote}`,
+            yardItems || `<div class="small muted">Picked clean. Rough day at the yard.</div>`,
+            "blue",
+          )}</div>`;
+        }
+        if (choice === "swap") {
+          const swapItems = state.swapMeetStock
+            .map((s) => {
+              const tool = TOOLS_LIST.find((t) => t.id === s.toolId);
+              if (!tool) return "";
+              const owned = state.ownedTools.includes(tool.id);
+              return `<div class="feed-item">
+                <div class="feed-kicker">POMONA SWAP</div>
+                <div class="feed-text">${tool.emoji} ${tool.name}</div>
+                <div class="feed-meta">$${fmt(s.price)} · normally $${fmt(tool.cost)}</div>
+                <div class="tiny muted" style="margin-top:4px;line-height:1.5">${tool.desc}</div>
+                ${button(owned ? "Already in your box" : `Buy · $${fmt(s.price)}`, `buySwapTool('${tool.id}')`, owned || state.money < s.price, "", "width:100%;margin-top:8px;font-size:12px")}
+              </div>`;
+            })
+            .join("");
+          const cooldownNote = `Pick-A-Part is closed for you this cycle — next trip in ${weeksLeft} week${weeksLeft === 1 ? "" : "s"}.`;
+          return `<div style="margin-bottom:14px">${heroPanel(
+            "Pomona Swap · Saturday Run",
+            "Cash only, no receipts, no warranty",
+            `Tool deals you'll regret skipping. ${cooldownNote}`,
+            swapItems || `<div class="small muted">Tables are bare. Came too late.</div>`,
+            "gold",
+          )}</div>`;
+        }
+        return "";
+      }
+
       function renderDealership() {
         resolveCompletedRestorations(false);
         const stash = state.partsInventory.filter((i) => !i.listed && !i.sold);
@@ -12030,7 +12351,7 @@ addEventListener("DOMContentLoaded",function(){
               .join("")
           : `<div class="small muted">No deals closed yet this season.</div>`;
 
-        return `<div class="grid-main"><div>${heroPanel(
+        return `${renderScavengeTrip()}<div class="grid-main"><div>${heroPanel(
           "Sell on Marketplace",
           "Move the parts you're done with",
           "Buyers DM in real time. Pick your tone, hold your price, or let it go cheap.",
@@ -12781,6 +13102,7 @@ addEventListener("DOMContentLoaded",function(){
   ═══════════════════════════════════════════ */
 
       loadGame();
+      regenerateScavengeStock();
       render("full");
       runBackgroundTick();
       runWorldRefreshTick();
