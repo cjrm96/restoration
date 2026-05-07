@@ -13676,6 +13676,9 @@ addEventListener("DOMContentLoaded",function(){
           state.cars.length,
           (state.legacyBuilds || []).length,
           state.freePart ? 1 : 0,
+          state.phoneApp || "home",
+          (state.postHistory || []).length,
+          (state.yardPulls || []).length,
           state.partsInventory
             .filter((i) => !i.sold)
             .map(
