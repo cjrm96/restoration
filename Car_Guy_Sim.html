@@ -2789,6 +2789,17 @@
       .mp-card .mp-bubble.outlined:hover {
         background: #e2d8be;
       }
+      /* Player's already-sent reply — looks like a Messenger blue bubble
+         but isn't a button; sits on the right side of the conversation
+         to signal "you said this." */
+      .mp-card .mp-bubble.sent {
+        background: #3a6fb3;
+        color: #f5edd9;
+        border: 1px solid #2f5e9b;
+        font-weight: 500;
+        font-family: inherit;
+        max-width: 78%;
+      }
       .mp-card .mp-numbers {
         background: #e2d8be;
         border: 1px solid #cdbf99;
@@ -8260,28 +8271,15 @@
             (offer.scenario.trigger === "accept" ||
               offer.scenario.trigger === "offer")
           ) {
-            state.pendingScene = {
-              title: offer.scenario.title,
-              emoji: "📱",
-              text: offer.scenario.text,
-              choices: offer.scenario.choices.map((choice) => {
-                const clone = { ...choice };
-                if (choice.outcome === "saleBonus")
-                  clone.money = offer.offer + (choice.bonus || 0);
-                if (choice.outcome === "salePenalty")
-                  clone.money = offer.offer - (choice.penalty || 0);
-                if (choice.outcome === "saleDone") clone.money = offer.offer;
-                if (choice.outcome === "followers") clone.money = offer.offer;
-                clone.onResolve = "completeMarketplaceSale";
-                return clone;
-              }),
-              sceneType: "marketplace",
-              sceneOffer: {
-                itemId: item.id,
-                offer: offer.offer,
-                buyer: offer.buyer,
-              },
-            };
+            // Stay in the chat. The scenario step (parking-lot meet,
+            // trade-instead-of-cash, etc.) plays out as another buyer
+            // bubble + reply buttons inside the same Messenger popup,
+            // so the second decision feels like part of the conversation
+            // instead of a separate centered modal interrupting it.
+            offer.scenarioActive = true;
+            saveGame();
+            requestRender("full");
+            return;
           } else {
             completeMarketplaceSale(item, offer.offer, offer.buyer);
           }
@@ -8307,6 +8305,71 @@
             });
           }
         }
+        state.pendingMarketplaceOffer = null;
+        processEventQueue();
+        drainWeekAdvanceQueue("queued");
+        saveGame();
+        requestRender("full");
+      }
+
+      // Resolve a Marketplace scenario step inline inside the chat
+      // popup. Mirrors the outcome handling that the legacy centered
+      // scene modal used (saleBonus / salePenalty / saleDone /
+      // spawnListing / inventoryBonus / followers / cancel) so the
+      // gameplay effects stay identical.
+      function respondMarketplaceScenario(choiceIdx) {
+        const offer = state.pendingMarketplaceOffer;
+        if (!offer || !offer.scenarioActive || !offer.scenario) return;
+        const choice = offer.scenario.choices[choiceIdx];
+        if (!choice) return;
+        const scenario = offer.scenario;
+        const item = state.partsInventory.find((i) => i.id === offer.itemId);
+        let saleAmount = null;
+        if (choice.outcome === "saleBonus")
+          saleAmount = offer.offer + (choice.bonus || 0);
+        else if (choice.outcome === "salePenalty")
+          saleAmount = offer.offer - (choice.penalty || 0);
+        else if (choice.outcome === "saleDone") saleAmount = offer.offer;
+        else if (choice.outcome === "followers") saleAmount = offer.offer;
+        if (item && saleAmount !== null) {
+          completeMarketplaceSale(item, saleAmount, offer.buyer);
+        }
+        if (choice.followers) {
+          state.followers += choice.followers;
+          clampFollowers();
+        }
+        if (choice.lore) addGarageLore(choice.lore);
+        if (choice.cash) {
+          state.money += choice.cash;
+          recordMoneyChange(choice.cash, scenario.title);
+        }
+        if (choice.outcome === "spawnListing") {
+          const fakeItem = {
+            id: `inv_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+            name: "Wrong part you swore would fit",
+            sourcePart: "Mystery Marketplace score",
+            category: "engine",
+            askingPrice: 65,
+            baselineValue: 45,
+            listed: false,
+            sold: false,
+          };
+          state.partsInventory.push(fakeItem);
+          listPartOnMarketplace(fakeItem.id);
+        }
+        if (choice.outcome === "inventoryBonus") {
+          state.partsInventory.push({
+            id: `inv_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+            name: "Random trim pieces from a weird trade",
+            sourcePart: "Trunk junk special",
+            category: "chrome",
+            askingPrice: 55,
+            baselineValue: 35,
+            listed: false,
+            sold: false,
+          });
+        }
+        if (choice.toast) toast(choice.toast, "ok");
         state.pendingMarketplaceOffer = null;
         processEventQueue();
         drainWeekAdvanceQueue("queued");
@@ -12273,9 +12336,10 @@ addEventListener("DOMContentLoaded",function(){
         const item = offer
           ? state.partsInventory.find((i) => i.id === offer.itemId)
           : null;
+        const scenarioActive = !!(offer && offer.scenarioActive && offer.scenario);
         const sig =
           offer && item
-            ? `${offer.buyerType || ""}:${offer.itemId || ""}:${offer.offer || ""}`
+            ? `${offer.buyerType || ""}:${offer.itemId || ""}:${offer.offer || ""}:${scenarioActive ? "scen" : "act"}`
             : "";
         if (sig === renderedMpSignature) return;
         renderedMpSignature = sig;
@@ -12312,6 +12376,32 @@ addEventListener("DOMContentLoaded",function(){
                   : verdict.color === "#e57b7b"
                     ? "#b3261e"
                     : "#2a1f12";
+        const closeButton = scenarioActive
+          ? ""
+          : `<button class="mp-x" onclick="respondMarketplaceOffer(false)">✕</button>`;
+        const actionRows = scenarioActive
+          ? `
+    <div class="mp-row right">
+      <div class="mp-bubble sent">Yeah — I'll take $${fmt(offerAmount)}.</div>
+    </div>
+    <div class="mp-buyer-name" style="margin-top:6px">${buyerName}</div>
+    <div class="mp-row">
+      <div class="mp-avatar sm">${buyerInitial}</div>
+      <div class="mp-bubble gray">${offer.scenario.text}</div>
+    </div>
+    ${offer.scenario.choices
+      .map((choice, idx) => {
+        const cls = idx === 0 ? "mp-bubble blue" : "mp-bubble outlined";
+        return `<div class="mp-row right"><button class="${cls}" onclick="respondMarketplaceScenario(${idx})">${choice.label}</button></div>`;
+      })
+      .join("")}`
+          : `
+    <div class="mp-row right">
+      <button class="mp-bubble blue" onclick="respondMarketplaceOffer(true)">Take the deal · $${fmt(offerAmount)}</button>
+    </div>
+    <div class="mp-row right">
+      <button class="mp-bubble outlined" onclick="respondMarketplaceOffer(false)">Pass for now</button>
+    </div>`;
         root.innerHTML = `
 <div class="mp-card">
   <div class="mp-header">
@@ -12319,7 +12409,7 @@ addEventListener("DOMContentLoaded",function(){
     <div class="mp-header-title">${buyerName} · ${item.name}<span class="mp-chev">⌄</span></div>
     <div class="mp-header-controls">
       <span>—</span>
-      <button class="mp-x" onclick="respondMarketplaceOffer(false)">✕</button>
+      ${closeButton}
     </div>
   </div>
   <div class="mp-listing-strip">
@@ -12347,12 +12437,7 @@ addEventListener("DOMContentLoaded",function(){
       <div class="mp-verdict" style="color:${verdictColor}">${verdict.label}${verdict.tone ? `<div class="mp-verdict-tone">${verdict.tone}</div>` : ""}</div>
     </div>
     ${offer.buyerType ? `<div class="mp-buyer-tag">Buyer type · ${offer.buyerType}</div>` : ""}
-    <div class="mp-row right">
-      <button class="mp-bubble blue" onclick="respondMarketplaceOffer(true)">Take the deal · $${fmt(offerAmount)}</button>
-    </div>
-    <div class="mp-row right">
-      <button class="mp-bubble outlined" onclick="respondMarketplaceOffer(false)">Pass for now</button>
-    </div>
+    ${actionRows}
   </div>
 </div>`;
       }
