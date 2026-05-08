@@ -6098,6 +6098,36 @@
             },
           ],
         },
+        {
+          id: "schoolProjectDonate",
+          trigger: "accept",
+          title: "Auto Shop School Project",
+          text: "Would you be willing to donate the part for a auto shop school project plz consider",
+          choices: [
+            {
+              label: "Donate it. Pay it forward.",
+              outcome: "donate",
+              lore: 9,
+              followers: 25,
+              toast:
+                "You donated the part. Some kid's about to learn a real lesson on a real engine. The local scene noticed.",
+            },
+            {
+              label: "Real price or no part. Sorry.",
+              outcome: "saleDone",
+              lore: 5,
+              toast:
+                "He paid the asking price after all. Probably wasn't a school project.",
+            },
+            {
+              label: "Hard pass. Don't message me again.",
+              outcome: "cancel",
+              lore: 4,
+              toast:
+                "Blocked. The school project will find its own carb somewhere.",
+            },
+          ],
+        },
       ];
 
       const CAR_CULTURE_EVENTS = [
@@ -8147,7 +8177,9 @@
         });
         state.buyerHistory = state.buyerHistory.slice(0, 8);
         toast(
-          `Deal done with ${buyerName}. +$${fmt(amount)} from ${item.name}.`,
+          amount > 0
+            ? `Deal done with ${buyerName}. +$${fmt(amount)} from ${item.name}.`
+            : `Donated ${item.name} to ${buyerName}. Part's gone, the goodwill stays.`,
           "ok",
         );
         if (buyerName === "Buck" && state.buck) {
@@ -8238,6 +8270,10 @@
         else if (archetype.id === "story" && Math.random() < 0.4)
           scenario = MARKETPLACE_SCENARIOS.find(
             (s) => s.id === "buddyCommentary",
+          );
+        else if (Math.random() < 0.12)
+          scenario = MARKETPLACE_SCENARIOS.find(
+            (s) => s.id === "schoolProjectDonate",
           );
         else if (Math.random() < 0.18)
           scenario = MARKETPLACE_SCENARIOS.find(
@@ -8331,6 +8367,10 @@
           saleAmount = offer.offer - (choice.penalty || 0);
         else if (choice.outcome === "saleDone") saleAmount = offer.offer;
         else if (choice.outcome === "followers") saleAmount = offer.offer;
+        // "Donate" — the sale completes but the part walks out free.
+        // The part still leaves inventory; the player gets followers/
+        // lore from the choice instead of cash.
+        else if (choice.outcome === "donate") saleAmount = 0;
         if (item && saleAmount !== null) {
           completeMarketplaceSale(item, saleAmount, offer.buyer);
         }
