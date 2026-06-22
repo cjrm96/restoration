@@ -3301,6 +3301,119 @@
           grid-template-columns: repeat(3, 1fr);
         }
       }
+      /* ════════════════════════════════════════════════════════════
+         POLISH PASS — Showroom (warm premium refinement of the look)
+      ════════════════════════════════════════════════════════════ */
+
+      /* ── shared: more outer air, calmer rhythm ── */
+      .app { max-width: 1320px; padding: 22px; }
+      .content { padding: 26px; }
+      .grid-main,
+      .grid-main-shows { gap: 22px; }
+      .btn-row { gap: 10px; }
+      .btn { padding: 10px 14px; }
+
+      /* ═══════════════ SHOWROOM ═══════════════ */
+      .topbar { padding: 18px 24px; gap: 18px; }
+      .topbar-state-main { font-size: 18px; letter-spacing: .2px; }
+      /* loose chips become one cohesive instrument cluster */
+      .top-stats {
+        background: linear-gradient(180deg, rgba(0,0,0,.30), rgba(0,0,0,.44));
+        border: 1px solid rgba(217,162,79,.18);
+        border-radius: 12px;
+        padding: 5px 4px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 2px 8px rgba(0,0,0,.3);
+      }
+      .chip { padding: 7px 18px; }
+      .chip + .chip { border-left-color: rgba(255,255,255,.07); }
+
+      .tabs { padding: 14px 18px 16px; gap: 12px; }
+      .tab { padding: 12px 22px; border-radius: 5px; }
+
+      .hero-panel { padding: 26px 26px 22px; border-radius: 16px; }
+      .hero-panel-kicker { letter-spacing: 3.2px; }
+      .hero-panel-title { font-size: 27px; margin-bottom: 6px; }
+      .hero-panel-sub { font-size: 13.5px; margin-bottom: 20px; }
+
+      /* the build bay — properly framed: header plate + matte inset stage */
+      .car-preview-wrap {
+        padding: 0;
+        background: linear-gradient(180deg, #1c1713 0%, #120e0b 100%);
+        border: 1px solid rgba(217,162,79,.28);
+        border-radius: 14px;
+        box-shadow: 0 14px 34px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+        overflow: hidden;
+      }
+      .car-preview-wrap > .flex.between.center {
+        margin: 0 !important;
+        padding: 12px 16px;
+        background: linear-gradient(180deg, #2a2017 0%, #1d150f 100%);
+        border-bottom: 1px solid rgba(217,162,79,.22);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+      }
+      .art-backdrop-shell {
+        height: 236px; min-height: 236px;
+        margin: 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,.6);
+        box-shadow: inset 0 0 0 1px rgba(217,162,79,.12), inset 0 8px 30px rgba(0,0,0,.55);
+      }
+
+      .panel { padding: 18px; margin-bottom: 16px; border-radius: 12px; }
+      .panel-header { margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid rgba(217,162,79,.14); }
+      .panel-title { font-size: 15px; }
+
+      /* ── Showroom · SOCIAL tab (phone hub) ──
+         Set the phone on the workbench with a warm spotlight, give it air,
+         and tidy the followers widget + app grid. */
+      #appContent .phone-frame {
+        margin: 8px auto 12px;
+        max-width: 412px;
+        box-shadow:
+          0 0 0 2px #0a0805,
+          0 24px 60px rgba(0,0,0,.6),
+          0 0 90px 10px rgba(217,162,79,.07),
+          inset 0 1px 0 rgba(255,255,255,.05);
+      }
+      .phone-widget { border-radius: 18px; padding: 16px 18px; margin: 6px 16px 18px; box-shadow: 0 6px 18px rgba(0,0,0,.3); }
+      .phone-widget .pw-value { font-size: 30px; }
+      .phone-app-grid { gap: 18px 12px; padding: 6px 18px 20px; }
+      .phone-app-icon .pai-tile { border-radius: 16px; box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 6px 14px rgba(0,0,0,.34); }
+      .phone-post { border-radius: 14px; margin-bottom: 16px; }
+
+      /* ── Showroom · MARKETPLACE + COMPETE tabs ──
+         Hero panels share the BUILD framing already. Tighten the feed/ad
+         cards: deeper radius, real shadow, tactile hover lift. */
+      .hero-panel { margin-bottom: 16px; }
+      .feed-item {
+        border-radius: 11px;
+        padding: 12px 14px;
+        margin-bottom: 11px;
+        box-shadow: 0 3px 10px rgba(0,0,0,.28);
+        transition: transform .12s ease, box-shadow .12s ease;
+      }
+      .feed-item:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.4); }
+      .hero-panel.marketplace .feed-item:hover { box-shadow: 0 10px 22px rgba(0,0,0,.5); }
+      /* the two Saturday road-trip choice cards (inline-styled grid in a hero) */
+      .hero-panel .info-box[style*="grid-template-columns:1fr 1fr"] > div {
+        border-radius: 11px !important;
+        padding: 14px !important;
+        transition: transform .12s ease, box-shadow .12s ease;
+      }
+      .hero-panel .info-box[style*="grid-template-columns:1fr 1fr"] > div:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 22px rgba(0,0,0,.4);
+      }
+      /* sub-tab strip (All Builds / Tools / Space) — match the roomier tabs */
+      .car-tabs { padding: 12px 18px; gap: 10px; }
+
+      /* ── responsive: stack the two columns on narrow screens ── */
+      @media (max-width: 880px) {
+        .grid-main,
+        .grid-main-shows { grid-template-columns: 1fr; }
+        .content { padding: 16px; }
+        .hero-panel-title { font-size: 22px; }
+      }
     </style>
   </head>
   <body>
