@@ -6956,6 +6956,7 @@
           shopSub: "suggested",
           toolCat: "all",
           marketTab: "sell",
+          showSub: null,
           history: [],
           result: null,
           won: false,
@@ -10781,6 +10782,11 @@
         playSfx("click");
         requestRender("full");
       }
+      function setShowSub(tier) {
+        state.showSub = tier;
+        playSfx("click");
+        requestRender("full");
+      }
 
       /* ═══════════════════════════════════════════
      UI BUILDING BLOCKS
@@ -12797,16 +12803,34 @@ addEventListener("DOMContentLoaded",function(){
         )}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#1d1611", "clipboard")}</div></div>`;
       }
 
+      const SHOW_TIER_ICONS = {
+        "Cars & Coffee": "☕",
+        Local: "🏘️",
+        Regional: "🌎",
+        National: "🏆",
+      };
+
       function renderShows() {
         const car = currentCar();
         if (!car) return renderNoCar();
         const shows = getCurrentShows();
         const fillAmount = MAX_FUEL - state.fuel;
+        const tierOrder = ["Cars & Coffee", "Local", "Regional", "National"];
+        if (!state.showSub || !tierOrder.includes(state.showSub)) {
+          state.showSub = getUpcomingSummary().nextShow.tier;
+        }
+        const pillRow = `<div class="cat-pill-row">${tierOrder
+          .map(
+            (t) =>
+              `<button class="cat-pill ${state.showSub === t ? "active" : ""}" onclick="setShowSub('${t}')"><span class="cat-pill-icon">${SHOW_TIER_ICONS[t]}</span>${t}</button>`,
+          )
+          .join("")}</div>`;
+        const visibleShows = shows.filter((s) => s.tier === state.showSub);
         const showPrepBoard = heroPanel(
           "Show Prep Board",
           "Load the truck, check the fuel, roll it out",
           "Every show the car runs is one more story on the build.",
-          `${carPreview(car)}${panel("Travel & Fuel", `<div class="info-box"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>Buy 5 Gal ($20)</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright)" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill Tank ($${fmt(fillAmount * FUEL_PRICE)})</button></div></div>`, "", "#7da0c2", "show-card")}<div class="cards">${shows
+          `${carPreview(car)}${panel("Travel & Fuel", `<div class="info-box"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>Buy 5 Gal ($20)</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright)" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill Tank ($${fmt(fillAmount * FUEL_PRICE)})</button></div></div>`, "", "#7da0c2", "show-card")}${pillRow}<div class="cards">${visibleShows
             .map((show) => {
               const progressReq = showProgressRequirement(show);
               const locked = getOverall(car) < show.minScore || !progressReq.ok;
@@ -13797,6 +13821,7 @@ addEventListener("DOMContentLoaded",function(){
           state.shopSub,
           state.toolCat,
           state.marketTab,
+          state.showSub,
           state.fuelPurchase,
           state.week,
           state.fuel,
