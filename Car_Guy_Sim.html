@@ -7066,6 +7066,7 @@
           marketplaceStashExpanded: false,
           marketplaceListedExpanded: false,
           lotExpanded: false,
+          phoneFeedExpanded: false,
           pendingMarketplaceOffer: null,
           scavengeChoice: null,
           atTrip: false,
@@ -8161,6 +8162,11 @@
       }
       function toggleLotExpanded() {
         state.lotExpanded = !state.lotExpanded;
+        playSfx("click");
+        requestRender("full");
+      }
+      function togglePhoneFeedExpanded() {
+        state.phoneFeedExpanded = !state.phoneFeedExpanded;
         playSfx("click");
         requestRender("full");
       }
@@ -13369,11 +13375,20 @@ addEventListener("DOMContentLoaded",function(){
           motortube: "youtube",
         };
         const postType = platformMap[platform];
-        const posts = (state.postHistory || []).filter((p) => p.type === postType);
+        const posts = (state.postHistory || [])
+          .filter((p) => p.type === postType)
+          .slice()
+          .reverse();
         if (!posts.length) {
           return `<div class="phone-empty">No ${platform} posts yet. The first one shows up here once you tap Post.</div>`;
         }
-        return posts
+        const PREVIEW = 5;
+        const expanded = !!state.phoneFeedExpanded;
+        const shown = expanded ? posts : posts.slice(0, PREVIEW);
+        const toggle = posts.length > PREVIEW
+          ? `<div style="text-align:center;margin:10px 0">${button(expanded ? "Show less" : `Show all ${posts.length} posts`, "togglePhoneFeedExpanded()", false, "", "padding:6px 14px;font-size:11px;background:transparent;color:var(--gold-soft);border:1px solid rgba(217,162,79,0.4)")}</div>`
+          : "";
+        return shown
           .map((p) => {
             const carLabel =
               p.carYear && p.carMake
@@ -13410,7 +13425,7 @@ addEventListener("DOMContentLoaded",function(){
               </div>
             </div>`;
           })
-          .join("");
+          .join("") + toggle;
       }
 
       function renderPhoneMessagesApp() {
@@ -13822,6 +13837,10 @@ addEventListener("DOMContentLoaded",function(){
           state.toolCat,
           state.marketTab,
           state.showSub,
+          state.marketplaceStashExpanded ? 1 : 0,
+          state.marketplaceListedExpanded ? 1 : 0,
+          state.lotExpanded ? 1 : 0,
+          state.phoneFeedExpanded ? 1 : 0,
           state.fuelPurchase,
           state.week,
           state.fuel,
