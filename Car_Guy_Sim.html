@@ -1686,6 +1686,10 @@
         }
       }
 
+      .result-action-bar {
+        position: sticky;
+        top: 100px;
+      }
       @media (max-width: 980px) {
         .grid-main,
         .grid-main-shows {
@@ -1693,6 +1697,21 @@
         }
         .social-actions {
           grid-template-columns: 1fr;
+        }
+        .result-grid {
+          display: flex;
+          flex-direction: column;
+        }
+        .result-grid > div:first-child {
+          order: 2;
+        }
+        .result-grid > div:nth-child(2) {
+          order: 1;
+          display: flex;
+          flex-direction: column;
+        }
+        .result-grid > div:nth-child(2) .result-action-bar {
+          position: static;
         }
       }
       @media (max-width: 640px) {
@@ -12982,29 +13001,28 @@ addEventListener("DOMContentLoaded",function(){
         const carLine = isCoffee
           ? `<div class="small" style="color:var(--text);margin-bottom:2px">${r.car}</div>`
           : `<div class="small" style="color:var(--text);margin-bottom:2px">${r.car} · Score ${r.score}</div>`;
-        const heroBody = `<div style="text-align:center;padding:6px 0 4px"><div style="font-size:48px;line-height:1;margin-bottom:6px">${placeIcon}</div><div style="color:${placeColor};font-weight:bold;font-size:${isCoffee ? "26px" : "34px"};letter-spacing:0.5px;margin-bottom:6px">${placeText}</div>${carLine}${buckLine}${r.localSponsorCovered ? `<div class="tiny good" style="margin-top:8px">Entry fee covered by town sponsor.</div>` : ""}${rewardLine ? `<div style="margin-top:10px">${rewardLine}</div>` : ""}</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-top:14px">${[
-          isCoffee ? null : ["Prize", `$${fmt(r.prize)}`, "#87c77b"],
-          r.bonusCash > 0 ? ["Sponsor", `+$${fmt(r.bonusCash)}`, "#d8a24f"] : null,
-          isCoffee ? null : ["Entry", `-$${fmt(r.fee)}`, "#d38a76"],
-          ["Fuel", `-${r.fuelUsed} gal`, "#7da0c2"],
+        const heroTop = `<div style="text-align:center;padding:4px 0 2px"><div style="font-size:40px;line-height:1;margin-bottom:4px">${placeIcon}</div><div style="color:${placeColor};font-weight:bold;font-size:${isCoffee ? "22px" : "28px"};letter-spacing:0.5px;margin-bottom:4px">${placeText}</div>${carLine}${buckLine}${r.localSponsorCovered ? `<div class="tiny good" style="margin-top:6px">Entry fee covered by town sponsor.</div>` : ""}${rewardLine ? `<div style="margin-top:8px">${rewardLine}</div>` : ""}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:10px 0 4px">${[
           isCoffee ? null : ["Net", `${r.net >= 0 ? "+" : ""}$${fmt(r.net)}`, r.net >= 0 ? "#87c77b" : "#d38a76"],
+          r.bonusCash > 0 ? ["Sponsor", `+$${fmt(r.bonusCash)}`, "#d8a24f"] : null,
           ["Followers", `+${fmtF(r.gained)}`, "#b68ae6"],
-        ].filter(Boolean).map(([label, val, col]) => `<div style="background:#191511;border:1px solid #41372f;border-radius:8px;padding:9px 6px;text-align:center"><div style="color:${col};font-weight:bold;font-size:16px">${val}</div><div class="tiny muted" style="letter-spacing:.5px;margin-top:2px">${label.toUpperCase()}</div></div>`).join("")}</div>`;
+        ].filter(Boolean).map(([label, val, col]) => `<div style="background:#191511;border:1px solid #41372f;border-radius:8px;padding:9px 6px;text-align:center"><div style="color:${col};font-weight:bold;font-size:16px">${val}</div><div class="tiny muted" style="letter-spacing:.5px;margin-top:2px">${label.toUpperCase()}</div></div>`).join("")}</div>${
+          isCoffee
+            ? ""
+            : `<div class="tiny muted" style="text-align:center;margin-bottom:4px">Prize $${fmt(r.prize)} · Entry -$${fmt(r.fee)} · Fuel -${r.fuelUsed} gal</div>`
+        }`;
         const standingsBody = `${r.standings.map((e, i) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 6px;border-bottom:${i < r.standings.length - 1 ? "1px dashed #453a31" : "none"};background:${e.isPlayer ? "rgba(79,112,74,0.18)" : e.isRival ? "rgba(112,40,40,0.15)" : "transparent"};border-radius:4px"><div style="display:flex;gap:10px"><span style="color:${i === 0 ? "#d8a24f" : "#7d7468"};font-weight:bold;width:18px">${i + 1}</span><span style="color:${e.isPlayer ? "#9fd18e" : e.isRival ? "#e07070" : "#e4d8c1"};font-size:14px">${e.name}${e.isRival ? `<span class="rival-badge">RIVAL</span>` : ""}</span></div><span class="small muted">${isCoffee ? "" : e.score}</span></div>`).join("")}`;
-        const storyBody = `${carPreview(car).replace(workspaceBackdropFrame(), showBackdropFrame(r.tier))}
-          <div class="cinematic-line"><div class="hero-kicker">ARRIVAL</div><div class="small" style="color:var(--text);line-height:1.6">${r.arrivalLine || ""}</div></div>
-          ${isCoffee ? "" : `<div class="cinematic-line"><div class="hero-kicker">JUDGING</div><div class="small" style="color:var(--text);line-height:1.6">${r.judgingLine || ""}</div></div>`}
-          <div class='taped-note' style='margin-top:4px'><div class='feed-kicker'>${isCoffee ? "MORNING VIBE" : "NIGHT OF THE SHOW"}</div><div class='feed-text'>${vibeLine}</div>${buckVibe ? `<div class='feed-meta'>${buckVibe}</div>` : ""}</div>`;
+        const narrativeBody = `<div style="margin-top:2px">${[r.arrivalLine, isCoffee ? "" : r.judgingLine, vibeLine].filter(Boolean).map((line) => `<div class="small" style="color:var(--text);line-height:1.6;margin-bottom:8px">${line}</div>`).join("")}${buckVibe ? `<div class="tiny muted">${buckVibe}</div>` : ""}</div>`;
         const heroTitle = isCoffee
           ? `${r.show} · Hangout`
           : `${placeLabel(r.place)} · ${r.show}`;
-        return `<div class="grid-main"><div>${panel("Show Story", storyBody, "", "#a79a86")}${panel(
+        const storyBody = `${carPreview(car).replace(workspaceBackdropFrame(), showBackdropFrame(r.tier))}${heroTop}${narrativeBody}`;
+        return `<div class="grid-main result-grid"><div>${panel(
           heroTitle,
-          heroBody,
+          storyBody,
           "",
           placeColor,
-        )}${panel(isCoffee ? "Crowd Pleasers" : "Final Standings", standingsBody, "", "#7da0c2")}</div><div>${renderUpcomingBar()}${panel("After the Show", `${button("Back to Garage", "state.postShowWeekLocked=false; setView('garage')", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "", "#d8a24f")}</div></div>`;
+        )}${panel(isCoffee ? "Crowd Pleasers" : "Final Standings", standingsBody, "", "#7da0c2")}</div><div><div class="result-action-bar">${panel("After the Show", `${button("Back to Garage", "state.postShowWeekLocked=false; setView('garage')", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "", "#d8a24f")}</div>${renderUpcomingBar()}</div></div>`;
       }
 
       // Ending the Saturday trip burns the weekend — advance one week
