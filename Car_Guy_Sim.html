@@ -7069,6 +7069,7 @@
           phoneFeedExpanded: false,
           pendingMarketplaceOffer: null,
           scavengeChoice: null,
+          scavengeTripsTaken: 0,
           atTrip: false,
           junkyardStock: [],
           swapMeetStock: [],
@@ -8527,6 +8528,7 @@
         );
         state.scavengeChoice = location;
         state.atTrip = true;
+        state.scavengeTripsTaken = (state.scavengeTripsTaken || 0) + 1;
         playSfx("click");
         toast(
           location === "junkyard"
@@ -12732,7 +12734,10 @@ addEventListener("DOMContentLoaded",function(){
               !state.ownedTools.includes(t.id),
           );
           const storage = toolStorageData();
-          subcontent = `<div class="info-box" style="margin-bottom:12px"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:4px">Capacity: ${state.ownedTools.length} / ${storage.maxTools} tools</div><div class="tiny muted">Need more space or a faster shop? See the Space &amp; Storage tab.</div></div><div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">${tab("All", state.toolCat === "all", "setToolCat('all')")}${TOOL_CATEGORIES.map((cat) => tab(`${cat.emoji} ${cat.label}`, state.toolCat === cat.id, `setToolCat('${cat.id}')`)).join("")}</div>${
+          const storageHint = state.ownedTools.length >= storage.maxTools - 1
+            ? '<div class="tiny muted">Need more space or a faster shop? See the Space &amp; Storage tab.</div>'
+            : "";
+          subcontent = `<div class="info-box" style="margin-bottom:12px"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:4px">Capacity: ${state.ownedTools.length} / ${storage.maxTools} tools</div>${storageHint}</div><div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">${tab("All", state.toolCat === "all", "setToolCat('all')")}${TOOL_CATEGORIES.map((cat) => tab(`${cat.emoji} ${cat.label}`, state.toolCat === cat.id, `setToolCat('${cat.id}')`)).join("")}</div>${
             availableTools.length
               ? availableTools
                   .map((t) => {
@@ -13087,7 +13092,7 @@ addEventListener("DOMContentLoaded",function(){
           return `<div style="margin-bottom:14px">${heroPanel(
             "Pomona Swap · Saturday Run",
             "Cash only, no receipts, no warranty",
-            "Tool deals you'll regret skipping.",
+            "",
             (swapItems || `<div class="small muted">Tables are bare. Came too late.</div>`) + headHome,
             "gold",
           )}</div>`;
@@ -13113,7 +13118,9 @@ addEventListener("DOMContentLoaded",function(){
         return `<div style="margin-bottom:14px">${heroPanel(
           "Saturday Road Trip",
           "Pick-A-Part or Pomona Swap",
-          "Pick one. Bring cash. The trip burns the weekend — same as entering a show.",
+          (state.scavengeTripsTaken || 0) < 2
+            ? "Pick one. Bring cash. The trip burns the weekend — same as entering a show."
+            : "",
           `${noRideBanner}<div class="info-box" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;background:transparent;border:none;padding:0">${yardCard}${swapCard}</div>`,
           "blue",
         )}</div>`;
@@ -13241,7 +13248,7 @@ addEventListener("DOMContentLoaded",function(){
         return `${pillRow}${heroPanel(
           "Sell on Marketplace",
           "Move the parts you're done with",
-          "Buyers DM in real time. Pick your tone, hold your price, or let it go cheap.",
+          "",
           `
       ${!state.wifeCarSold && currentCar() ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border-color:rgba(196,109,96,0.4);margin-bottom:12px"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:6px">🚙 Sell the wife's daily driver?</div><div class="tiny" style="color:var(--text);margin-bottom:8px">It's clean, it runs, and she's at her sister's for the weekend. The Marketplace listing practically writes itself. What could go wrong.</div>${button("List the wife's car · ~$8,000", "sellWifeCar()", false, "", "width:100%;background:linear-gradient(180deg,#c97d70 0%,#8c4e44 100%);border-color:#d99a8f;color:#1a120a;font-weight:bold")}</div>` : ""}
       <div class="info-box">
@@ -13516,7 +13523,7 @@ addEventListener("DOMContentLoaded",function(){
               (s) =>
                 `<div class="guide-step"><div><div class="small" style="color:var(--text)">${s.emoji} ${s.name}</div><div class="tiny muted" style="margin-top:3px">${s.benefit}</div></div><div style="text-align:right"><div class="tiny ${state.followers >= s.req ? "good" : "warn"}">${state.followers >= s.req ? "ACTIVE" : fmtF(s.req)}</div>${state.followers < s.req ? `<div class="tiny muted" style="margin-top:3px">${fmtF(s.req - state.followers)} away</div>` : ""}</div></div>`,
             ).join("")}`,
-          "Know what each sponsor gives you and how close you are.",
+          "",
           "#d8a24f",
         )}</div></div>`;
       }
