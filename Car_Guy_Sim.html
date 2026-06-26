@@ -1673,6 +1673,18 @@
           font-size: 11px;
         }
       }
+      @media (max-width: 460px) {
+        .tabs {
+          gap: 4px;
+        }
+        .tab {
+          padding: 9px 8px;
+          flex: 1 1 0;
+        }
+        .tab-label-text {
+          display: none;
+        }
+      }
 
       @media (max-width: 980px) {
         .grid-main,
@@ -6943,6 +6955,7 @@
           shopCat: "engine",
           shopSub: "suggested",
           toolCat: "all",
+          marketTab: "sell",
           history: [],
           result: null,
           won: false,
@@ -10579,54 +10592,10 @@
       const TUTORIAL_BEATS = [
         {
           kicker: "Welcome to the garage",
-          art: "🚚",
-          headline: "Every car guy story starts the same way.",
+          art: "🚚🔧",
+          headline: "Five grand in. Nationals are 22 weeks out.",
           body:
-            "It's early spring. You found a project. You're five grand in. Your driveway is now a garage. The car-show calendar is about to wake up — and the Nationals are at the end of summer. The question isn't whether you can finish it. It's whether you can finish it in time.",
-        },
-        {
-          kicker: "Step 1 · Build it",
-          art: "🔧",
-          headline: "Restore the car. One part at a time.",
-          body:
-            "Twelve categories make up the build — engine, transmission, brakes, suspension, wheels, tires, electrical, differential, body, paint, interior, chrome. You move the needle in each by buying parts and either installing them yourself or sending the car to a shop.",
-          points: [
-            { icon: "🛠", text: "DIY is cheaper but needs the right tools." },
-            { icon: "🏪", text: "Shop work is faster and skips tool ownership — but it'll cost you." },
-            { icon: "📋", text: "The Auto Shop Floor lists Next Jobs first. Trust the list while you're learning." },
-          ],
-        },
-        {
-          kicker: "Step 2 · Compete",
-          art: "🏁",
-          headline: "Take it to shows. Earn cash and reputation.",
-          body:
-            "Four tiers of show — Cars & Coffee, Local, Regional, and National — escalate in stakes. Cars & Coffee, Local, and Regional run all season on a fixed cadence. Nationals are the late-summer capstone: a three-week window at the end of the season, and only after you've earned your way in through Regionals.",
-          points: [
-            { icon: "⛽", text: "Shows cost fuel to attend. Keep the tank topped off." },
-            { icon: "🏎", text: "A guy named Buck enters every show on the schedule. He's the rival. Beat him." },
-            { icon: "🏆", text: "Win Nationals with a 90+ build to take the season." },
-          ],
-        },
-        {
-          kicker: "Step 3 · The hustle",
-          art: "📱",
-          headline: "Shows aren't the only payday.",
-          body:
-            "The scene rewards everyone hustling — not just the guys with trophies. Four side hustles compound across a season:",
-          points: [
-            { icon: "💸", text: "Sell take-off parts on Marketplace. Buyers DM you in real time." },
-            { icon: "🎬", text: "Drop content as an influencer. Payouts scale with your follower count." },
-            { icon: "📦", text: "Land brand deals once you cross 500 followers — free Budget parts in exchange for posts." },
-            { icon: "🛻", text: "Saturday road trips: Pick-A-Part for cheap used parts, Pomona Swap for cheap used tools. Burns your Saturday like a show would." },
-          ],
-        },
-        {
-          kicker: "Ready",
-          art: "🚚🔥",
-          headline: "Your '65 F-100 is on jack stands. The clock is on you now.",
-          body:
-            "Twenty-two weeks from early spring to late summer. Nationals open at week 20 and close at week 22. Paychecks land every four. Don't run out of fuel, don't take the shark loan unless you have to, and remember: 'while I'm in there' has ended more budgets than inflation.",
+            "Buy parts, wrench them in yourself or send the car to a shop, then chase shows for cash and reputation. The Auto Shop Floor tells you what's next — trust it while you're learning the ropes.",
         },
       ];
 
@@ -10807,6 +10776,11 @@
         state.toolCat = cat;
         requestRender("full");
       }
+      function setMarketTab(tab) {
+        state.marketTab = tab;
+        playSfx("click");
+        requestRender("full");
+      }
 
       /* ═══════════════════════════════════════════
      UI BUILDING BLOCKS
@@ -10819,7 +10793,10 @@
         return `<div class="hero-panel ${toneCls} ${extraClass}">${kicker ? `<div class="hero-panel-kicker">${kicker}</div>` : ""}${title ? `<div class="hero-panel-title">${title}</div>` : ""}${sub ? `<div class="hero-panel-sub">${sub}</div>` : ""}${body}</div>`;
       }
       function tab(label, active, onclick) {
-        return `<button class="tab ${active ? "active" : ""}" onclick="${onclick}">${label}</button>`;
+        const spaceIdx = label.indexOf(" ");
+        const icon = spaceIdx === -1 ? label : label.slice(0, spaceIdx);
+        const text = spaceIdx === -1 ? "" : label.slice(spaceIdx + 1);
+        return `<button class="tab ${active ? "active" : ""}" onclick="${onclick}">${icon}${text ? ` <span class="tab-label-text">${text}</span>` : ""}</button>`;
       }
       function button(
         label,
@@ -12129,7 +12106,8 @@ addEventListener("DOMContentLoaded",function(){
               .join("")}</div>`
           : "";
         const primaryLabel = isLast ? "Get after it →" : "Next →";
-        root.innerHTML = `<div class="modal"><div class="modal-card tutorial-modal show-beat"><div class="tutorial-progress">${pips}</div><div class="tutorial-body"><div class="tutorial-kicker">${beat.kicker}</div><div class="tutorial-art">${beat.art}</div><div class="tutorial-headline">${beat.headline}</div><div class="tutorial-body-text">${beat.body}</div>${pointsMarkup}</div><div class="tutorial-actions"><button class="tutorial-primary" onclick="advanceTutorial()">${primaryLabel}</button>${isLast ? "" : `<button class="tutorial-skip" onclick="skipTutorial()">Skip intro</button>`}</div></div></div>`;
+        const progressMarkup = TUTORIAL_BEATS.length > 1 ? `<div class="tutorial-progress">${pips}</div>` : "";
+        root.innerHTML = `<div class="modal"><div class="modal-card tutorial-modal show-beat">${progressMarkup}<div class="tutorial-body"><div class="tutorial-kicker">${beat.kicker}</div><div class="tutorial-art">${beat.art}</div><div class="tutorial-headline">${beat.headline}</div><div class="tutorial-body-text">${beat.body}</div>${pointsMarkup}</div><div class="tutorial-actions"><button class="tutorial-primary" onclick="advanceTutorial()">${primaryLabel}</button>${isLast ? "" : `<button class="tutorial-skip" onclick="skipTutorial()">Skip intro</button>`}</div></div></div>`;
         return true;
       }
 
@@ -13113,6 +13091,7 @@ addEventListener("DOMContentLoaded",function(){
 
       function renderDealership() {
         resolveCompletedRestorations(false);
+        if (state.atTrip) return renderScavengeTrip();
         const stash = state.partsInventory.filter((i) => !i.listed && !i.sold);
         const listed = state.partsInventory.filter((i) => i.listed && !i.sold);
 
@@ -13199,7 +13178,37 @@ addEventListener("DOMContentLoaded",function(){
               .join("") + lotToggle
           : `<div class="small muted">Every project on the lot is already in your garage. Move some metal before more comes around.</div>`;
 
-        return `${renderScavengeTrip()}<div class="grid-main"><div>${heroPanel(
+        const marketTab = state.marketTab || "sell";
+        const pillRow = `<div class="cat-pill-row">${[
+          ["trip", "🛻", "Road Trip"],
+          ["sell", "💰", "Sell Parts"],
+          ["buy", "🚗", "Buy Cars"],
+        ]
+          .map(
+            ([id, icon, label]) =>
+              `<button class="cat-pill ${marketTab === id ? "active" : ""}" onclick="setMarketTab('${id}')"><span class="cat-pill-icon">${icon}</span>${label}</button>`,
+          )
+          .join("")}</div>`;
+
+        if (marketTab === "trip") return pillRow + renderScavengeTrip();
+
+        if (marketTab === "buy") {
+          return `${pillRow}${heroPanel(
+            "On the Lot",
+            "Someone else's project, yours for the right price",
+            "Most great builds start as someone else's bad decision.",
+            `
+      <div class="info-box">
+        <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Cars for sale</div>
+        ${carBuyMarkup}
+      </div>
+    `,
+            "blue",
+            "marketplace",
+          )}`;
+        }
+
+        return `${pillRow}${heroPanel(
           "Sell on Marketplace",
           "Move the parts you're done with",
           "Buyers DM in real time. Pick your tone, hold your price, or let it go cheap.",
@@ -13216,19 +13225,7 @@ addEventListener("DOMContentLoaded",function(){
     `,
           "gold",
           "marketplace",
-        )}</div><div>${heroPanel(
-          "On the Lot",
-          "Someone else's project, yours for the right price",
-          "Most great builds start as someone else's bad decision.",
-          `
-      <div class="info-box">
-        <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Cars for sale</div>
-        ${carBuyMarkup}
-      </div>
-    `,
-          "blue",
-          "marketplace",
-        )}</div></div>`;
+        )}`;
       }
 
       // Settings modal hosts the Legacy Wall entry point — out-of-game
@@ -13799,6 +13796,7 @@ addEventListener("DOMContentLoaded",function(){
           state.shopCat,
           state.shopSub,
           state.toolCat,
+          state.marketTab,
           state.fuelPurchase,
           state.week,
           state.fuel,
