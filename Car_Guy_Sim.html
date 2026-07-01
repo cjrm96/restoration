@@ -12051,6 +12051,13 @@ addEventListener("DOMContentLoaded",function(){
            ${button("📖  Replay Tutorial", "replayTutorial()", false, "", "width:100%;margin-bottom:10px")}
            ${button("🗑  Reset Save (Start Over)", "resetSaveConfirm()", false, "", "width:100%;background:#5a2222;border-color:#a04040;color:#f0c8c8")}`,
           "", "#7da0c2")}
+        ${panel("Keyboard",
+          `<div class="small" style="color:var(--text);line-height:2.1">
+             <span style="color:var(--gold);font-weight:bold">1 – 4</span> · Switch tabs — Build, Social, Marketplace, Compete<br>
+             <span style="color:var(--gold);font-weight:bold">Enter</span> · Advance popups and show-night beats<br>
+             <span style="color:var(--gold);font-weight:bold">Esc</span> · Close what's open, or open Settings<br>
+             <span style="color:var(--gold);font-weight:bold">F</span> · Toggle fullscreen</div>`,
+          "", "#8fcb7e")}
         ${panel("Legacy", renderLegacySettingsCard(), "", "#d8a24f")}
         ${panel("About",
           `<div style="text-align:center;padding:6px 0 14px">
@@ -14213,6 +14220,81 @@ addEventListener("DOMContentLoaded",function(){
         document.addEventListener(ev, syncFullscreenButtons),
       );
       syncFullscreenButtons();
+
+      // Keyboard shortcuts. Esc follows the pause-menu convention:
+      // close whatever's on top, otherwise open Settings. Enter only
+      // advances single-button modals so it can never pick a choice
+      // for the player. 1-4 mirror the main tab order.
+      const KEY_VIEW_ORDER = ["workshop", "career", "dealership", "shows"];
+      function keyboardModalBlocking() {
+        return (
+          cheatPromptOpen ||
+          state.settingsOpen ||
+          !state.tutorialComplete ||
+          !!state.pendingVictory ||
+          !!state.showLoading ||
+          !!state.showStage ||
+          !!state.pendingScene ||
+          !!state.pendingEvent ||
+          !!state.showStore ||
+          !!(state.noticeQueue && state.noticeQueue.length)
+        );
+      }
+      document.addEventListener("keydown", (e) => {
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const t = e.target;
+        const typing =
+          t &&
+          (t.tagName === "INPUT" ||
+            t.tagName === "TEXTAREA" ||
+            t.tagName === "SELECT" ||
+            t.isContentEditable);
+        if (e.key === "Escape") {
+          if (cheatPromptOpen) {
+            closeCheatPrompt();
+          } else if (state.settingsOpen) {
+            closeSettings();
+          } else if (state.showStore) {
+            closeStore();
+          } else if (!typing && !keyboardModalBlocking() && !state.gameOver) {
+            openSettings();
+          }
+          return;
+        }
+        if (typing) return;
+        if (e.key === "Enter") {
+          // Focused buttons keep native Enter-to-click.
+          if (t && (t.tagName === "BUTTON" || t.tagName === "A")) return;
+          if (cheatPromptOpen || state.settingsOpen) return;
+          if (!state.tutorialComplete) {
+            e.preventDefault();
+            advanceTutorial();
+          } else if (state.showLoading && state.showStage) {
+            e.preventDefault();
+            advanceShowStage();
+          } else if (
+            state.noticeQueue &&
+            state.noticeQueue.length &&
+            !state.pendingVictory &&
+            !state.pendingScene &&
+            !state.pendingEvent &&
+            !state.showStore
+          ) {
+            e.preventDefault();
+            dismissNotice();
+          }
+          return;
+        }
+        if (e.key === "f" || e.key === "F") {
+          if (isFullscreenSupported()) toggleFullscreen();
+          return;
+        }
+        const tabIdx = ["1", "2", "3", "4"].indexOf(e.key);
+        if (tabIdx >= 0) {
+          if (keyboardModalBlocking() || state.gameOver || state.seasonWrap) return;
+          if (KEY_VIEW_ORDER[tabIdx] !== state.view) setView(KEY_VIEW_ORDER[tabIdx]);
+        }
+      });
 
       /* ═══════════════════════════════════════════
      WEB AUDIO MUSIC ENGINE
