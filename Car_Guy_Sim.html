@@ -3695,6 +3695,7 @@
             <div class="chip trend" id="trendChip"></div>
             <div class="chip fuel" id="fuelChip"></div>
             <div class="chip followers" id="followersChip"></div>
+            <div class="chip" id="wifeChip" title="Wife approval — she has opinions about the budget"></div>
           </div>
           <div class="top-actions">
             <button class="btn" id="openStoreBtn">Bank Loan</button>
@@ -7245,6 +7246,98 @@
         return Math.round(sum / CATS.length);
       };
 
+      /* ═══════════════════════════════════════════
+     THE WIFE — approval meter with opinions
+  ═══════════════════════════════════════════ */
+      function wifeApprovalVal() {
+        if (typeof state.wifeApproval !== "number") state.wifeApproval = 55;
+        return state.wifeApproval;
+      }
+      function nudgeWife(delta, line, big = false) {
+        const before = wifeApprovalVal();
+        state.wifeApproval = Math.max(0, Math.min(100, before + delta));
+        if (line) {
+          if (big) pushNotice(`💍 ${line}`, delta >= 0 ? "good" : "bad");
+          else toast(`💍 ${line}`, delta >= 0 ? "event-good" : "event-bad");
+        }
+        requestRender("chrome");
+      }
+      function takeFamilySaturday() {
+        if (state.familySaturdayWeek === state.week)
+          return toast("You already spent this Saturday with the family.", "err");
+        if (state.enteredShowsThisWeek && state.enteredShowsThisWeek.length)
+          return toast("You already burned this Saturday at a show.", "err");
+        if (state.atTrip) return toast("You are mid-trip. Head home first.", "err");
+        state.familySaturdayWeek = state.week;
+        state.familySaturdaysTaken = (state.familySaturdaysTaken || 0) + 1;
+        nudgeWife(+10, [
+          "Pancakes, the lake, no grease under your fingernails. She noticed. (approval +10)",
+          "You watched her show without checking part prices once. Massive win. (approval +10)",
+          "Family Saturday. The kids still think the truck is almost done. (approval +10)",
+        ][Math.floor(Math.random() * 3)]);
+        playSfx("success");
+        saveGame();
+        requestRender("full");
+      }
+
+      const RESPRAY_COST = 250;
+      const PAINT_SWATCHES = [
+        { id: "red", label: "Rally Sky", hex: "#8ec7f4" },
+        { id: "teal", label: "Glacier Teal", hex: "#92d7e8" },
+        { id: "blue", label: "Boulevard Blue", hex: "#8dcaf2" },
+        { id: "navy", label: "Midnight Navy", hex: "#3a5d9a" },
+        { id: "white", label: "Wimbledon White", hex: "#e8e6df" },
+        { id: "silver", label: "Brushed Silver", hex: "#9ea2a8" },
+        { id: "plum", label: "Panther Plum", hex: "#7a4d8c" },
+        { id: "copper", label: "Burnt Copper", hex: "#b06e3a" },
+        { id: "gold", label: "Prospector Gold", hex: "#d8a528" },
+        { id: "pink", label: "Boulevard Pink", hex: "#e09cc4" },
+        { id: "cherry", label: "Rocket Cherry", hex: "#c8323a" },
+      ];
+      function resprayCar(name) {
+        const car = currentCar();
+        if (!car) return;
+        if (car.palette === name) return toast("She is already wearing that color.", "err");
+        if (state.money < RESPRAY_COST) return toast("Not enough cash for the booth.", "err");
+        state.money -= RESPRAY_COST;
+        recordMoneyChange(-RESPRAY_COST, "Paint booth respray");
+        car.palette = name;
+        const sw = PAINT_SWATCHES.find((p) => p.id === name);
+        toast(`🎨 Respray booked — ${sw ? sw.label : name}. Wheels matched to the scheme.`, "event-good");
+        playSfx("success");
+        saveGame();
+        requestRender("full");
+      }
+      function commitBuildStyle(style) {
+        const car = currentCar();
+        if (!car || car.buildStyle) return;
+        car.buildStyle = style;
+        toast(
+          style === "stock"
+            ? "📐 Numbers-matching stock it is. The Nationals judges respect the commitment."
+            : "🔥 Restomod. Purists will grumble. The Cars & Coffee crowd will lose their minds.",
+          "event-good",
+        );
+        playSfx("click");
+        saveGame();
+        requestRender("full");
+      }
+      function paintBoothPanel(car) {
+        const swatches = PAINT_SWATCHES.map(
+          (p) =>
+            `<button title="${p.label}" onclick="resprayCar('${p.id}')" style="width:26px;height:26px;padding:0;border-radius:6px;border:2px solid ${car.palette === p.id ? "var(--gold)" : "#3a3129"};background:${p.hex};cursor:pointer"></button>`,
+        ).join("");
+        const styleRow = car.buildStyle
+          ? `<div class="tiny" style="margin-top:10px;color:var(--gold-soft)">Build direction: <b style="color:var(--text-bright)">${car.buildStyle === "stock" ? "Numbers-matching stock" : "Restomod"}</b> · ${car.buildStyle === "stock" ? "Regional and National judges favor it" : "Cars & Coffee and Local crowds love it"}</div>`
+          : `<div class="btn-row two" style="margin-top:10px">${button("Restore it stock", "commitBuildStyle('stock')", false, "", "width:100%")}${button("Build a restomod", "commitBuildStyle('restomod')", false, "", "width:100%")}</div><div class="tiny muted" style="margin-top:6px">One-time call per car. Stock earns points at Regionals and Nationals; restomods turn heads at Cars &amp; Coffee and Local shows.</div>`;
+        return panel(
+          "Paint Booth & Build Direction",
+          `<div style="display:flex;gap:6px;flex-wrap:wrap">${swatches}</div><div class="tiny muted" style="margin-top:8px">Respray $${RESPRAY_COST} · wheels get matched to the scheme</div>${styleRow}`,
+          "",
+          "#d19a3f",
+        );
+      }
+
       function currentCar() {
         return state.cars.find((c) => c.id === state.carId) || null;
       }
@@ -9551,6 +9644,7 @@
       }
 
       function takeBankLoan() {
+        nudgeWife(-4, `"A bank loan? For car parts? We are talking about this at dinner." (approval -4)`);
         if (state.bankLoanBalance > 0)
           return toast("You already have a bank loan to pay down.", "err");
         state.money += 4000;
@@ -9565,6 +9659,7 @@
       }
 
       function takeSharkLoan() {
+        nudgeWife(-12, `"You borrowed money from WHO?" She saw his car. She is not happy. (approval -12)`, true);
         if (state.sharkLoanBalance > 0)
           return toast(
             "The loan shark already owns a piece of your future.",
@@ -9791,6 +9886,22 @@
           state.creatorPostedWeek !== previousWeek &&
           state.collabDoneWeek !== previousWeek;
         state.week += 1;
+        {
+          // Wife approval drifts toward neutral; strong feelings fade.
+          const wa = wifeApprovalVal();
+          if (wa > 55) state.wifeApproval = Math.max(55, wa - 2);
+          else if (wa < 55) state.wifeApproval = Math.min(55, wa + 1);
+          if (wa >= 80 && Math.random() < 0.25) {
+            state.money += 120;
+            recordMoneyChange(120, "Grocery money in the toolbox");
+            nudgeWife(0, `Found $120 in the toolbox with a note: "for the loud thing the truck needs." Keep her.`);
+          } else if (wa <= 25 && Math.random() < 0.3) {
+            const cost = Math.min(90, state.money);
+            state.money -= cost;
+            recordMoneyChange(-cost, "Flowers and a dinner to smooth things over");
+            nudgeWife(4, `Flowers and a dinner ran you $${cost}. Cheaper than the alternative. (approval +4)`);
+          }
+        }
         state.weekStartMoney = state.money;
         state.enteredShowsThisWeek = [];
         state.polishesThisWeek = 0;
@@ -10438,6 +10549,8 @@
         const sponsors = activeSponsors();
 
         if (!car) return toast("Buy a car first.", "err");
+        if (state.familySaturdayWeek === state.week)
+          return toast("You promised this Saturday to the family.", "err");
         if (show.seasonClosed)
           return toast(`${show.name} is closed for the season.`, "err");
         if (show.weeksUntil !== 0)
@@ -10478,8 +10591,25 @@
           3,
           13 - effectiveOverall * 0.11,
         );
+        // Build direction edge: stock builds impress judged tiers,
+        // restomods play to the crowd tiers.
+        const styleEdge =
+          effectiveCar.buildStyle === "stock"
+            ? show.tier === "National"
+              ? 4
+              : show.tier === "Regional"
+                ? 2
+                : 0
+            : effectiveCar.buildStyle === "restomod"
+              ? show.tier === "Cars & Coffee"
+                ? 4
+                : show.tier === "Local"
+                  ? 2
+                  : -2
+              : 0;
         const myScore = clamp(
           effectiveOverall +
+            styleEdge +
             (Math.random() * playerVariance * 2 - playerVariance) +
             bribeBoost,
         );
@@ -10672,6 +10802,12 @@
           state.pendingNationalEnd = true;
         }
         if (place === 1) {
+          nudgeWife(
+            show.tier === "National" ? 15 : 8,
+            show.tier === "National"
+              ? `She is telling everyone her husband is a National Champion. All is forgiven. (approval +15)`
+              : `She kept the trophy photo. "Okay, it is a pretty car." (approval +8)`,
+          );
           pushRivalNote(
             `You just beat the field at ${show.name}. Buck is going to hear about this.`,
           );
@@ -10886,6 +11022,12 @@
         );
         state.cars.push({ ...data, installedParts: [] });
         state.carId = c.id;
+        nudgeWife(
+          price >= 8000 ? -10 : -6,
+          price >= 8000
+            ? `"${c.model}. So that is where the vacation fund went." (approval -10)`
+            : `"Another project. Sure. The lawn mower is still broken, by the way." (approval -6)`,
+        );
         state.view = "workshop";
         saveGame();
         requestRender("full");
@@ -13865,7 +14007,7 @@ addEventListener("DOMContentLoaded",function(){
           "Auto Shop Floor",
           "Every bolt, every part, one at a time",
           "",
-          `${carPreview(car)}${(() => {
+          `${carPreview(car)}${paintBoothPanel(car)}${(() => {
             const rw = roadworthy(car);
             const engineGap = Math.max(0, ROADWORTHY_ENGINE - car.engine);
             const transGap = Math.max(0, ROADWORTHY_TRANSMISSION - car.transmission);
@@ -13909,7 +14051,7 @@ addEventListener("DOMContentLoaded",function(){
           "Show Prep Board",
           "Load the truck, check the fuel, roll it out",
           "Every show the car runs is one more story on the build.",
-          `${carPreview(car)}${panel("Travel & Fuel", `<div class="info-box"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>Buy 5 Gal ($20)</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright)" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill Tank ($${fmt(fillAmount * FUEL_PRICE)})</button></div></div>`, "", "#7da0c2", "show-card")}${pillRow}<div class="cards">${visibleShows
+          `${carPreview(car)}${panel("Travel & Fuel", `<div class="info-box"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>Buy 5 Gal ($20)</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright)" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill Tank ($${fmt(fillAmount * FUEL_PRICE)})</button></div></div>`, "", "#7da0c2", "show-card")}${panel("Family Saturday", `<div class="tiny muted" style="margin-bottom:10px;line-height:1.6">Skip the shows this week and spend the Saturday with the family instead. She keeps score.</div>${button(state.familySaturdayWeek === state.week ? "Saturday already spent \u2764" : "Take the family out", "takeFamilySaturday()", state.familySaturdayWeek === state.week, "", "width:100%")}`, "", "#c9899e", "show-card")}${pillRow}<div class="cards">${visibleShows
             .map((show) => {
               const progressReq = showProgressRequirement(show);
               const locked = getOverall(car) < show.minScore || !progressReq.ok;
@@ -14776,6 +14918,12 @@ addEventListener("DOMContentLoaded",function(){
         }
         getEl("fuelChip").textContent = `⛽ ${state.fuel}/${MAX_FUEL}`;
         getEl("followersChip").textContent = `📣 ${fmtF(state.followers)}`;
+        const wifeChip = getEl("wifeChip");
+        if (wifeChip) {
+          const wa = wifeApprovalVal();
+          wifeChip.textContent = `💍 ${wa}`;
+          wifeChip.style.color = wa >= 70 ? "#9fd18e" : wa >= 40 ? "#e8d8b2" : "#e07a7a";
+        }
         const advanceWeekTopBtn = getEl("advanceWeekTopBtn");
         if (advanceWeekTopBtn) {
           const advanceBlocked = !!(
