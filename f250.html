@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>1969 Forde F-250 Heavy Duty — Stage Viewer</title>
+<style>
+    body {
+        background-color: #17120f;
+        color: #efe2c6;
+        font-family: Georgia, serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px;
+        margin: 0;
+    }
+    .car-section {
+        margin-bottom: 60px;
+        width: 100%;
+        max-width: 1800px;
+    }
+    .section-title {
+        border-bottom: 2px solid #4b4036;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        color: #d19a3f;
+    }
+    .grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: flex-start;
+    }
+    .preview-card {
+        background: #241d17;
+        border: 1px solid #4b4036;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    }
+    .preview-card-title {
+        margin-bottom: 12px;
+        font-weight: bold;
+        color: #a99b84;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+    }
+    svg {
+        width: 340px;
+        height: 190px;
+        background: linear-gradient(180deg, #6a6256 0%, #433c33 100%);
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+</style>
+</head>
+<body>
+
+<h1>Car Guy Simulator — 1969 Forde F-250 Heavy Duty</h1>
+<p style="margin-bottom: 40px; color: #a99b84;">Dev team: Copy the f250Sprite function from the source of this file and place it next to f100Sprite.</p>
+
+<div id="appRoot" style="width: 100%; max-width: 1800px;"></div>
+
+<script>
+// ---------------------------------------------------------
+// HELPER: Wheel Renderer (Already in game)
+// ---------------------------------------------------------
+function pixelWheel(cx, cy, color, rim, spoke) {
+    return `<rect x="${cx - 12}" y="${cy - 12}" width="24" height="24" fill="#111214"/><rect x="${cx - 10}" y="${cy - 10}" width="20" height="20" fill="${color}"/><rect x="${cx - 6}" y="${cy - 10}" width="4" height="20" fill="${spoke}"/><rect x="${cx + 2}" y="${cy - 10}" width="4" height="20" fill="${spoke}"/><rect x="${cx - 10}" y="${cy - 6}" width="20" height="4" fill="${spoke}"/><rect x="${cx - 10}" y="${cy + 2}" width="20" height="4" fill="${spoke}"/><rect x="${cx - 4}" y="${cy - 4}" width="8" height="8" fill="${rim}"/>`;
+}
+
+// ---------------------------------------------------------
+// 1969 FORDE F-250 HEAVY DUTY
+// The work truck next to the starter truck's farm truck:
+// sits visibly taller with daylight between tires and body,
+// taller bed walls with a rail cap, three amber clearance
+// lights on the cab roof, a west-coast tow mirror, a deeper
+// front bumper, and a rear step bumper. Front-left
+// orientation matching f100Sprite.
+// ---------------------------------------------------------
+function f250Sprite(stageLevel, colors) {
+    const { baseColor: body, roofColor: roof, windowColor: glass, trimColor: chrome, wheelColor: wheel, wheelSpoke: spoke, wheelHub: hub, wheelTire: tire, primerColor: primer, rustColor: rusty, shadowColor: dark } = colors;
+    const L = [10, 10, 6, 2, 0][stageLevel] || 0;
+
+    if (stageLevel <= 0) {
+        return `<g shape-rendering="crispEdges">
+            <rect x="76" y="${50+L}" width="70" height="10" fill="${primer}"/>
+            <rect x="66" y="${60+L}" width="10" height="22" fill="${primer}"/>
+            <rect x="76" y="${60+L}" width="60" height="22" fill="${glass}" opacity=".45"/>
+            <rect x="136" y="${60+L}" width="10" height="22" fill="${primer}"/>
+            <rect x="16" y="${82+L}" width="12" height="30" fill="${chrome}" opacity=".45"/>
+            <rect x="150" y="${82+L}" width="112" height="3" fill="${rusty}"/>
+            <rect x="28" y="${82+L}" width="118" height="10" fill="${rusty}"/>
+            <rect x="150" y="${84+L}" width="112" height="8" fill="${primer}"/>
+            <rect x="146" y="${82+L}" width="3" height="30" fill="${dark}" opacity="0.55"/>
+            <rect x="28" y="${92+L}" width="234" height="10" fill="${primer}"/>
+            <rect x="28" y="${102+L}" width="36" height="10" fill="${primer}"/>
+            <rect x="92" y="${102+L}" width="122" height="10" fill="${rusty}"/>
+            <rect x="222" y="${102+L}" width="40" height="10" fill="${primer}"/>
+            <rect x="44" y="${131+L}" width="220" height="4" fill="${dark}" opacity=".72"/>
+            <rect x="60" y="${120+L}" width="36" height="14" rx="4" fill="#141517"/>
+            <rect x="188" y="${120+L}" width="36" height="14" rx="4" fill="#141517"/>
+        </g>`;
+    }
+    if (stageLevel === 1) {
+        return `<g shape-rendering="crispEdges">
+            <rect x="76" y="${50+L}" width="70" height="10" fill="${roof}"/>
+            <rect x="66" y="${60+L}" width="10" height="22" fill="${roof}"/>
+            <rect x="76" y="${60+L}" width="60" height="22" fill="${glass}"/>
+            <rect x="136" y="${60+L}" width="10" height="22" fill="${roof}"/>
+            <rect x="16" y="${82+L}" width="12" height="30" fill="${chrome}" opacity=".55"/>
+            <rect x="150" y="${82+L}" width="112" height="3" fill="${primer}"/>
+            <rect x="28" y="${82+L}" width="118" height="10" fill="${primer}"/>
+            <rect x="150" y="${84+L}" width="112" height="8" fill="${body}"/>
+            <rect x="146" y="${82+L}" width="3" height="30" fill="${dark}" opacity="0.55"/>
+            <rect x="28" y="${92+L}" width="234" height="10" fill="${body}"/>
+            <rect x="28" y="${102+L}" width="36" height="10" fill="${body}"/>
+            <rect x="92" y="${102+L}" width="122" height="10" fill="${primer}"/>
+            <rect x="222" y="${102+L}" width="40" height="10" fill="${body}"/>
+            <rect x="44" y="${131+L}" width="220" height="4" fill="${dark}" opacity=".74"/>
+            ${pixelWheel(78, 121+L, tire, "#565d63", "#34383d")}
+            ${pixelWheel(206, 121+L, wheel, hub, spoke)}
+        </g>`;
+    }
+    if (stageLevel === 2) {
+        return `<g shape-rendering="crispEdges">
+            <rect x="76" y="${50+L}" width="70" height="10" fill="${roof}"/>
+            <rect x="66" y="${60+L}" width="10" height="22" fill="${roof}"/>
+            <rect x="76" y="${60+L}" width="60" height="22" fill="${glass}"/>
+            <rect x="136" y="${60+L}" width="10" height="22" fill="${roof}"/>
+            <rect x="16" y="${82+L}" width="12" height="30" fill="${chrome}"/>
+            <rect x="150" y="${82+L}" width="112" height="3" fill="${roof}"/>
+            <rect x="28" y="${82+L}" width="118" height="10" fill="${body}"/>
+            <rect x="150" y="${84+L}" width="112" height="8" fill="${body}"/>
+            <rect x="146" y="${82+L}" width="3" height="30" fill="${dark}" opacity="0.55"/>
+            <rect x="28" y="${92+L}" width="234" height="10" fill="${body}"/>
+            <rect x="28" y="${102+L}" width="36" height="10" fill="${body}"/>
+            <rect x="92" y="${102+L}" width="122" height="10" fill="${body}"/>
+            <rect x="222" y="${102+L}" width="40" height="10" fill="${body}"/>
+            <rect x="62" y="${62+L}" width="6" height="3" fill="${chrome}"/>
+            <rect x="44" y="${131+L}" width="220" height="4" fill="${dark}" opacity=".76"/>
+            ${pixelWheel(78, 121+L, wheel, hub, spoke)}
+            ${pixelWheel(206, 121+L, wheel, hub, spoke)}
+        </g>`;
+    }
+    if (stageLevel === 3) {
+        return `<g shape-rendering="crispEdges">
+            <rect x="76" y="${50+L}" width="70" height="10" fill="${roof}"/>
+            <rect x="86" y="${48+L}" width="4" height="2" fill="#f0a63c"/>
+            <rect x="100" y="${48+L}" width="4" height="2" fill="#f0a63c"/>
+            <rect x="114" y="${48+L}" width="4" height="2" fill="#f0a63c"/>
+            <rect x="66" y="${60+L}" width="10" height="22" fill="${roof}"/>
+            <rect x="76" y="${60+L}" width="60" height="22" fill="${glass}"/>
+            <rect x="136" y="${60+L}" width="10" height="22" fill="${roof}"/>
+            <rect x="62" y="${62+L}" width="6" height="3" fill="${chrome}"/>
+            <rect x="66" y="${65+L}" width="2" height="4" fill="${chrome}"/>
+            <rect x="16" y="${82+L}" width="12" height="30" fill="${chrome}"/>
+            <rect x="150" y="${82+L}" width="112" height="3" fill="${roof}"/>
+            <rect x="28" y="${82+L}" width="118" height="10" fill="${body}"/>
+            <rect x="150" y="${84+L}" width="112" height="8" fill="${body}"/>
+            <rect x="146" y="${82+L}" width="3" height="30" fill="${dark}" opacity="0.55"/>
+            <rect x="28" y="${92+L}" width="234" height="10" fill="${body}"/>
+            <rect x="32" y="${93+L}" width="224" height="3" fill="${chrome}"/>
+            <rect x="28" y="${102+L}" width="36" height="10" fill="${body}"/>
+            <rect x="92" y="${102+L}" width="122" height="10" fill="${body}"/>
+            <rect x="222" y="${102+L}" width="40" height="10" fill="${body}"/>
+            <rect x="258" y="${84+L}" width="4" height="6" fill="#f25c54"/>
+            <rect x="262" y="${102+L}" width="12" height="10" fill="${chrome}"/>
+            <rect x="44" y="${131+L}" width="220" height="4" fill="${dark}" opacity=".78"/>
+            ${pixelWheel(78, 121+L, wheel, hub, spoke)}
+            ${pixelWheel(206, 121+L, wheel, hub, spoke)}
+        </g>`;
+    }
+    return `<g shape-rendering="crispEdges">
+        <rect x="76" y="${50+L}" width="70" height="10" fill="${roof}"/>
+        <rect x="86" y="${48+L}" width="4" height="2" fill="#f0a63c"/>
+        <rect x="100" y="${48+L}" width="4" height="2" fill="#f0a63c"/>
+        <rect x="114" y="${48+L}" width="4" height="2" fill="#f0a63c"/>
+        <rect x="66" y="${60+L}" width="10" height="22" fill="${roof}"/>
+        <rect x="76" y="${60+L}" width="60" height="22" fill="${glass}"/>
+        <rect x="136" y="${60+L}" width="10" height="22" fill="${roof}"/>
+        <rect x="62" y="${62+L}" width="6" height="3" fill="${chrome}"/>
+        <rect x="66" y="${65+L}" width="2" height="4" fill="${chrome}"/>
+        <rect x="16" y="${82+L}" width="12" height="30" fill="${chrome}"/>
+        <rect x="150" y="${82+L}" width="112" height="3" fill="${roof}"/>
+        <rect x="28" y="${82+L}" width="118" height="10" fill="${body}"/>
+        <rect x="150" y="${84+L}" width="112" height="8" fill="${body}"/>
+        <rect x="146" y="${82+L}" width="3" height="30" fill="${dark}" opacity="0.55"/>
+        <rect x="28" y="${92+L}" width="234" height="10" fill="${body}"/>
+        <rect x="32" y="${93+L}" width="224" height="3" fill="${chrome}"/>
+        <rect x="248" y="${93+L}" width="8" height="3" fill="#d64536"/>
+        <rect x="32" y="${93+L}" width="8" height="3" fill="#efa12f"/>
+        <rect x="28" y="${102+L}" width="36" height="10" fill="${body}"/>
+        <rect x="92" y="${102+L}" width="122" height="10" fill="${body}"/>
+        <rect x="222" y="${102+L}" width="40" height="10" fill="${body}"/>
+        <rect x="258" y="${84+L}" width="4" height="6" fill="#f25c54"/>
+        <rect x="262" y="${102+L}" width="12" height="10" fill="${chrome}"/>
+        <rect x="32" y="${83+L}" width="110" height="1" fill="#ffffff" opacity="0.4"/>
+        <rect x="80" y="${51+L}" width="56" height="1" fill="#ffffff" opacity="0.4"/>
+        <rect x="44" y="${131+L}" width="220" height="4" fill="${dark}" opacity=".8"/>
+        ${pixelWheel(78, 121+L, wheel, hub, spoke)}
+        ${pixelWheel(206, 121+L, wheel, hub, spoke)}
+    </g>`;
+}
+
+// ---------------------------------------------------------
+// RUNTIME RENDER LOGIC
+// ---------------------------------------------------------
+const car = {
+    id: "f250",
+    name: "1969 Forde F-250 Heavy Duty",
+    func: f250Sprite,
+    colors: { baseColor: "#3a5d9a", roofColor: "#dde6f5", trimColor: "#dde6f5", wheelColor: "#e8d8a4", shadowColor: "#0f1830" }
+};
+
+const commonColors = {
+    wheelSpoke: "#cf6f00", wheelHub: "#ffd7a6", wheelTire: "#1A1A1A",
+    primerColor: "#7f848b", rustColor: "#8a4517", shadowColor: "#2e3d4d", windowColor: "#4b5967"
+};
+
+const labels = ["Stage 0: Barn Find", "Stage 1: Project", "Stage 2: Driver", "Stage 3: Restored", "Stage 4: Show Car"];
+const root = document.getElementById("appRoot");
+
+const section = document.createElement('div');
+section.className = 'car-section';
+section.innerHTML = `<h2 class="section-title">${car.name}</h2><div class="grid"></div>`;
+const grid = section.querySelector('.grid');
+
+for (let stage = 0; stage <= 4; stage++) {
+    let sc = { ...commonColors, ...car.colors };
+    if (stage < 2) sc.wheelTire = "#23262b";
+    if (stage === 0) sc.windowColor = "#2c3137";
+
+    const svg = `<svg viewBox="0 0 340 190"><g transform="translate(0, 10)">${car.func(stage, sc)}</g></svg>`;
+    const card = document.createElement('div');
+    card.className = 'preview-card';
+    card.innerHTML = `<div class="preview-card-title">${labels[stage]}</div>${svg}`;
+    grid.appendChild(card);
+}
+root.appendChild(section);
+</script>
+</body>
+</html>
