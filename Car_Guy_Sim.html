@@ -11884,14 +11884,15 @@
         'var svg=document.querySelector(".scene svg");if(!svg)return;' +
         'var NS="http://www.w3.org/2000/svg";' +
         "var OUT=__CGOUT__;" +
+        "var CLD=__CGCLD__;" +
         "function el(n,a){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);return e}" +
         "var sky=svg.querySelector('rect[fill=\\\"#3a86ff\\\"]');" +
         "if(sky){" +
-        "var clouds=svg.querySelector('g[fill=\\\"#fff8e7\\\"]');" +
+        "if(CLD){var clouds=svg.querySelector('g[fill=\\\"#fff8e7\\\"]');" +
         "if(clouds){var wrap=el(\"g\",{});clouds.parentNode.insertBefore(wrap,clouds);var dup=clouds.cloneNode(true);dup.setAttribute(\"transform\",\"translate(-760,0)\");wrap.appendChild(clouds);wrap.appendChild(dup);wrap.style.animation=\"cga-drift 80s linear infinite\";}" +
         "else{var cwrap=el(\"g\",{}),cw=el(\"g\",{});" +
         "function mkc(x,y,s){var cc=el(\"g\",{});cc.appendChild(el(\"rect\",{x:x,y:y,width:40*s,height:12*s,fill:\"#e6eef7\",opacity:\"0.45\"}));cc.appendChild(el(\"rect\",{x:x+12*s,y:y-7*s,width:22*s,height:9*s,fill:\"#e6eef7\",opacity:\"0.45\"}));cw.appendChild(cc);}" +
-        "mkc(110,30,1);mkc(360,20,1.3);mkc(560,38,0.9);var cd=cw.cloneNode(true);cd.setAttribute(\"transform\",\"translate(-760,0)\");cwrap.appendChild(cw);cwrap.appendChild(cd);cwrap.style.animation=\"cga-drift 90s linear infinite\";sky.parentNode.insertBefore(cwrap,sky.nextSibling);}" +
+        "mkc(110,30,1);mkc(360,20,1.3);mkc(560,38,0.9);var cd=cw.cloneNode(true);cd.setAttribute(\"transform\",\"translate(-760,0)\");cwrap.appendChild(cw);cwrap.appendChild(cd);cwrap.style.animation=\"cga-drift 90s linear infinite\";sky.parentNode.insertBefore(cwrap,sky.nextSibling);}}" +
         "svg.querySelectorAll('rect[fill=\\\"#ffcc00\\\"][opacity]').forEach(function(s,i){s.style.animation=\"cga-sun \"+(6+i*2)+\"s ease-in-out infinite\"});" +
         "if(OUT){var bird=el(\"g\",{fill:\"#20293a\"});bird.appendChild(el(\"rect\",{x:\"0\",y:\"52\",width:\"5\",height:\"2\"}));bird.appendChild(el(\"rect\",{x:\"4\",y:\"50\",width:\"3\",height:\"2\"}));bird.style.animation=\"cga-bird 34s linear infinite\";svg.appendChild(bird);" +
         "var road=null,roads=svg.querySelectorAll('rect[fill=\\\"#2d3142\\\"]');roads.forEach(function(rr){var yy=+rr.getAttribute('y'),ww=+rr.getAttribute('width');if(yy>=150&&ww>=380&&(!road||ww>+road.getAttribute('width')))road=rr;});" +
@@ -11907,7 +11908,7 @@
         "}" +
         "}catch(e){}});<\/script>";
 
-      function normalizeBackdropSrcdoc(srcdoc, outdoor) {
+      function normalizeBackdropSrcdoc(srcdoc, outdoor, clouds) {
         if (!srcdoc) return "";
         // Make the scene fill the iframe edge-to-edge and force the inner
         // SVG into "cover" (xMidYMid slice) aspect-ratio handling so the
@@ -11929,7 +11930,7 @@ addEventListener("DOMContentLoaded",function(){
 });
 <\/script>
 `;
-        return srcdoc.replace(/<\/head>/i, `${shell}${BACKDROP_AMBIENT_SHELL.replace("__CGOUT__", outdoor ? "1" : "0")}</head>`);
+        return srcdoc.replace(/<\/head>/i, `${shell}${BACKDROP_AMBIENT_SHELL.replace("__CGOUT__", outdoor ? "1" : "0").replace("__CGCLD__", clouds === false ? "0" : "1")}</head>`);
       }
 
       const _backdropCache = Object.create(null);
@@ -11960,8 +11961,9 @@ addEventListener("DOMContentLoaded",function(){
         iframe.setAttribute("aria-hidden", "true");
         iframe.setAttribute("tabindex", "-1");
         iframe.loading = "eager";
-        const outdoor = kind === "show" || key === "curb";
-        iframe.srcdoc = normalizeBackdropSrcdoc(srcdoc, outdoor);
+        const outdoor = (kind === "show" || key === "curb") && key !== "Cars & Coffee";
+        const clouds = key !== "Cars & Coffee";
+        iframe.srcdoc = normalizeBackdropSrcdoc(srcdoc, outdoor, clouds);
         const shade = document.createElement("div");
         shade.className = "art-backdrop-shade";
         return { iframe, shade };
