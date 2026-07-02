@@ -7297,6 +7297,9 @@
       function resprayCar(name) {
         const car = currentCar();
         if (!car) return;
+        const paintComp = getCategoryCompletion(car, "paint");
+        if (!paintComp || !paintComp.allDone)
+          return toast("Finish the paint restoration before the booth will touch it.", "err");
         if (car.palette === name) return toast("She is already wearing that color.", "err");
         if (state.money < RESPRAY_COST) return toast("Not enough cash for the booth.", "err");
         state.money -= RESPRAY_COST;
@@ -7323,16 +7326,23 @@
         requestRender("full");
       }
       function paintBoothPanel(car) {
-        const swatches = PAINT_SWATCHES.map(
-          (p) =>
-            `<button title="${p.label}" onclick="resprayCar('${p.id}')" style="width:26px;height:26px;padding:0;border-radius:6px;border:2px solid ${car.palette === p.id ? "var(--gold)" : "#3a3129"};background:${p.hex};cursor:pointer"></button>`,
-        ).join("");
+        const paintComp = getCategoryCompletion(car, "paint");
+        const paintDone = !!(paintComp && paintComp.allDone);
+        const boothBody = paintDone
+          ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${PAINT_SWATCHES.map(
+              (p) =>
+                `<button title="${p.label}" onclick="resprayCar('${p.id}')" style="width:26px;height:26px;padding:0;border-radius:6px;border:2px solid ${car.palette === p.id ? "var(--gold)" : "#3a3129"};background:${p.hex};cursor:pointer"></button>`,
+            ).join("")}</div><div class="tiny muted" style="margin-top:8px">Respray $${RESPRAY_COST} · wheels get matched to the scheme</div>`
+          : `<div style="display:flex;gap:6px;flex-wrap:wrap;opacity:0.35;pointer-events:none">${PAINT_SWATCHES.map(
+              (p) =>
+                `<span style="width:26px;height:26px;border-radius:6px;border:2px solid #3a3129;background:${p.hex}"></span>`,
+            ).join("")}</div><div class="tiny muted" style="margin-top:8px;line-height:1.6">🔒 The booth opens once the paint restoration is complete. Finish every paint service on this car, then pick your final color — wheels matched to the scheme.</div>`;
         const styleRow = car.buildStyle
-          ? `<div class="tiny" style="margin-top:10px;color:var(--gold-soft)">Build direction: <b style="color:var(--text-bright)">${car.buildStyle === "stock" ? "Numbers-matching stock" : "Restomod"}</b> · ${car.buildStyle === "stock" ? "Regional and National judges favor it" : "Cars & Coffee and Local crowds love it"}</div>`
-          : `<div class="btn-row two" style="margin-top:10px">${button("Restore it stock", "commitBuildStyle('stock')", false, "", "width:100%")}${button("Build a restomod", "commitBuildStyle('restomod')", false, "", "width:100%")}</div><div class="tiny muted" style="margin-top:6px">One-time call per car. Stock earns points at Regionals and Nationals; restomods turn heads at Cars &amp; Coffee and Local shows.</div>`;
+          ? `<div class="tiny" style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(217,162,79,0.14);color:var(--gold-soft)">Build direction: <b style="color:var(--text-bright)">${car.buildStyle === "stock" ? "Numbers-matching stock" : "Restomod"}</b> · ${car.buildStyle === "stock" ? "Regional and National judges favor it" : "Cars & Coffee and Local crowds love it"}</div>`
+          : `<div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(217,162,79,0.14)"><div class="btn-row two">${button("Restore it stock", "commitBuildStyle('stock')", false, "", "width:100%")}${button("Build a restomod", "commitBuildStyle('restomod')", false, "", "width:100%")}</div><div class="tiny muted" style="margin-top:6px">One-time call per car. Stock earns points at Regionals and Nationals; restomods turn heads at Cars &amp; Coffee and Local shows.</div></div>`;
         return panel(
           "Paint Booth & Build Direction",
-          `<div style="display:flex;gap:6px;flex-wrap:wrap">${swatches}</div><div class="tiny muted" style="margin-top:8px">Respray $${RESPRAY_COST} · wheels get matched to the scheme</div>${styleRow}`,
+          `${boothBody}${styleRow}`,
           "",
           "#d19a3f",
         );
@@ -13899,7 +13909,7 @@ addEventListener("DOMContentLoaded",function(){
                 : `${remaining}/${POLISH_PER_WEEK} sessions left this week. +${POLISH_GAIN} per pass.`;
             fineTuneMarkup = `<div class="info-box" style="background:rgba(168,132,221,0.06);border-color:rgba(168,132,221,0.45);margin-bottom:14px"><div class="flex between center" style="gap:10px;margin-bottom:6px"><div><div class="small" style="color:var(--purple-bright);font-weight:bold">${action.emoji} ${action.verb} · pre-show polish</div><div class="tiny muted" style="margin-top:2px">${sub}</div></div><div style="min-width:140px">${button(maxed ? "Maxed" : `+${POLISH_GAIN} · $${POLISH_COST}`, `polishCategory('${state.shopCat}')`, blocked, "", "width:100%;padding:7px 8px;font-size:12px")}</div></div></div>`;
           }
-          subcontent = `<div class="cat-pill-row">${CATS.map((cat) => `<button class="cat-pill ${state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')"><span class="cat-pill-icon">${CAT_ICONS[cat]}</span>${CAT_LABELS[cat]}</button>`).join("")}</div><div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div>${state.diyTried && state.shopTried ? "" : `<div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>`}${fineTuneMarkup}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}${avail
+          subcontent = `<div class="cat-pill-row">${CATS.map((cat) => `<button class="cat-pill ${state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')"><span class="cat-pill-icon">${CAT_ICONS[cat]}</span>${CAT_LABELS[cat]}</button>`).join("")}</div><div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div>${state.diyTried && state.shopTried ? "" : `<div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>`}${fineTuneMarkup}${state.shopCat === "paint" ? paintBoothPanel(car) : ""}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}${avail
             .map((p) => {
               const rq = p.tools || [];
               const miss = rq.filter((tid) => !state.ownedTools.includes(tid));
@@ -14007,7 +14017,7 @@ addEventListener("DOMContentLoaded",function(){
           "Auto Shop Floor",
           "Every bolt, every part, one at a time",
           "",
-          `${carPreview(car)}${paintBoothPanel(car)}${(() => {
+          `${carPreview(car)}${(() => {
             const rw = roadworthy(car);
             const engineGap = Math.max(0, ROADWORTHY_ENGINE - car.engine);
             const transGap = Math.max(0, ROADWORTHY_TRANSMISSION - car.transmission);
