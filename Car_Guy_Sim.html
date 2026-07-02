@@ -668,6 +668,14 @@
       .cg-fx-sparkle { transform-box: fill-box; transform-origin: center; animation: cg-fx-sparkle-pop 1s ease-out both; }
       .cg-fx-settle { animation: cg-fx-settle-drop 0.9s cubic-bezier(0.3, 0.7, 0.4, 1.4) both; }
       .cg-fx-glint { animation: cg-fx-glint-run 9s linear infinite; }
+      @keyframes cg-gain-float { 0%{opacity:0;transform:translate(-50%,6px) scale(.8)} 18%{opacity:1;transform:translate(-50%,-4px) scale(1.05)} 30%{transform:translate(-50%,-8px) scale(1)} 82%{opacity:1} 100%{opacity:0;transform:translate(-50%,-40px) scale(1)} }
+      @keyframes cg-overall-pop { 0%{transform:scale(1)} 30%{transform:scale(1.28);color:#9fd18e} 100%{transform:scale(1)} }
+      .cg-gain-float { position:absolute; left:50%; top:38%; z-index:6; pointer-events:none; padding:5px 12px; border-radius:999px; background:linear-gradient(180deg,#2c7a43,#1c5c31); border:1px solid #4fbf6e; color:#eafff0; font-weight:bold; font-size:14px; box-shadow:0 4px 14px rgba(0,0,0,.45); white-space:nowrap; animation:cg-gain-float 2.4s cubic-bezier(0.3,0.7,0.4,1) both; }
+      .champ-ribbon { display:inline-block; margin-bottom:8px; padding:5px 18px; border-radius:999px; background:linear-gradient(180deg,#e6bd5c,#c48f2c); border:1px solid #f2d98a; color:#241704; font-weight:bold; font-size:13px; letter-spacing:1px; text-transform:uppercase; box-shadow:0 3px 12px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.4); }
+      .beauty-card { border:1px solid rgba(217,162,79,0.5); border-radius:12px; padding:12px 12px 6px; background:linear-gradient(180deg,rgba(217,162,79,0.09),rgba(20,16,12,0.2)); box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.4); margin-bottom:12px; }
+      .coach-nudge { display:flex; gap:7px; align-items:baseline; background:rgba(217,162,79,0.08); border:1px solid rgba(217,162,79,0.32); border-left:3px solid var(--gold); border-radius:8px; padding:9px 12px; margin-bottom:12px; font-size:12.5px; color:var(--text); line-height:1.5; }
+      .coach-nudge span { color:var(--gold); font-weight:bold; letter-spacing:.3px; }
+      .cg-overall-pop { display:inline-block; animation:cg-overall-pop 0.9s ease-out both; }
       @keyframes cg-smoke-rise {
         0% { transform: translateY(2px); opacity: 0; }
         25% { opacity: 1; }
@@ -9345,6 +9353,7 @@
             maybeTriggerNeighborHelp(car);
           }
           state.installsDone = (state.installsDone || 0) + 1;
+          state.lastGain = { cat: part.category, label: CAT_LABELS[part.category], amt: appliedImp, at: Date.now(), overall: getOverall(car) };
         }
         task.completed = true;
       }
@@ -9398,6 +9407,7 @@
         });
         if (changed) {
           state.lastRestoreFxAt = Date.now();
+          if (state.lastGain) state.lastGain.at = state.lastRestoreFxAt;
           state.activeRestorations = state.activeRestorations.filter(
             (t) => !t.completed,
           );
@@ -13162,7 +13172,7 @@ addEventListener("DOMContentLoaded",function(){
           });
         }
 
-        return `<div class="car-preview-wrap"><div class="flex between center" style="gap:10px;margin-bottom:8px"><div><div style="color:var(--text-bright);font-weight:bold;font-size:14px">${car.year} ${car.make} ${car.model}</div><div style="color:#a7987f;font-size:11px">Stage: ${stage}</div></div><div style="color:#d2a14b;font-weight:bold;font-size:12px">${overall} overall</div></div><div class="art-backdrop-shell" onclick="popTheHood()" style="cursor:pointer">${workspaceBackdropFrame()}<div class="car-preview-stage"><svg viewBox="0 0 340 190" preserveAspectRatio="xMidYMax meet" style="width:100%;height:100%;display:block;image-rendering:pixelated"><defs><filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity=".35"/></filter></defs><rect x="26" y="30" width="68" height="42" fill="#111" opacity=".15"/><rect x="32" y="36" width="56" height="30" fill="#d7c6a0" opacity=".08"/><g opacity=".18" shape-rendering="crispEdges"><rect x="62" y="148" width="44" height="4" fill="#000"/><rect x="118" y="150" width="104" height="4" fill="#000"/><rect x="232" y="148" width="46" height="4" fill="#000"/></g>${bayFxBehind}<g transform="translate(0,${(mechHealth < 18 ? 4 : mechHealth < 35 ? 2 : 0) - (onStands ? 5 : 0)})" filter="url(#shadow)"><g class="${revealFx ? "cg-fx-settle" : ""}">${sprite}</g></g><g opacity="${rustOpacity}" shape-rendering="crispEdges"><rect x="92" y="102" width="12" height="5" fill="#8a4517"/><rect x="166" y="86" width="10" height="4" fill="#7c3516"/><rect x="218" y="100" width="13" height="5" fill="#8a4517"/></g><g opacity="${dentOpacity}" shape-rendering="crispEdges"><rect x="140" y="103" width="18" height="3" fill="#1a2127"/><rect x="196" y="107" width="10" height="3" fill="#1a2127"/></g><g opacity="${shineOpacity}" shape-rendering="crispEdges"><rect x="102" y="82" width="96" height="2" fill="#fff"/><rect x="118" y="98" width="122" height="2" fill="#fff"/></g>${car.paint < 20 ? `<g opacity=".8" shape-rendering="crispEdges"><rect x="68" y="104" width="16" height="5" fill="#111827"/><rect x="236" y="100" width="18" height="5" fill="#111827"/></g>` : ""}${smokeOpacity > 0 ? `<g opacity="${smokeOpacity}"><rect class="cg-smoke-puff" x="70" y="56" width="6" height="6" fill="#cdd3d8"/><rect class="cg-smoke-puff cg-smoke-puff-2" x="74" y="50" width="8" height="8" fill="#bcc4cb"/><rect class="cg-smoke-puff cg-smoke-puff-3" x="82" y="44" width="8" height="8" fill="#d6dde2"/></g>` : ""}${bayFxFront}${revealFxMarkup}${idleGlint}</svg></div></div></div>`;
+        return `<div class="car-preview-wrap"><div class="flex between center" style="gap:10px;margin-bottom:8px"><div><div style="color:var(--text-bright);font-weight:bold;font-size:14px">${car.year} ${car.make} ${car.model}</div><div style="color:#a7987f;font-size:11px">Stage: ${stage}</div></div><div style="color:#d2a14b;font-weight:bold;font-size:12px"><span class="${revealFx ? "cg-overall-pop" : ""}">${overall}</span> overall</div></div><div class="art-backdrop-shell" onclick="popTheHood()" style="cursor:pointer">${workspaceBackdropFrame()}<div class="car-preview-stage"><svg viewBox="0 0 340 190" preserveAspectRatio="xMidYMax meet" style="width:100%;height:100%;display:block;image-rendering:pixelated"><defs><filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity=".35"/></filter></defs><rect x="26" y="30" width="68" height="42" fill="#111" opacity=".15"/><rect x="32" y="36" width="56" height="30" fill="#d7c6a0" opacity=".08"/><g opacity=".18" shape-rendering="crispEdges"><rect x="62" y="148" width="44" height="4" fill="#000"/><rect x="118" y="150" width="104" height="4" fill="#000"/><rect x="232" y="148" width="46" height="4" fill="#000"/></g>${bayFxBehind}<g transform="translate(0,${(mechHealth < 18 ? 4 : mechHealth < 35 ? 2 : 0) - (onStands ? 5 : 0)})" filter="url(#shadow)"><g class="${revealFx ? "cg-fx-settle" : ""}">${sprite}</g></g><g opacity="${rustOpacity}" shape-rendering="crispEdges"><rect x="92" y="102" width="12" height="5" fill="#8a4517"/><rect x="166" y="86" width="10" height="4" fill="#7c3516"/><rect x="218" y="100" width="13" height="5" fill="#8a4517"/></g><g opacity="${dentOpacity}" shape-rendering="crispEdges"><rect x="140" y="103" width="18" height="3" fill="#1a2127"/><rect x="196" y="107" width="10" height="3" fill="#1a2127"/></g><g opacity="${shineOpacity}" shape-rendering="crispEdges"><rect x="102" y="82" width="96" height="2" fill="#fff"/><rect x="118" y="98" width="122" height="2" fill="#fff"/></g>${car.paint < 20 ? `<g opacity=".8" shape-rendering="crispEdges"><rect x="68" y="104" width="16" height="5" fill="#111827"/><rect x="236" y="100" width="18" height="5" fill="#111827"/></g>` : ""}${smokeOpacity > 0 ? `<g opacity="${smokeOpacity}"><rect class="cg-smoke-puff" x="70" y="56" width="6" height="6" fill="#cdd3d8"/><rect class="cg-smoke-puff cg-smoke-puff-2" x="74" y="50" width="8" height="8" fill="#bcc4cb"/><rect class="cg-smoke-puff cg-smoke-puff-3" x="82" y="44" width="8" height="8" fill="#d6dde2"/></g>` : ""}${bayFxFront}${revealFxMarkup}${idleGlint}</svg>${revealFx && state.lastGain && state.lastGain.cat && state.lastGain.at === (state.lastRestoreFxAt) ? `<div class="cg-gain-float">+${state.lastGain.amt} ${state.lastGain.label}</div>` : ""}</div></div></div>`;
       }
 
       /* ═══════════════════════════════════════════
@@ -13840,6 +13850,32 @@ addEventListener("DOMContentLoaded",function(){
      MAIN RENDER VIEWS
   ═══════════════════════════════════════════ */
 
+      function thisWeekNudge(car) {
+        const rw = roadworthy(car);
+        const up = getUpcomingSummary();
+        const next = up.nextShow;
+        const weeks = next && next.weeksUntil;
+        const deadline = weeks === 0 ? "this week" : weeks === 1 ? "next week" : weeks != null ? `in ${weeks} weeks` : "when it reopens";
+        if (!rw) {
+          const gaps = [];
+          if (car.engine < ROADWORTHY_ENGINE) gaps.push("engine");
+          if (car.transmission < ROADWORTHY_TRANSMISSION) gaps.push("transmission");
+          if (car.brakes < ROADWORTHY_BRAKES) gaps.push("brakes");
+          return `Get the ${gaps.join(", ")} sorted so it can drive itself to ${next ? next.name : "a show"} ${next ? deadline : ""}.`.trim();
+        }
+        const paint = getCategoryCompletion(car, "paint");
+        const overall = getOverall(car);
+        if (next && next.minScore && overall < next.minScore) {
+          return `${next.name} wants ~${next.minScore} overall — you're at ${overall}. Keep building before it lands ${deadline}.`;
+        }
+        if (paint && !paint.allDone && overall >= 55) {
+          return `Drivetrain's done — pour the next dollars into paint & body to climb the standings at ${next ? next.name : "the next show"} ${next ? deadline : ""}.`;
+        }
+        if (next && weeks === 0) {
+          return `${next.name} is on today. Top off fuel, then head to Compete when you're happy with the build.`;
+        }
+        return `Roadworthy and climbing. Chase overall for ${next ? next.name : "the next show"} ${next ? deadline : ""}, or take a Family Saturday if the shows can wait.`;
+      }
       function renderWorkshop() {
         const car = currentCar();
         if (!car) return renderNoCar();
@@ -14104,10 +14140,10 @@ addEventListener("DOMContentLoaded",function(){
               // Once the player has taken any car to its first show,
               // the 'Roadworthy · Time to compete' banner has done its
               // job. Hide it to give the Build tab back the space.
-              if ((state.history || []).length > 0) return "";
-              return `<div style="display:flex;align-items:center;gap:10px;background:rgba(143,203,126,0.1);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">✅</span><div><div class="small" style="color:var(--green-bright);font-weight:bold">Roadworthy</div><div class="tiny muted">The car can drive itself to a show. Time to compete.</div></div></div>`;
+              if ((state.history || []).length > 0) return `<div class="coach-nudge">🧰 <span>This week:</span> ${thisWeekNudge(car)}</div>`;
+              return `<div style="display:flex;align-items:center;gap:10px;background:rgba(143,203,126,0.1);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">✅</span><div><div class="small" style="color:var(--green-bright);font-weight:bold">Roadworthy</div><div class="tiny muted">The car can drive itself to a show. Time to compete.</div></div></div><div class="coach-nudge">🧰 <span>This week:</span> ${thisWeekNudge(car)}</div>`;
             }
-            return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">⚠️</span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " ✓"} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " ✓"} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " ✓"}</div></div></div>`;
+            return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">⚠️</span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " ✓"} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " ✓"} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " ✓"}</div></div></div><div class="coach-nudge">🧰 <span>This week:</span> ${thisWeekNudge(car)}</div>`;
           })()}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 Free Budget part ready — tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div style="background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px"><span>📦 ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck — find them in <strong style="color:var(--text-bright)">All Builds</strong> with the YARD PULL badge.</span></div>` : ""; })()}${subcontent}`,
         )}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#1d1611", "clipboard")}</div></div>`;
       }
@@ -14280,7 +14316,14 @@ addEventListener("DOMContentLoaded",function(){
         const carLine = isCoffee
           ? `<div class="small" style="color:var(--text);margin-bottom:2px">${r.car}</div>`
           : `<div class="small" style="color:var(--text);margin-bottom:2px">${r.car} · Score ${r.score}</div>`;
-        const heroTop = `<div style="text-align:center;padding:4px 0 2px"><div style="font-size:40px;line-height:1;margin-bottom:4px">${placeIcon}</div><div style="color:${placeColor};font-weight:bold;font-size:${isCoffee ? "22px" : "28px"};letter-spacing:0.5px;margin-bottom:4px">${placeText}</div>${carLine}${buckLine}${r.localSponsorCovered ? `<div class="tiny good" style="margin-top:6px">Entry fee covered by town sponsor.</div>` : ""}${rewardLine ? `<div style="margin-top:8px">${rewardLine}</div>` : ""}</div>
+        const isWin = isCoffee ? r.place === 1 : r.place === 1;
+        const championRibbon = isWin
+          ? `<div class="champ-ribbon">${isCoffee ? "☕ Show Stealer" : `🏆 ${r.tier} Champion`}</div>`
+          : "";
+        const shareHint = isWin
+          ? `<div class="tiny muted" style="text-align:center;margin-top:10px;font-style:italic;opacity:.85">📸 Screenshot the build and post it — @${(r.car || "your build").replace(/[^A-Za-z0-9]/g, "").slice(0, 14) || "yourbuild"} earned it.</div>`
+          : "";
+        const heroTop = `<div style="text-align:center;padding:4px 0 2px">${championRibbon}<div style="font-size:40px;line-height:1;margin-bottom:4px">${placeIcon}</div><div style="color:${placeColor};font-weight:bold;font-size:${isCoffee ? "22px" : "28px"};letter-spacing:0.5px;margin-bottom:4px">${placeText}</div>${carLine}${buckLine}${r.localSponsorCovered ? `<div class="tiny good" style="margin-top:6px">Entry fee covered by town sponsor.</div>` : ""}${rewardLine ? `<div style="margin-top:8px">${rewardLine}</div>` : ""}</div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:10px 0 4px">${[
           isCoffee ? null : ["Net", `${r.net >= 0 ? "+" : ""}$${fmt(r.net)}`, r.net >= 0 ? "#87c77b" : "#d38a76"],
           r.bonusCash > 0 ? ["Sponsor", `+$${fmt(r.bonusCash)}`, "#d8a24f"] : null,
@@ -14289,13 +14332,13 @@ addEventListener("DOMContentLoaded",function(){
           isCoffee
             ? ""
             : `<div class="tiny muted" style="text-align:center;margin-bottom:4px">Prize $${fmt(r.prize)} · Entry -$${fmt(r.fee)} · Fuel -${r.fuelUsed} gal</div>`
-        }`;
+        }${shareHint}`;
         const standingsBody = `${r.standings.map((e, i) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 6px;border-bottom:${i < r.standings.length - 1 ? "1px dashed #453a31" : "none"};background:${e.isPlayer ? "rgba(79,112,74,0.18)" : e.isRival ? "rgba(112,40,40,0.15)" : "transparent"};border-radius:4px"><div style="display:flex;gap:10px"><span style="color:${i === 0 ? "#d8a24f" : "#7d7468"};font-weight:bold;width:18px">${i + 1}</span><span style="color:${e.isPlayer ? "#9fd18e" : e.isRival ? "#e07070" : "#e4d8c1"};font-size:14px">${e.name}${e.isRival ? `<span class="rival-badge">RIVAL</span>` : ""}</span></div><span class="small muted">${isCoffee ? "" : e.score}</span></div>`).join("")}`;
         const narrativeBody = `<div style="margin-top:2px">${[r.arrivalLine, isCoffee ? "" : r.judgingLine, vibeLine].filter(Boolean).map((line) => `<div class="small" style="color:var(--text);line-height:1.6;margin-bottom:8px">${line}</div>`).join("")}${buckVibe ? `<div class="tiny muted">${buckVibe}</div>` : ""}</div>`;
         const heroTitle = isCoffee
           ? `${r.show} · Hangout`
           : `${placeLabel(r.place)} · ${r.show}`;
-        const storyBody = `${carPreview(car).replace(workspaceBackdropFrame(), showBackdropFrame(r.tier))}${heroTop}${narrativeBody}`;
+        const storyBody = `<div class="${isWin ? "beauty-card" : ""}">${carPreview(car).replace(workspaceBackdropFrame(), showBackdropFrame(r.tier))}${heroTop}</div>${narrativeBody}`;
         return `<div class="grid-main result-grid"><div>${panel(
           heroTitle,
           storyBody,
