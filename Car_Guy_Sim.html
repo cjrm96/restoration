@@ -13598,6 +13598,15 @@ addEventListener("DOMContentLoaded",function(){
         return true;
       }
 
+      // Every content popup (notice / event / garage-life scene) is built
+      // here so they share one card: frame, kicker, emoji, title, text,
+      // then whatever actions the caller supplies. tone drives the color
+      // family — good=green, bad=red, neutral=gold.
+      function popupCard({ tone = "neutral", kicker = "", emoji = "", title = "", text = "", extra = "", actions = "", cardStyle = "" } = {}) {
+        const toneCls = tone === "good" ? "" : tone === "bad" ? " notice-bad" : " notice-neutral";
+        return `<div class="modal"><div class="modal-card notice-modal show-beat${toneCls}"${cardStyle ? ` style="${cardStyle}"` : ""}>${kicker ? `<div class="notice-kicker">${kicker}</div>` : ""}${emoji ? `<div class="notice-emoji">${emoji}</div>` : ""}${title ? `<div class="notice-title">${title}</div>` : ""}${text ? `<div class="notice-text">${text}</div>` : ""}${extra}${actions}</div></div>`;
+      }
+
       function renderNoticeModal() {
         const root = getEl("modalRoot");
         if (!state.noticeQueue || !state.noticeQueue.length) return false;
@@ -13618,7 +13627,13 @@ addEventListener("DOMContentLoaded",function(){
           remaining > 0
             ? `<div class="notice-queue-pips">${Array.from({ length: Math.min(remaining, 5) }).map(() => `<div class="notice-queue-pip"></div>`).join("")}</div>`
             : "";
-        root.innerHTML = `<div class="modal"><div class="modal-card notice-modal show-beat${isBad ? " notice-bad" : ""}"><div class="notice-kicker">${kicker}</div><div class="notice-emoji">${notice.emoji}</div><div class="notice-text">${notice.text}</div><button class="notice-primary" onclick="dismissNotice()">${remaining > 0 ? `Next (${remaining} more) →` : "Got it"}</button>${queuePipsMarkup}</div></div>`;
+        root.innerHTML = popupCard({
+          tone: isBad ? "bad" : "good",
+          kicker,
+          emoji: notice.emoji,
+          text: notice.text,
+          actions: `<button class="notice-primary" onclick="dismissNotice()">${remaining > 0 ? `Next (${remaining} more) →` : "Got it"}</button>${queuePipsMarkup}`,
+        });
         return true;
       }
 
@@ -13728,14 +13743,30 @@ addEventListener("DOMContentLoaded",function(){
           : ev.choice
             ? `<div class="btn-row two">${button(`Pay $${fmt(ev.cost)} to fix it`, "resolveEvent(true)", false, "", "width:100%")}${button("Take the hit", "resolveEvent(false)", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:var(--text)")}</div>`
             : `<button class="notice-primary" onclick="resolveEvent(false)">Understood</button>`;
-        root.innerHTML = `<div class="modal"><div class="modal-card notice-modal show-beat${isGood ? "" : " notice-bad"}"><div class="notice-kicker">${isGood ? "Good News" : "Heads Up"}</div><div class="notice-emoji">${ev.emoji}</div><div class="notice-title">${ev.title}</div><div class="notice-text">${ev.desc}</div>${gainLine}${evButtons}</div></div>`;
+        root.innerHTML = popupCard({
+          tone: isGood ? "good" : "bad",
+          kicker: isGood ? "Good News" : "Heads Up",
+          emoji: ev.emoji,
+          title: ev.title,
+          text: ev.desc,
+          extra: gainLine,
+          actions: evButtons,
+        });
       }
 
       function renderPendingSceneModal() {
         const root = getEl("modalRoot");
         const scene = state.pendingScene;
         if (!scene || state.showStore || state.showLoading) return false;
-        root.innerHTML = `<div class="modal"><div class="modal-card notice-modal notice-neutral show-beat" style="max-width:520px"><div class="notice-kicker">Garage Life</div><div class="notice-emoji">${scene.emoji || "🔧"}</div><div class="notice-title">${scene.title}</div><div class="notice-text">${scene.text}</div><div class="btn-row ${scene.choices && scene.choices.length === 3 ? "three" : scene.choices && scene.choices.length === 1 ? "one" : "two"}">${(scene.choices || []).map((choice, idx) => button(choice.label, `resolvePendingScene(${idx})`, false, "", `width:100%;${idx === 1 ? "background:#7da0c2;border-color:var(--blue-bright)" : idx === 2 ? "background:#4a3c2e;border-color:#6b5840;color:var(--text)" : ""}`)).join("")}</div></div></div>`;
+        root.innerHTML = popupCard({
+          tone: "neutral",
+          kicker: "Garage Life",
+          emoji: scene.emoji || "🔧",
+          title: scene.title,
+          text: scene.text,
+          cardStyle: "max-width:520px",
+          actions: `<div class="btn-row ${scene.choices && scene.choices.length === 3 ? "three" : scene.choices && scene.choices.length === 1 ? "one" : "two"}">${(scene.choices || []).map((choice, idx) => button(choice.label, `resolvePendingScene(${idx})`, false, "", `width:100%;${idx === 1 ? "background:#7da0c2;border-color:var(--blue-bright)" : idx === 2 ? "background:#4a3c2e;border-color:#6b5840;color:var(--text)" : ""}`)).join("")}</div>`,
+        });
         return true;
       }
 
