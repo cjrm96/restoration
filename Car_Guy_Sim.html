@@ -13804,7 +13804,7 @@ addEventListener("DOMContentLoaded",function(){
           return panel(
             "Active Restorations",
             `<div class="small muted">No active work orders. Start one in the Auto Shop.</div>`,
-            "Real-time timers continue while offline.",
+            (state.installsDone || 0) < 2 ? "Real-time timers keep running even while the game is closed." : "",
             "#1a0f08",
             "work-order",
           );
@@ -13817,7 +13817,7 @@ addEventListener("DOMContentLoaded",function(){
               return `<div class="info-box" data-task-id="${task.id}"><div class="flex between center" style="margin-bottom:8px;gap:10px"><div><div class="small" style="color:var(--text-bright);font-weight:bold">${part?.name || "Restoration"}</div></div><div class="small good task-time" style="font-weight:bold">${remaining <= 0 ? "COMPLETE" : formatRemaining(remaining)}</div></div>${gauge("", Math.round(getRestorationProgress(task) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${remaining <= 0 ? "Wrapping up now…" : taskStatusText(task)}</div></div>`;
             })
             .join("")}`,
-          "Real-time timers continue while offline.",
+          (state.installsDone || 0) < 2 ? "Real-time timers keep running even while the game is closed." : "",
           "#1a0f08",
           "work-order",
         );
@@ -14175,7 +14175,7 @@ addEventListener("DOMContentLoaded",function(){
           "Show Prep Board",
           "Load the truck, check the fuel, roll it out",
           "Every show the car runs is one more story on the build.",
-          `${carPreview(car)}${panel("Travel & Fuel", `<div class="info-box"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>Buy 5 Gal ($20)</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright)" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill Tank ($${fmt(fillAmount * FUEL_PRICE)})</button></div></div>`, "", "#7da0c2", "show-card")}${panel("Family Saturday", `<div class="tiny muted" style="margin-bottom:10px;line-height:1.6">Skip the shows this week and spend the Saturday with the family instead. She keeps score.</div>${button(state.familySaturdayWeek === state.week ? "Saturday already spent \u2764" : "Take the family out", "takeFamilySaturday()", state.familySaturdayWeek === state.week, "", "width:100%")}`, "", "#c9899e", "show-card")}${pillRow}<div class="cards">${visibleShows
+          `${carPreview(car)}${panel("Travel & Fuel", `<div class="info-box"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>Buy 5 Gal ($20)</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright)" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill Tank ($${fmt(fillAmount * FUEL_PRICE)})</button></div></div>`, "", "#7da0c2", "show-card")}${panel("Family Saturday", `<div class="tiny muted" style="margin-bottom:10px;line-height:1.6">${(state.familySaturdaysTaken || 0) > 0 ? "She keeps score." : "Skip the shows this week and spend the Saturday with the family instead — it lifts her approval, but you give up a show weekend. She keeps score."}</div>${button(state.familySaturdayWeek === state.week ? "Saturday already spent \u2764" : "Take the family out", "takeFamilySaturday()", state.familySaturdayWeek === state.week, "", "width:100%")}`, "", "#c9899e", "show-card")}${pillRow}<div class="cards">${visibleShows
             .map((show) => {
               const progressReq = showProgressRequirement(show);
               const locked = getOverall(car) < show.minScore || !progressReq.ok;
