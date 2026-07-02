@@ -1350,6 +1350,21 @@
           0 0 0 1px rgba(196, 109, 96, 0.16) inset,
           0 18px 48px rgba(0, 0, 0, 0.6) !important;
       }
+      .notice-modal.notice-neutral {
+        background:
+          radial-gradient(ellipse at top, rgba(217, 162, 79, 0.12) 0%, transparent 60%),
+          linear-gradient(180deg, #1d1a13 0%, #130f0a 100%) !important;
+        border-color: var(--gold) !important;
+        box-shadow: 0 0 0 1px rgba(217, 162, 79, 0.14) inset, 0 18px 48px rgba(0, 0, 0, 0.6) !important;
+      }
+      .notice-modal.notice-neutral .notice-kicker { color: var(--gold); }
+      .notice-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: var(--text-bright);
+        margin: 0 0 8px;
+        letter-spacing: 0.2px;
+      }
       .notice-kicker {
         font-size: 10px;
         letter-spacing: 2.4px;
@@ -13705,14 +13720,22 @@ addEventListener("DOMContentLoaded",function(){
         const isGood = ev.type === "good";
         const accentCol = isGood ? "#5a9ab8" : "#c4723a";
         const bgCol = isGood ? "#0e1d26" : "#261409";
-        root.innerHTML = `<div class="modal"><div class="modal-card" style="border-color:${accentCol};background:linear-gradient(180deg,${bgCol} 0%,#141210 100%)"><div style="text-align:center;font-size:40px;margin-bottom:12px">${ev.emoji}</div><div style="color:${accentCol};font-weight:bold;font-size:18px;text-align:center;margin-bottom:8px">${ev.title}</div><div class="small muted" style="text-align:center;margin-bottom:20px;line-height:1.6">${ev.desc}</div>${isGood ? `<div style="text-align:center;margin-bottom:16px;font-size:14px;color:#c9d8a0">${ev.cashGain ? `+$${fmt(ev.cashGain)} cash` : ev.followersGain ? `+${fmtF(ev.followersGain)} followers` : ev.statBoost ? `+${ev.statBoost.amt} ${ev.statBoost.cat}` : ""}</div>${button("Claim It", "resolveEvent(false)", false, "", "width:100%;background:#2a4a2a;border-color:#4a8a4a;color:#a0e0a0")}` : ev.choice ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn" style="background:#2a3a1a;border-color:#5a8a3a;color:#a0d080" onclick="resolveEvent(true)">Pay $${fmt(ev.cost)} to fix it</button><button class="btn" style="background:#3a1a0a;border-color:#8a4020;color:#e08060" onclick="resolveEvent(false)">Take the hit</button></div>` : `${button("Understood", "resolveEvent(false)", false, "", "width:100%;background:#2a1a0a;border-color:#6a3a1a;color:#d09060")}`}</div></div>`;
+        const gainLine = isGood && (ev.cashGain || ev.followersGain || ev.statBoost)
+          ? `<div style="font-size:14px;color:#9fd18e;font-weight:bold;margin:-6px auto 14px">${ev.cashGain ? `+$${fmt(ev.cashGain)} cash` : ev.followersGain ? `+${fmtF(ev.followersGain)} followers` : `+${ev.statBoost.amt} ${ev.statBoost.cat}`}</div>`
+          : "";
+        const evButtons = isGood
+          ? `<button class="notice-primary" onclick="resolveEvent(false)">Claim it</button>`
+          : ev.choice
+            ? `<div class="btn-row two">${button(`Pay $${fmt(ev.cost)} to fix it`, "resolveEvent(true)", false, "", "width:100%")}${button("Take the hit", "resolveEvent(false)", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:var(--text)")}</div>`
+            : `<button class="notice-primary" onclick="resolveEvent(false)">Understood</button>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card notice-modal show-beat${isGood ? "" : " notice-bad"}"><div class="notice-kicker">${isGood ? "Good News" : "Heads Up"}</div><div class="notice-emoji">${ev.emoji}</div><div class="notice-title">${ev.title}</div><div class="notice-text">${ev.desc}</div>${gainLine}${evButtons}</div></div>`;
       }
 
       function renderPendingSceneModal() {
         const root = getEl("modalRoot");
         const scene = state.pendingScene;
         if (!scene || state.showStore || state.showLoading) return false;
-        root.innerHTML = `<div class="modal"><div class="modal-card" style="max-width:520px"><div style="text-align:center;font-size:40px;margin-bottom:8px">${scene.emoji || "🔧"}</div><div style="color:var(--gold);font-weight:bold;font-size:22px;text-align:center;margin-bottom:10px">${scene.title}</div><div class="small muted" style="text-align:center;line-height:1.7;margin-bottom:16px">${scene.text}</div><div class="btn-row ${scene.choices && scene.choices.length === 3 ? "three" : scene.choices && scene.choices.length === 1 ? "one" : "two"}">${(scene.choices || []).map((choice, idx) => button(choice.label, `resolvePendingScene(${idx})`, false, "", `width:100%;${idx === 1 ? "background:#7da0c2;border-color:var(--blue-bright)" : idx === 2 ? "background:#4a3c2e;border-color:#6b5840;color:var(--text)" : ""}`)).join("")}</div></div></div>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card notice-modal notice-neutral show-beat" style="max-width:520px"><div class="notice-kicker">Garage Life</div><div class="notice-emoji">${scene.emoji || "🔧"}</div><div class="notice-title">${scene.title}</div><div class="notice-text">${scene.text}</div><div class="btn-row ${scene.choices && scene.choices.length === 3 ? "three" : scene.choices && scene.choices.length === 1 ? "one" : "two"}">${(scene.choices || []).map((choice, idx) => button(choice.label, `resolvePendingScene(${idx})`, false, "", `width:100%;${idx === 1 ? "background:#7da0c2;border-color:var(--blue-bright)" : idx === 2 ? "background:#4a3c2e;border-color:#6b5840;color:var(--text)" : ""}`)).join("")}</div></div></div>`;
         return true;
       }
 
