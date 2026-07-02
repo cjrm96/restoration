@@ -670,6 +670,10 @@
       .cg-fx-glint { animation: cg-fx-glint-run 9s linear infinite; }
       @keyframes cg-gain-float { 0%{opacity:0;transform:translate(-50%,6px) scale(.8)} 18%{opacity:1;transform:translate(-50%,-4px) scale(1.05)} 30%{transform:translate(-50%,-8px) scale(1)} 82%{opacity:1} 100%{opacity:0;transform:translate(-50%,-40px) scale(1)} }
       @keyframes cg-overall-pop { 0%{transform:scale(1)} 30%{transform:scale(1.28);color:#9fd18e} 100%{transform:scale(1)} }
+      .cg-at-shop { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; text-align:center; background:radial-gradient(ellipse at center, rgba(0,0,0,.3), rgba(0,0,0,.58)); }
+      .cg-at-shop-icon { font-size:32px; filter:drop-shadow(0 3px 8px rgba(0,0,0,.6)); margin-bottom:4px; }
+      .cg-at-shop-main { color:#f0d4a0; font-weight:bold; font-size:15px; text-shadow:0 2px 6px rgba(0,0,0,.7); }
+      .cg-at-shop-sub { color:#b7a98f; font-size:12px; }
       .cg-gain-float { position:absolute; left:50%; top:38%; z-index:6; pointer-events:none; padding:5px 12px; border-radius:999px; background:linear-gradient(180deg,#2c7a43,#1c5c31); border:1px solid #4fbf6e; color:#eafff0; font-weight:bold; font-size:14px; box-shadow:0 4px 14px rgba(0,0,0,.45); white-space:nowrap; animation:cg-gain-float 2.4s cubic-bezier(0.3,0.7,0.4,1) both; }
       .champ-ribbon { display:inline-block; margin-bottom:8px; padding:5px 18px; border-radius:999px; background:linear-gradient(180deg,#e6bd5c,#c48f2c); border:1px solid #f2d98a; color:#241704; font-weight:bold; font-size:13px; letter-spacing:1px; text-transform:uppercase; box-shadow:0 3px 12px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.4); }
       .beauty-card { border:1px solid rgba(217,162,79,0.5); border-radius:12px; padding:12px 12px 6px; background:linear-gradient(180deg,rgba(217,162,79,0.09),rgba(20,16,12,0.2)); box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.4); margin-bottom:12px; }
@@ -11864,13 +11868,14 @@
         "</style><script>addEventListener(\"DOMContentLoaded\",function(){try{" +
         'var svg=document.querySelector(".scene svg");if(!svg)return;' +
         'var NS="http://www.w3.org/2000/svg";' +
+        "var OUT=__CGOUT__;" +
         "function el(n,a){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);return e}" +
         "var sky=svg.querySelector('rect[fill=\\\"#3a86ff\\\"]');" +
         "if(sky){" +
         "var clouds=svg.querySelector('g[fill=\\\"#fff8e7\\\"]');" +
         "if(clouds){var wrap=el(\"g\",{});clouds.parentNode.insertBefore(wrap,clouds);var dup=clouds.cloneNode(true);dup.setAttribute(\"transform\",\"translate(-760,0)\");wrap.appendChild(clouds);wrap.appendChild(dup);wrap.style.animation=\"cga-drift 80s linear infinite\";}" +
         "svg.querySelectorAll('rect[fill=\\\"#ffcc00\\\"][opacity]').forEach(function(s,i){s.style.animation=\"cga-sun \"+(6+i*2)+\"s ease-in-out infinite\"});" +
-        "var bird=el(\"g\",{fill:\"#20293a\"});bird.appendChild(el(\"rect\",{x:\"0\",y:\"52\",width:\"5\",height:\"2\"}));bird.appendChild(el(\"rect\",{x:\"4\",y:\"50\",width:\"3\",height:\"2\"}));bird.style.animation=\"cga-bird 34s linear infinite\";svg.appendChild(bird);" +
+        "if(OUT){var bird=el(\"g\",{fill:\"#20293a\"});bird.appendChild(el(\"rect\",{x:\"0\",y:\"52\",width:\"5\",height:\"2\"}));bird.appendChild(el(\"rect\",{x:\"4\",y:\"50\",width:\"3\",height:\"2\"}));bird.style.animation=\"cga-bird 34s linear infinite\";svg.appendChild(bird);" +
         "var road=null,roads=svg.querySelectorAll('rect[fill=\\\"#2d3142\\\"]');roads.forEach(function(rr){var yy=+rr.getAttribute('y'),ww=+rr.getAttribute('width');if(yy>=150&&ww>=380&&(!road||ww>+road.getAttribute('width')))road=rr;});" +
         "if(road){var ry=+road.getAttribute(\"y\");var cg=el(\"g\",{});" +
         "cg.appendChild(el(\"rect\",{x:\"0\",y:ry+16,width:\"46\",height:\"11\",fill:\"#823c3c\"}));" +
@@ -11878,13 +11883,13 @@
         "cg.appendChild(el(\"rect\",{x:\"13\",y:ry+11,width:\"18\",height:\"5\",fill:\"#26313d\"}));" +
         "cg.appendChild(el(\"rect\",{x:\"6\",y:ry+25,width:\"9\",height:\"6\",fill:\"#14181f\"}));" +
         "cg.appendChild(el(\"rect\",{x:\"32\",y:ry+25,width:\"9\",height:\"6\",fill:\"#14181f\"}));" +
-        "cg.style.animation=\"cga-cross 23s linear infinite\";cg.style.animationDelay=\"5s\";svg.appendChild(cg);}" +
+        "cg.style.animation=\"cga-cross 23s linear infinite\";cg.style.animationDelay=\"5s\";svg.appendChild(cg);}}" +
         "}else{" +
         "for(var i=0;i<5;i++){var m=el(\"rect\",{x:70+i*130,y:60+(i%3)*26,width:\"2\",height:\"2\",fill:\"#efe2c6\",opacity:\"0\"});m.style.animation=\"cga-mote \"+(7+i*2)+\"s linear infinite\";m.style.animationDelay=(i*1.7)+\"s\";svg.appendChild(m)}" +
         "}" +
         "}catch(e){}});<\/script>";
 
-      function normalizeBackdropSrcdoc(srcdoc) {
+      function normalizeBackdropSrcdoc(srcdoc, outdoor) {
         if (!srcdoc) return "";
         // Make the scene fill the iframe edge-to-edge and force the inner
         // SVG into "cover" (xMidYMid slice) aspect-ratio handling so the
@@ -11906,7 +11911,7 @@ addEventListener("DOMContentLoaded",function(){
 });
 <\/script>
 `;
-        return srcdoc.replace(/<\/head>/i, `${shell}${BACKDROP_AMBIENT_SHELL}</head>`);
+        return srcdoc.replace(/<\/head>/i, `${shell}${BACKDROP_AMBIENT_SHELL.replace("__CGOUT__", outdoor ? "1" : "0")}</head>`);
       }
 
       const _backdropCache = Object.create(null);
@@ -11937,7 +11942,8 @@ addEventListener("DOMContentLoaded",function(){
         iframe.setAttribute("aria-hidden", "true");
         iframe.setAttribute("tabindex", "-1");
         iframe.loading = "eager";
-        iframe.srcdoc = normalizeBackdropSrcdoc(srcdoc);
+        const outdoor = kind === "show" || key === "curb";
+        iframe.srcdoc = normalizeBackdropSrcdoc(srcdoc, outdoor);
         const shade = document.createElement("div");
         shade.className = "art-backdrop-shade";
         return { iframe, shade };
@@ -12953,7 +12959,9 @@ addEventListener("DOMContentLoaded",function(){
         const engineWork = ["engine", "electrical", "transmission"].some((c) => workCats.has(c));
         const chassisWork = ["wheels", "tires", "suspension", "brakes", "differential"].some((c) => workCats.has(c));
         const paintWork = ["paint", "body", "chrome", "interior"].some((c) => workCats.has(c));
-        const anyWork = carTasks.length > 0;
+        const atShop = carTasks.length > 0 && carTasks.every((t) => t.method === "shop");
+        const shopTask = atShop ? carTasks.slice().sort((a, b) => a.finishTime - b.finishTime)[0] : null;
+        const anyWork = carTasks.some((t) => t.method !== "shop");
         const onStands = chassisWork || engineWork;
         const revealFx = Date.now() - (state.lastRestoreFxAt || 0) < 4500;
         const bayFxBehind = anyWork
@@ -13025,7 +13033,8 @@ addEventListener("DOMContentLoaded",function(){
         })(state.workshopLevel);
 
         let sprite = "";
-        if (car.style === "truck") {
+        if (atShop) { /* car is at the mechanic — bay stays empty */ }
+        else if (car.style === "truck") {
           sprite = f100Sprite(truckStageLevel, {
             baseColor,
             roofColor,
@@ -13191,7 +13200,7 @@ addEventListener("DOMContentLoaded",function(){
           });
         }
 
-        return `<div class="car-preview-wrap"><div class="flex between center" style="gap:10px;margin-bottom:8px"><div><div style="color:var(--text-bright);font-weight:bold;font-size:14px">${car.year} ${car.make} ${car.model}</div><div style="color:#a7987f;font-size:11px">Stage: ${stage}</div></div><div style="color:#d2a14b;font-weight:bold;font-size:12px"><span class="${revealFx ? "cg-overall-pop" : ""}">${overall}</span> overall</div></div><div class="art-backdrop-shell" onclick="popTheHood()" style="cursor:pointer">${workspaceBackdropFrame()}<div class="car-preview-stage"><svg viewBox="0 0 340 190" preserveAspectRatio="xMidYMax meet" style="width:100%;height:100%;display:block;image-rendering:pixelated"><defs><filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity=".35"/></filter></defs><rect x="26" y="30" width="68" height="42" fill="#111" opacity=".15"/><rect x="32" y="36" width="56" height="30" fill="#d7c6a0" opacity=".08"/><g opacity=".18" shape-rendering="crispEdges"><rect x="62" y="148" width="44" height="4" fill="#000"/><rect x="118" y="150" width="104" height="4" fill="#000"/><rect x="232" y="148" width="46" height="4" fill="#000"/></g>${bayFxBehind}<g transform="translate(0,${(mechHealth < 18 ? 4 : mechHealth < 35 ? 2 : 0) - (onStands ? 5 : 0)})" filter="url(#shadow)"><g class="${revealFx ? "cg-fx-settle" : ""}">${sprite}</g></g><g opacity="${rustOpacity}" shape-rendering="crispEdges"><rect x="92" y="102" width="12" height="5" fill="#8a4517"/><rect x="166" y="86" width="10" height="4" fill="#7c3516"/><rect x="218" y="100" width="13" height="5" fill="#8a4517"/></g><g opacity="${dentOpacity}" shape-rendering="crispEdges"><rect x="140" y="103" width="18" height="3" fill="#1a2127"/><rect x="196" y="107" width="10" height="3" fill="#1a2127"/></g><g opacity="${shineOpacity}" shape-rendering="crispEdges"><rect x="102" y="82" width="96" height="2" fill="#fff"/><rect x="118" y="98" width="122" height="2" fill="#fff"/></g>${car.paint < 20 ? `<g opacity=".8" shape-rendering="crispEdges"><rect x="68" y="104" width="16" height="5" fill="#111827"/><rect x="236" y="100" width="18" height="5" fill="#111827"/></g>` : ""}${smokeOpacity > 0 ? `<g opacity="${smokeOpacity}"><rect class="cg-smoke-puff" x="70" y="56" width="6" height="6" fill="#cdd3d8"/><rect class="cg-smoke-puff cg-smoke-puff-2" x="74" y="50" width="8" height="8" fill="#bcc4cb"/><rect class="cg-smoke-puff cg-smoke-puff-3" x="82" y="44" width="8" height="8" fill="#d6dde2"/></g>` : ""}${bayFxFront}${revealFxMarkup}${idleGlint}</svg>${revealFx && state.lastGain && state.lastGain.cat && state.lastGain.at === (state.lastRestoreFxAt) ? `<div class="cg-gain-float">+${state.lastGain.amt} ${state.lastGain.label}</div>` : ""}</div></div></div>`;
+        return `<div class="car-preview-wrap"><div class="flex between center" style="gap:10px;margin-bottom:8px"><div><div style="color:var(--text-bright);font-weight:bold;font-size:14px">${car.year} ${car.make} ${car.model}</div><div style="color:#a7987f;font-size:11px">Stage: ${stage}</div></div><div style="color:#d2a14b;font-weight:bold;font-size:12px"><span class="${revealFx ? "cg-overall-pop" : ""}">${overall}</span> overall</div></div><div class="art-backdrop-shell" onclick="popTheHood()" style="cursor:pointer">${workspaceBackdropFrame()}<div class="car-preview-stage"><svg viewBox="0 0 340 190" preserveAspectRatio="xMidYMax meet" style="width:100%;height:100%;display:block;image-rendering:pixelated"><defs><filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity=".35"/></filter></defs><rect x="26" y="30" width="68" height="42" fill="#111" opacity=".15"/><rect x="32" y="36" width="56" height="30" fill="#d7c6a0" opacity=".08"/><g opacity=".18" shape-rendering="crispEdges"><rect x="62" y="148" width="44" height="4" fill="#000"/><rect x="118" y="150" width="104" height="4" fill="#000"/><rect x="232" y="148" width="46" height="4" fill="#000"/></g>${bayFxBehind}<g transform="translate(0,${(mechHealth < 18 ? 4 : mechHealth < 35 ? 2 : 0) - (onStands ? 5 : 0)})" filter="url(#shadow)"><g class="${revealFx ? "cg-fx-settle" : ""}">${sprite}</g></g><g opacity="${atShop ? 0 : rustOpacity}" shape-rendering="crispEdges"><rect x="92" y="102" width="12" height="5" fill="#8a4517"/><rect x="166" y="86" width="10" height="4" fill="#7c3516"/><rect x="218" y="100" width="13" height="5" fill="#8a4517"/></g><g opacity="${atShop ? 0 : dentOpacity}" shape-rendering="crispEdges"><rect x="140" y="103" width="18" height="3" fill="#1a2127"/><rect x="196" y="107" width="10" height="3" fill="#1a2127"/></g><g opacity="${atShop ? 0 : shineOpacity}" shape-rendering="crispEdges"><rect x="102" y="82" width="96" height="2" fill="#fff"/><rect x="118" y="98" width="122" height="2" fill="#fff"/></g>${!atShop && car.paint < 20 ? `<g opacity=".8" shape-rendering="crispEdges"><rect x="68" y="104" width="16" height="5" fill="#111827"/><rect x="236" y="100" width="18" height="5" fill="#111827"/></g>` : ""}${!atShop && smokeOpacity > 0 ? `<g opacity="${smokeOpacity}"><rect class="cg-smoke-puff" x="70" y="56" width="6" height="6" fill="#cdd3d8"/><rect class="cg-smoke-puff cg-smoke-puff-2" x="74" y="50" width="8" height="8" fill="#bcc4cb"/><rect class="cg-smoke-puff cg-smoke-puff-3" x="82" y="44" width="8" height="8" fill="#d6dde2"/></g>` : ""}${bayFxFront}${revealFxMarkup}${idleGlint}</svg>${atShop ? `<div class="cg-at-shop"><div class="cg-at-shop-icon">🔧</div><div class="cg-at-shop-main">At the mechanic shop</div><div class="cg-at-shop-sub">${shopTask ? (Date.now() >= shopTask.finishTime ? "Rolling back in now…" : "Back in " + formatRemaining(shopTask.finishTime - Date.now()).replace(/ left$/, "")) : ""}</div></div>` : (revealFx && state.lastGain && state.lastGain.cat && state.lastGain.at === (state.lastRestoreFxAt) ? `<div class="cg-gain-float">+${state.lastGain.amt} ${state.lastGain.label}</div>` : "")}</div></div></div>`;
       }
 
       /* ═══════════════════════════════════════════
@@ -13985,13 +13994,12 @@ addEventListener("DOMContentLoaded",function(){
                         activeTasksByMethod(car.id, "diy").length;
                       const diyLabel = `${item.recommendedMethod === "diy" ? "★ " : ""}Start DIY · $${fmt(diyCost)}`;
                       const shopLabel = `${item.recommendedMethod === "shop" ? "★ " : ""}Send to Shop · $${fmt(shopCost)}`;
-                      const blockNote = activeTasksByMethod(car.id, "shop").length
-                        ? "Finish shop work before starting a DIY job."
-                        : activeTasksByMethod(car.id, "diy").length
-                          ? "Finish DIY work before sending the car to the shop."
-                          : state.money < Math.min(diyCost, shopCost)
-                            ? "Save a little more cash to start the next move."
-                            : "";
+                      const blockNote =
+                        !activeTasksByMethod(car.id, "shop").length &&
+                        !activeTasksByMethod(car.id, "diy").length &&
+                        state.money < Math.min(diyCost, shopCost)
+                          ? "Save a little more cash to start the next move."
+                          : "";
                       return panel(
                         `${p.name}${starterFree ? ` <span class="badge" style="color:var(--green)">NEIGHBOR GIFT</span>` : ""}`,
                         `<div class="small muted" style="margin-bottom:10px;line-height:1.55">${item.why}</div>
@@ -14141,7 +14149,7 @@ addEventListener("DOMContentLoaded",function(){
                 current ? "#9fd18e" : "#d8a24f",
               );
             }).join("")}`,
-            "Bigger spaces let you run more restorations at once.",
+            "",
             "#d8a24f",
           )}`;
         }
