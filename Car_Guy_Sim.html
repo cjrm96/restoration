@@ -7814,6 +7814,9 @@
           state.followers += choice.followers;
           clampFollowers();
         }
+        if (choice.wifeHit) {
+          nudgeWife(choice.wifeHit, null);
+        }
         if (choice.lore) {
           addGarageLore(choice.lore);
         }
@@ -9694,6 +9697,7 @@
               note: "You opened with 'it's an investment.' She closed with a fresh scratch from quarter to door. Paint took a hit, but at least she's still talking to you.",
               noteTone: "event-bad",
               statBoost: { cat: "paint", amt: -10 },
+              wifeHit: -18,
               lore: 8,
             },
             {
@@ -9701,6 +9705,7 @@
               note: "Smart. She circled the project car twice, dragged the key down the whole driver's side, and went inside. Big paint hit, but you kept the rest of the marriage. For now.",
               noteTone: "event-bad",
               statBoost: { cat: "paint", amt: -18 },
+              wifeHit: -24,
               lore: 10,
             },
             {
@@ -9709,6 +9714,7 @@
               noteTone: "event-bad",
               statBoost: { cat: "paint", amt: -6 },
               money: -4000,
+              wifeHit: -10,
               lore: 6,
             },
           ],
@@ -13663,6 +13669,7 @@ addEventListener("DOMContentLoaded",function(){
         { id: "one_of_everything", emoji: "🧰", name: "One of Everything", desc: "Restored every body style in the scene to 85+.", test: () => Object.keys(state.stylesRestored || {}).length >= 11 },
         { id: "six_figures", emoji: "💰", name: "Six Figures of Rust", desc: "A hundred grand earned, one part at a time.", test: () => (state.lifetimeEarned || 0) >= 100000 },
         { id: "garage_famous", emoji: "📱", name: "Garage Famous", desc: "A hundred thousand people follow the build.", test: () => state.followers >= 100000 },
+        { id: "sold_her_daily", emoji: "🚙", name: "Sold Her Daily", desc: "Traded her commute for parts money. She keyed what she had to key.", test: () => !!state.wifeCarSold },
         { id: "national", emoji: "🏆", name: "National Champion", desc: "Took the whole thing at Nationals.", test: () => !!state.won || (state.history || []).some((h) => h.tier === "National" && h.place === 1) },
         { id: "dynasty", emoji: "👑", name: "Dynasty", desc: "Three finished builds on the Legacy Wall.", test: () => (state.legacyBuilds || []).length >= 3 },
       ];
