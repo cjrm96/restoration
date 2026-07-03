@@ -253,6 +253,12 @@
       .tab::after {
         right: 5px;
       }
+      .ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+      .ach { display: flex; gap: 10px; align-items: flex-start; background: rgba(217,162,79,0.06); border: 1px solid rgba(217,162,79,0.28); border-radius: 10px; padding: 10px 12px; }
+      .ach.locked { opacity: 0.5; filter: saturate(0.4); }
+      .ach-emoji { font-size: 22px; line-height: 1.2; filter: drop-shadow(0 2px 5px rgba(0,0,0,.4)); }
+      .ach-name { font-size: 12.5px; font-weight: bold; color: var(--text-bright); margin-bottom: 2px; }
+      .ach-desc { font-size: 11px; color: var(--muted); line-height: 1.45; }
       .tab.locked {
         opacity: 0.45;
         filter: saturate(0.35);
@@ -7751,6 +7757,7 @@
 
 
       function recordMoneyChange(amount, reason) {
+        if (amount > 0) state.lifetimeEarned = (state.lifetimeEarned || 0) + amount;
         state.lastMoneyDelta = amount;
         state.lastMoneyReason = reason || "";
         if (Math.abs(amount) >= 50) {
@@ -9983,6 +9990,19 @@
             nudgeWife(4, `Flowers and a dinner ran you $${cost}. Cheaper than the alternative. (approval +4)`);
           }
         }
+        state.weekRecap = state.tutorialComplete
+          ? {
+              week: state.week - 1,
+              money: state.money - (typeof state.weekStartMoney === "number" ? state.weekStartMoney : state.money),
+              followers: state.followers - (typeof state.weekStartFollowers === "number" ? state.weekStartFollowers : state.followers),
+              wife: wifeApprovalVal() - (typeof state.weekStartWife === "number" ? state.weekStartWife : wifeApprovalVal()),
+              installs: (state.installsDone || 0) - (typeof state.weekStartInstalls === "number" ? state.weekStartInstalls : state.installsDone || 0),
+            }
+          : null;
+        state.totalWeeks = (state.totalWeeks || 0) + 1;
+        state.weekStartFollowers = state.followers;
+        state.weekStartWife = wifeApprovalVal();
+        state.weekStartInstalls = state.installsDone || 0;
         state.weekStartMoney = state.money;
         state.enteredShowsThisWeek = [];
         state.polishesThisWeek = 0;
@@ -10989,6 +11009,7 @@
           make: car.make,
           model: car.model,
           emoji: car.emoji,
+          style: car.style,
           finalOverall: getOverall(car),
           wonNational:
             !!state.won ||
@@ -13622,6 +13643,102 @@ addEventListener("DOMContentLoaded",function(){
       }
 
       /* ═══════════════════════════════════════════
+     CAR GUY ACHIEVEMENTS — lifetime, culture-first.
+     Complements the per-season MILESTONES list.
+  ═══════════════════════════════════════════ */
+      const ACHIEVEMENTS = [
+        { id: "ran_when_parked", emoji: "🪧", name: "Ran When Parked", desc: "Dragged home a project that hadn't moved in years.", test: () => (state.cars || []).some((c) => getOverall(c) < 25) },
+        { id: "first_start", emoji: "🔑", name: "First Start in Years", desc: "Cranked a dead barn find back to life.", test: () => (state.cars || []).some((c) => roadworthy(c)) },
+        { id: "shadetree", emoji: "🔧", name: "Shadetree Certified", desc: "Twenty-five parts swapped with your own hands.", test: () => (state.installsDone || 0) >= 25 },
+        { id: "concours", emoji: "✨", name: "Concours Clean", desc: "One system detailed to a perfect 100.", test: () => (state.cars || []).some((c) => CATS.some((k) => c[k] >= 100)) },
+        { id: "coffee_regular", emoji: "☕", name: "Cars & Coffee Regular", desc: "Five Saturday mornings, five bad coffees, zero regrets.", test: () => (state.history || []).filter((h) => h.tier === "Cars & Coffee").length >= 5 },
+        { id: "hardware", emoji: "🥉", name: "Brought Home Hardware", desc: "Podiumed at a judged show.", test: () => (state.history || []).some((h) => h.tier !== "Cars & Coffee" && h.place <= 3) },
+        { id: "quiet_buck", emoji: "😤", name: "Quiet Ride Home (for Buck)", desc: "Finished ahead of Buck when it counted.", test: () => (state.history || []).some((h) => h.buckPlace && h.place < h.buckPlace) },
+        { id: "numbers_matching", emoji: "📐", name: "Numbers Matching", desc: "Committed to stock and built it right — 85+ overall.", test: () => (state.cars || []).some((c) => c.buildStyle === "stock" && getOverall(c) >= 85) },
+        { id: "tasteful_heresy", emoji: "🔥", name: "Tasteful Heresy", desc: "A restomod at 85+. The purists will cope.", test: () => (state.cars || []).some((c) => c.buildStyle === "restomod" && getOverall(c) >= 85) },
+        { id: "family_man", emoji: "❤️", name: "Weekends Are for Family (Sometimes)", desc: "Five Family Saturdays on the books.", test: () => (state.familySaturdaysTaken || 0) >= 5 },
+        { id: "happy_wife", emoji: "💍", name: "Happy Wife, Happy Garage", desc: "Approval at 90. She brags about the truck now.", test: () => wifeApprovalVal() >= 90 },
+        { id: "doghouse", emoji: "🌱", name: "The Lawn Mower Is Still Broken", desc: "Approval hit rock bottom. She has a list; you're not on it.", test: () => wifeApprovalVal() <= 20 },
+        { id: "flip_artist", emoji: "🤝", name: "Flip Artist", desc: "Sold ten take-off parts to the scene.", test: () => (state.partsInventory || []).filter((i) => i.sold).length + (state.buyerHistory || []).length >= 10 },
+        { id: "one_of_everything", emoji: "🧰", name: "One of Everything", desc: "Restored every body style in the scene to 85+.", test: () => Object.keys(state.stylesRestored || {}).length >= 11 },
+        { id: "six_figures", emoji: "💰", name: "Six Figures of Rust", desc: "A hundred grand earned, one part at a time.", test: () => (state.lifetimeEarned || 0) >= 100000 },
+        { id: "garage_famous", emoji: "📱", name: "Garage Famous", desc: "A hundred thousand people follow the build.", test: () => state.followers >= 100000 },
+        { id: "national", emoji: "🏆", name: "National Champion", desc: "Took the whole thing at Nationals.", test: () => !!state.won || (state.history || []).some((h) => h.tier === "National" && h.place === 1) },
+        { id: "dynasty", emoji: "👑", name: "Dynasty", desc: "Three finished builds on the Legacy Wall.", test: () => (state.legacyBuilds || []).length >= 3 },
+      ];
+      function checkAchievements() {
+        if (!state.tutorialComplete) return;
+        if (!state.achievementsUnlocked) state.achievementsUnlocked = {};
+        if (!state.stylesRestored) state.stylesRestored = {};
+        (state.cars || []).forEach((c) => {
+          if (c.style && getOverall(c) >= 85) state.stylesRestored[c.style] = true;
+        });
+        ACHIEVEMENTS.forEach((a) => {
+          if (state.achievementsUnlocked[a.id]) return;
+          let ok = false;
+          try { ok = a.test(); } catch (e) { ok = false; }
+          if (ok) {
+            state.achievementsUnlocked[a.id] = state.week;
+            pushNotice(`🏆 Achievement — ${a.name}. ${a.desc}`, "good");
+          }
+        });
+      }
+      function renderCareerPanels() {
+        const un = state.achievementsUnlocked || {};
+        const stylesDone = Object.keys(state.stylesRestored || {}).length;
+        const achGrid = ACHIEVEMENTS.map((a) => {
+          const got = !!un[a.id];
+          return `<div class="ach ${got ? "" : "locked"}"><div class="ach-emoji">${got ? a.emoji : "🔒"}</div><div><div class="ach-name">${a.name}</div><div class="ach-desc">${a.desc}</div></div></div>`;
+        }).join("");
+        const gotCount = ACHIEVEMENTS.filter((a) => un[a.id]).length;
+        return `${panel(
+          "Garage Life · Career Stats",
+          `${chalkRow("Weeks in the garage", state.totalWeeks || 0)}${chalkRow("Parts installed", state.installsDone || 0)}${chalkRow("Shows entered", (state.history || []).length)}${chalkRow("Show wins", (state.history || []).filter((h) => h.place === 1).length)}${chalkRow("Body styles restored", `${stylesDone} / 11`)}${chalkRow("Lifetime cash earned", "$" + fmt(state.lifetimeEarned || 0))}${chalkRow("Family Saturdays", state.familySaturdaysTaken || 0)}${chalkRow("Saturday scavenge trips", state.scavengeTripsTaken || 0)}`,
+          "", "#1d1611", "clipboard",
+        )}${panel(
+          `Car Guy Achievements · ${gotCount}/${ACHIEVEMENTS.length}`,
+          `<div class="ach-grid">${achGrid}</div>`,
+          "Lifetime goals. They follow you across seasons and legacy builds.",
+          "#d8a24f",
+        )}`;
+      }
+
+      function renderWeekRecapModal() {
+        const r = state.weekRecap;
+        if (!r) return false;
+        if (
+          !state.tutorialComplete || state.seasonWrap || state.pendingVictory ||
+          state.showLoading || state.showStage || state.pendingScene ||
+          state.pendingEvent || state.showStore || state.pendingUnlock
+        )
+          return false;
+        const root = getEl("modalRoot");
+        const row = (k, v, col) => `<div class="flex between center" style="padding:7px 4px;border-bottom:1px dashed #453a31"><span class="small muted">${k}</span><span class="small" style="font-weight:bold;color:${col}">${v}</span></div>`;
+        const money = r.money;
+        const rows = [
+          row("Cash flow", `${money >= 0 ? "+" : "−"}$${fmt(Math.abs(money))}`, money >= 0 ? "#9fd18e" : "#e07a7a"),
+          r.installs > 0 ? row("Parts finished", `+${r.installs}`, "#9fd18e") : "",
+          r.followers !== 0 ? row("Followers", `${r.followers > 0 ? "+" : ""}${fmtF(r.followers)}`, "#b68ae6") : "",
+          r.wife !== 0 ? row("Wife approval", `${r.wife > 0 ? "+" : ""}${r.wife} 💍`, r.wife > 0 ? "#9fd18e" : "#e07a7a") : "",
+          row("Next up", getUpcomingSummary().nextShowText, "var(--gold-soft)"),
+        ].join("");
+        root.innerHTML = popupCard({
+          tone: "neutral",
+          kicker: "Shop Log",
+          emoji: "📋",
+          title: `Week ${r.week} in the books`,
+          extra: `<div class="info-box" style="text-align:left;margin-bottom:16px">${rows}</div>`,
+          actions: `<button class="notice-primary" onclick="dismissWeekRecap()">On to Week ${r.week + 1} →</button>`,
+        });
+        return true;
+      }
+      function dismissWeekRecap() {
+        state.weekRecap = null;
+        playSfx("click");
+        requestRender("full");
+      }
+
+      /* ═══════════════════════════════════════════
      PROGRESSIVE ONBOARDING — tabs unlock as the
      player proves out each loop. Legacy saves
      (no onboardStage) are fully unlocked.
@@ -15119,7 +15236,7 @@ addEventListener("DOMContentLoaded",function(){
               <div class="legacy-career-stat"><div class="legacy-career-v">${fmtF(careerStats.followers)}</div><div class="legacy-career-k">Lifetime Followers</div></div>
             </div>
           </div>
-          ${emptyMarkup}
+          ${emptyMarkup}<div style="margin-top:18px">${renderCareerPanels()}</div>
           <div class="legacy-grid">${cards}</div>
         </div>`;
       }
@@ -15329,6 +15446,7 @@ addEventListener("DOMContentLoaded",function(){
           state.tutorialComplete ? "" : "tut:" + (state.tutorialStep || 0),
           state.pendingVictory ? "victory" : "",
           state.pendingUnlock ? "unlock:" + state.pendingUnlock.tab : "",
+          state.weekRecap ? "wr:" + state.weekRecap.week : "",
           state.showLoading ? 1 : 0,
           state.showStage || "",
           "notice:" + ((state.noticeQueue && state.noticeQueue.length) || 0),
@@ -15362,9 +15480,11 @@ addEventListener("DOMContentLoaded",function(){
               if (!renderVictoryModal()) {
                 if (!renderShowCinematicModal()) {
                   if (!renderPendingSceneModal()) {
-                    if (!renderNoticeModal()) {
-                      renderStoreModal();
-                      renderEventModal();
+                    if (!renderWeekRecapModal()) {
+                      if (!renderNoticeModal()) {
+                        renderStoreModal();
+                        renderEventModal();
+                      }
                     }
                   }
                 }
@@ -15450,6 +15570,7 @@ addEventListener("DOMContentLoaded",function(){
       function render(mode = "full") {
         resolveCompletedRestorations(false);
         checkOnboardUnlocks();
+        checkAchievements();
         processEventQueue();
         updateHeaderChrome(mode === "full");
         let touched = false;
@@ -15835,6 +15956,7 @@ addEventListener("DOMContentLoaded",function(){
           !state.tutorialComplete ||
           !!state.pendingVictory ||
           !!state.pendingUnlock ||
+          !!state.weekRecap ||
           !!state.showLoading ||
           !!state.showStage ||
           !!state.pendingScene ||
@@ -15884,6 +16006,9 @@ addEventListener("DOMContentLoaded",function(){
           } else if (state.pendingUnlock) {
             e.preventDefault();
             acknowledgeUnlock(true);
+          } else if (state.weekRecap) {
+            e.preventDefault();
+            dismissWeekRecap();
           } else if (state.showLoading && state.showStage) {
             e.preventDefault();
             advanceShowStage();
