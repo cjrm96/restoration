@@ -253,6 +253,11 @@
       .tab::after {
         right: 5px;
       }
+      .tab.locked {
+        opacity: 0.45;
+        filter: saturate(0.35);
+        cursor: not-allowed;
+      }
       .tab:hover:not(.active) {
         filter: brightness(1.1);
         color: #f0e0c0;
@@ -7207,6 +7212,8 @@
           showCinematicData: null,
           recentLines: {},
           tutorialComplete: false,
+          onboardStage: 0,
+          pendingUnlock: null,
           tutorialStep: 0,
           sfxMuted: false,
           settings: {
@@ -11114,6 +11121,10 @@
       function setView(v) {
         // Leaving the Marketplace tab while at a Saturday trip ends
         // the session — same as heading home, the weekend's over.
+        if (!tabUnlocked(v) && !(v === "dealership" && !currentCar())) {
+          lockedTabNudge();
+          return;
+        }
         if (v !== "dealership" && state.atTrip) endScavengeTrip(true);
         if (v !== state.view) state.phoneApp = "home";
         state.view = v;
@@ -13610,6 +13621,75 @@ addEventListener("DOMContentLoaded",function(){
         return `<div class="modal"><div class="modal-card notice-modal show-beat${toneCls}"${cardStyle ? ` style="${cardStyle}"` : ""}>${kicker ? `<div class="notice-kicker">${kicker}</div>` : ""}${emoji ? `<div class="notice-emoji">${emoji}</div>` : ""}${title ? `<div class="notice-title">${title}</div>` : ""}${text ? `<div class="notice-text">${text}</div>` : ""}${extra}${actions}</div></div>`;
       }
 
+      /* ═══════════════════════════════════════════
+     PROGRESSIVE ONBOARDING — tabs unlock as the
+     player proves out each loop. Legacy saves
+     (no onboardStage) are fully unlocked.
+  ═══════════════════════════════════════════ */
+      function onboardStageVal() {
+        return typeof state.onboardStage === "number" ? state.onboardStage : 3;
+      }
+      function tabUnlocked(id) {
+        const s = onboardStageVal();
+        if (id === "workshop" || id === "garage") return true;
+        if (id === "dealership") return s >= 1;
+        if (id === "career" || id === "legacy") return s >= 2;
+        if (id === "shows") return s >= 3;
+        return true;
+      }
+      const ONBOARD_UNLOCKS = {
+        1: { tab: "dealership", emoji: "📘", title: "The Marketplace is open", cta: "Open the Marketplace →",
+             text: "She runs. Word travels fast when a dead truck comes back to life — and that pile of take-off parts in the corner is worth real money. List parts, field offers from lowballers, and hit Saturday scavenge trips for cheap donor parts." },
+        2: { tab: "career", emoji: "📱", title: "Your phone is blowing up", cta: "Open Social →",
+             text: "That listing made the rounds in the local scene, and now people want to follow the build. Post to Snapgram, CarTok, and MotorTube for cash and followers — get big enough and sponsors come to you." },
+        3: { tab: "shows", emoji: "🏁", title: "Show season is calling", cta: "Open Compete →",
+             text: "The build has a following — time to see how she stacks up in person. Ease in at a Cars & Coffee morning, climb through Local and Regional shows, and chase the National title before the season ends." },
+      };
+      function checkOnboardUnlocks() {
+        const s = onboardStageVal();
+        if (s >= 3 || !state.tutorialComplete || state.pendingUnlock) return;
+        let next = 0;
+        if (s === 0 && (state.cars || []).some((c) => roadworthy(c))) next = 1;
+        else if (s === 1 && (state.partsInventory || []).some((i) => i.listed || i.sold)) next = 2;
+        else if (s === 2 && (state.postHistory || []).length > 0) next = 3;
+        if (!next) return;
+        state.onboardStage = next;
+        state.pendingUnlock = ONBOARD_UNLOCKS[next];
+        playSfx("success");
+        saveGame();
+      }
+      function acknowledgeUnlock(go) {
+        const u = state.pendingUnlock;
+        state.pendingUnlock = null;
+        saveGame();
+        if (go && u) setView(u.tab);
+        else requestRender("full");
+      }
+      function lockedTabNudge() {
+        const s = onboardStageVal();
+        const msg =
+          s === 0
+            ? "Locked for now — get her roadworthy first. Engine, transmission, brakes."
+            : s === 1
+              ? "Locked — list one of your take-off parts on the Marketplace first."
+              : "Locked — drop one post on Social first. Bring a crowd with you.";
+        toast(msg, "err");
+      }
+      function renderUnlockModal() {
+        const root = getEl("modalRoot");
+        const u = state.pendingUnlock;
+        if (!u) return false;
+        root.innerHTML = popupCard({
+          tone: "good",
+          kicker: "New Unlock",
+          emoji: u.emoji,
+          title: u.title,
+          text: u.text,
+          actions: `<button class="notice-primary" onclick="acknowledgeUnlock(true)">${u.cta}</button><div style="margin-top:10px"><button class="tutorial-skip" onclick="acknowledgeUnlock(false)">Keep wrenching</button></div>`,
+        });
+        return true;
+      }
+
       function renderNoticeModal() {
         const root = getEl("modalRoot");
         if (!state.noticeQueue || !state.noticeQueue.length) return false;
@@ -13939,6 +14019,18 @@ addEventListener("DOMContentLoaded",function(){
   ═══════════════════════════════════════════ */
 
       function thisWeekNudge(car) {
+        const ob = onboardStageVal();
+        if (ob === 0) {
+          const gaps = [];
+          if (car.engine < ROADWORTHY_ENGINE) gaps.push("engine");
+          if (car.transmission < ROADWORTHY_TRANSMISSION) gaps.push("transmission");
+          if (car.brakes < ROADWORTHY_BRAKES) gaps.push("brakes");
+          return gaps.length
+            ? `Get the ${gaps.join(", ")} sorted. Once she's roadworthy, the Marketplace opens up.`
+            : "She's roadworthy — the Marketplace is opening up.";
+        }
+        if (ob === 1) return "Head to the Marketplace and list a take-off part — selling funds the build, and it gets the scene talking.";
+        if (ob === 2) return "Open Social and drop your first post. Followers turn into cash and sponsors.";
         const rw = roadworthy(car);
         const up = getUpcomingSummary();
         const next = up.nextShow;
@@ -15214,8 +15306,10 @@ addEventListener("DOMContentLoaded",function(){
           ["dealership", "📘 Marketplace"],
           ["shows", "🏁 Compete"],
         ]
-          .map(([id, label]) =>
-            tab(
+          .map(([id, label]) => {
+            if (!tabUnlocked(id))
+              return `<button class="tab locked" onclick="lockedTabNudge()">🔒 ${label.replace(/^[^ ]+ /, "")}</button>`;
+            return tab(
               label,
               id === "workshop"
                 ? state.view === "garage" || state.view === "workshop"
@@ -15223,8 +15317,8 @@ addEventListener("DOMContentLoaded",function(){
                   ? state.view === "career" || state.view === "legacy"
                   : state.view === id,
               `setView('${id}')`,
-            ),
-          )
+            );
+          })
           .join("");
       }
 
@@ -15234,6 +15328,7 @@ addEventListener("DOMContentLoaded",function(){
           state.settingsOpen ? `settings:${state.settings.paused ? 1 : 0}` : "",
           state.tutorialComplete ? "" : "tut:" + (state.tutorialStep || 0),
           state.pendingVictory ? "victory" : "",
+          state.pendingUnlock ? "unlock:" + state.pendingUnlock.tab : "",
           state.showLoading ? 1 : 0,
           state.showStage || "",
           "notice:" + ((state.noticeQueue && state.noticeQueue.length) || 0),
@@ -15263,6 +15358,7 @@ addEventListener("DOMContentLoaded",function(){
         if (!renderCheatModal()) {
           if (!renderSettingsModal()) {
             if (!renderTutorialModal()) {
+              if (!renderUnlockModal()) {
               if (!renderVictoryModal()) {
                 if (!renderShowCinematicModal()) {
                   if (!renderPendingSceneModal()) {
@@ -15272,6 +15368,7 @@ addEventListener("DOMContentLoaded",function(){
                     }
                   }
                 }
+              }
               }
             }
           }
@@ -15352,6 +15449,7 @@ addEventListener("DOMContentLoaded",function(){
 
       function render(mode = "full") {
         resolveCompletedRestorations(false);
+        checkOnboardUnlocks();
         processEventQueue();
         updateHeaderChrome(mode === "full");
         let touched = false;
@@ -15736,6 +15834,7 @@ addEventListener("DOMContentLoaded",function(){
           state.settingsOpen ||
           !state.tutorialComplete ||
           !!state.pendingVictory ||
+          !!state.pendingUnlock ||
           !!state.showLoading ||
           !!state.showStage ||
           !!state.pendingScene ||
@@ -15782,6 +15881,9 @@ addEventListener("DOMContentLoaded",function(){
           if (!state.tutorialComplete) {
             e.preventDefault();
             advanceTutorial();
+          } else if (state.pendingUnlock) {
+            e.preventDefault();
+            acknowledgeUnlock(true);
           } else if (state.showLoading && state.showStage) {
             e.preventDefault();
             advanceShowStage();
