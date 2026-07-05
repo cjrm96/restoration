@@ -253,6 +253,38 @@
       .tab::after {
         right: 5px;
       }
+      .dense-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+      @media (min-width: 900px) {
+        .dense-grid { grid-template-columns: 1fr 1fr; gap: 8px 10px; }
+        .dense-grid .dense-row.open { grid-column: 1 / -1; }
+      }
+      .dense-row { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+      .dense-row.open { border-color: rgba(217, 162, 79, 0.55); }
+      .dense-row.blocked { opacity: 0.75; }
+      .dense-head { display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; min-height: 40px; }
+      .dense-head:hover { background: rgba(217, 162, 79, 0.05); }
+      .dense-emoji { font-size: 16px; }
+      .dense-name { flex: 1; min-width: 0; font-size: 12.5px; font-weight: bold; color: var(--text-bright); }
+      .dense-cost { font-size: 12px; color: var(--gold-soft); font-weight: bold; white-space: nowrap; }
+      .dense-imp { font-size: 12px; font-weight: bold; white-space: nowrap; }
+      .dense-chev { color: var(--text-dim); font-size: 11px; }
+      .dense-body { padding: 2px 12px 12px; border-top: 1px dashed var(--line); }
+      .tool-chip { display: inline-flex; align-items: center; font-size: 10.5px; color: var(--text); background: rgba(217, 162, 79, 0.07); border: 1px solid rgba(217, 162, 79, 0.3); border-radius: 999px; padding: 3px 9px; }
+      .tool-chip.owned { color: #9fd18e; border-color: rgba(143, 203, 126, 0.4); }
+      /* Mobile density pass — tighter chrome, same content */
+      @media (max-width: 640px) {
+        .panel { padding: 12px; margin-bottom: 10px; }
+        .hero-panel { padding: 16px 14px 14px; }
+        .content { padding: 12px; }
+        .grid-main, .grid-main-shows { gap: 12px; }
+        .cards { gap: 10px; }
+        .ach { padding: 7px 9px; }
+        .ach-desc { display: none; }
+        .ach-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important; gap: 7px; }
+        .art-backdrop-shell { height: 185px !important; min-height: 185px !important; }
+        .hero-panel-sub { display: none; }
+        .panel-sub { display: none; }
+      }
       .ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
       .ach { display: flex; gap: 10px; align-items: flex-start; background: rgba(217,162,79,0.06); border: 1px solid rgba(217,162,79,0.28); border-radius: 10px; padding: 10px 12px; }
       .ach.locked { opacity: 0.5; filter: saturate(0.4); }
@@ -11169,6 +11201,10 @@
         state.shopSub = sub;
         requestRender("full");
       }
+      function toggleDense(id) {
+        state.denseDetail = state.denseDetail === id ? null : id;
+        requestRender("full");
+      }
       function setToolCat(cat) {
         state.toolCat = cat;
         requestRender("full");
@@ -14232,6 +14268,7 @@ addEventListener("DOMContentLoaded",function(){
             `${
               suggested.length
                 ? suggested
+                    .slice(0, 4)
                     .map((item) => {
                       if (item.type === "polish") {
                         const action = POLISH_ACTIONS[item.cat] || { verb: "Polish", emoji: "✨" };
@@ -14293,7 +14330,7 @@ addEventListener("DOMContentLoaded",function(){
                     })
                     .join("")
                 : `<div class="small muted">Nothing left to suggest right now. Either the car is maxed out or everything is already in progress.</div>`
-            }`,
+            }${suggested.length > 4 ? `<div class="tiny muted" style="margin-top:8px;text-align:center">+${suggested.length - 4} more jobs waiting in All Builds</div>` : ""}`,
             "",
             "#d8a24f",
           )}`;
@@ -14326,7 +14363,7 @@ addEventListener("DOMContentLoaded",function(){
                 : `${remaining}/${POLISH_PER_WEEK} sessions left this week. +${POLISH_GAIN} per pass.`;
             fineTuneMarkup = `<div class="info-box" style="background:rgba(168,132,221,0.06);border-color:rgba(168,132,221,0.45);margin-bottom:14px"><div class="flex between center" style="gap:10px;margin-bottom:6px"><div><div class="small" style="color:var(--purple-bright);font-weight:bold">${action.emoji} ${action.verb} · pre-show polish</div><div class="tiny muted" style="margin-top:2px">${sub}</div></div><div style="min-width:140px">${button(maxed ? "Maxed" : `+${POLISH_GAIN} · $${POLISH_COST}`, `polishCategory('${state.shopCat}')`, blocked, "", "width:100%;padding:7px 8px;font-size:12px")}</div></div></div>`;
           }
-          subcontent = `<div class="cat-pill-row">${CATS.map((cat) => `<button class="cat-pill ${state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')"><span class="cat-pill-icon">${CAT_ICONS[cat]}</span>${CAT_LABELS[cat]}</button>`).join("")}</div><div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div>${state.diyTried && state.shopTried ? "" : `<div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>`}${fineTuneMarkup}${state.shopCat === "paint" ? paintBoothPanel(car) : ""}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}${avail
+          subcontent = `<div class="cat-pill-row">${CATS.map((cat) => `<button class="cat-pill ${state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')"><span class="cat-pill-icon">${CAT_ICONS[cat]}</span>${CAT_LABELS[cat]}</button>`).join("")}</div><div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div>${state.diyTried && state.shopTried ? "" : `<div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>`}${fineTuneMarkup}${state.shopCat === "paint" ? paintBoothPanel(car) : ""}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}<div class="dense-grid">${avail
             .map((p) => {
               const rq = p.tools || [];
               const miss = rq.filter((tid) => !state.ownedTools.includes(tid));
@@ -14344,24 +14381,16 @@ addEventListener("DOMContentLoaded",function(){
               const yardImp = yardPull
                 ? Math.max(1, Math.round(p.imp * yardPull.conditionMult))
                 : 0;
-              const title = `${p.name}${disc > 0 ? ` <span class="badge" style="color:var(--gold)">-${Math.round(disc * 100)}%</span>` : ""}${starterFree ? ` <span class="badge" style="color:var(--green)">NEIGHBOR GIFT</span>` : ""}${yardPull ? ` <span class="badge" style="color:var(--purple-bright)">YARD PULL</span>` : ""}`;
-              return panel(
-                title,
-                `<div class="small muted" style="margin-bottom:8px">Improvement: <span class="good" style="font-weight:bold">+${p.imp} ${CAT_LABELS[state.shopCat]}</span></div><div class="info-box"><div class="tiny muted" style="margin-bottom:6px">DIY tool requirements</div>${rq
-                  .map((tid) => {
-                    const t = TOOLS_LIST.find((t) => t.id === tid);
-                    const owned = state.ownedTools.includes(tid);
-                    const can = canOwnTool(t);
-                    return `<div class="tiny" style="color:${owned ? "#9fd18e" : "#d38a76"};margin-bottom:6px">${t?.emoji} ${t?.name} ${owned ? "✓" : button(`Buy Tool ($${fmt(t.cost)})`, `buyTool('${tid}')`, !can.ok, "", "margin-left:8px;padding:4px 8px;font-size:11px")}</div>`;
-                  })
-                  .join(
-                    "",
-                  )}</div>${activeTask ? `<div class="info-box" data-task-id="${activeTask.id}"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:6px">Already in progress</div>${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>` : yardPull ? `<div class="info-box" style="background:rgba(168,132,221,0.08);border-color:rgba(168,132,221,0.4)"><div class="small" style="color:var(--purple-bright);font-weight:bold;margin-bottom:6px">📦 Yard pull in the truck</div><div class="tiny muted" style="margin-bottom:8px;line-height:1.5">Pulled this off a donor at Pick-A-Part — install gives +${yardImp} ${CAT_LABELS[p.category]} (vs +${p.imp} new). You bought the part, install it yourself.</div>${button("Install yard pull · DIY", `installYardPull('${yardPull.id}')`, !hasAll || maxed || activeTasksByMethod(car.id, "shop").length, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright)")}</div>` : `<div class="btn-row ${state.freePart && p.tier === "Budget" && !maxed ? "three" : "two"}">${button(maxed ? "Maxed" : `Start DIY · $${fmt(starterFree ? 0 : dc)}`, `installPart(${p.id},'diy',false)`, !hasAll || state.money < (starterFree ? 0 : dc) || maxed || activeTasksByMethod(car.id, "shop").length)}${button(maxed ? "Maxed" : `Send to Shop · $${fmt(starterFree ? 0 : sc)}`, `installPart(${p.id},'shop',false)`, state.money < (starterFree ? 0 : sc) || maxed || activeTasksByMethod(car.id, "diy").length, "", "background:#7da0c2;border-color:var(--blue-bright)")}${state.freePart && p.tier === "Budget" && !maxed ? button("Sponsored · FREE", `installPart(${p.id},'shop',true)`, false, "", "background:#a47ed4;border-color:var(--purple-bright)") : ""}</div>`}`,
-                `${p.tier} · ${p.desc}`,
-                tierCol(p.tier),
-              );
+              const open = state.denseDetail === "part_" + p.id;
+              const badge = disc > 0 ? `<span class="badge" style="color:var(--gold)">-${Math.round(disc * 100)}%</span>` : starterFree ? `<span class="badge" style="color:var(--green)">GIFT</span>` : yardPull ? `<span class="badge" style="color:var(--purple-bright)">YARD</span>` : "";
+              const headBtns = activeTask
+                ? `<span class="tiny good task-time" style="font-weight:bold;white-space:nowrap">${Date.now() >= activeTask.finishTime ? "Finishing…" : formatRemaining(activeTask.finishTime - Date.now())}</span>`
+                : maxed
+                  ? `<span class="tiny muted">Maxed</span>`
+                  : `${button(`DIY $${fmt(starterFree ? 0 : dc)}`, `event.stopPropagation();installPart(${p.id},'diy',false)`, !hasAll || state.money < (starterFree ? 0 : dc) || activeTasksByMethod(car.id, "shop").length, "", "padding:5px 10px;font-size:11px;white-space:nowrap")}${button(`Shop $${fmt(starterFree ? 0 : sc)}`, `event.stopPropagation();installPart(${p.id},'shop',false)`, state.money < (starterFree ? 0 : sc) || activeTasksByMethod(car.id, "diy").length, "", "padding:5px 10px;font-size:11px;white-space:nowrap;background:#7da0c2;border-color:var(--blue-bright)")}`;
+              return `<div class="dense-row ${open ? "open" : ""}" style="border-left:3px solid ${tierCol(p.tier)}"><div class="dense-head" onclick="toggleDense('part_${p.id}')"><span class="dense-name">${p.name} ${badge}</span><span class="dense-imp good">+${p.imp}</span>${headBtns}<span class="dense-chev">${open ? "▾" : "▸"}</span></div>${open ? `<div class="dense-body"><div class="tiny muted" style="margin:6px 0 8px">${p.tier} · ${p.desc}</div>${rq.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${rq.map((tid) => { const t = TOOLS_LIST.find((x) => x.id === tid); const owned = state.ownedTools.includes(tid); const can2 = canOwnTool(t); return `<span class="tool-chip ${owned ? "owned" : ""}">${t?.emoji} ${t?.name}${owned ? " ✓" : ` ${button(`$${fmt(t.cost)}`, `event.stopPropagation();buyTool('${tid}')`, !can2.ok || state.money < t.cost, "", "padding:2px 8px;font-size:10px;margin-left:5px")}`}</span>`; }).join("")}</div>` : ""}${activeTask ? `<div class="info-box" data-task-id="${activeTask.id}">${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>` : ""}${yardPull && !activeTask ? button(`Install yard pull · +${yardImp} (vs +${p.imp} new)`, `installYardPull('${yardPull.id}')`, !hasAll || maxed || activeTasksByMethod(car.id, "shop").length, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright);margin-top:4px") : ""}${state.freePart && p.tier === "Budget" && !maxed && !activeTask ? button("Sponsored · FREE", `installPart(${p.id},'shop',true)`, false, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright);margin-top:6px") : ""}</div>` : ""}</div>`;
             })
-            .join("")}`;
+            .join("")}</div>`;
         }
 
         if (state.shopSub === "tools") {
@@ -14376,23 +14405,17 @@ addEventListener("DOMContentLoaded",function(){
             : "";
           subcontent = `<div class="info-box" style="margin-bottom:12px"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:4px">Capacity: ${state.ownedTools.length} / ${storage.maxTools} tools</div>${storageHint}</div><div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">${tab("All", state.toolCat === "all", "setToolCat('all')")}${TOOL_CATEGORIES.map((cat) => tab(`${cat.emoji} ${cat.label}`, state.toolCat === cat.id, `setToolCat('${cat.id}')`)).join("")}</div>${
             availableTools.length
-              ? availableTools
+              ? `<div class="dense-grid">${availableTools
                   .map((t) => {
                     const can = canOwnTool(t);
-                    const parts = PARTS.filter((p) =>
-                      (p.tools || []).includes(t.id),
-                    ).map((p) => p.name);
-                    const rw = WORKSPACE_LEVELS.find(
-                      (w) => w.id === t.workshop,
-                    );
-                    return panel(
-                      t.name,
-                      `<div class="small muted" style="margin-bottom:10px">Category: ${TOOL_CATEGORIES.find((c) => c.id === t.cat)?.label} <span style="color:var(--gold);margin-left:10px">Requires: ${rw?.name}</span></div><div class="tiny" style="color:#8e8473;margin-bottom:12px">Enables: ${parts.length ? `${parts.slice(0, 3).join(", ")}${parts.length > 3 ? ` +${parts.length - 3} more` : ""}` : ""}</div><div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center"><div style="color:var(--text);font-weight:bold">$${fmt(t.cost)}</div><div style="min-width:140px" title="${can.ok ? "" : can.msg}">${button("Buy Tool", `buyTool('${t.id}')`, false, "", can.ok ? "width:100%" : "width:100%;opacity:0.55;cursor:not-allowed;filter:grayscale(0.4)")}</div></div>${!can.ok ? `<div class="tiny warn" style="margin-top:8px;font-weight:bold">⚠️ ${can.msg}</div>` : ""}`,
-                      t.desc,
-                      "#d8a24f",
-                    );
+                    const open = state.denseDetail === "tool_" + t.id;
+                    const rw = WORKSPACE_LEVELS.find((w) => w.id === t.workshop);
+                    const parts = open
+                      ? PARTS.filter((p) => (p.tools || []).includes(t.id)).map((p) => p.name)
+                      : [];
+                    return `<div class="dense-row ${open ? "open" : ""} ${can.ok ? "" : "blocked"}"><div class="dense-head" onclick="toggleDense('tool_${t.id}')"><span class="dense-emoji">${t.emoji}</span><span class="dense-name">${t.name}</span><span class="dense-cost">$${fmt(t.cost)}</span>${button("Buy", `event.stopPropagation();buyTool('${t.id}')`, !can.ok || state.money < t.cost, "", "padding:5px 12px;font-size:11px")}<span class="dense-chev">${open ? "▾" : "▸"}</span></div>${open ? `<div class="dense-body"><div class="tiny muted" style="margin-bottom:6px">${t.desc}</div>${parts.length ? `<div class="tiny" style="color:#8e8473;margin-bottom:4px">Enables: ${parts.slice(0, 4).join(", ")}${parts.length > 4 ? ` +${parts.length - 4} more` : ""}</div>` : ""}<div class="tiny" style="color:var(--gold)">Requires: ${rw?.name}</div>${!can.ok ? `<div class="tiny warn" style="margin-top:4px;font-weight:bold">⚠️ ${can.msg}</div>` : ""}</div>` : ""}</div>`;
                   })
-                  .join("")
+                  .join("")}</div>`
               : panel(
                   "Sold Out",
                   `<div class="small muted">Everything currently available here has already been hauled back to the shop.</div>`,
@@ -15514,6 +15537,7 @@ addEventListener("DOMContentLoaded",function(){
           state.shopCat,
           state.shopSub,
           state.toolCat,
+          state.denseDetail || "",
           state.marketTab,
           state.showSub,
           state.marketplaceStashExpanded ? 1 : 0,
