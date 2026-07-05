@@ -271,6 +271,14 @@
       .dense-body { padding: 2px 12px 12px; border-top: 1px dashed var(--line); }
       .tool-chip { display: inline-flex; align-items: center; font-size: 10.5px; color: var(--text); background: rgba(217, 162, 79, 0.07); border: 1px solid rgba(217, 162, 79, 0.3); border-radius: 999px; padding: 3px 9px; }
       .tool-chip.owned { color: #9fd18e; border-color: rgba(143, 203, 126, 0.4); }
+      .m-fold { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+      .m-fold > summary { list-style: none; display: flex; align-items: center; gap: 8px; padding: 11px 14px; cursor: pointer; font-size: 12.5px; font-weight: bold; color: var(--text-bright); }
+      .m-fold > summary::-webkit-details-marker { display: none; }
+      .m-fold > summary::after { content: "▸"; margin-left: auto; color: var(--text-dim); font-size: 11px; }
+      .m-fold[open] > summary::after { content: "▾"; }
+      .m-fold-v { margin-left: auto; font-weight: normal; font-size: 11.5px; color: var(--gold-soft); padding-right: 6px; }
+      .m-fold[open] .m-fold-v { display: none; }
+      .m-fold > .panel, .m-fold > .work-order { margin-bottom: 0; border: none; border-radius: 0; }
       /* Mobile density pass — tighter chrome, same content */
       @media (max-width: 640px) {
         .panel { padding: 12px; margin-bottom: 10px; }
@@ -11253,6 +11261,18 @@
         return `<div class="row"><span class="row-k">${k}</span><span class="row-v ${cls}">${v}</span></div>`;
       }
 
+      // On phones the side-column panels collapse to one-line summaries
+      // (native <details>, no re-render on toggle). Open state survives
+      // re-renders via the mFoldOpen registry. Desktop is untouched.
+      const mFoldOpen = {};
+      function mFoldToggle(el, id) {
+        mFoldOpen[id] = el.open;
+      }
+      function mobileFold(id, label, value, html) {
+        const isPhone = window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
+        if (!isPhone) return html;
+        return `<details class="m-fold" ${mFoldOpen[id] ? "open" : ""} ontoggle="mFoldToggle(this,'${id}')"><summary>${label}<span class="m-fold-v">${value}</span></summary>${html}</details>`;
+      }
       function renderUpcomingBar() {
         const { nextShow, nextShowText } = getUpcomingSummary();
         const totalLoan = state.bankLoanBalance + state.sharkLoanBalance;
@@ -11260,12 +11280,17 @@
           totalLoan > 0
             ? chalkRow("Loan Balance", `$${fmt(totalLoan)}`, "warn")
             : chalkRow("Loan", "None");
-        return panel(
-          "Upcoming",
-          `${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}${chalkRow("Paycheck", `${PAYCHECK_CYCLE - state.paycheckProgress} week(s)`)}${chalkRow("Next Event", nextShowText, nextShow.weeksUntil === 0 ? "good" : "warn")}${loanLine}`,
-          "",
-          "#f5efe0",
-          "chalkboard",
+        return mobileFold(
+          "upcoming",
+          "📅 Upcoming",
+          nextShowText,
+          panel(
+            "Upcoming",
+            `${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}${chalkRow("Paycheck", `${PAYCHECK_CYCLE - state.paycheckProgress} week(s)`)}${chalkRow("Next Event", nextShowText, nextShow.weeksUntil === 0 ? "good" : "warn")}${loanLine}`,
+            "",
+            "#f5efe0",
+            "chalkboard",
+          ),
         );
       }
 
@@ -14128,6 +14153,14 @@ addEventListener("DOMContentLoaded",function(){
       }
       function renderRestorationPanel(car) {
         const tasks = activeTasksForCar(car.id);
+        return mobileFold(
+          "resto",
+          "🔨 Active Restorations",
+          tasks.length ? `${tasks.length} running` : "none",
+          _renderRestorationPanelInner(car, tasks),
+        );
+      }
+      function _renderRestorationPanelInner(car, tasks) {
         if (!tasks.length)
           return panel(
             "Active Restorations",
@@ -14471,7 +14504,7 @@ addEventListener("DOMContentLoaded",function(){
             }
             return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">⚠️</span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " ✓"} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " ✓"} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " ✓"}</div></div></div><div class="coach-nudge">🧰 <span>This week:</span> ${thisWeekNudge(car)}</div>`;
           })()}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 Free Budget part ready — tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div style="background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px"><span>📦 ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck — find them in <strong style="color:var(--text-bright)">All Builds</strong> with the YARD PULL badge.</span></div>` : ""; })()}${subcontent}`,
-        )}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#1d1611", "clipboard")}</div></div>`;
+        )}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${mobileFold("notes", "📋 Shop Notes", workspaceData().name, panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#1d1611", "clipboard"))}</div></div>`;
       }
 
       const SHOW_TIER_ICONS = {
