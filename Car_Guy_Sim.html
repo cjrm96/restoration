@@ -14427,11 +14427,19 @@ addEventListener("DOMContentLoaded",function(){
         }
 
         if (state.shopSub === "tools") {
-          const availableTools = TOOLS_LIST.filter(
+          const wsIdxNow = getWorkspaceIndex(state.workshopLevel);
+          const inCat = TOOLS_LIST.filter(
             (t) =>
               (state.toolCat === "all" || t.cat === state.toolCat) &&
               !state.ownedTools.includes(t.id),
           );
+          const reachable = (t) =>
+            WORKSPACE_LEVELS.findIndex((w) => w.id === t.workshop) <= wsIdxNow;
+          const lockedTools = inCat.filter((t) => !reachable(t));
+          const availableTools = state.showLockedTools ? inCat : inCat.filter(reachable);
+          const lockedToggle = lockedTools.length
+            ? `<div style="text-align:center;margin-top:10px">${button(state.showLockedTools ? "Hide tools that need a bigger space ▴" : `${lockedTools.length} more tool${lockedTools.length === 1 ? "" : "s"} need a bigger space ▾`, "state.showLockedTools=!state.showLockedTools;requestRender('full')", false, "", "padding:6px 14px;font-size:11px;background:transparent;color:var(--gold-soft);border:1px solid rgba(217,162,79,0.4)")}</div>`
+            : "";
           const storage = toolStorageData();
           const storageHint = state.ownedTools.length >= storage.maxTools - 1
             ? '<div class="tiny muted">Need more space or a faster shop? See the Space &amp; Storage tab.</div>'
@@ -14455,7 +14463,7 @@ addEventListener("DOMContentLoaded",function(){
                   "",
                   "#87c77b",
                 )
-          }`;
+          }${lockedToggle}`;
         }
 
         if (state.shopSub === "workspace") {
@@ -14468,19 +14476,20 @@ addEventListener("DOMContentLoaded",function(){
             "#7da0c2",
           )}${panel(
             "Work Space Progression",
-            `${WORKSPACE_LEVELS.map((w, i) => {
+            `<div class="dense-grid">${WORKSPACE_LEVELS.map((w, i) => {
               const current = state.workshopLevel === w.id;
               const unlocked = i <= workshopIdx();
               const upcoming = i === workshopIdx() + 1;
               // Hide old workspaces the player has already moved past — only show current and what's ahead
               if (unlocked && !current) return "";
-              return panel(
-                `${w.emoji} ${w.name}`,
-                `<div class="flex between center" style="gap:10px"><div class="small muted">Active restorations: ${w.maxActive}</div><div style="min-width:150px">${current ? `<div class="good" style="font-weight:bold;text-align:right">CURRENT</div>` : upcoming ? button(`Upgrade · $${fmt(w.cost)}`, "upgradeWorkspace()", state.money < w.cost) : `<div class="tiny" style="color:#72695d;text-align:right">Locked</div>`}</div></div>`,
-                w.desc,
-                current ? "#9fd18e" : "#d8a24f",
-              );
-            }).join("")}`,
+              const open = state.denseDetail === "ws_" + w.id;
+              const action = current
+                ? `<span class="tiny good" style="font-weight:bold;white-space:nowrap">CURRENT</span>`
+                : upcoming
+                  ? button(`Upgrade $${fmt(w.cost)}`, "event.stopPropagation();upgradeWorkspace()", state.money < w.cost, "", "padding:5px 10px;font-size:11px;white-space:nowrap")
+                  : `<span class="tiny" style="color:#72695d;white-space:nowrap">🔒 Locked</span>`;
+              return `<div class="dense-row ${open ? "open" : ""}" style="border-left:3px solid ${current ? "#9fd18e" : "#d8a24f"}"><div class="dense-head" onclick="toggleDense('ws_${w.id}')"><span class="dense-emoji">${w.emoji}</span><span class="dense-name">${w.name}</span><span class="tiny muted" style="white-space:nowrap">${w.maxActive} job${w.maxActive === 1 ? "" : "s"}</span>${action}<span class="dense-chev">${open ? "▾" : "▸"}</span></div>${open ? `<div class="dense-body"><div class="tiny muted" style="margin-top:6px">${w.desc}</div></div>` : ""}</div>`;
+            }).join("")}</div>`,
             "",
             "#d8a24f",
           )}`;
@@ -15571,6 +15580,7 @@ addEventListener("DOMContentLoaded",function(){
           state.shopSub,
           state.toolCat,
           state.denseDetail || "",
+          state.showLockedTools ? 1 : 0,
           state.marketTab,
           state.showSub,
           state.marketplaceStashExpanded ? 1 : 0,
