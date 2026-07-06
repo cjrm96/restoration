@@ -741,6 +741,11 @@
       .cg-gain-float { position:absolute; left:50%; top:38%; z-index:6; pointer-events:none; padding:5px 12px; border-radius:999px; background:linear-gradient(180deg,#2c7a43,#1c5c31); border:1px solid #4fbf6e; color:#eafff0; font-weight:bold; font-size:14px; box-shadow:0 4px 14px rgba(0,0,0,.45); white-space:nowrap; animation:cg-gain-float 2.4s cubic-bezier(0.3,0.7,0.4,1) both; }
       .champ-ribbon { display:inline-block; margin-bottom:8px; padding:5px 18px; border-radius:999px; background:linear-gradient(180deg,#e6bd5c,#c48f2c); border:1px solid #f2d98a; color:#241704; font-weight:bold; font-size:13px; letter-spacing:1px; text-transform:uppercase; box-shadow:0 3px 12px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.4); }
       .beauty-card { border:1px solid rgba(217,162,79,0.5); border-radius:12px; padding:12px 12px 6px; background:linear-gradient(180deg,rgba(217,162,79,0.09),rgba(20,16,12,0.2)); box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.4); margin-bottom:12px; }
+      #crashBar { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 4000; display: flex; align-items: center; gap: 10px; background: linear-gradient(180deg, #3a1a14, #24100c); border: 1px solid #c46d60; border-radius: 10px; padding: 10px 14px; box-shadow: 0 10px 30px rgba(0,0,0,.6); font-size: 12.5px; color: #f2ddd8; }
+      #crashBar .cb-icon { font-size: 18px; }
+      #crashBar .cb-text { flex: 1; line-height: 1.5; }
+      #crashBar .cb-copy { appearance: none; font-family: inherit; background: #c46d60; color: #1c0d09; border: 1px solid #e08d80; border-radius: 7px; padding: 7px 12px; font-weight: bold; font-size: 11.5px; cursor: pointer; white-space: nowrap; }
+      #crashBar .cb-x { appearance: none; background: transparent; border: none; color: #d8a99f; font-size: 18px; cursor: pointer; padding: 0 4px; }
       .btn-quiet { background: transparent !important; border: 1px solid rgba(217, 162, 79, 0.45) !important; color: var(--gold-soft) !important; box-shadow: none !important; }
       .btn-quiet:hover { background: rgba(217, 162, 79, 0.08) !important; }
       .coach-nudge { display:flex; gap:7px; align-items:baseline; background:rgba(217,162,79,0.08); border:1px solid rgba(217,162,79,0.32); border-left:3px solid var(--gold); border-radius:8px; padding:9px 12px; margin-bottom:12px; font-size:12.5px; color:var(--text); line-height:1.5; }
@@ -9323,6 +9328,22 @@
       let hoodClickReset = 0;
       let cheatPromptOpen = false;
 
+      // Rolling backups: a time-spaced copy of the last three good saves.
+      // Spacing (5 min) keeps a corrupting bug from poisoning every backup
+      // within a few autosave ticks.
+      let lastBackupAt = 0;
+      function rotateSaveBackups(payload) {
+        const now = Date.now();
+        if (now - lastBackupAt < 5 * 60 * 1000) return;
+        lastBackupAt = now;
+        try {
+          const b1 = localStorage.getItem(SAVE_KEY + "_bak1");
+          const b2 = localStorage.getItem(SAVE_KEY + "_bak2");
+          if (b2) localStorage.setItem(SAVE_KEY + "_bak3", b2);
+          if (b1) localStorage.setItem(SAVE_KEY + "_bak2", b1);
+          localStorage.setItem(SAVE_KEY + "_bak1", payload);
+        } catch (e) {}
+      }
       function saveGame(force = false) {
         try {
           const payload = JSON.stringify({
@@ -9332,20 +9353,124 @@
           });
           if (!force && payload === lastSavedPayload) return false;
           localStorage.setItem(SAVE_KEY, payload);
+          rotateSaveBackups(payload);
           lastSavedPayload = payload;
           flashSaved();
           return true;
         } catch (err) {
           console.warn("Save failed", err);
+          if (!saveGame._warned) {
+            saveGame._warned = true;
+            try {
+              toast("⚠️ Saving failed — the browser refused the write (private window or full storage?). Export your save from Settings to be safe.", "err");
+            } catch (e) {}
+          }
           return false;
         }
       }
 
+      /* ═══════════════════════════════════════════
+     SAVE EXPORT / IMPORT
+  ═══════════════════════════════════════════ */
+      function exportSave() {
+        saveGame(true);
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return toast("Nothing to export yet.", "err");
+        const blob = new Blob([raw], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        const d = new Date();
+        a.download = `car-guy-sim-save-wk${state.week}-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}.json`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+        toast("💾 Save exported. Keep that file somewhere safe.", "event-good");
+      }
+      function copySaveToClipboard() {
+        saveGame(true);
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return toast("Nothing to copy yet.", "err");
+        const done = () => toast("📋 Save copied — paste it somewhere safe (notes, email to yourself).", "event-good");
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(raw).then(done, () => toast("Copy failed — use Export instead.", "err"));
+        } else {
+          const ta = document.createElement("textarea");
+          ta.value = raw;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand("copy"); done(); } catch (e) { toast("Copy failed — use Export instead.", "err"); }
+          ta.remove();
+        }
+      }
+      function validateSavePayload(text) {
+        const parsed = JSON.parse(text);
+        if (!parsed || typeof parsed !== "object" || !parsed.state || typeof parsed.state !== "object")
+          throw new Error("not a Car Guy Simulator save");
+        if (typeof parsed.version !== "number") throw new Error("missing save version");
+        return parsed;
+      }
+      function applyImportedSave(text) {
+        try {
+          validateSavePayload(text);
+        } catch (e) {
+          return toast(`That file isn't a valid save (${e.message}).`, "err");
+        }
+        if (!confirm("Import this save? Your current garage will be replaced. (A backup of the current save is kept.)")) return;
+        try {
+          const current = localStorage.getItem(SAVE_KEY);
+          if (current) localStorage.setItem(SAVE_KEY + "_preimport", current);
+          localStorage.setItem(SAVE_KEY, text);
+          location.reload();
+        } catch (e) {
+          toast("Import failed to write — storage may be full.", "err");
+        }
+      }
+      function importSave() {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".json,application/json,text/plain";
+        input.onchange = () => {
+          const f = input.files && input.files[0];
+          if (!f) return;
+          const reader = new FileReader();
+          reader.onload = () => applyImportedSave(String(reader.result || ""));
+          reader.readAsText(f);
+        };
+        input.click();
+      }
+      function importSaveFromPaste() {
+        const text = prompt("Paste your save data here:");
+        if (text && text.trim()) applyImportedSave(text.trim());
+      }
+
       function loadGame() {
         try {
-          const raw = localStorage.getItem(SAVE_KEY);
+          let raw = localStorage.getItem(SAVE_KEY);
           if (!raw) return false;
-          const parsed = JSON.parse(raw);
+          let parsed = null;
+          try {
+            parsed = JSON.parse(raw);
+          } catch (e) {
+            parsed = null;
+          }
+          if (!parsed || !parsed.state) {
+            // Main save is corrupt — fall back to the newest good backup.
+            for (const k of ["_bak1", "_bak2", "_bak3"]) {
+              const bak = localStorage.getItem(SAVE_KEY + k);
+              if (!bak) continue;
+              try {
+                const p = JSON.parse(bak);
+                if (p && p.state) {
+                  parsed = p;
+                  localStorage.setItem(SAVE_KEY, bak);
+                  setTimeout(() => {
+                    try { toast("♻️ Your save file was damaged — restored from an automatic backup.", "event-good"); } catch (e) {}
+                  }, 1600);
+                  break;
+                }
+              } catch (e) {}
+            }
+          }
           if (!parsed || !parsed.state) return false;
           const savedHasTutorialField = Object.prototype.hasOwnProperty.call(
             parsed.state,
@@ -13618,6 +13743,11 @@ addEventListener("DOMContentLoaded",function(){
            ${button("📖  Replay Tutorial", "replayTutorial()", false, "", "width:100%;margin-bottom:10px")}
            ${button("🗑  Reset Save (Start Over)", "resetSaveConfirm()", false, "", "width:100%;background:#5a2222;border-color:#a04040;color:#f0c8c8")}`,
           "", "#7da0c2")}
+        ${panel("Save Data",
+          `<div class="tiny muted" style="margin-bottom:10px;line-height:1.6">Your save lives in this browser. Export a copy to move it to another device or keep a backup — the game also keeps rolling automatic backups.</div>
+           <div class="btn-row two" style="margin-bottom:10px">${button("💾 Export Save File", "exportSave()", false, "", "width:100%")}${button("📋 Copy Save Text", "copySaveToClipboard()", false, "", "width:100%")}</div>
+           <div class="btn-row two">${button("📂 Import Save File", "importSave()", false, "", "width:100%;background:#7da0c2;border-color:var(--blue-bright)")}${button("📥 Paste Save Text", "importSaveFromPaste()", false, "", "width:100%;background:#7da0c2;border-color:var(--blue-bright)")}</div>`,
+          "", "#87c77b")}
         ${panel("Keyboard",
           `<div class="small" style="color:var(--text);line-height:2.1">
              <span style="color:var(--gold);font-weight:bold">1 – 4</span> · Switch tabs — Build, Social, Marketplace, Compete<br>
@@ -16174,6 +16304,46 @@ addEventListener("DOMContentLoaded",function(){
         document.addEventListener(ev, syncFullscreenButtons),
       );
       syncFullscreenButtons();
+
+      // Crash bar: any uncaught error surfaces a dismissible strip with a
+      // copyable report. Built with raw DOM so it works even when the
+      // render pipeline itself is what broke. Shows once per session.
+      function showCrashBar(detail) {
+        if (showCrashBar._shown) return;
+        showCrashBar._shown = true;
+        showCrashBar._detail = detail;
+        const bar = document.createElement("div");
+        bar.id = "crashBar";
+        bar.innerHTML = `<span class="cb-icon">⚠️</span><span class="cb-text"><b>Something went wrong — your save is safe.</b> If it keeps happening, copy the error details and send them to us.</span><button class="cb-copy">Copy error details</button><button class="cb-x" title="Dismiss">×</button>`;
+        bar.querySelector(".cb-copy").onclick = () => {
+          const t = showCrashBar._detail;
+          const ok = () => { bar.querySelector(".cb-copy").textContent = "Copied ✓"; };
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, ok);
+          else { try { const ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); ok(); } catch (e) {} }
+        };
+        bar.querySelector(".cb-x").onclick = () => bar.remove();
+        document.body.appendChild(bar);
+      }
+      function buildCrashDetail(msg, src, line, col, stack) {
+        let wk = "?", sv = "?";
+        try { wk = state.week; sv = state.tutorialComplete ? "post-tutorial" : "in-tutorial"; } catch (e) {}
+        return [
+          "Car Guy Simulator v0.6.0 error report",
+          "message: " + msg,
+          "at: " + (src || "?") + ":" + (line || "?") + ":" + (col || "?"),
+          "week: " + wk + " (" + sv + ")",
+          "ua: " + navigator.userAgent,
+          "stack: " + String(stack || "").split("\n").slice(0, 6).join(" | "),
+        ].join("\n");
+      }
+      window.addEventListener("error", (e) => {
+        try { saveGame(true); } catch (err) {}
+        showCrashBar(buildCrashDetail(e.message, e.filename, e.lineno, e.colno, e.error && e.error.stack));
+      });
+      window.addEventListener("unhandledrejection", (e) => {
+        const r = e.reason || {};
+        showCrashBar(buildCrashDetail("unhandled promise: " + (r.message || String(e.reason)), "", "", "", r.stack));
+      });
 
       // Splash: offer Continue / New Game when a save exists.
       function splashNewGame() {
