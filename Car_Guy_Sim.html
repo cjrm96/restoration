@@ -10741,9 +10741,7 @@
           requestRender("full");
           return;
         }
-        state.showLoading = true;
         state.pendingShowId = showId;
-        playSfx("engineRev");
         enterShow(showId);
         state.pendingShowId = null;
       }
@@ -10786,6 +10784,11 @@
           return toast(`Need ${fuelNeed} gal for this trip.`, "err");
         if (getOverall(car) < show.minScore)
           return toast(`Need ${show.minScore}+ overall.`, "err");
+
+        // Every guard passed — NOW the show flow owns the state. Setting
+        // this any earlier bricks show entry forever if a guard rejects.
+        state.showLoading = true;
+        playSfx("engineRev");
 
         const effectiveCar = { ...currentCar() };
         const effectiveOverall = getOverall(effectiveCar);
@@ -14638,6 +14641,7 @@ addEventListener("DOMContentLoaded",function(){
               const entryFee = localSponsor ? 0 : show.fee;
               const off =
                 locked ||
+                state.familySaturdayWeek === state.week ||
                 !roadworthy(car) ||
                 state.money < entryFee ||
                 state.fuel < fuelNeed ||
@@ -15735,6 +15739,11 @@ addEventListener("DOMContentLoaded",function(){
 
       function render(mode = "full") {
         resolveCompletedRestorations(false);
+        // Self-heal a half-open show flow (loading without a stage, or a
+        // stage with no loading flag). Older builds could persist this
+        // split and silently block show entry forever.
+        if (state.showLoading && !state.showStage) state.showLoading = false;
+        if (state.showStage && !state.showLoading) state.showStage = null;
         checkOnboardUnlocks();
         checkAchievements();
         processEventQueue();
