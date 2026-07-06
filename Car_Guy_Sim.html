@@ -11103,7 +11103,7 @@
           art: "📱",
           headline: "The build earns more than trophies.",
           body:
-            "The other tabs unlock as the build earns them. Get her roadworthy and the Marketplace opens — sell take-off parts, field lowball offers, hit Saturday scavenge trips. Make some noise there and Social follows: post content, grow a following, land sponsors.",
+            "The other tabs unlock as the build earns them. Knock out your first few restorations and Social opens — post content while the wrenches turn, grow a following, land sponsors. Get her roadworthy and the Marketplace follows: sell take-off parts, field lowball offers, hit Saturday scavenge trips.",
           points: [
             { icon: "💸", text: "Buyers DM you about your listings in real time." },
             { icon: "🎬", text: "Content payouts scale with your follower count." },
@@ -13934,26 +13934,26 @@ addEventListener("DOMContentLoaded",function(){
       function tabUnlocked(id) {
         const s = onboardStageVal();
         if (id === "workshop" || id === "garage") return true;
-        if (id === "dealership") return s >= 1;
-        if (id === "career" || id === "legacy") return s >= 2;
+        if (id === "career" || id === "legacy") return s >= 1;
+        if (id === "dealership") return s >= 2;
         if (id === "shows") return s >= 3;
         return true;
       }
       const ONBOARD_UNLOCKS = {
-        1: { tab: "dealership", emoji: "📘", title: "The Marketplace is open", cta: "Open the Marketplace →",
+        1: { tab: "career", emoji: "📱", title: "Your phone is blowing up", cta: "Open Social →",
+             text: "Real restorations take real shop time from here on out. While the wrenches turn, the scene wants to see the build — post to Snapgram, CarTok, and MotorTube for cash and followers. Get big enough and sponsors come to you." },
+        2: { tab: "dealership", emoji: "📘", title: "The Marketplace is open", cta: "Open the Marketplace →",
              text: "She runs. Word travels fast when a dead truck comes back to life — and that pile of take-off parts in the corner is worth real money. List parts, field offers from lowballers, and hit Saturday scavenge trips for cheap donor parts." },
-        2: { tab: "career", emoji: "📱", title: "Your phone is blowing up", cta: "Open Social →",
-             text: "That listing made the rounds in the local scene, and now people want to follow the build. Post to Snapgram, CarTok, and MotorTube for cash and followers — get big enough and sponsors come to you." },
         3: { tab: "shows", emoji: "🏁", title: "Show season is calling", cta: "Open Compete →",
-             text: "The build has a following — time to see how she stacks up in person. Ease in at a Cars & Coffee morning, climb through Local and Regional shows, and chase the National title before the season ends." },
+             text: "The listings made the rounds and the build has a name now — time to see how she stacks up in person. Ease in at a Cars & Coffee morning, climb through Local and Regional shows, and chase the National title before the season ends." },
       };
       function checkOnboardUnlocks() {
         const s = onboardStageVal();
         if (s >= 3 || !state.tutorialComplete || state.pendingUnlock) return;
         let next = 0;
-        if (s === 0 && (state.cars || []).some((c) => roadworthy(c))) next = 1;
-        else if (s === 1 && (state.partsInventory || []).some((i) => i.listed || i.sold)) next = 2;
-        else if (s === 2 && (state.postHistory || []).length > 0) next = 3;
+        if (s === 0 && (state.installsDone || 0) >= 3) next = 1;
+        else if (s === 1 && (state.cars || []).some((c) => roadworthy(c))) next = 2;
+        else if (s === 2 && (state.partsInventory || []).some((i) => i.listed || i.sold)) next = 3;
         if (!next) return;
         state.onboardStage = next;
         state.pendingUnlock = ONBOARD_UNLOCKS[next];
@@ -13971,10 +13971,10 @@ addEventListener("DOMContentLoaded",function(){
         const s = onboardStageVal();
         const msg =
           s === 0
-            ? "Locked for now — get her roadworthy first. Engine, transmission, brakes."
+            ? "Locked — knock out your first three restorations, then the scene starts watching."
             : s === 1
-              ? "Locked — list one of your take-off parts on the Marketplace first."
-              : "Locked — drop one post on Social first. Bring a crowd with you.";
+              ? "Locked — get her roadworthy first. Engine, transmission, brakes."
+              : "Locked — list one of your take-off parts on the Marketplace first.";
         toast(msg, "err");
       }
       function renderUnlockModal() {
@@ -14346,16 +14346,19 @@ addEventListener("DOMContentLoaded",function(){
       function thisWeekNudge(car) {
         const ob = onboardStageVal();
         if (ob === 0) {
+          const left = Math.max(0, 3 - (state.installsDone || 0));
+          return `Knock out ${left} more restoration${left === 1 ? "" : "s"} — the scene starts watching after that.`;
+        }
+        if (ob === 1) {
           const gaps = [];
           if (car.engine < ROADWORTHY_ENGINE) gaps.push("engine");
           if (car.transmission < ROADWORTHY_TRANSMISSION) gaps.push("transmission");
           if (car.brakes < ROADWORTHY_BRAKES) gaps.push("brakes");
           return gaps.length
-            ? `Get the ${gaps.join(", ")} sorted. Once she's roadworthy, the Marketplace opens up.`
+            ? `Get the ${gaps.join(", ")} sorted. Once she's roadworthy, the Marketplace opens up. Post to Social while the wrenches turn.`
             : "She's roadworthy — the Marketplace is opening up.";
         }
-        if (ob === 1) return "Head to the Marketplace and list a take-off part — selling funds the build, and it gets the scene talking.";
-        if (ob === 2) return "Open Social and drop your first post. Followers turn into cash and sponsors.";
+        if (ob === 2) return "Head to the Marketplace and list a take-off part — selling funds the build, and it gets the scene talking.";
         const rw = roadworthy(car);
         const up = getUpcomingSummary();
         const next = up.nextShow;
@@ -14643,7 +14646,7 @@ addEventListener("DOMContentLoaded",function(){
               if ((state.history || []).length > 0) return `<div class="coach-nudge">🧰 <span>This week:</span> ${thisWeekNudge(car)}</div>`;
               return `<div style="display:flex;align-items:center;gap:10px;background:rgba(143,203,126,0.1);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">✅</span><div><div class="small" style="color:var(--green-bright);font-weight:bold">Roadworthy</div><div class="tiny muted">The car can drive itself to a show. Time to compete.</div></div></div>`;
             }
-            return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">⚠️</span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " ✓"} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " ✓"} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " ✓"}${onboardStageVal() === 0 ? `<div class="tiny" style="color:var(--gold-soft);margin-top:4px">🔓 Get her running and the Marketplace opens up.</div>` : ""}</div></div></div>`;
+            return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">⚠️</span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " ✓"} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " ✓"} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " ✓"}${onboardStageVal() <= 1 ? `<div class="tiny" style="color:var(--gold-soft);margin-top:4px">🔓 Get her running and the Marketplace opens up.</div>` : ""}</div></div></div>`;
           })()}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 Free Budget part ready — tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div style="background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px"><span>📦 ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck — find them in <strong style="color:var(--text-bright)">All Builds</strong> with the YARD PULL badge.</span></div>` : ""; })()}${subcontent}`,
         )}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${mobileFold("notes", "📋 Shop Notes", workspaceData().name, panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Storage Speed", `${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}`, "", "#1d1611", "clipboard"))}</div></div>`;
       }
