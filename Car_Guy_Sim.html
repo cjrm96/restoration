@@ -271,6 +271,19 @@
       .dense-body { padding: 2px 12px 12px; border-top: 1px dashed var(--line); }
       .tool-chip { display: inline-flex; align-items: center; font-size: 10.5px; color: var(--text); background: rgba(217, 162, 79, 0.07); border: 1px solid rgba(217, 162, 79, 0.3); border-radius: 999px; padding: 3px 9px; }
       .tool-chip.owned { color: #9fd18e; border-color: rgba(143, 203, 126, 0.4); }
+      @keyframes view-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+      .view-enter { animation: view-in 0.18s ease-out; }
+      @media (prefers-reduced-motion: reduce) { .view-enter { animation: none; } }
+      .splash-btn-secondary { display: block; margin: 10px auto 0; background: transparent !important; color: var(--gold-soft) !important; border: 1px solid rgba(217, 162, 79, 0.5) !important; font-size: 13px !important; padding: 9px 22px !important; box-shadow: none !important; }
+      @keyframes enter-pulse { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.8; } }
+      .splash-enter-hint { text-align: center; margin-top: 14px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-soft); animation: enter-pulse 2.2s ease-in-out infinite; }
+      .finale-stage { background: linear-gradient(180deg, #101820 0%, #1c1712 100%); border: 1px solid rgba(217, 162, 79, 0.4); border-radius: 12px; padding: 10px 14px 0; margin: 12px 0 14px; }
+      .credits-window { height: 240px; overflow: hidden; position: relative; margin: 14px 0; -webkit-mask-image: linear-gradient(180deg, transparent, #000 15%, #000 85%, transparent); mask-image: linear-gradient(180deg, transparent, #000 15%, #000 85%, transparent); }
+      @keyframes credits-roll { from { transform: translateY(240px); } to { transform: translateY(-100%); } }
+      .credits-roll { animation: credits-roll 18s linear infinite; }
+      .credits-block { text-align: center; margin-bottom: 26px; }
+      .credits-h { font-size: 11px; letter-spacing: 2.5px; color: var(--gold-soft); font-weight: bold; margin-bottom: 6px; text-transform: uppercase; }
+      .credits-l { font-size: 13px; color: var(--text); line-height: 1.6; }
       .m-fold { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
       .m-fold > summary { list-style: none; display: flex; align-items: center; gap: 8px; padding: 11px 14px; cursor: pointer; font-size: 12.5px; font-weight: bold; color: var(--text-bright); }
       .m-fold > summary::-webkit-details-marker { display: none; }
@@ -3787,9 +3800,12 @@
           Congratulations on pissing off your wife — you just came home with a
           new project car. Get it restored for Nationals!
         </div>
-        <button class="splash-btn" onclick="startGame()">Start Wrenchin'</button>
+        <div id="splashActions">
+          <button class="splash-btn" onclick="startGame()">Start Wrenchin'</button>
+        </div>
+        <div class="splash-enter-hint">— press Enter —</div>
         <div class="splash-hint">
-          WINNXT Studios | All Rights Reserved<br />
+          v0.6.0 · WINNXT Studios | All Rights Reserved<br />
           Designed in California
         </div>
       </div>
@@ -7421,6 +7437,7 @@
         car.palette = name;
         const sw = PAINT_SWATCHES.find((p) => p.id === name);
         toast(`🎨 Respray booked — ${sw ? sw.label : name}. Wheels matched to the scheme.`, "event-good");
+        pushSceneBuzz(`Fresh ${sw ? sw.label : name} respray rolled out of a home booth this week. Scene approves.`);
         playSfx("success");
         saveGame();
         requestRender("full");
@@ -7856,6 +7873,29 @@
         }
         if (choice.wifeHit) {
           nudgeWife(choice.wifeHit, null);
+        }
+        if (typeof choice.digRace === "boolean") {
+          if (choice.digRace) {
+            const car = currentCar();
+            const eng = car ? car.engine : 0;
+            const buckEng = 55 + Math.floor(Math.random() * 10);
+            const win = eng >= buckEng || (eng >= buckEng - 8 && Math.random() < 0.4);
+            if (win) {
+              state.digRaceWon = true;
+              state.followers += 350;
+              clampFollowers();
+              pushRivalNote("You walked Buck off the light in front of the whole scene.");
+              pushSceneBuzz("Somebody walked Buck's Stallion at the school light Sunday. The clip is everywhere.");
+              pushNotice(`🚦 Green. You hooked, Buck spun. Half a car by the crosswalk, two by the fence. His revs sounded angrier the smaller he got in your mirror. The whole patio saw it. (+350 followers)`, "good");
+            } else {
+              state.followers = Math.max(0, state.followers - 120);
+              pushRivalNote("Buck walked you at the light. He is never letting it go.");
+              pushSceneBuzz("Buck's Stallion walked somebody at the school light. He has reposted the clip nine times already.");
+              pushNotice(`🚦 You hooked. Buck hooked harder. It was over by the crosswalk — the engine just isn't there yet (${eng} rating). He honked the whole way down the block. (−120 followers)`, "bad");
+            }
+          } else {
+            state.followers = Math.max(0, state.followers - 60);
+          }
         }
         if (choice.lore) {
           addGarageLore(choice.lore);
@@ -9723,6 +9763,7 @@
       function sellWifeCar() {
         if (state.wifeCarSold) return;
         state.wifeCarSold = true;
+        pushSceneBuzz("Local man sold the family daily for parts money. Bold. Prayers up.");
         state.money += 8000;
         recordMoneyChange(8000, "Wife's car sold");
         playSfx("coin");
@@ -10046,6 +10087,24 @@
             }
           : null;
         state.totalWeeks = (state.totalWeeks || 0) + 1;
+        // Mid-season beat: Buck calls you out at the school light on a
+        // Sunday cruise. Fires once, weeks 11-16, needs a runner.
+        if (
+          state.week >= 11 && state.week <= 16 && !state.digRaceDone &&
+          state.tutorialComplete && currentCar() && roadworthy(currentCar())
+        ) {
+          state.digRaceDone = true;
+          queueScene({
+            id: "buck_dig_race",
+            title: "Sunday. Red light. Buck.",
+            emoji: "🚦",
+            text: "Sunday cruise, windows down. You catch the light in front of the school — long empty straight, coffee-shop patio full of the whole scene. Buck's '67 Stallion eases up in the next lane. He looks over. Two slow revs. The crosswalk countdown starts.",
+            choices: [
+              { label: "Send it", digRace: true },
+              { label: "Wave him off", digRace: false, note: "You shook your head and rolled off easy when it went green. Buck cupped his ear out the window the whole way down the block. The patio noticed. (−60 followers)", noteTone: "event-bad" },
+            ],
+          });
+        }
         state.weekStartFollowers = state.followers;
         state.weekStartWife = wifeApprovalVal();
         state.weekStartInstalls = state.installsDone || 0;
@@ -11081,6 +11140,7 @@
       }
 
       function dismissVictoryCallItDone() {
+        state.victoryStage = null;
         const v = state.pendingVictory;
         if (!v) return;
         if (v.build) {
@@ -11094,6 +11154,7 @@
       }
 
       function startLegacyRun() {
+        state.victoryStage = null;
         const v = state.pendingVictory;
         if (v && v.build) {
           state.legacyBuilds = [v.build, ...(state.legacyBuilds || [])];
@@ -11171,6 +11232,7 @@
         );
         state.cars.push({ ...data, installedParts: [] });
         state.carId = c.id;
+        pushSceneBuzz(`Somebody just dragged home a ${c.year} ${c.make} ${c.model}. The scene has opinions.`);
         nudgeWife(
           price >= 8000 ? -10 : -6,
           price >= 8000
@@ -13519,7 +13581,7 @@ addEventListener("DOMContentLoaded",function(){
         ${panel("About",
           `<div style="text-align:center;padding:6px 0 14px">
              <div style="color:var(--gold);font-weight:bold;font-size:20px;letter-spacing:0.4px;margin-bottom:6px">Car Guy Simulator</div>
-             <div class="tiny muted" style="letter-spacing:1.5px;text-transform:uppercase">v0.5.0 · WINNXT Studios · 2026</div>
+             <div class="tiny muted" style="letter-spacing:1.5px;text-transform:uppercase">v0.6.0 · WINNXT Studios · 2026</div>
            </div>
            <div class="small" style="color:var(--text);line-height:1.7;margin:0 6px 18px;font-style:italic;text-align:center">A garage management sim about restoring classic American iron, chasing show podiums, and keeping the lights on while your wife asks when you're going to fix the lawn mower.</div>
            <div style="border-top:1px solid rgba(217,162,79,0.18);margin:0 -2px"></div>
@@ -13730,6 +13792,11 @@ addEventListener("DOMContentLoaded",function(){
         { id: "one_of_everything", emoji: "🧰", name: "One of Everything", desc: "Restored every body style in the scene to 85+.", test: () => Object.keys(state.stylesRestored || {}).length >= 11 },
         { id: "six_figures", emoji: "💰", name: "Six Figures of Rust", desc: "A hundred grand earned, one part at a time.", test: () => (state.lifetimeEarned || 0) >= 100000 },
         { id: "garage_famous", emoji: "📱", name: "Garage Famous", desc: "A hundred thousand people follow the build.", test: () => state.followers >= 100000 },
+        { id: "first_ten_k", emoji: "💵", name: "First Ten Grand", desc: "Ten thousand earned across the whole hustle.", test: () => (state.lifetimeEarned || 0) >= 10000 },
+        { id: "circuit_regular", emoji: "🛣️", name: "Circuit Regular", desc: "Ten shows entered. The gate guys know you by name.", test: () => (state.history || []).length >= 10 },
+        { id: "coming_together", emoji: "🧩", name: "It's All Coming Together", desc: "Three systems at 70+ on one build.", test: () => (state.cars || []).some((c) => CATS.filter((k) => c[k] >= 70).length >= 3) },
+        { id: "actually_drives", emoji: "🚗", name: "Actually Drives Now", desc: "A build at 50 overall — respectable at a red light.", test: () => (state.cars || []).some((c) => getOverall(c) >= 50) },
+        { id: "schoolyard", emoji: "🚦", name: "Schoolyard Legend", desc: "Walked Buck off the light in front of everybody.", test: () => !!state.digRaceWon },
         { id: "sold_her_daily", emoji: "🚙", name: "Sold Her Daily", desc: "Traded her commute for parts money. She keyed what she had to key.", test: () => !!state.wifeCarSold },
         { id: "national", emoji: "🏆", name: "National Champion", desc: "Took the whole thing at Nationals.", test: () => !!state.won || (state.history || []).some((h) => h.tier === "National" && h.place === 1) },
         { id: "dynasty", emoji: "👑", name: "Dynasty", desc: "Three finished builds on the Legacy Wall.", test: () => (state.legacyBuilds || []).length >= 3 },
@@ -13747,6 +13814,8 @@ addEventListener("DOMContentLoaded",function(){
           try { ok = a.test(); } catch (e) { ok = false; }
           if (ok) {
             state.achievementsUnlocked[a.id] = state.week;
+            playSfx("ding");
+            setTimeout(() => playSfx("success"), 160);
             pushNotice(`🏆 Achievement — ${a.name}. ${a.desc}`, "good");
           }
         });
@@ -13905,9 +13974,24 @@ addEventListener("DOMContentLoaded",function(){
         return true;
       }
 
+      function setVictoryStage(s) {
+        state.victoryStage = s;
+        playSfx("swoosh");
+        requestRender("full");
+      }
       function renderVictoryModal() {
         const root = getEl("modalRoot");
         if (!state.pendingVictory) return false;
+        const stage = state.victoryStage || "pan";
+        const vcar = currentCar();
+        if (stage === "pan" && vcar) {
+          root.innerHTML = `<div class="modal"><div class="modal-card victory-modal show-beat" style="max-width:640px"><div class="victory-kicker">Nationals · The Big One</div><div class="finale-stage">${carGlamourSvg(vcar.style, vcar.palette)}</div><div class="victory-trophy" style="font-size:34px">🏆</div><div class="victory-title">NATIONAL CHAMPION</div><div class="victory-sub">${vcar.year} ${vcar.make} ${vcar.model} — from a dead barn find to the top of the field.</div><div class="victory-actions"><button class="victory-primary" onclick="setVictoryStage('credits')">Take it in →</button></div></div></div>`;
+          return true;
+        }
+        if (stage === "credits") {
+          root.innerHTML = `<div class="modal"><div class="modal-card victory-modal show-beat" style="max-width:560px"><div class="victory-kicker">Car Guy Simulator</div><div class="credits-window"><div class="credits-roll"><div class="credits-block"><div class="credits-h">A WINNXT STUDIOS BUILD</div></div><div class="credits-block"><div class="credits-h">GAME DESIGN &amp; DIRECTION</div><div class="credits-l">WINNXT Studios</div></div><div class="credits-block"><div class="credits-h">SOUNDTRACK</div><div class="credits-l">12-bar E-blues shuffle, played live in your browser</div></div><div class="credits-block"><div class="credits-h">SPRITES</div><div class="credits-l">Hand-coded SVG, one rectangle at a time</div></div><div class="credits-block"><div class="credits-h">SPECIAL THANKS</div><div class="credits-l">The playtesters. The wife. Everyone who keeps a project alive in a garage that's slightly too small.</div></div><div class="credits-block"><div class="credits-h">🔧</div></div></div></div><div class="victory-actions"><button class="victory-primary" onclick="setVictoryStage('final')">One more thing →</button></div></div></div>`;
+          return true;
+        }
         const v = state.pendingVictory;
         const b = v.build || {};
         const carLine = b.year && b.make ? `${b.year} ${b.make} ${b.model}` : "Your build";
@@ -15516,7 +15600,7 @@ addEventListener("DOMContentLoaded",function(){
           cheatPromptOpen ? "cheat" : "",
           state.settingsOpen ? `settings:${state.settings.paused ? 1 : 0}` : "",
           state.tutorialComplete ? "" : "tut:" + (state.tutorialStep || 0),
-          state.pendingVictory ? "victory" : "",
+          state.pendingVictory ? "victory:" + (state.victoryStage || "pan") : "",
           state.pendingUnlock ? "unlock:" + state.pendingUnlock.tab : "",
           state.weekRecap ? "wr:" + state.weekRecap.week : "",
           state.showLoading ? 1 : 0,
@@ -15633,10 +15717,18 @@ addEventListener("DOMContentLoaded",function(){
         ].join("|");
       }
 
+      let lastViewRendered = null;
       function renderMainContent(force = false) {
         const nextSig = getRenderSignature();
         if (!force && nextSig === lastRenderSignature) return false;
-        getEl("appContent").innerHTML = renderContent();
+        const ac = getEl("appContent");
+        ac.innerHTML = renderContent();
+        if (state.view !== lastViewRendered) {
+          lastViewRendered = state.view;
+          ac.classList.remove("view-enter");
+          void ac.offsetWidth;
+          ac.classList.add("view-enter");
+        }
         lastRenderSignature = nextSig;
         return true;
       }
@@ -15805,7 +15897,15 @@ addEventListener("DOMContentLoaded",function(){
         // Newest sits at the bottom — keep it visible.
         if (panel) panel.scrollTop = panel.scrollHeight;
       }
+      function pushSceneBuzz(text) {
+        if (!Array.isArray(state.sceneBuzz)) state.sceneBuzz = [];
+        state.sceneBuzz.unshift(text);
+        if (state.sceneBuzz.length > 3) state.sceneBuzz.length = 3;
+      }
       function pickTickerItem() {
+        if (state.sceneBuzz && state.sceneBuzz.length && Math.random() < 0.5) {
+          return { kind: "player", kindLabel: "⚡ YOU", source: "Scene Ticker", text: state.sceneBuzz.pop() };
+        }
         const lastShow = state.history && state.history[0];
         const recent =
           lastShow && state.week - (lastShow.week || 0) <= 1 ? lastShow : null;
@@ -16017,6 +16117,21 @@ addEventListener("DOMContentLoaded",function(){
         document.addEventListener(ev, syncFullscreenButtons),
       );
       syncFullscreenButtons();
+
+      // Splash: offer Continue / New Game when a save exists.
+      function splashNewGame() {
+        if (!confirm("Start a brand new save? Your current garage will be wiped.")) return;
+        localStorage.removeItem(SAVE_KEY);
+        location.reload();
+      }
+      (function initSplashActions() {
+        const root = getEl("splashActions");
+        if (!root) return;
+        const car = currentCar();
+        if (localStorage.getItem(SAVE_KEY) && state.tutorialComplete && car) {
+          root.innerHTML = `<button class="splash-btn" onclick="startGame()">Continue — Wk ${state.week} · ${car.year} ${car.make}</button><button class="splash-btn splash-btn-secondary" onclick="splashNewGame()">New Game</button>`;
+        }
+      })();
 
       // Keyboard shortcuts. Esc follows the pause-menu convention:
       // close whatever's on top, otherwise open Settings. Enter only
@@ -16408,7 +16523,9 @@ addEventListener("DOMContentLoaded",function(){
           sfxToneAt(t + 0.16, 1319, 0.22, "triangle", 0.11);
         },
       };
+      playSfx._ready = true;
       function playSfx(name) {
+        if (!playSfx._ready) return;
         if (state.settings && state.settings.sfxVolume <= 0) return;
         if (state.sfxMuted) return;
         const player = SFX_PLAYERS[name];
