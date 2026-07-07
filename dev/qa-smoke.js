@@ -93,13 +93,17 @@ const pass = (msg) => console.log("✓", msg);
   await page.waitForTimeout(300);
   pass("roadworthy → Marketplace unlock");
 
-  // ── list a part → Compete unlock ──
+  // ── list a part, let the week roll → Compete unlock ──
+  // (Compete opens a week after the first listing, or on a first sale.)
   await page.evaluate(() => {
     if (!(state.partsInventory || []).length)
       state.partsInventory = [{ id: "qa1", name: "Take-off Carb", baselineValue: 60, askingPrice: 70 }];
     state.partsInventory[0].listed = true;
     state.noticeQueue = []; render("full");
   });
+  const early = await page.evaluate(() => state.pendingUnlock && state.pendingUnlock.tab);
+  if (early === "shows") fail("Compete unlocked instantly on first listing — should wait a week");
+  await page.evaluate(() => { state.week += 1; state.noticeQueue = []; render("full"); });
   await page.waitForTimeout(300);
   unlock = await page.evaluate(() => state.pendingUnlock && state.pendingUnlock.tab);
   if (unlock !== "shows") fail("Compete did not unlock after first listing (got " + unlock + ")");
