@@ -12,7 +12,7 @@ podiums, and keeping the lights on. Single-file HTML5 — open
 | `dev/stage-viewers/` | Dev-only sprite workbenches, one per car body. Each renders all five restoration stages of a hand-coded SVG sprite so art changes can be iterated outside the game, then copied into `Car_Guy_Sim.html`. Not shipped. |
 | `docs/` | Planning notes, including the Steam launch polish roadmap. |
 | `dev/qa-smoke.js` | Pre-upload smoke test. `npm i playwright` once, then `node dev/qa-smoke.js` before every itch build — exit 0 means safe to ship. |
-| `art/` | Artist cut-scene / loading-screen masters (full-res). See `art/README.md` for the slot map. Not shipped directly — compressed copies get embedded in the game. |
+| `art/` | Artist cut-scene / loading-screen masters (full-res). See `art/README.md` for the slot map. The game embeds 1920px WebP copies of these as full-bleed cut scenes (title, intro, unlocks, workspace upgrades, show arrivals, dig race, Family Saturday, show-ready reveal, victory, Legacy Wall). |
 
 ## Controls
 

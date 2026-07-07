@@ -39,6 +39,15 @@ const pass = (msg) => console.log("✓", msg);
   await page.waitForTimeout(1000);
   pass("boot + splash");
 
+  // ── barn-find intro cut scene (new game only) ──
+  const introArt = await page.evaluate(() => state.cutscene && state.cutscene.art);
+  if (introArt !== "scene-barn-find") fail("intro cutscene missing (got " + introArt + ")");
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(700);
+  if (await page.evaluate(() => !!state.cutscene || !!document.getElementById("cutsceneRoot")))
+    fail("intro cutscene did not dismiss");
+  pass("barn-find intro cut scene");
+
   // ── 5-beat tutorial ──
   for (let beat = 0; beat < 5; beat++) {
     const btn = await page.$("#modalRoot .tutorial-primary");
