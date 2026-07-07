@@ -26,6 +26,11 @@ never these files directly. Keep the masters untouched.
 | `scene-restoration-complete.png` | Restoration-complete reveal — the proud-mechanic moment. |
 | `scene-victory.png` | National Champion victory finale — podium, trophy, confetti. |
 | `scene-legacy-wall.png` | Legacy Wall / career stats backdrop — the trophy den. The empty center frame is reserved for compositing the player's car. |
+| `scene-wife-car-sale.png` | Selling the wife's car — establishing shot before the aftermath scene. |
+| `scene-wife-car-keyed.png` | The morning after — plays when the aftermath choice resolves (she keys it). |
+| `scene-pick-a-pull.png` | First Pick-A-Part scavenge trip (once). |
+| `scene-swap-meet.png` | First Pomona swap-meet scavenge trip (once). |
+| `loading-winners-circle.png` | Ambient load-in rotation — joins the pool once the player has a podium finish. |
 
 Two superseded uploads (`Title Screen - Edited.png`, `restoration complete -
 Edited.png`) carried a small watermark sparkle and were dropped in favor of
