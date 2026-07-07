@@ -31,6 +31,10 @@ never these files directly. Keep the masters untouched.
 | `scene-pick-a-pull.png` | First Pick-A-Part scavenge trip (once). |
 | `scene-swap-meet.png` | First Pomona swap-meet scavenge trip (once). |
 | `loading-winners-circle.png` | Ambient load-in rotation — joins the pool once the player has a podium finish. |
+| `loading-haul-home.png` | Ambient load-in rotation; also the establishing shot when a project car is bought. |
+| `loading-midnight-order.png` | Ambient load-in rotation — 1 AM parts order at the kitchen table. |
+| `loading-gas-station.png` | Ambient load-in rotation — desert gas-station stop at dusk. |
+| `loading-rain-day.png` | Ambient load-in rotation — rainy evening in the garage. |
 
 Two superseded uploads (`Title Screen - Edited.png`, `restoration complete -
 Edited.png`) carried a small watermark sparkle and were dropped in favor of
