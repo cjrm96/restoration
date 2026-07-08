@@ -35,6 +35,8 @@ never these files directly. Keep the masters untouched.
 | `loading-midnight-order.png` | Ambient load-in rotation — 1 AM parts order at the kitchen table. |
 | `loading-gas-station.png` | Ambient load-in rotation — desert gas-station stop at dusk. |
 | `loading-rain-day.png` | Ambient load-in rotation — rainy evening in the garage. |
+| `scene-season-end.png` | Season's-end cut scene — winter night in the garage, trophies on the shelf, first snow outside. Plays when the season wraps. |
+| `scene-season-start.png` | New-season cut scene — warm spring morning, pulling the cover off the project in the driveway. Plays when a new season begins. |
 
 Two superseded uploads (`Title Screen - Edited.png`, `restoration complete -
 Edited.png`) carried a small watermark sparkle and were dropped in favor of
