@@ -37,6 +37,7 @@ never these files directly. Keep the masters untouched.
 | `loading-rain-day.png` | Ambient load-in rotation — rainy evening in the garage. |
 | `scene-season-end.png` | Season's-end cut scene — winter night in the garage, trophies on the shelf, first snow outside. Plays when the season wraps. |
 | `scene-season-start.png` | New-season cut scene — warm spring morning, pulling the cover off the project in the driveway. Plays when a new season begins. |
+| `scene-friday-night-lot.png` | Friday-night hangout cut scene — the crew's cars backed into the corner of a grocery-store lot after dark, hoods popped. Occasional ambient beat on week advance. |
 
 Two superseded uploads (`Title Screen - Edited.png`, `restoration complete -
 Edited.png`) carried a small watermark sparkle and were dropped in favor of
