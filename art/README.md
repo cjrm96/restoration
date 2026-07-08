@@ -39,6 +39,9 @@ never these files directly. Keep the masters untouched.
 | `scene-season-start.png` | New-season cut scene — warm spring morning, pulling the cover off the project in the driveway. Plays when a new season begins. |
 | `scene-friday-night-lot.png` | Friday-night hangout cut scene — the crew's cars backed into the corner of a grocery-store lot after dark, hoods popped. Occasional ambient beat on week advance. |
 | `loading-phone-break.png` | Ambient load-in rotation — mechanic taking a phone break on the garage floor mid-brake-job. |
+| `scene-maiden-voyage.png` | "She lives!" cut scene — first night drive through town after a build becomes roadworthy. Fires the first time a car crosses roadworthy. |
+| `scene-first-car-sale.png` | First finished-car sale cut scene — buyer drives off, you count cash on the next project's hood. Fires on your first sale of a built car (overall 60+). |
+| `scene-buddy-help.png` | Crew crossover cut scene — a buddy rolls up and you both wrench till dark. Occasional ambient beat (cash tip + goodwill). |
 
 Two superseded uploads (`Title Screen - Edited.png`, `restoration complete -
 Edited.png`) carried a small watermark sparkle and were dropped in favor of

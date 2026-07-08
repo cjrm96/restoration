@@ -325,6 +325,143 @@ action yet. Keep the lower-left calm for a caption.
 
 ---
 
+## Chapter 6 — Drama & payoff beats (expanded, more-directive prompts)
+
+Longer, heavily-directed prompts — use these when the generator drifts, and
+feed one of your best existing cut-scene images as a style reference alongside
+the text. Prefer this **expanded anchor** over the short one for these six:
+
+```
+Pixel art in the exact style of the reference images: chunky, deliberately
+hand-placed pixels with visible dithering in every gradient, a limited but warm
+palette (deep purple and indigo shadows fading up into amber and gold
+highlights), strong colored rim lighting that separates every subject from its
+background, cozy nostalgic American car-culture mood, clean cinematic
+composition shot at eye level like a film still. Crisp readable silhouettes,
+soft glowing light sources, gentle atmospheric haze. This is a single
+illustrated scene, NOT a collage or grid. No text, no letters, no numbers, no
+logos, no watermarks, no UI elements, no captions anywhere in the image. 16:9
+widescreen aspect ratio.
+```
+
+### `scene-maiden-voyage` — "She lives!" first night drive · ✅ IN GAME
+> Fires the first time a build crosses roadworthy.
+```
+A cinematic three-quarter rear view of a freshly restored classic 1960s American
+muscle car cruising down the middle of a quiet small-town main street late at
+night, the camera low and slightly behind so its glossy rear haunches, chrome
+bumper, and glowing red taillights fill the lower-center of the frame. Deep,
+wet-looking asphalt mirrors everything in long vertical streaks of color. Twin
+headlight beams throw two soft cones of warm light down the empty street ahead.
+On both sides, two-story brick storefronts recede into the distance with warm
+yellow window glow and abstract blurred neon signs in pink, cyan, and orange
+(shapes only, no readable letters), light smearing across the fresh paint and
+polished trim. The driver's bare forearm rests on the open door window. A faint
+haze of exhaust and subtle horizontal motion streaks trail behind the rear tires.
+Deep purple-to-indigo night sky fading to amber at the horizon, dithered stars,
+one distant green traffic light. Triumphant, free, a little emotional — the first
+real drive after hundreds of hours. Keep the lower-left quarter calm.
+```
+
+### `scene-rival-showdown` — trash-talk staredown at a show · ⬜ not generated
+> Pull-up drama before judging; pair with a side-bet popup. Theme the rival car
+> to Buck's ’67 Stallion.
+```
+A tense, cinematic wide shot of a face-off between two rival classic American
+cars at an outdoor evening car show, framed symmetrically with one car angled in
+from the left and one from the right so their front ends nearly touch in the
+center. Left: the player's clean, honest muscle car in a deep confident color.
+Right: the rival's flashy over-the-top show car with candy paint, chrome
+everywhere, and a hood scoop. Standing in the gap between the front bumpers, two
+men in a staredown at eye level: a lean grease-stained mechanic in a worn t-shirt
+and ball cap, calm; opposite him a cocky loudmouth in mirrored aviators, a loud
+unbuttoned patterned shirt, gold watch, arms crossed, smug smirk. Behind them a
+loose ring of warm backlit spectator silhouettes with phones raised, a gleaming
+gold trophy table under a canopy, café lights zigzagging overhead, other cars in
+soft focus. Golden-hour sun rakes from the left, strong orange rim light on both
+cars, long shadows toward camera. Warm gold vs cooling purple shadows. The calm
+before the trophy ceremony. Keep the lower-left quarter calm.
+```
+
+### `scene-breakdown` — mechanical heartbreak at the worst time · ⬜ not generated
+> Keep it **recoverable** (repair decision tree), not a run-ender. The
+> paint-bubble variant is the gentler lead option.
+```
+A somber, cinematic scene of roadside heartbreak at night in a heavy rainstorm. A
+classic American muscle car sits pulled onto a wet gravel shoulder at a
+three-quarter front angle, hood raised, thin wisps of white steam and grey smoke
+curling out of the engine bay lit an ominous flashing red by the car's hazard
+lights. Fat streaks of rain slash diagonally across the whole frame, catching the
+light. Mid-ground: the mechanic stands in the downpour facing away, shoulders
+slumped, one hand on his head, holding a flashlight whose pale beam cuts the rain
+and smoke into the engine bay. The road behind stretches into darkness where
+blurred white-and-red traffic lights streak by, doubled in the mirror-wet asphalt
+and puddles. A lonely highway sign and telephone poles fade into misty dark.
+Palette: cold rain-blues, blacks, and the single warm/red glow of the failing
+engine and hazards. Every surface soaked and reflective. Gut-punch, quiet, "not
+now, not tonight." Keep the lower-left quarter calm.
+```
+*Variant `scene-paint-ruined`:* a dim garage the night before a show, the
+mechanic crouched beside the car running a flashlight along the fender where fresh
+paint has bubbled and cracked, tools down, coffee going cold, quiet despair.
+
+### `scene-first-car-sale` — letting go of your baby · ✅ IN GAME
+> Fires on the first sale of a genuinely built car (overall 60+).
+```
+A bittersweet, cinematic driveway scene at warm golden hour. In the background,
+the player's beautifully restored classic car — the one the whole game was spent
+building — drives away down a tree-lined suburban street, seen from behind with
+taillights and chrome catching the low sun, the new owner's arm waving once out
+the window. Sharp foreground, close to camera: the mechanic seen from behind and
+to the side counting a thick fanned stack of cash, a crumpled brown paper bag it
+came in resting nearby, leaning against the hood of his NEXT project — a rough,
+rusty, dust-covered classic half-covered by a loosely pulled-back tarp. Long warm
+shadows across the concrete driveway toward camera. Golden sunlight floods from
+low on the left, backlighting the departing car, glowing through roadside trees,
+dust motes in the beams. A basketball hoop, garden hose, and mailbox ground it in
+an ordinary neighborhood. Warm amber, gold, soft green, long purple shadows.
+Proud but wistful. Keep the lower-left quarter calm.
+```
+
+### `scene-buddy-help` — the crew shows up · ✅ IN GAME
+> Occasional ambient beat — pays a small cash tip + goodwill.
+```
+A warm, cozy, cinematic scene of two buddies wrenching together in a home garage
+at dusk, shot at eye level from just inside the garage looking toward the open
+roll-up door. Center: a classic American car up on a jack stand, hood open; both
+men lean into the engine bay side by side under the warm cone of a single hanging
+droplight, sleeves rolled up, one pointing at something while the other holds a
+wrench. Between them on the floor, an open cooler with cans on ice; two more cold
+cans sweat on the lowered tailgate of a pickup parked to one side. A shaggy dog
+curled asleep in the corner near a red rolling tool chest. Back wall: a full
+pegboard of neatly hung tools, a calendar, a faded license plate. Through the open
+door, a rich purple-and-gold sunset over a quiet suburban street. Warm intimate
+amber droplight plus a secondary floor work-lamp glow, cool blue dusk creeping in
+for contrast. Tools, rags, coffee mugs scattered naturally. Easy, unhurried
+camaraderie. Keep the lower-left quarter calm.
+```
+
+### `scene-going-viral` — 2 a.m., it's blowing up · ⬜ not generated
+> The odd one out — keep it a **painted scene** (hands + glowing phone in a dark
+> garage), never a flat UI screenshot.
+```
+A modern, electric, cinematic scene at 2 a.m. in a dim garage lit almost entirely
+by the cold blue-white glow of a smartphone screen. Camera low and close on the
+mechanic's grease-stained hands cupping the phone in the lower-center foreground;
+the bright screen throws hard blue light up onto his stubbled, wide-eyed surprised
+face and the underside of his cap. Erupting up out of the screen, a lively cascade
+of glowing pixel-art notification shapes — heart bubbles, speech bubbles,
+thumbs-up, star bursts, a rising bar/counter (icons and abstract shapes ONLY, no
+readable text or numbers) — floating and multiplying into the dark air like
+sparks. Behind him, softly out of focus in the warm low glow of a single work
+lamp, sits the finished restored project car that just went viral. Cans, tools,
+and a laptop rest on a workbench in shadow. Cool electric phone-blue foreground
+clashing with warm amber garage glow behind. Late-night, exhilarating,
+disbelieving. Keep the lower-left quarter calm.
+```
+
+---
+
 ## Non-game slots (store pages / dev logs)
 
 - **Steam capsules** (616×353 main, 231×87 small, 460×215 header): reuse the
