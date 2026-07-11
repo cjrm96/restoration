@@ -10,7 +10,9 @@
  * page error: boot → splash → 5-beat tutorial → first installs →
  * Social unlock → roadworthy → Marketplace unlock → list a part →
  * Compete unlock → enter a show and click through the cinematic →
- * save → reload → state intact → export/import/backup sanity.
+ * results screen panels (judge card / rep / rival) render → workspace
+ * vibe options (incl. the classic 6th pick) resolve → save → reload →
+ * state intact → export/import/backup sanity.
  *
  * Exit code 0 = ship it. Anything else = do not upload.
  */
@@ -126,6 +128,74 @@ const pass = (msg) => console.log("✓", msg);
   });
   if (showOk !== true) fail("show flow: " + showOk);
   pass("show entry + cinematic + result");
+
+  // ── results screen renders its panels (judge card / rep / rival) ──
+  // Drive renderResult() directly with synthetic results so the assertions
+  // don't depend on which show the RNG happened to offer. A judged axis show
+  // must produce the judging breakdown, the scene-standing line, and a
+  // non-empty rival panel; Cars & Coffee must show scene chatter and NO
+  // judge card.
+  const resultUiOk = await page.evaluate(() => {
+    const car = currentCar();
+    if (!car) return "no car to render";
+    const snapResult = state.result, snapView = state.view;
+    const baseStandings = [
+      { name: "Your " + car.make, score: 84, isPlayer: true },
+      { name: "Buck's '67 Stallion", score: 82, isRival: true },
+      { name: "A Stranger", score: 78 },
+    ];
+    const common = {
+      week: state.week, car: `${car.year} ${car.make} ${car.model}`,
+      prize: 1200, bonusCash: 0, fee: 60, localSponsorCovered: false,
+      fuelUsed: 10, net: 1140, gained: 45, standings: baseStandings,
+      buckPlace: 3, showReward: null, arrivalLine: "arr", judgingLine: "jud",
+    };
+    // Judged axis show.
+    state.result = { ...common, show: "QA County Classic", tier: "Regional",
+      place: 2, score: 84, axis: "beauty", repDelta: 6, repTitle: "Local Legend",
+      judgeCard: { label: "Paint, Chrome & Presentation", icon: "✨",
+        overall: 71, axisScore: 84, cats: [
+          { cat: "paint", w: 0.3, val: 91 }, { cat: "chrome", w: 0.25, val: 83 },
+          { cat: "body", w: 0.25, val: 79 }, { cat: "interior", w: 0.15, val: 54 },
+          { cat: "wheels", w: 0.05, val: 88 }] },
+      rivalReactions: [
+        { kicker: "🤝 NEW ALLY", color: "#87c77b", line: "ally line" },
+        { kicker: "🏁 THE RIVAL", color: "#e07070", line: "buck line" }] };
+    let html;
+    try { html = renderResult(); } catch (e) { state.result = snapResult; return "renderResult threw (judged): " + e.message; }
+    const need = ["How the Judges Scored It", "Word Around the Paddock", "Scene standing", "Judged baseline"];
+    for (const s of need) if (!html.includes(s)) { state.result = snapResult; return "judged result missing: " + s; }
+    // Cars & Coffee — scene chatter, no judging breakdown.
+    state.result = { ...common, show: "Saturday Cars & Coffee", tier: "Cars & Coffee",
+      place: 1, score: 0, axis: null, repDelta: 0, repTitle: null, judgeCard: null,
+      rivalReactions: [{ kicker: "☕ AROUND THE LOT", color: "#c2a37d", line: "chatter line" }] };
+    let coffee;
+    try { coffee = renderResult(); } catch (e) { state.result = snapResult; return "renderResult threw (coffee): " + e.message; }
+    state.result = snapResult; state.view = snapView;
+    if (coffee.includes("How the Judges Scored It")) return "judge card leaked into Cars & Coffee";
+    if (!coffee.includes("Around the Lot")) return "coffee scene-chatter panel missing";
+    return true;
+  });
+  if (resultUiOk !== true) fail("results UI: " + resultUiOk);
+  pass("results screen panels (judge / rep / rival)");
+
+  // ── workspace vibe options resolve, incl. the classic (6th) pick ──
+  const vibeOk = await page.evaluate(() => {
+    for (const tier of ["garage", "warehouse"]) {
+      const vibes = WORKSHOP_VIBES[tier] || [];
+      if (vibes.length < 6) return `${tier} has ${vibes.length} vibes, expected 6`;
+      for (const v of vibes)
+        if (!WORKSPACE_ART_SRCDOC[tier + ":" + v.id])
+          return `missing backdrop art for ${tier}:${v.id}`;
+      state.workshopStyle = state.workshopStyle || {};
+      state.workshopStyle[tier] = "classic";
+      if (activeWorkshopVibe(tier) !== "classic")
+        return `${tier} classic vibe did not resolve`;
+    }
+    return true;
+  });
+  if (vibeOk !== true) fail("vibe options: " + vibeOk);
+  pass("workspace vibes + classic pick resolve");
 
   // ── save → reload → state intact ──
   const before = await page.evaluate(() => { state.money = 12345; saveGame(true); return { week: state.week, money: state.money, installs: state.installsDone }; });
