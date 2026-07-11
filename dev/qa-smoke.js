@@ -37,6 +37,21 @@ const pass = (msg) => console.log("✓", msg);
   await page.goto(GAME);
   await page.waitForTimeout(700);
   if (!(await page.$("#splashActions .splash-btn"))) fail("splash button missing");
+
+  // ── version plate: GAME_VERSION is the single source of truth and must
+  // show on the title screen. Push ritual (CLAUDE.md): bump GAME_VERSION on
+  // every push — this check catches a plate that stopped stamping.
+  const verOk = await page.evaluate(() => {
+    if (typeof GAME_VERSION !== "string" || !/^\d+\.\d+\.\d+$/.test(GAME_VERSION))
+      return "GAME_VERSION missing or malformed: " + GAME_VERSION;
+    const plate = document.getElementById("splashVersion");
+    if (!plate || plate.textContent.trim() !== "v" + GAME_VERSION)
+      return "title version plate shows '" + (plate ? plate.textContent : "?") + "', expected v" + GAME_VERSION;
+    return true;
+  });
+  if (verOk !== true) fail("version plate: " + verOk);
+  pass(`version plate (v${await page.evaluate(() => GAME_VERSION)})`);
+
   await page.keyboard.press("Enter");
   await page.waitForTimeout(1000);
   pass("boot + splash");
