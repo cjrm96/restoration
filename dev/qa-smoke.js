@@ -212,6 +212,41 @@ const pass = (msg) => console.log("✓", msg);
   if (vibeOk !== true) fail("vibe options: " + vibeOk);
   pass("workspace vibes + classic pick resolve");
 
+  // ── project-car quirks + scene taste wiring ──
+  // Force a known quirk through the reveal path and check the stat landed
+  // and a scene queued; then check the season taste resolves and swings the
+  // judged edge the right way for both build directions.
+  const flavorOk = await page.evaluate(() => {
+    const car = currentCar();
+    if (!car) return "no car";
+    const snapEngine = car.engine, snapScene = state.pendingScene, snapQueue = (state.eventQueue || []).length;
+    car.hiddenQuirk = { id: "block", revealed: false };
+    car.jobsDone = 2;
+    maybeRevealCarQuirk(car);
+    const revealed = car.hiddenQuirk.revealed;
+    const queued = !!state.pendingScene || (state.eventQueue || []).length > snapQueue;
+    const statMoved = car.engine === Math.max(3, snapEngine - 10);
+    // restore
+    car.engine = snapEngine; delete car.hiddenQuirk; delete car.jobsDone;
+    state.pendingScene = snapScene;
+    if (!revealed) return "quirk did not mark revealed";
+    if (!queued) return "quirk reveal did not queue a scene";
+    if (!statMoved) return "quirk effect did not land on the car";
+    // scene taste
+    const snapTaste = state.sceneTaste;
+    state.sceneTaste = { season: state.seasonNumber || 1, id: "purist" };
+    const show = { tier: "Regional" };
+    const edgeStock = sceneTasteEdge({ buildStyle: "stock" }, show);
+    const edgeMod = sceneTasteEdge({ buildStyle: "restomod" }, show);
+    const edgeCoffee = sceneTasteEdge({ buildStyle: "stock" }, { tier: "Cars & Coffee" });
+    state.sceneTaste = snapTaste;
+    if (edgeStock !== 3 || edgeMod !== -2 || edgeCoffee !== 0)
+      return `taste edges wrong: stock=${edgeStock} mod=${edgeMod} coffee=${edgeCoffee}`;
+    return true;
+  });
+  if (flavorOk !== true) fail("quirks/taste: " + flavorOk);
+  pass("project-car quirks + scene taste");
+
   // ── save → reload → state intact ──
   const before = await page.evaluate(() => { state.money = 12345; saveGame(true); return { week: state.week, money: state.money, installs: state.installsDone }; });
   await page.reload();
