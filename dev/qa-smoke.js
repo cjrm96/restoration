@@ -273,6 +273,33 @@ const pass = (msg) => console.log("✓", msg);
   if (tickerOk !== true) fail("reactive ticker: " + tickerOk);
   pass("world-talks-back ticker composes from live state");
 
+  // ── character DMs: the phone texts you after events ──
+  const dmOk = await page.evaluate(() => {
+    const snapDMs = state.characterDMs, snapUnread = state.dmUnread, snapBand = state.wifeDMBand, snapWife = state.wifeApproval;
+    state.characterDMs = []; state.dmUnread = 0;
+    queueShowDMs(true, 1, 3, { harlow: "ally" });
+    state.wifeDMBand = "mid"; state.wifeApproval = 92; state.tutorialComplete = true; maybeWifeDM();
+    const dms = state.characterDMs || [];
+    const hasBuck = dms.some((d) => d.h === "@BuckStallion67");
+    const hasRival = dms.some((d) => d.id === "rival-harlow");
+    const hasWife = dms.some((d) => d.h === "The Wife");
+    const unread = state.dmUnread;
+    const html = renderPhoneMessagesApp();
+    // opening Messages should clear the badge
+    setPhoneApp("messages");
+    const cleared = state.dmUnread === 0;
+    state.characterDMs = snapDMs; state.dmUnread = snapUnread; state.wifeDMBand = snapBand; state.wifeApproval = snapWife;
+    if (!hasBuck) return "Buck DM missing after head-to-head";
+    if (!hasRival) return "rival DM missing after ally crossing";
+    if (!hasWife) return "wife DM missing after approval swing";
+    if (unread < 3) return "unread count wrong: " + unread;
+    if (!html.includes("phone-dm-fresh")) return "fresh DM not highlighted";
+    if (!cleared) return "opening Messages did not clear the unread badge";
+    return true;
+  });
+  if (dmOk !== true) fail("character DMs: " + dmOk);
+  pass("character DMs (phone texts you after events)");
+
   // ── save → reload → state intact ──
   const before = await page.evaluate(() => { state.money = 12345; saveGame(true); return { week: state.week, money: state.money, installs: state.installsDone }; });
   await page.reload();
