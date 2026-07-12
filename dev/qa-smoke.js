@@ -247,6 +247,32 @@ const pass = (msg) => console.log("✓", msg);
   if (flavorOk !== true) fail("quirks/taste: " + flavorOk);
   pass("project-car quirks + scene taste");
 
+  // ── the world talks back: reactive ticker composes from live state ──
+  const tickerOk = await page.evaluate(() => {
+    const snap = {
+      history: state.history, buck: state.buck, taste: state.sceneTaste,
+      followers: state.followers, rec: state.recentLines && state.recentLines.reactive,
+    };
+    state.history = [{ show: "QA Regional", tier: "Regional", place: 1, week: state.week, car: "1965 Forde F-100" }];
+    state.buck = { ...(state.buck || {}), beatenCount: 2, lostToCount: 0 };
+    state.sceneTaste = { season: state.seasonNumber || 1, id: "purist" };
+    state.followers = 12000;
+    let cands;
+    try { cands = composeReactiveTicker(); } catch (e) { return "composer threw: " + e.message; }
+    state.history = snap.history; state.buck = snap.buck; state.sceneTaste = snap.taste;
+    state.followers = snap.followers;
+    if (state.recentLines) state.recentLines.reactive = snap.rec;
+    if (!Array.isArray(cands) || cands.length < 4)
+      return "expected >=4 reactive candidates, got " + (cands ? cands.length : "none");
+    const bad = cands.find((c) => !c.id || !c.text || !c.source || !c.kindLabel);
+    if (bad) return "malformed candidate: " + JSON.stringify(bad);
+    const win = cands.find((c) => c.id === "rx-win");
+    if (!win || !win.text.includes("QA Regional")) return "win line missing the actual show name";
+    return true;
+  });
+  if (tickerOk !== true) fail("reactive ticker: " + tickerOk);
+  pass("world-talks-back ticker composes from live state");
+
   // ── save → reload → state intact ──
   const before = await page.evaluate(() => { state.money = 12345; saveGame(true); return { week: state.week, money: state.money, installs: state.installsDone }; });
   await page.reload();
