@@ -248,6 +248,57 @@ trophies and plaques on a shelf below, a worn leather chair, warm lamp light.
 One empty frame waiting to be filled. Nostalgic, "life's work" mood. 16:9.
 ```
 
+### The Finale Trilogy — the "Ran When Parked" director's-cut ceremony
+
+These three land back-to-back at the very end of the victory sequence. Shoot
+`scene-restored-barn` **first** — it's a deliberate callback to `scene-barn-find`,
+so generate that intro image, feed it back as the reference, and match its
+framing exactly. All three fall back to existing art (`scene-victory`,
+`scene-barn-find`, the workspace shots) until generated.
+
+#### `scene-restored-barn` — the tarp comes off, bookend to the barn find · 2:1 (lower third calm)
+```
+Pixel art, EXACT same composition and camera as scene-barn-find: the same
+weathered barn, doors pulled open, dust hanging in the sunbeams, viewed from
+the same low angle with the subject centered-low. But the story has turned:
+where the dusty tarp once hid a silhouette, a flawless, fully restored classic
+American car now stands finished and gleaming in the doorway, chrome and fresh
+paint catching the light, the crumpled tarp pooled on the ground beside a front
+tire. The cold grey dawn of the original has warmed into a triumphant golden
+hour — long amber shafts pouring through the barn, dust motes glowing gold. The
+same hand from the intro rests on the fender instead of dangling keys.
+Full-circle, "we finished it" catharsis. Wide banner composition, subject
+centered-low, keep the lower third calm for a caption. 2:1 aspect ratio.
+```
+
+#### `scene-empty-garage` — the cost, the quiet after the trophy · 16:9 (upper third calm)
+```
+Pixel art, still and melancholy: the player's own home garage late at night,
+AFTER. The car is gone — an empty rectangle of clean concrete where it lived, a
+faint oil ghost on the floor. The workbench is wiped down and bare, tools hung
+and quiet, a single gold trophy alone on the shelf catching a low amber
+droplight. The roll-up door stands open to a dark, empty driveway and a deep
+blue-black night beyond. No people anywhere in frame — just the space someone
+left. A folded shop rag, a cold coffee mug, the droplight swaying almost
+imperceptibly. Warm pooled amber light against cold shadow, long and lonely.
+Bittersweet, "what did it cost, was it worth it" quiet. Eye-level, composed and
+symmetrical. Keep the upper third calm for a caption. 16:9.
+```
+
+#### `scene-next-tarp` — the cycle begins again, the hook out · 16:9 (center-low calm)
+```
+Pixel art at first light: the same driveway the next dawn, cold and clear, the
+sky bleeding from indigo into rose and gold at the horizon. Backed into the
+driveway sits a fresh silhouette under a NEW tarp — the unmistakable hump of
+another project car waiting, its shape rough and mysterious under the cover, a
+trailer just visible with its ramps still down behind it. Dew on the grass, one
+porch light still on, the garage door closed. The mechanic stands small in the
+foreground seen from behind, a fresh coffee in hand, just looking at the covered
+shape — the itch already back. Hopeful, inevitable, "here we go again" energy,
+sunrise palette echoing the barn-find dawn. Keep the center-low calm for a
+caption. 16:9.
+```
+
 ---
 
 ## The wife's car (the game's most-talked-about beat) — 2:1, lower-left calm
