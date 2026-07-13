@@ -42,6 +42,9 @@ never these files directly. Keep the masters untouched.
 | `scene-maiden-voyage.png` | "She lives!" cut scene — first night drive through town after a build becomes roadworthy. Fires the first time a car crosses roadworthy. |
 | `scene-first-car-sale.png` | First finished-car sale cut scene — buyer drives off, you count cash on the next project's hood. Fires on your first sale of a built car (overall 60+). |
 | `scene-buddy-help.png` | Crew crossover cut scene — a buddy rolls up and you both wrench till dark. Occasional ambient beat (cash tip + goodwill). |
+| `scene-restored-barn.png` | Finale trilogy 1/3 — the tarp comes off. Restored champion car in the barn doorway, golden hour. Bookend to `scene-barn-find`. (Ceremony not yet wired.) |
+| `scene-empty-garage.png` | Finale trilogy 2/3 — the cost. Empty garage at night after the car's gone, lone trophy on the shelf. (Ceremony not yet wired.) |
+| `scene-next-tarp.png` | Finale trilogy 3/3 — the cycle. Next project under a fresh tarp at dawn, mechanic with coffee. (Ceremony not yet wired.) |
 
 Two superseded uploads (`Title Screen - Edited.png`, `restoration complete -
 Edited.png`) carried a small watermark sparkle and were dropped in favor of
