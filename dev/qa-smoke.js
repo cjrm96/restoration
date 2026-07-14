@@ -65,16 +65,21 @@ const pass = (msg) => console.log("✓", msg);
     fail("intro cutscene did not dismiss");
   pass("barn-find intro cut scene");
 
-  // ── 5-beat tutorial ──
-  for (let beat = 0; beat < 5; beat++) {
+  // ── single-card tutorial: one card, then hands on the car. Rules arrive
+  // on contact (first payday, Compete unlock, Buck's intro DM) instead of
+  // as a lecture — this drives the card(s) and confirms the handoff. ──
+  let tutClicks = 0;
+  for (let beat = 0; beat < 8; beat++) {
     const btn = await page.$("#modalRoot .tutorial-primary");
-    if (!btn) fail(`tutorial beat ${beat + 1} not shown`);
+    if (!btn) break;
     await btn.click();
+    tutClicks++;
     await page.waitForTimeout(250);
   }
+  if (tutClicks < 1) fail("tutorial card not shown");
   const tutDone = await page.evaluate(() => state.tutorialComplete && onboardStageVal() === 0);
   if (!tutDone) fail("tutorial did not complete into onboarding stage 0");
-  pass("tutorial (5 beats)");
+  pass(`tutorial (single card, ${tutClicks} click${tutClicks === 1 ? "" : "s"})`);
 
   // ── first installs → Social unlock ──
   await page.evaluate(() => {
@@ -126,7 +131,9 @@ const pass = (msg) => console.log("✓", msg);
   if (unlock !== "shows") fail("Compete did not unlock after first listing (got " + unlock + ")");
   await page.keyboard.press("Enter");
   await page.waitForTimeout(300);
-  pass("first listing → Compete unlock");
+  const buckIntro = await page.evaluate(() => (state.characterDMs || []).some((d) => d.id === "buck-intro"));
+  if (!buckIntro) fail("Buck's intro DM did not land when Compete unlocked");
+  pass("first listing → Compete unlock (+ Buck intro DM)");
 
   // ── enter a show, click through the cinematic, land on results ──
   const showOk = await page.evaluate(() => {
