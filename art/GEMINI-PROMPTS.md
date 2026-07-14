@@ -250,11 +250,12 @@ One empty frame waiting to be filled. Nostalgic, "life's work" mood. 16:9.
 
 ### The Finale Trilogy — the "Ran When Parked" director's-cut ceremony
 
-These three land back-to-back at the very end of the victory sequence. Shoot
-`scene-restored-barn` **first** — it's a deliberate callback to `scene-barn-find`,
-so generate that intro image, feed it back as the reference, and match its
-framing exactly. All three fall back to existing art (`scene-victory`,
-`scene-barn-find`, the workspace shots) until generated.
+These three land back-to-back at the very end of the victory sequence — all
+three are ✅ IN GAME. Shoot `scene-restored-barn` **first** if regenerating —
+it's a deliberate callback to `scene-barn-find`, so generate that intro image,
+feed it back as the reference, and match its framing exactly. Each stage falls
+back to existing art (`scene-barn-find`, `scene-season-end`,
+`scene-season-start`) if its key ever goes missing.
 
 #### `scene-restored-barn` — the tarp comes off, bookend to the barn find · 2:1 (lower third calm)
 ```
