@@ -81,6 +81,23 @@ const pass = (msg) => console.log("✓", msg);
   if (!tutDone) fail("tutorial did not complete into onboarding stage 0");
   pass(`tutorial (single card, ${tutClicks} click${tutClicks === 1 ? "" : "s"})`);
 
+  // ── the bedside box: starter tools arrive by pry bar, not shopping.
+  // The scene must queue right after the tutorial, and resolving either
+  // choice must land Basic Hand Tools + Basic Headlamp in the crate so
+  // the first DIY job is possible from minute one. ──
+  const bedside = await page.evaluate(() => state.pendingScene && state.pendingScene.id === "bedside_box");
+  if (!bedside) fail("bedside box scene did not queue after the tutorial");
+  await page.evaluate(() => resolvePendingScene(0));
+  await page.waitForTimeout(300);
+  const crateOk = await page.evaluate(() => {
+    if (!state.ownedTools.includes("t1") || !state.ownedTools.includes("t14")) return "tools missing";
+    const car = currentCar();
+    const doable = PARTS.some((p) => !car.installedParts.includes(p.id) && state.money >= partCost(p, "diy") && !(p.tools || []).some((tid) => !state.ownedTools.includes(tid)));
+    return doable ? true : "no DIY job affordable after the grant";
+  });
+  if (crateOk !== true) fail("bedside box: " + crateOk);
+  pass("bedside box → starter tools, first DIY open");
+
   // ── first installs → Social unlock ──
   await page.evaluate(() => {
     state.noticeQueue = [];
