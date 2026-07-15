@@ -149,15 +149,20 @@ const SEED = Number(process.argv[2] || 1);
       resolveCompletedRestorations(false);
     }
     if (installsThisWeek) acts.push("diy x" + installsThisWeek);
-    // Cash-rich average player sends one big job to the shop.
-    if (car && state.money > 6000 && !activeTasksForCar(car.id).length) {
-      const big = jobs.find((p) => (p.tier === "Quality" || p.tier === "Show Grade") && car[p.category] < 100 && !car.installedParts.includes(p.id) && state.money - 2500 >= partCost(p, "shop"));
-      if (big) {
-        installPart(big.id, "shop", false);
-        state.activeRestorations.forEach((t) => { if (!t.completed) t.finishTime = Date.now() - 1; });
-        resolveCompletedRestorations(false);
-        acts.push("shop:" + big.name);
-      }
+    // The serious work goes to the mechanic: DIY covers Budget jobs, and
+    // anything Quality or Show Grade gets sent to the shop whenever the
+    // wallet can take it. This is the intended average-player path to a
+    // show-ready car in the first seasons.
+    let shopRounds = 6;
+    while (car && shopRounds-- > 0) {
+      const big = jobs.find((p) => (p.tier === "Quality" || p.tier === "Show Grade") && car[p.category] < 100 && !car.installedParts.includes(p.id) && !findActiveTask(car.id, p.id) && state.money - 1200 >= partCost(p, "shop"));
+      if (!big) break;
+      const before = state.activeRestorations.length;
+      installPart(big.id, "shop", false);
+      if (state.activeRestorations.length === before) break;
+      state.activeRestorations.forEach((t) => { if (!t.completed) t.finishTime = Date.now() - 1; });
+      resolveCompletedRestorations(false);
+      acts.push("shop:" + big.name);
     }
     // Workspace upgrade when comfortably affordable.
     const wsNext = WORKSPACE_LEVELS[getWorkspaceIndex(state.workshopLevel) + 1];
