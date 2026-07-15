@@ -26,6 +26,8 @@ tooling and sprite workbenches (not shipped).
 - Player-facing text must stay in-world: no production/meta language
   ("original look", "flat-panel", "light-model", etc.) in anything a player
   reads.
+- No em-dashes (—) anywhere in the game. Use commas, periods, or plain
+  hyphens. The whole file was purged in 0.17.0; don't reintroduce them.
 - Cinematic art (`CUTSCENE_ART`) stays as-is unless explicitly asked.
 - Verify visual changes with a real render (Playwright at
   `/opt/pw-browsers/chromium`) before calling them done.
