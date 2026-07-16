@@ -45,6 +45,7 @@ never these files directly. Keep the masters untouched.
 | `scene-restored-barn.png` | Finale trilogy 1/3 — the tarp comes off. Restored champion car in the barn doorway, golden hour. Bookend to `scene-barn-find`. Plays in the National Champion ceremony. |
 | `scene-empty-garage.png` | Finale trilogy 2/3 — the cost. Empty garage at night after the car's gone, lone trophy on the shelf. Plays in the National Champion ceremony. |
 | `scene-next-tarp.png` | Finale trilogy 3/3 — the cycle. Next project under a fresh tarp at dawn, mechanic with coffee. Plays in the National Champion ceremony. |
+| `scene-tool-truck.png` | Top tool-storage upgrade cutscene, the Snap-it truck delivers the 72-inch bank. Fires on the final storage tier (the "I made it" box). |
 
 Two superseded uploads (`Title Screen - Edited.png`, `restoration complete -
 Edited.png`) carried a small watermark sparkle and were dropped in favor of

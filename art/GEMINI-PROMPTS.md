@@ -113,6 +113,23 @@ stands beneath the lifted car, wrench in hand. Triumphant "made it" mood,
 richer lighting than a home garage.
 ```
 
+### `scene-tool-truck` — The Snap-it truck delivers the 72" bank · 16:9 (lower-left calm)
+> Fires on the top tool-storage upgrade (the "I made it" box). ✅ IN GAME.
+```
+A big boxy chrome-and-red dealer tool truck (in the spirit of a Snap-on truck,
+no readable logos or text) parked at the curb of a suburban driveway at golden
+hour, its roll-up side door open and its lift gate lowered. On the lift gate
+sits a gleaming stainless-steel 72-inch rolling tool bank: deep drawers, chrome
+handles, a hutch on top, catching the low sun. A uniformed delivery driver in
+silhouette steadies it as it rolls down. In the foreground, the mechanic stands
+hands-on-hips, seen from behind, just taking it in, the box he has worked years
+toward. Behind him the open home garage glows warm, and his old milk crate and
+dented hand-me-down box sit small beside the new bank. A nosy neighbor peeks
+over the fence. Long shadows reaching toward camera, deep purple dusk sky above.
+Proud, arrival, "I finally made it" energy. Keep the lower-left quarter calm for
+a caption. 16:9.
+```
+
 ### `scene-restoration-complete` — Restoration-complete reveal · 16:9
 ```
 Pixel art: a freshly restored classic American car gleaming under a garage
