@@ -551,8 +551,8 @@ long shadows. Keep the lower-left quarter calm. 16:9.
 ```
 
 ### `scene-loan-shark` — the deal itself, noir and menacing · ⬜ not generated
-> A payoff variant (shark handing back the pink slip in daylight, mechanic
-> exhaling) can reuse this setup lit bright and relieved.
+> Paired with `scene-loan-shark-paid` below for the payoff. Same room, opposite
+> mood.
 ```
 Pixel art, tense low-key night lighting: a dim back-room meeting lit by a single
 bare bulb over a battered table. Across the table sits the loan shark, a heavyset
@@ -565,6 +565,24 @@ making a deal he may regret. Behind them through a doorway, his project car sits
 in shadow, the collateral. A muscle guy leans silhouetted against the wall, arms
 crossed. Deep greens and browns, one warm pool of bulb light, heavy noir shadows,
 cigar smoke curling. Desperate, "this is a bad idea and you're doing it anyway"
+energy. Keep the lower-left quarter calm. 16:9.
+```
+
+### `scene-loan-shark-paid` — the debt is cleared, you get the title back · ⬜ not generated
+> The payoff bookend to `scene-loan-shark`. Same room, noir gloom burned off.
+```
+Pixel art, bright and relieved daylight version of the loan-shark back room, now
+lit open and warm through a doorway instead of shadowed. The same heavyset loan
+shark in the loud shirt and gold chains sits back from the battered table, cigar
+stubbed out in the ashtray, no cash left on the wood, sliding a folded pink car
+title (the pink slip) back across the table with two fingers and a grudging
+half-nod of respect. In the foreground, seen from behind and to the side, the
+mechanic reaches out and takes the title, shoulders finally dropping, the weight
+visibly off him, one hand loose at his side. The muscle guy by the wall is
+relaxed now, arms uncrossed. Through the open doorway behind them, flooded in
+clean golden sunlight instead of shadow, his project car sits waiting, his again,
+free and clear. Warm honest light pouring in, the noir gloom burned off, dust
+motes drifting in the sun. Exhale, relief, hard-won freedom, "I own it again"
 energy. Keep the lower-left quarter calm. 16:9.
 ```
 
