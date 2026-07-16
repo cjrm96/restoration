@@ -46,6 +46,10 @@ never these files directly. Keep the masters untouched.
 | `scene-empty-garage.png` | Finale trilogy 2/3 — the cost. Empty garage at night after the car's gone, lone trophy on the shelf. Plays in the National Champion ceremony. |
 | `scene-next-tarp.png` | Finale trilogy 3/3 — the cycle. Next project under a fresh tarp at dawn, mechanic with coffee. Plays in the National Champion ceremony. |
 | `scene-tool-truck.png` | Top tool-storage upgrade cutscene, the Snap-it truck delivers the 72-inch bank. Fires on the final storage tier (the "I made it" box). |
+| `scene-going-viral.png` | Going-viral cutscene, the morning after a post blows up. Fires the first time a post lands a big overnight follower spike. |
+| `scene-loan-shark.png` | Loan-shark deal cutscene, the noir back room. Fires when the shark loan is taken. |
+| `scene-loan-shark-paid.png` | Loan-shark payoff cutscene, the pink slip slides back. Fires when the shark loan is cleared. |
+| `scene-tijuana-paint.png` | Border paint-run scene, the risky cheap respray gamble. Backdrop for the Border Run outcome. |
 
 Two superseded uploads (`Title Screen - Edited.png`, `restoration complete -
 Edited.png`) carried a small watermark sparkle and were dropped in favor of
