@@ -510,23 +510,62 @@ for contrast. Tools, rags, coffee mugs scattered naturally. Easy, unhurried
 camaraderie. Keep the lower-left quarter calm.
 ```
 
-### `scene-going-viral` — 2 a.m., it's blowing up · ⬜ not generated
-> The odd one out — keep it a **painted scene** (hands + glowing phone in a dark
-> garage), never a flat UI screenshot.
+### `scene-going-viral` — you wake up famous, the morning after · ⬜ not generated
+> **Painted bedroom morning.** NO emoji/icons/notification shapes coming out of the
+> phone, just the screen glow and his reaction. The wife's face is **never shown**,
+> keep her turned away / seen from behind, as in every wife scene. Fires the first
+> time a post lands a big overnight follower spike.
 ```
-A modern, electric, cinematic scene at 2 a.m. in a dim garage lit almost entirely
-by the cold blue-white glow of a smartphone screen. Camera low and close on the
-mechanic's grease-stained hands cupping the phone in the lower-center foreground;
-the bright screen throws hard blue light up onto his stubbled, wide-eyed surprised
-face and the underside of his cap. Erupting up out of the screen, a lively cascade
-of glowing pixel-art notification shapes — heart bubbles, speech bubbles,
-thumbs-up, star bursts, a rising bar/counter (icons and abstract shapes ONLY, no
-readable text or numbers) — floating and multiplying into the dark air like
-sparks. Behind him, softly out of focus in the warm low glow of a single work
-lamp, sits the finished restored project car that just went viral. Cans, tools,
-and a laptop rest on a workbench in shadow. Cool electric phone-blue foreground
-clashing with warm amber garage glow behind. Late-night, exhilarating,
-disbelieving. Keep the lower-left quarter calm.
+Pixel art, warm early-morning light: a suburban bedroom, sun cutting through
+half-open window blinds in dusty golden bars across the bed. The mechanic sits
+bolted upright against the headboard, blanket pooled at his waist, gripping his
+phone in both hands and staring at it, jaw slack, eyes wide, the cold blue-white
+glow of the screen throwing hard light up onto his stunned, stubbled face while
+the rest of the room stays warm amber. The phone is clearly going off, a faint
+motion-blur buzz around it and a bright unreadable blaze of a screen, but NO
+emoji, icons, hearts, or notification shapes floating out of it, just the glow and
+his disbelief. Beside him his wife is still mostly asleep, seen only from behind,
+her back and tousled hair on the pillow, one shoulder and an arm above the blanket
+as she just begins to stir, her face turned away and unseen. A nightstand with an
+alarm clock, a lamp, a coffee mug, a set of keys. A work jacket over the chair,
+boots by the door. The whole room warm and quiet except the electric glow on his
+face and the look of pure disbelief. "Something just happened" energy, the morning
+your life changed. Keep the lower-left quarter calm. 16:9.
+```
+
+### `scene-tijuana-paint` — the risky south-of-the-border repaint run · ⬜ not generated
+> The optional cheap-but-risky respray path (a classic SoCal car-guy gamble).
+```
+Pixel art, hot dusty golden-hour light: a bustling little body shop just across
+the border in a Mexican town, hand-painted signs in warm reds and yellows (no
+readable text), a corrugated-metal paint booth with a car half-taped and primer
+grey inside, overspray haze catching the sun. In the foreground the mechanic
+stands beside his classic American car handing a set of keys to a friendly,
+confident shop owner in coveralls with a respirator pushed up on his forehead, a
+"trust me, amigo" grin. The mechanic's posture is torn, half hopeful, half "what
+am I doing." Around them: stray dogs napping in the shade, a rack of spray guns,
+taped-off chrome bumpers leaning on a wall, a hand-lettered price board, string
+pennants overhead, distant hills and a busy street beyond. Warm, dusty, a little
+sketchy and a lot charming, a real risk-reward car-guy adventure. Golden light,
+long shadows. Keep the lower-left quarter calm. 16:9.
+```
+
+### `scene-loan-shark` — the deal itself, noir and menacing · ⬜ not generated
+> A payoff variant (shark handing back the pink slip in daylight, mechanic
+> exhaling) can reuse this setup lit bright and relieved.
+```
+Pixel art, tense low-key night lighting: a dim back-room meeting lit by a single
+bare bulb over a battered table. Across the table sits the loan shark, a heavyset
+man in a loud unbuttoned shirt and gold chains, sleeves rolled, a thick roll of
+cash and a fanned stack of hundreds on the scarred wood between them, a cigar
+smoldering in an ashtray, a pinky ring catching the light. His face is half in
+shadow with a knowing, dangerous half-smile. In the foreground, seen from behind
+and to the side, the mechanic reaches for the cash, shoulders tight, clearly
+making a deal he may regret. Behind them through a doorway, his project car sits
+in shadow, the collateral. A muscle guy leans silhouetted against the wall, arms
+crossed. Deep greens and browns, one warm pool of bulb light, heavy noir shadows,
+cigar smoke curling. Desperate, "this is a bad idea and you're doing it anyway"
+energy. Keep the lower-left quarter calm. 16:9.
 ```
 
 ---
