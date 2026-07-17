@@ -155,7 +155,7 @@ const pass = (msg) => console.log("✓", msg);
   // ── enter a show, click through the cinematic, land on results ──
   const showOk = await page.evaluate(() => {
     state.noticeQueue = []; state.weekRecap = null; state.pendingScene = null; state.pendingEvent = null;
-    state.fuel = 60; state.gloveBoxFound = true; state.familySaturdayWeek = -1;
+    state.fuel = 60; state.gloveBoxFound = true;
     const open = getCurrentShows().find((s) => s.weeksUntil === 0 && !s.seasonClosed && showProgressRequirement(s).ok);
     if (!open) return "no open show";
     beginShowEntry(open.id);
@@ -299,10 +299,13 @@ const pass = (msg) => console.log("✓", msg);
 
   // ── character DMs: the phone texts you after events ──
   const dmOk = await page.evaluate(() => {
-    const snapDMs = state.characterDMs, snapUnread = state.dmUnread, snapBand = state.wifeDMBand, snapWife = state.wifeApproval;
+    const snapDMs = state.characterDMs, snapUnread = state.dmUnread;
     state.characterDMs = []; state.dmUnread = 0;
-    queueShowDMs(true, 1, 3, { harlow: "ally" });
-    state.wifeDMBand = "mid"; state.wifeApproval = 92; state.tutorialComplete = true; maybeWifeDM();
+    // Wife is the corner crew now: her DM fires from the show resolve itself.
+    const origRand = Math.random; Math.random = () => 0.01;
+    queueShowDMs(true, 1, 3, { harlow: "ally" }, "Local");
+    Math.random = origRand;
+    state.tutorialComplete = true;
     const dms = state.characterDMs || [];
     const hasBuck = dms.some((d) => d.h === "@BuckStallion67");
     const hasRival = dms.some((d) => d.id === "rival-harlow");
@@ -312,10 +315,10 @@ const pass = (msg) => console.log("✓", msg);
     // opening Messages should clear the badge
     setPhoneApp("messages");
     const cleared = state.dmUnread === 0;
-    state.characterDMs = snapDMs; state.dmUnread = snapUnread; state.wifeDMBand = snapBand; state.wifeApproval = snapWife;
+    state.characterDMs = snapDMs; state.dmUnread = snapUnread;
     if (!hasBuck) return "Buck DM missing after head-to-head";
     if (!hasRival) return "rival DM missing after ally crossing";
-    if (!hasWife) return "wife DM missing after approval swing";
+    if (!hasWife) return "wife DM missing after show win";
     if (unread < 3) return "unread count wrong: " + unread;
     if (!html.includes("phone-dm-fresh")) return "fresh DM not highlighted";
     if (!cleared) return "opening Messages did not clear the unread badge";
