@@ -50,6 +50,8 @@ never these files directly. Keep the masters untouched.
 | `scene-loan-shark.png` | Loan-shark deal cutscene, the noir back room. Fires when the shark loan is taken. |
 | `scene-loan-shark-paid.png` | Loan-shark payoff cutscene, the pink slip slides back. Fires when the shark loan is cleared. |
 | `scene-tijuana-paint.png` | Border paint-run scene, the risky cheap respray gamble. Backdrop for the Border Run outcome. |
+| `scene-breakdown.png` | Mechanical-heartbreak scene, the rainy roadside the night before a show. Fires once per run on a soft driveline. |
+| `scene-rival-showdown.png` | The pull-up staredown, Buck bets $300 on the next judged show. |
 
 Two superseded uploads (`Title Screen - Edited.png`, `restoration complete -
 Edited.png`) carried a small watermark sparkle and were dropped in favor of

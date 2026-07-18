@@ -432,7 +432,7 @@ one distant green traffic light. Triumphant, free, a little emotional — the fi
 real drive after hundreds of hours. Keep the lower-left quarter calm.
 ```
 
-### `scene-rival-showdown` — trash-talk staredown at a show · 🔧 WIRED, art pending
+### `scene-rival-showdown` — trash-talk staredown at a show · 🔧 IN GAME
 > Pull-up drama before judging; pair with a side-bet popup. Theme the rival car
 > to Buck's ’67 Stallion.
 ```
@@ -452,7 +452,7 @@ cars, long shadows toward camera. Warm gold vs cooling purple shadows. The calm
 before the trophy ceremony. Keep the lower-left quarter calm.
 ```
 
-### `scene-breakdown` — mechanical heartbreak at the worst time · 🔧 WIRED, art pending
+### `scene-breakdown` — mechanical heartbreak at the worst time · 🔧 IN GAME
 > Keep it **recoverable** (repair decision tree), not a run-ender. The
 > paint-bubble variant is the gentler lead option.
 ```
