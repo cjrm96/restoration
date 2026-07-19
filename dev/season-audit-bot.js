@@ -36,6 +36,7 @@ const SEED = Number(process.argv[2] || 1);
     window.__ledger = {};
     window.__seasonLog = [];
     window.__weekLog = [];
+    window.__beatLog = [];
     const orig = recordMoneyChange;
     window.recordMoneyChange = function (amount, reason) {
       const season = state.seasonNumber || 1;
@@ -49,7 +50,7 @@ const SEED = Number(process.argv[2] || 1);
     // Bounded modal-drain, mirrors a player clicking through whatever is up.
     for (let i = 0; i < 60; i++) {
       const acted = await page.evaluate(() => {
-        if (state.cutscene) { dismissCutscene(); return "cutscene"; }
+        if (state.cutscene) { window.__beatLog.push({ week: state.week, season: state.seasonNumber||1, t: "cutscene", id: state.cutscene.title || state.cutscene.art }); dismissCutscene(); return "cutscene"; }
         if (!state.tutorialComplete) {
           const b = document.querySelector("#modalRoot .tutorial-primary");
           if (b) { b.click(); return "tutorial"; }
@@ -66,9 +67,9 @@ const SEED = Number(process.argv[2] || 1);
         }
         if (state.showLoading && state.showStage) { advanceShowStage(); return "showStage"; }
         if (state.result && state.view === "result") { state.result = null; state.postShowWeekLocked = false; setView("workshop"); return "result"; }
-        if (state.pendingScene) { resolvePendingScene(0); return "scene"; }
+        if (state.pendingScene) { window.__beatLog.push({ week: state.week, season: state.seasonNumber||1, t: "scene", id: state.pendingScene.id || state.pendingScene.title }); resolvePendingScene(0); return "scene"; }
         if (state.pendingUnlock) { acknowledgeUnlock(false); return "unlock"; }
-        if (state.pendingEvent) { resolveEvent(state.money > 800); return "event"; }
+        if (state.pendingEvent) { window.__beatLog.push({ week: state.week, season: state.seasonNumber||1, t: "event", id: (state.pendingEvent && state.pendingEvent.title) || "event" }); resolveEvent(state.money > 800); return "event"; }
         if (state.pendingMarketplaceOffer) { respondMarketplaceOffer(true); return "mkOffer"; }
         if (state.pendingCarOffer) { respondCarOffer("decline"); return "carOffer"; }
         if (state.weekRecap) { dismissWeekRecap(); return "recap"; }
@@ -223,6 +224,14 @@ const SEED = Number(process.argv[2] || 1);
   console.log("=== LEDGER ===");
   Object.entries(ledger).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).forEach(([k, v]) => console.log(`${k} ${Math.round(v)}`));
   console.log("=== FINAL ===", JSON.stringify(finalState), "ticks:", ticks);
+  const beats = await page.evaluate(() => window.__beatLog);
+  console.log("=== BEAT JAMS (>=3 heavy story beats in one week) ===");
+  const byWeek = {};
+  beats.forEach((b) => { const k = b.season + ":" + b.week; (byWeek[k] = byWeek[k] || []).push(b.t + ":" + b.id); });
+  let jams = 0;
+  Object.entries(byWeek).forEach(([k, list]) => { if (list.length >= 3) { jams++; console.log(k, "->", JSON.stringify(list)); } });
+  if (!jams) console.log("none");
+  console.log("=== TOTAL HEAVY BEATS ===", beats.length);
   console.log("=== ERRORS ===", errors.length ? JSON.stringify(errors.slice(0, 10)) : "none");
   await browser.close();
   process.exit(0);
