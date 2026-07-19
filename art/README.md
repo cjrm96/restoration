@@ -52,6 +52,10 @@ never these files directly. Keep the masters untouched.
 | `scene-tijuana-paint.png` | Border paint-run scene, the risky cheap respray gamble. Backdrop for the Border Run outcome. |
 | `scene-breakdown.png` | Mechanical-heartbreak scene, the rainy roadside the night before a show. Fires once per run on a soft driveline. |
 | `scene-rival-showdown.png` | The pull-up staredown, Buck bets $300 on the next judged show. |
+| `scene-bank-loan.png` | Bank loan approved cutscene, the loan-desk handshake and the APPROVED stamp. Fires when the bank loan is taken. |
+| `scene-bank-loan-paid.png` | Bank loan paid-off cutscene, the account closed and the file stamped PAID. Fires when the bank loan is cleared. |
+| `scene-tool-truck-loan.png` | Tool truck tab opened cutscene, the Snap-it man writes you in the book at the curb. Fires when the tool truck tab is opened. Distinct from `scene-tool-truck` (the 72-inch bank delivery). |
+| `scene-tool-truck-loan-paid.png` | Tool truck tab paid-off cutscene, the page torn out of the book, square with the truck. Fires when the tool truck tab is cleared. |
 
 Two superseded uploads (`Title Screen - Edited.png`, `restoration complete -
 Edited.png`) carried a small watermark sparkle and were dropped in favor of

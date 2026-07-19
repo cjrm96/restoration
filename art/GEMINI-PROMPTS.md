@@ -586,6 +586,72 @@ motes drifting in the sun. Exhale, relief, hard-won freedom, "I own it again"
 energy. Keep the lower-left quarter calm. 16:9.
 ```
 
+### `scene-bank-loan` — the legit money, a stamp that says APPROVED · ⬜ not generated
+> The honest, daylight counterpart to the loan shark. Same "you took money to
+> chase this" beat, none of the menace. Paired with the payoff below.
+```
+Pixel art, flat fluorescent daytime interior of a small-town bank branch: a
+laminate loan-officer's desk, a cheap pen chained to a little stand, a desktop
+nameplate, a coffee mug ringing the paperwork. Across the desk a friendly middle
+aged loan officer in a short-sleeve dress shirt and tie presses a rubber stamp
+down on the top sheet, the word APPROVED landing in red ink, a small approving
+smile. In the foreground, seen from behind and to the side, the mechanic sits in
+the chair leaning in, work jacket on, cap in hand, hopeful and a little out of
+place in the tidy office. On the desk between them, photos of the project build
+spread out next to the loan forms, the reason he is here. Through a window blind
+behind the officer, warm daylight and the parking lot where his truck waits.
+Ordinary, hopeful, "somebody finally believes the numbers" energy, none of the
+noir. Clean cool office light with one warm shaft from the window. Keep the
+lower-left quarter calm. 16:9.
+```
+
+### `scene-bank-loan-paid` — debt closed on time, the file stamped PAID · ⬜ not generated
+> The quiet-dignity bookend to `scene-bank-loan`. Same branch, account closed,
+> understated, no confetti, earned.
+```
+Pixel art, same flat-lit small-town bank branch, warmer now with late-afternoon
+sun through the blinds. The same loan officer stamps a final sheet, PAID in dark
+ink this time, and slides a closed manila file toward a drawer. In the
+foreground, seen from behind and to the side, the mechanic stands to leave, one
+hand resting flat on the desk, shoulders easy, a settled, grown-up kind of pride,
+no fist pump, just done. A single sheet reading a zero balance sits face up on
+the laminate. The build photos from before are gone from the desk, the job
+finished. Through the window, his truck in the lot, paid for, waiting.
+Understated, earned, "made every payment and own it outright" energy. Warm honest
+afternoon light. Keep the lower-left quarter calm. 16:9.
+```
+
+### `scene-tool-truck-loan` — the Snap-it man writes you on the tab · ⬜ not generated
+> NOT the same as `scene-tool-truck` (that one delivers the 72-inch bank). This
+> is the curbside handshake when he extends you credit, a chattier, friendlier
+> money beat. Paired with the payoff below.
+```
+Pixel art, golden-hour curbside: the big boxy chrome-and-red dealer tool truck
+(in the spirit of a Snap-on truck, no readable logos or text) parked at the curb,
+its roll-up side door open on glowing walls of tools and red cabinets. The
+friendly uniformed route driver leans out of the open doorway with a little
+spiral tab-book and a pencil stub, licking his thumb to turn a page, writing the
+mechanic's name in, an easy salesman's grin. He is passing a small fold of cash
+down with the other hand. In the foreground, seen from behind and to the side,
+the mechanic reaches up to shake on it, relaxed, one boot up on the truck's step.
+A couple of loose tools he has been eyeing sit on the fold-down counter. Warm low
+sun, chrome catching the light, an easy neighborly deal, "pay when you can, I'll
+find you" energy, friendly not menacing. Keep the lower-left quarter calm. 16:9.
+```
+
+### `scene-tool-truck-loan-paid` — square with the truck, the page torn out · ⬜ not generated
+> The payoff bookend to `scene-tool-truck-loan`. Same curb, tab closed.
+```
+Pixel art, same golden-hour curb, same chrome-and-red tool truck at the curb with
+its side door open. The friendly route driver holds up the little spiral tab-book
+and tears the page with the mechanic's name clean out of it, a satisfied grin,
+the torn slip fluttering. He is reaching out to shake with the other hand. In the
+foreground, seen from behind and to the side, the mechanic shakes his hand,
+shoulders easy, square and done, the tools clearly his now. Warm low sun, chrome
+glinting, an easy "you're square, nice doing business" energy, neighborly and
+light. Keep the lower-left quarter calm. 16:9.
+```
+
 ---
 
 ## Non-game slots (store pages / dev logs)
