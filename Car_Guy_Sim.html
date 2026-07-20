@@ -9450,7 +9450,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.31.4";
+      const GAME_VERSION = "0.32.0";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -9466,6 +9466,9 @@
           fuelPurchase: 10,
           paycheckProgress: 0,
           week: 1,
+          preWeek: 1,
+          gigs: [],
+          gigsWorked: 0,
           seasonLength: 22,
           cars: [
             {
@@ -12992,8 +12995,15 @@
             parsed.state,
             "tutorialComplete",
           );
+          const savedHasPreWeek = Object.prototype.hasOwnProperty.call(
+            parsed.state,
+            "preWeek",
+          );
           Object.assign(state, makeDefaultState(), parsed.state);
           if (!savedHasTutorialField) state.tutorialComplete = true;
+          // Saves from before pre-season existed were mid-competition, resume
+          // there rather than dropping a veteran into a fresh off-season.
+          if (!savedHasPreWeek) { state.preWeek = 0; state.gigs = []; }
           state.cutscene = null;
           // Scrub transient UI/blocking flags that should never survive a
           // reload. A save written mid-modal (show cinematic, loan store,
@@ -14052,6 +14062,8 @@
         state.seasonNumber = (state.seasonNumber || 1) + 1;
         rollSceneTaste();
         state.week = 1;
+        // Every season now opens with the 4-week pre-season ramp before shows.
+        enterPreSeason();
         state.youtubeCooldownUntil = null;
         state.creatorPostedWeek = null;
         state.collabDoneWeek = null;
@@ -14079,6 +14091,101 @@
           sub: "Snow's off the driveway, the salt's washed away, and every car guy in town is pulling covers off and firing engines. Fresh season, open road. Let's build.",
           cta: "Back to the garage",
         });
+        saveGame();
+        requestRender("full");
+      }
+
+      /* ═══════════════════════════════════════════
+     PRE-SEASON  (the off-season ramp before shows open)
+  ═══════════════════════════════════════════ */
+      // Every season opens with a 4-week pre-season: no competition, but the
+      // build, the Marketplace, socials, scavenge trips, and paid side jobs are
+      // all open. It's the runway to earn a war chest (and, in season 1, where
+      // the tutorial lives) before the show calendar goes live.
+      const PRESEASON_WEEKS = 4;
+      function inPreSeason() {
+        return (state.preWeek || 0) > 0;
+      }
+      // Paid mechanic side work. Each is a one-off cash job that clears when the
+      // pre-season week advances. The board is the tunable income faucet.
+      const GIG_POOL = [
+        { t: "Neighbor's brakes are grinding. Won't stop putting it off.", lo: 150, hi: 210 },
+        { t: "Buddy needs a water pump before a road trip Friday.", lo: 110, hi: 160 },
+        { t: "Guy from the meet wants his carb dialed in.", lo: 90, hi: 140 },
+        { t: "Old-timer's starter is dragging every cold morning.", lo: 100, hi: 150 },
+        { t: "Coworker's alternator quit in the work lot.", lo: 120, hi: 180 },
+        { t: "Somebody's got a coolant leak they're scared to touch.", lo: 110, hi: 160 },
+        { t: "Kid down the street wants his exhaust louder. Easy money.", lo: 70, hi: 110 },
+        { t: "Lady needs her A/C recharged before it gets hot.", lo: 90, hi: 130 },
+        { t: "Fleet guy needs an oil change and a once-over on the truck.", lo: 70, hi: 100 },
+        { t: "Buddy's clutch is slipping. Big job, big favor.", lo: 190, hi: 260 },
+        { t: "Local shop's backed up, they'll pay you to knock out a brake job.", lo: 170, hi: 230 },
+        { t: "Tune-up on a barn-fresh survivor before the owner sells it.", lo: 130, hi: 190 },
+        { t: "U-joint's clunking on a work truck. Cash in hand.", lo: 100, hi: 150 },
+        { t: "Church van needs new plugs and wires before Sunday.", lo: 80, hi: 120 },
+      ];
+      function rollGigBoard() {
+        const n = 3;
+        const pool = GIG_POOL.map((_, i) => i);
+        const picks = [];
+        while (picks.length < n && pool.length) {
+          picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+        }
+        state.gigs = picks.map((idx) => {
+          const g = GIG_POOL[idx];
+          return {
+            id: `gig_${state.preWeek || 1}_${idx}`,
+            title: g.t,
+            pay: Math.round((g.lo + Math.random() * (g.hi - g.lo)) / 5) * 5,
+            done: false,
+          };
+        });
+      }
+      function doGig(id) {
+        if (!inPreSeason()) return;
+        const gig = (state.gigs || []).find((g) => g.id === id);
+        if (!gig || gig.done) return;
+        gig.done = true;
+        state.money += gig.pay;
+        recordMoneyChange(gig.pay, "Side job");
+        state.gigsWorked = (state.gigsWorked || 0) + 1;
+        playSfx("coin");
+        toast(`Knocked out the job, $${fmt(gig.pay)} in your pocket.`, "ok");
+        saveGame();
+        requestRender("full");
+      }
+      // Entering the off-season: covers off, socials warming up, gig board fresh.
+      function enterPreSeason() {
+        state.preWeek = 1;
+        state.gigsWorked = state.gigsWorked || 0;
+        rollGigBoard();
+      }
+      function advancePreSeasonWeek(reason = "time") {
+        resolveCompletedRestorations(false);
+        state.preWeek = (state.preWeek || 1) + 1;
+        // Fresh board and a fresh chance to post every pre-season week.
+        state.creatorPostedWeek = null;
+        state.collabDoneWeek = null;
+        if (state.preWeek > PRESEASON_WEEKS) {
+          beginCompetitiveSeason();
+          return;
+        }
+        rollGigBoard();
+        processEventQueue();
+        saveGame();
+        requestRender("full");
+      }
+      // Pre-season's over: the competitive weeks (1..seasonLength) begin.
+      function beginCompetitiveSeason() {
+        state.preWeek = 0;
+        state.week = 1;
+        state.gigs = [];
+        // If the player already did the onboarding prereqs during pre-season,
+        // this opens Compete right as the calendar goes live.
+        checkOnboardUnlocks();
+        if (!state.pendingUnlock) {
+          toast("Pre-season's over. The show calendar's live, time to compete.", "event-good");
+        }
         saveGame();
         requestRender("full");
       }
@@ -14320,6 +14427,14 @@
         if (state.weekAdvanceInProgress || state.gameOver || state.seasonWrap)
           return;
         if (!state.weekAdvanceQueue) return;
+        // During the pre-season the week counter is frozen; advancing steps the
+        // 4-week off-season ramp instead of the competitive calendar.
+        if (inPreSeason()) {
+          const n = Math.max(1, state.weekAdvanceQueue || 0);
+          state.weekAdvanceQueue = 0;
+          for (let i = 0; i < n && inPreSeason(); i++) advancePreSeasonWeek(reason);
+          return;
+        }
         if (!canAdvanceWeekCheck(true)) {
           state.weekAdvanceQueue = 0;
           return;
@@ -18242,7 +18357,7 @@ addEventListener("DOMContentLoaded",function(){
         if (id === "workshop" || id === "garage") return true;
         if (id === "career" || id === "legacy") return s >= 1;
         if (id === "dealership") return s >= 2;
-        if (id === "shows") return s >= 3;
+        if (id === "shows") return s >= 3 && !inPreSeason();
         return true;
       }
       const ONBOARD_UNLOCKS = {
@@ -18271,6 +18386,9 @@ addEventListener("DOMContentLoaded",function(){
             next = 3;
         }
         if (!next) return;
+        // Compete can't open during the pre-season, hold the unlock until the
+        // competitive calendar goes live (beginCompetitiveSeason re-checks).
+        if (next === 3 && inPreSeason()) return;
         state.onboardStage = next;
         state.pendingUnlock = ONBOARD_UNLOCKS[next];
         // Buck introduces himself the moment show season opens, the rival
@@ -19252,6 +19370,38 @@ addEventListener("DOMContentLoaded",function(){
         }
         return `Roadworthy and climbing. Chase overall for ${next ? next.name : "the next show"} ${next ? deadline : ""}, or let a quiet week be a quiet week, the family will take the long way home with you.`;
       }
+      // The pre-season side-work board: paid mechanic jobs, the off-season
+      // income faucet. Only shows during the pre-season ramp.
+      function gigBoardMarkup() {
+        if (!inPreSeason()) return "";
+        if (!state.gigs || !state.gigs.length) rollGigBoard();
+        const gigs = state.gigs || [];
+        const weeksLeft = PRESEASON_WEEKS - state.preWeek;
+        const rows = gigs
+          .map(
+            (g) => `
+      <div class="feed-item" style="display:flex;align-items:center;gap:12px;${g.done ? "opacity:0.5" : ""}">
+        <div style="flex:1">
+          <div class="small" style="color:var(--text);line-height:1.4">${g.title}</div>
+          <div class="tiny" style="color:var(--green-bright);font-weight:bold;margin-top:2px">Pays $${fmt(g.pay)}</div>
+        </div>
+        ${
+          g.done
+            ? `<span class="tiny muted" style="white-space:nowrap">✓ Done</span>`
+            : button(`Take it · $${fmt(g.pay)}`, `doGig('${g.id}')`, false, "", "padding:7px 12px;font-size:12px;white-space:nowrap;background:#7da0c2;border-color:var(--blue-bright)")
+        }
+      </div>`,
+          )
+          .join("");
+        const allDone = gigs.length && gigs.every((g) => g.done);
+        return `<div style="margin-bottom:14px">${heroPanel(
+          "Pre-Season · Side Work",
+          `Off-season. Shows open in ${weeksLeft + 1} week${weeksLeft === 0 ? "" : "s"}.`,
+          "No competition yet. Build, flip, post, and scavenge, and pick up paid jobs to stack cash before the calendar goes live.",
+          `<div class="tiny muted" style="margin-bottom:10px">Word's out that you can wrench. A few paying jobs came in this week:</div>${rows}${allDone ? `<div class="tiny good" style="margin-top:10px;text-align:center">That's all the work this week. Advance the week to line up more.</div>` : ""}`,
+          "gold",
+        )}</div>`;
+      }
       function renderWorkshop() {
         const car = currentCar();
         if (!car) return renderNoCar();
@@ -19504,7 +19654,7 @@ addEventListener("DOMContentLoaded",function(){
           )}`;
         }
 
-        return `<div class="grid-main"><div>${heroPanel(
+        return `<div class="grid-main"><div>${gigBoardMarkup()}${heroPanel(
           "Auto Shop Floor",
           onboardStageVal() >= 3 ? "" : "Every bolt, every part, one at a time",
           "",
@@ -20864,6 +21014,7 @@ addEventListener("DOMContentLoaded",function(){
           state.lastMoneyDelta,
           state.fuel,
           state.week,
+          state.preWeek || 0,
           state.seasonLength,
           PAYCHECK_CYCLE - state.paycheckProgress,
           state.bankLoanBalance,
@@ -20881,8 +21032,9 @@ addEventListener("DOMContentLoaded",function(){
           seasonPhaseTop.remaining === 0
             ? "season finale"
             : `${seasonPhaseTop.remaining} wk${seasonPhaseTop.remaining === 1 ? "" : "s"} left`;
-        getEl("topStateMain").textContent =
-          `📅 Wk ${state.week}/${state.seasonLength} · ${seasonPhaseTop.phase}${seasonPhaseTop.remaining === 0 ? " · season finale" : ""}`;
+        getEl("topStateMain").textContent = inPreSeason()
+          ? `🔧 Pre-Season · Wk ${state.preWeek}/${PRESEASON_WEEKS} · shows open in ${Math.max(0, PRESEASON_WEEKS - state.preWeek) + 1} wk${(PRESEASON_WEEKS - state.preWeek) === 0 ? "" : "s"}`
+          : `📅 Wk ${state.week}/${state.seasonLength} · ${seasonPhaseTop.phase}${seasonPhaseTop.remaining === 0 ? " · season finale" : ""}`;
         getEl("topStateSub").innerHTML =
           `Build Tier: <span style="color:#e8d8b2;font-weight:bold">${headerTier}</span> · <span style="color:var(--gold-soft);font-weight:bold">${garageLoreTier()}</span>${state.freshHeadline ? " · " + state.freshHeadline : ""}${Date.now() < state.saveFlashUntil ? " · Saving…" : state.lastSaved ? " · Saved" : ""}`;
         const moneyChip = getEl("moneyChip");

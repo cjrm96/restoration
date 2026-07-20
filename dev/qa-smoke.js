@@ -98,6 +98,21 @@ const pass = (msg) => console.log("✓", msg);
   if (crateOk !== true) fail("bedside box: " + crateOk);
   pass("bedside box → starter tools, first DIY open");
 
+  // ── pre-season ramp: a new game opens in the 4-week off-season, shows
+  // locked, the side-work gig board live and paying. ──
+  const preOk = await page.evaluate(() => {
+    if (!inPreSeason() || state.preWeek < 1) return "not in pre-season at game start";
+    if (tabUnlocked("shows")) return "Compete not locked during pre-season";
+    if (!(state.gigs || []).length) return "gig board empty in pre-season";
+    const before = state.money;
+    const g = state.gigs.find((x) => !x.done);
+    doGig(g.id);
+    if (state.money <= before) return "side job did not pay";
+    return true;
+  });
+  if (preOk !== true) fail("pre-season: " + preOk);
+  pass("pre-season ramp: shows locked, side-work board pays");
+
   // ── first installs → Social unlock ──
   await page.evaluate(() => {
     state.noticeQueue = [];
@@ -133,7 +148,9 @@ const pass = (msg) => console.log("✓", msg);
   pass("roadworthy → Marketplace unlock");
 
   // ── list a part, let the week roll → Compete unlock ──
-  // (Compete opens a week after the first listing, or on a first sale.)
+  // (Compete opens a week after the first listing, or on a first sale — but
+  // never during the pre-season, so drop into the competitive calendar first.)
+  await page.evaluate(() => { state.preWeek = 0; state.week = 1; state.noticeQueue = []; render("full"); });
   await page.evaluate(() => {
     if (!(state.partsInventory || []).length)
       state.partsInventory = [{ id: "qa1", name: "Take-off Carb", baselineValue: 60, askingPrice: 70 }];
