@@ -2112,6 +2112,11 @@
       /* The black cover is opaque the instant it mounts so the game UI never
          shows through, only the scene art and caption fade up over it. */
       #cutsceneRoot > * { animation: csIn 0.9s ease both; }
+      /* The entrance fade above (an ID rule) otherwise beats the .cs-drift-*
+         class on the art layer, so full cutscenes sat dead still. Give the art
+         BOTH the fade-in and its Ken Burns drift, at higher specificity. */
+      #cutsceneRoot > .cs-art.cs-drift-a { animation: csIn 0.9s ease both, csDriftA 15s ease-in-out infinite alternate; }
+      #cutsceneRoot > .cs-art.cs-drift-b { animation: csIn 0.9s ease both, csDriftB 15s ease-in-out infinite alternate; }
       #cutsceneRoot.cs-out { animation: csOut 0.38s ease both; }
       @keyframes csIn { from { opacity: 0; } to { opacity: 1; } }
       @keyframes csOut { from { opacity: 1; } to { opacity: 0; } }
@@ -9445,7 +9450,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.31.2";
+      const GAME_VERSION = "0.31.3";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -13800,6 +13805,17 @@
         const mech = (car.engine + car.transmission + car.brakes) / 3;
         if (mech >= 88 || mech < 45) return false;
         if ((state.history || []).length < 1) return false;
+        // This is a test drive the NIGHT BEFORE a show, not a random week
+        // coming home from the swap or the yard. Only fire it when a judged
+        // show is actually due this week and not yet run.
+        const showThisWeek = getCurrentShows().some(
+          (s) =>
+            s.tier !== "Cars & Coffee" &&
+            !s.seasonClosed &&
+            !s.enteredThisWeek &&
+            s.weeksUntil === 0,
+        );
+        if (!showThisWeek) return false;
         if (Math.random() > 0.3) return false;
         if (!claimLifeBeat()) return false;
         state.breakdownSeen = true;
@@ -14096,7 +14112,10 @@
             });
           }
         }
-        state.weekRecap = state.tutorialComplete
+        // No weekly "on to week N+1" recap when the season just ended, there is
+        // no next week and the season recap already covers it (state.week has
+        // rolled past seasonLength by the time the finale is handled below).
+        state.weekRecap = state.tutorialComplete && state.week <= state.seasonLength
           ? {
               week: state.week - 1,
               money: state.money - (typeof state.weekStartMoney === "number" ? state.weekStartMoney : state.money),
@@ -18808,7 +18827,7 @@ addEventListener("DOMContentLoaded",function(){
         // the player decides instead of dropping to a plain dark modal.
         const sceneArt = scene.art && CUTSCENE_ART[scene.art];
         if (sceneArt) {
-          root.innerHTML = `<div class="modal" style="background:rgba(10,8,6,0.62);overflow:hidden"><div class="scene-art-backdrop cs-drift-a" style="position:absolute;inset:-7%;background:#0a0806 url('${CUTSCENE_ART[scene.art]}') center/cover no-repeat;opacity:0.4;pointer-events:none;will-change:transform"></div><div class="modal-card notice-modal show-beat notice-neutral" style="position:relative;z-index:1;max-width:520px">${scene.emoji ? `<div class="notice-emoji">${scene.emoji}</div>` : ""}<div class="notice-kicker">Garage Life</div><div class="notice-title">${scene.title}</div><div class="notice-text">${scene.text}</div><div class="btn-row ${scene.choices && scene.choices.length === 3 ? "three" : scene.choices && scene.choices.length === 1 ? "one" : "two"}">${(scene.choices || []).map((choice, idx) => button(choice.label, `resolvePendingScene(${idx})`, false, "", `width:100%;${idx === 1 ? "background:#7da0c2;border-color:var(--blue-bright)" : idx === 2 ? "background:#4a3c2e;border-color:#6b5840;color:var(--text)" : ""}`)).join("")}</div></div></div>`;
+          root.innerHTML = `<div class="modal" style="background:#0a0806;overflow:hidden"><div class="scene-art-backdrop cs-drift-a" style="position:absolute;inset:-7%;background:#0a0806 url('${CUTSCENE_ART[scene.art]}') center/cover no-repeat;opacity:0.85;pointer-events:none;will-change:transform"></div><div style="position:absolute;inset:0;background:radial-gradient(ellipse 130% 100% at 50% 40%, transparent 40%, rgba(5,4,3,0.72) 100%);pointer-events:none"></div><div class="modal-card notice-modal show-beat notice-neutral" style="position:relative;z-index:1;max-width:520px">${scene.emoji ? `<div class="notice-emoji">${scene.emoji}</div>` : ""}<div class="notice-kicker">Garage Life</div><div class="notice-title">${scene.title}</div><div class="notice-text">${scene.text}</div><div class="btn-row ${scene.choices && scene.choices.length === 3 ? "three" : scene.choices && scene.choices.length === 1 ? "one" : "two"}">${(scene.choices || []).map((choice, idx) => button(choice.label, `resolvePendingScene(${idx})`, false, "", `width:100%;${idx === 1 ? "background:#7da0c2;border-color:var(--blue-bright)" : idx === 2 ? "background:#4a3c2e;border-color:#6b5840;color:var(--text)" : ""}`)).join("")}</div></div></div>`;
           return true;
         }
         root.innerHTML = popupCard({
