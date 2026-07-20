@@ -4380,7 +4380,11 @@
             width: 100%;
             max-width: 400px;
             height: auto;
-            display: block;
+            /* Hidden: the painted title art (splash-cine) is the real backdrop
+               and is always present. This placeholder used to flash on cold
+               load before the art decoded; now the load window is just the
+               dark splash background. */
+            display: none;
             margin: 0 auto 24px;
             border-radius: 8px;
             image-rendering: pixelated;
@@ -9441,7 +9445,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.31.1";
+      const GAME_VERSION = "0.31.2";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -10120,6 +10124,59 @@
           ? pickFresh(BUCK_RESULT_LINES.beat, "buck:beat")
           : pickFresh(BUCK_RESULT_LINES.lost, "buck:lost");
       }
+      // The alternate event venues are not static judged car shows, so the
+      // tier's generic "Main Street / walkaround" cinematic copy reads wrong on
+      // them (a drag night is not Main Street; you do not "walk around" an
+      // autocross). Each event gets its own arrival line and, for the timed and
+      // battle formats, its own judging kicker/headline/labels. The two
+      // Concours ARE real walkaround judging, so they only override the arrival
+      // line and let the default judging copy stand.
+      const SHOW_EVENT_FLAVOR = {
+        "Night Drag Series": {
+          arrival: "The tree's lit at the far end, the lanes reek of race gas and hot clutch, and the guy staging next to you is already halfway through his burnout. Bracket sheet's on the clipboard.",
+          kicker: "Drag Night",
+          arriveCta: "Stage it up →",
+          judgeKicker: "Drag Night · Down the Track",
+          judgeHeadline: "The runs are in, the time slips are printing",
+          judgeLabels: ["THE BURNOUT", "OFF THE LINE", "THE TOP END"],
+          judgeCta: "See the slips →",
+        },
+        "Weeknight Autocross": {
+          arrival: "The lot's chalked into a cone maze, the timing gear's blinking, and everybody's walking the course pretending they've got it memorized. No trophies out here, just the clock.",
+          kicker: "Autocross",
+          arriveCta: "Walk the course →",
+          judgeKicker: "Autocross · Against the Clock",
+          judgeHeadline: "The clock doesn't care how clean your paint is",
+          judgeLabels: ["THE FIRST RUN", "THROUGH THE CONES", "FAST TIME"],
+          judgeCta: "See the times →",
+        },
+        "Drift Battles": {
+          arrival: "Tire smoke's already hanging over the clipping point, the judges are up on the stand, and somebody's rear tires are down to the cords before the first run.",
+          kicker: "Drift Battles",
+          arriveCta: "Line it up →",
+          judgeKicker: "Drift · Line and Angle",
+          judgeHeadline: "It's angle, smoke, and commitment now",
+          judgeLabels: ["THE QUALIFIER", "THE TANDEM", "JUDGES' CALL"],
+          judgeCta: "See the call →",
+        },
+        "Hill Climb Time Trials": {
+          arrival: "The start line sits at the foot of the mountain, hay bales stacked on every corner above. Just you, the road, and a clock that starts whether you're ready or not.",
+          kicker: "Hill Climb",
+          arriveCta: "Roll to the line →",
+          judgeKicker: "Hill Climb · Against the Clock",
+          judgeHeadline: "Just you and the mountain now",
+          judgeLabels: ["THE LAUNCH", "MID-MOUNTAIN", "THE SUMMIT"],
+          judgeCta: "See the time →",
+        },
+        "Concours d'Lemons": {
+          arrival: "The worst cars in the county, lined up proud on the lawn. A judge in a loud, genuinely terrible blazer is already cackling at somebody's duct-taped bumper. You fit right in.",
+          kicker: "Concours d'Lemons",
+        },
+        "Concours Prestige Invitational": {
+          arrival: "White gloves, clipboards, and a hush over the manicured lawn. The cars here have provenance and the judges have opinions. Straighten your collar.",
+          kicker: "Concours",
+        },
+      };
       function getCarsAndCoffeeReward() {
         const toolCandidates = TOOLS_LIST.filter(
           (t) =>
@@ -15157,14 +15214,16 @@
           state.seasonStats.bestTier = show.tier;
         }
 
+        const eventFlavor = SHOW_EVENT_FLAVOR[show.name];
         const arrivalLine =
-          show.tier === "Cars & Coffee"
+          (eventFlavor && eventFlavor.arrival) ||
+          (show.tier === "Cars & Coffee"
             ? "You rolled in early, parked crooked, and immediately started pretending the idle sounded intentional."
             : show.tier === "Local"
               ? "Main Street is closed off, sawhorses up, somebody's already plugged in their boom box. Local crowd's already gathering."
               : show.tier === "Regional"
                 ? "You can feel the room tighten up now. Fewer jokes, more measuring tape energy."
-                : "This is the big stage now. Every panel gap feels like public information.";
+                : "This is the big stage now. Every panel gap feels like public information.");
         const judgingLine = randomShowComment();
         state.result = {
           show: show.name,
@@ -18641,10 +18700,11 @@ addEventListener("DOMContentLoaded",function(){
         if (!state.showLoading || !state.showStage) return false;
         const data = state.showCinematicData || {};
         const r = state.result || {};
+        const evFlavor = SHOW_EVENT_FLAVOR[r.show];
         if (state.showStage === "arriving") {
           const isCoffeeArr = r.tier === "Cars & Coffee";
-          const arriveKicker = isCoffeeArr ? "Cars & Coffee · Arrival" : "Show Night · Arrival";
-          const arriveCta = isCoffeeArr ? "See who's around →" : "Walk it to the field →";
+          const arriveKicker = evFlavor ? `${evFlavor.kicker} · Arrival` : isCoffeeArr ? "Cars & Coffee · Arrival" : "Show Night · Arrival";
+          const arriveCta = (evFlavor && evFlavor.arriveCta) || (isCoffeeArr ? "See who's around →" : "Walk it to the field →");
           const arrArt = showCinematicArt(r);
           if (arrArt) {
             root.innerHTML = `<div class="modal modal-cine"><div class="cs-art cs-drift-b" style="background-image:url('${arrArt}')"></div><div class="cs-grain"></div><div class="cs-vignette"></div><div class="cs-bar cs-bar-top"></div><div class="cs-bar cs-bar-bot"></div><div class="cs-caption"><div class="cs-kicker">${arriveKicker}</div><div class="cs-title">${r.show || "The show"}</div><div class="cs-sub">${data.arrivalLine || ""}</div><div class="cs-actions"><button class="notice-primary" onclick="advanceShowStage()">${arriveCta}</button></div></div><div class="cs-hint">Or press<span class="cs-hint-key">ENTER ▸</span></div></div>`;
@@ -18653,17 +18713,17 @@ addEventListener("DOMContentLoaded",function(){
           }
         } else if (state.showStage === "judging") {
           const isCoffeeJudge = r.tier === "Cars & Coffee";
-          const judgeLabels = isCoffeeJudge
+          const judgeLabels = (evFlavor && evFlavor.judgeLabels) || (isCoffeeJudge
             ? ["FIRST WALKBY", "POPPED THE HOOD", "PARTING WORD"]
-            : ["FIRST PASS", "WALKAROUND", "PARTING SHOT"];
+            : ["FIRST PASS", "WALKAROUND", "PARTING SHOT"]);
           const lines = (data.judgingComments || []).map((line, i) =>
             `<div class="judging-line" style="animation-delay:${i * 0.18}s"><div class="feed-kicker">${judgeLabels[i] || "FROM THE CROWD"}</div><div class="small" style="color:var(--text);line-height:1.6">${line}</div></div>`
           ).join("");
-          const judgeKicker = isCoffeeJudge ? "Cars & Coffee · Hangout" : "Show Night · Judging";
-          const judgeHeadline = isCoffeeJudge
+          const judgeKicker = (evFlavor && evFlavor.judgeKicker) || (isCoffeeJudge ? "Cars & Coffee · Hangout" : "Show Night · Judging");
+          const judgeHeadline = (evFlavor && evFlavor.judgeHeadline) || (isCoffeeJudge
             ? "People are walking by, sipping coffee, dropping comments"
-            : "Judges and crowd are making the rounds";
-          const judgeCta = isCoffeeJudge ? "See how it landed →" : "See the standings →";
+            : "Judges and crowd are making the rounds");
+          const judgeCta = (evFlavor && evFlavor.judgeCta) || (isCoffeeJudge ? "See how it landed →" : "See the standings →");
           const judgeArt = showCinematicArt(r);
           const judgeBg = judgeArt ? `<div class="cs-art cs-drift-b" style="background-image:url('${judgeArt}')"></div><div class="cs-scrim"></div>` : "";
           root.innerHTML = `<div class="modal${judgeArt ? " modal-cine" : ""}">${judgeBg}<div class="modal-card show-beat" style="max-width:560px"><div class="feed-kicker" style="text-align:center;margin-bottom:6px">${judgeKicker}</div><div style="text-align:center;color:var(--gold);font-weight:bold;font-size:22px;margin-bottom:14px">${judgeHeadline}</div><div class="info-box judging-stack">${lines}</div>${button(judgeCta, "advanceShowStage()", false, "", "width:100%;margin-top:14px;font-size:14px")}</div></div>`;
