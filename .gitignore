@@ -1,7 +1,8 @@
-# Dev-only test dependency (Playwright for dev/qa-smoke.js)
-node_modules/
-package.json
-package-lock.json
 
+# Dev-only test dependency (Playwright for dev/qa-smoke.js)
 # Scratch render previews / working files (not part of the game)
+dist/
+node_modules/
+package-lock.json
+package.json
 scratchpad/

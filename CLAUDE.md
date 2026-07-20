@@ -1,7 +1,10 @@
 # Car Guy Simulator — project notes
 
-Single-file HTML5 game. Everything ships in `Car_Guy_Sim.html`; `dev/` holds
-tooling and sprite workbenches (not shipped).
+HTML5 game. All game code lives in `Car_Guy_Sim.html`; cutscene art ships as
+`assets/art/*.webp` (the game points at those files, so the source stays small
+and runs straight from disk). `dev/` holds tooling (not shipped). The
+single-file itch/web build is generated on demand by `dev/build-web.js`, which
+inlines the art back into `dist/Car_Guy_Sim.html` (gitignored).
 
 ## Push checklist (EVERY push, no exceptions)
 
@@ -14,9 +17,17 @@ tooling and sprite workbenches (not shipped).
      version string anywhere else.
 2. **Syntax check**: extract the main script and `node --check` it.
 3. **Run the smoke suite**: `QA_CHROMIUM=/opt/pw-browsers/chromium node dev/qa-smoke.js`
-   — all checks must pass (it also verifies the title version plate).
+   — all checks must pass (it verifies the title version plate, and also runs
+   `dev/build-web.js` to confirm the itch single-file build stays
+   self-contained).
 4. Push the feature branch; fast-forward `main` and `garage` only when the
    user says to push live.
+
+## Shipping to itch (the web build)
+
+Run `node dev/build-web.js`; upload the generated `dist/Car_Guy_Sim.html` (a
+self-contained single file, art inlined). Never upload the source
+`Car_Guy_Sim.html` to itch on its own, its art lives in `assets/`.
 
 ## Conventions
 

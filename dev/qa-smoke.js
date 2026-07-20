@@ -368,6 +368,30 @@ const pass = (msg) => console.log("✓", msg);
   if (errors.length) fail("uncaught errors:\n  " + errors.join("\n  "));
   pass("zero uncaught page errors");
 
+  // ── the itch/web single-file build stays self-contained ──
+  // Source points CUTSCENE_ART at assets/art/*.webp; dev/build-web.js inlines
+  // them back into data-URIs. Guard that the built artifact needs no external
+  // files, so an itch upload of just the one HTML never ships broken art.
+  {
+    const { execFileSync } = require("child_process");
+    const fs = require("fs");
+    const path = require("path");
+    try {
+      execFileSync("node", [path.join(__dirname, "build-web.js")], { stdio: "pipe" });
+    } catch (e) {
+      fail("web build failed: " + (e.stderr ? e.stderr.toString() : e.message));
+    }
+    const dist = path.join(__dirname, "..", "dist", "Car_Guy_Sim.html");
+    if (!fs.existsSync(dist)) fail("web build produced no dist/Car_Guy_Sim.html");
+    const out = fs.readFileSync(dist, "utf8");
+    const region = out.match(/\/\*__ART_MAP__\*\/([\s\S]*?)\/\*__END_ART_MAP__\*\//);
+    if (!region) fail("web build lost the art-map markers");
+    if (region[1].includes("assets/art/")) fail("web build art-map still points at external files");
+    const inlined = (region[1].match(/data:image\/webp;base64,/g) || []).length;
+    if (inlined < 60) fail("web build inlined too few assets: " + inlined);
+    pass(`web build self-contained (${inlined} assets inlined)`);
+  }
+
   await browser.close();
   console.log("\nALL SMOKE CHECKS PASSED — safe to upload.");
 })().catch((e) => fail(e.message));

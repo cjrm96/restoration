@@ -846,9 +846,13 @@ calm. 16:9.
 
 ## Wiring a new image in (the code side)
 
+Art ships as `assets/art/<key>.webp` (not inline anymore). The game points at
+those files; `dev/build-web.js` inlines them for the single-file itch build.
+
 1. Save the master PNG as `art/<key>.png` (key = its `CUTSCENE_ART` id).
-2. Convert to 1920px-wide WebP q92 — PIL: `Image.save(out, "WEBP", quality=92, method=6)`.
-3. Base64-embed it into `CUTSCENE_ART` in `Car_Guy_Sim.html` under `"<key>"`.
+2. Export the web-size asset: `python3 dev/export-art.py <key>` (writes
+   `assets/art/<key>.webp`, 1920px WebP q92).
+3. Add `"<key>"` to the `ART_KEYS` list in `Car_Guy_Sim.html` so it loads.
 4. Add a row to `art/README.md`.
 
 `playCutscene({ art: "<key>", ... })` picks it up automatically, and any beat

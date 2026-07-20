@@ -1,8 +1,14 @@
 # Cut-scene & loading-screen art
 
 Artist-made pixel-art set pieces (source masters, ~2752×1536 PNG). These are
-the full-resolution originals — the game embeds compressed web-size copies,
-never these files directly. Keep the masters untouched.
+the full-resolution originals. The game ships compressed web-size copies in
+`assets/art/<key>.webp` (1920px WebP q92) and points at those files; it never
+loads these masters directly. Keep the masters untouched.
+
+To add or refresh a shipped asset: `python3 dev/export-art.py <key>` (master →
+`assets/art/<key>.webp`), then add the key to `ART_KEYS` in `Car_Guy_Sim.html`
+if it's new. `dev/build-web.js` inlines all of `assets/art/` back into the
+single-file itch build.
 
 ## Slot map
 
