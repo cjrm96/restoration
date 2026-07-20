@@ -9450,7 +9450,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.31.3";
+      const GAME_VERSION = "0.31.4";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -11660,9 +11660,36 @@
       // Tools and yard pulls don't auto-stash the way take-off parts do, so
       // selling one converts it into a normal Marketplace listing in a single
       // click and routes it through the same buyer-offer flow as any part.
+      // Only genuine surplus goes on the market, never the last of something you
+      // still need. A tool is surplus once no unfinished job in the garage calls
+      // for it; a yard pull is surplus once it can't be usefully installed (its
+      // car is gone, it's already on the car, or that system is maxed). This
+      // stops players from accidentally selling working tools and parts.
+      function toolIsSurplus(toolId) {
+        return !(state.cars || []).some((car) =>
+          PARTS.some(
+            (p) =>
+              (p.tools || []).includes(toolId) &&
+              !(car.installedParts || []).includes(p.id) &&
+              (car[p.category] || 0) < 100,
+          ),
+        );
+      }
+      function pullIsSurplus(pull) {
+        const car = getCarById(pull.carId);
+        if (!car) return true;
+        const part = PARTS.find((p) => p.id === pull.partId);
+        if (!part) return true;
+        if ((car.installedParts || []).includes(part.id)) return true;
+        return (car[part.category] || 0) >= 100;
+      }
       function listToolForSale(toolId, tone = "firm") {
         const idx = (state.ownedTools || []).indexOf(toolId);
         if (idx === -1) return toast("You don't own that tool anymore.", "err");
+        if (STARTER_TOOLS.includes(toolId))
+          return toast("Your starter kit stays in the box.", "err");
+        if (!toolIsSurplus(toolId))
+          return toast("You still need that tool for work in the garage. Only spares can go.", "err");
         const tool = TOOLS_LIST.find((t) => t.id === toolId);
         if (!tool) return;
         // Used tools move for a little over half of new, cash from the scene.
@@ -11688,6 +11715,8 @@
         const pull = state.yardPulls[idx];
         const part = PARTS.find((p) => p.id === pull.partId);
         if (!part) return;
+        if (!pullIsSurplus(pull))
+          return toast("You pulled that part for the build, it's not a spare. Install it or let it ride.", "err");
         // A pull is worth roughly half its DIY value, scaled by condition.
         const base = Math.max(
           10,
@@ -19946,13 +19975,14 @@ addEventListener("DOMContentLoaded",function(){
         const stash = state.partsInventory.filter((i) => !i.listed && !i.sold);
         const listed = state.partsInventory.filter((i) => i.listed && !i.sold);
 
-        // Tools you picked up (swap meet, hardware) and parts you pulled at
-        // Pick-A-Part can be flipped to the scene too, same buyer-offer flow.
+        // Only true surplus is listable: a tool no job still needs, or a pull
+        // that can't be usefully installed. Never the last of something you're
+        // still using, so players can't accidentally sell working kit.
         const sellableTools = (state.ownedTools || [])
-          .filter((id) => !STARTER_TOOLS.includes(id))
+          .filter((id) => !STARTER_TOOLS.includes(id) && toolIsSurplus(id))
           .map((id) => TOOLS_LIST.find((t) => t.id === id))
           .filter(Boolean);
-        const sellablePulls = state.yardPulls || [];
+        const sellablePulls = (state.yardPulls || []).filter(pullIsSurplus);
         const toneButtons = (fn, refId) => `
         <div class="btn-row three" style="margin-top:8px">
           ${button("Firm on Price", `${fn}('${refId}','firm')`, false, "", "width:100%;padding:6px 8px;font-size:11px")}
@@ -19969,7 +19999,7 @@ addEventListener("DOMContentLoaded",function(){
         ${toneButtons("listToolForSale", tool.id)}
       </div>`)
               .join("")
-          : `<div class="small muted">No spare tools to move. Your starter kit stays in the box, but anything you pick up at the swap can be flipped here.</div>`;
+          : `<div class="small muted">No spare tools to move. Only tools no unfinished job still needs show up here, so you can't sell the last of something you're using.</div>`;
         const pullsSellMarkup = sellablePulls.length
           ? sellablePulls
               .map((pull) => {
@@ -19985,7 +20015,7 @@ addEventListener("DOMContentLoaded",function(){
       </div>`;
               })
               .join("")
-          : `<div class="small muted">Nothing riding in the truck from the yard. Pull parts at Pick-A-Part and you can install them or flip them here.</div>`;
+          : `<div class="small muted">No spare yard pulls. A part you pulled for the build stays in the truck to install, only pulls you can't use (wrong car, already fitted, system maxed) turn up here to flip.</div>`;
 
         const STASH_PREVIEW = 5;
         const LISTED_PREVIEW = 5;
