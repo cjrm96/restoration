@@ -98,20 +98,26 @@ const pass = (msg) => console.log("✓", msg);
   if (crateOk !== true) fail("bedside box: " + crateOk);
   pass("bedside box → starter tools, first DIY open");
 
-  // ── pre-season ramp: a new game opens in the 4-week off-season, shows
-  // locked, the side-work gig board live and paying. ──
+  // ── pre-season ramp: season 1 opens straight into the competitive
+  // calendar (no pre-season), but season 2+ opens in the 4-week off-season
+  // with shows locked and the side-work gig board live and paying. Drive the
+  // pre-season on manually to verify the mechanic in isolation. ──
   const preOk = await page.evaluate(() => {
-    if (!inPreSeason() || state.preWeek < 1) return "not in pre-season at game start";
+    if (inPreSeason()) return "season 1 should not start in pre-season";
+    enterPreSeason();
+    if (!inPreSeason() || state.preWeek < 1) return "enterPreSeason did not open pre-season";
     if (tabUnlocked("shows")) return "Compete not locked during pre-season";
     if (!(state.gigs || []).length) return "gig board empty in pre-season";
     const before = state.money;
     const g = state.gigs.find((x) => !x.done);
     doGig(g.id);
     if (state.money <= before) return "side job did not pay";
+    // reset back to the competitive season for the rest of the suite
+    state.preWeek = 0; state.week = 1; state.gigs = [];
     return true;
   });
   if (preOk !== true) fail("pre-season: " + preOk);
-  pass("pre-season ramp: shows locked, side-work board pays");
+  pass("pre-season ramp (season 2+): shows locked, side-work board pays");
 
   // ── first installs → Social unlock ──
   await page.evaluate(() => {
