@@ -723,7 +723,7 @@ glinting, an easy "you're square, nice doing business" energy, neighborly and
 light. Keep the lower-left quarter calm. 16:9.
 ```
 
-### `scene-pawn-shop` — the ring goes on the counter · ⬜ not generated
+### `scene-pawn-shop` — the ring goes on the counter · ✅ IN GAME
 > The take side of the ring-pawn beat. Paired with the redemption below. Quiet
 > shame, not noir menace, this is a good man doing a bad thing for a good reason.
 ```
@@ -740,7 +740,7 @@ overhead light, quiet-shame mood, "I swore I'd never" energy. Keep the lower-lef
 quarter calm. 16:9.
 ```
 
-### `scene-pawn-shop-redeem` — the ring comes home · ⬜ not generated
+### `scene-pawn-shop-redeem` — the ring comes home · ✅ IN GAME
 > The payoff bookend to `scene-pawn-shop`. Same counter, the weight lifted.
 ```
 Pixel art, the same downtown pawn shop, warmer now with daylight through the
@@ -753,7 +753,7 @@ things, but his is leaving with him. Warmer light, relief and quiet redemption,
 "I brought it home" energy. Keep the lower-left quarter calm. 16:9.
 ```
 
-### `scene-roll-cab` — the first real roll cab, bought new · ⬜ not generated
+### `scene-roll-cab` — the first real roll cab, bought new · ✅ IN GAME
 > Fires on the Full Bank Tool Chest upgrade. A big-box discount tool warehouse,
 > the honest pride of buying your own the first time.
 ```
@@ -769,7 +769,7 @@ cavernous space, "no hand-me-downs this time" energy. Keep the lower-left quarte
 calm. 16:9.
 ```
 
-### `scene-uncle-ray` — the man at the fence · ⬜ not generated
+### `scene-uncle-ray` — the man at the fence · ✅ IN GAME
 > Fires at the first Regional. The mentor who quit, watching from the edge and
 > leaving before the trophies. Understated, bittersweet, no big gestures.
 ```
@@ -785,7 +785,7 @@ shadows, bittersweet "he came, and he'll leave before the trophies" energy. Keep
 the lower-left quarter calm. 16:9.
 ```
 
-### `scene-dale-brakes` — Dale remembers the truck · ⬜ not generated
+### `scene-dale-brakes` — Dale remembers the truck · ✅ IN GAME
 > A shop scene once you're a trusted regular. The taciturn mechanic and the
 > truck's ghost history. Warm, weathered, unhurried.
 ```
@@ -801,7 +801,7 @@ truck in '89" energy, weathered and personal. Keep the lower-left quarter calm.
 16:9.
 ```
 
-### `scene-brand-deal` — a word by the truck · ⬜ not generated
+### `scene-brand-deal` — a word by the truck · ✅ IN GAME
 > Fires on the first brand-deal offer. A marketing rep pulling the player aside
 > at a meet, the first taste of the hobby turning into a business.
 ```
@@ -817,7 +817,7 @@ friendly and slightly surreal for a guy with a wrench. Keep the lower-left quart
 calm. 16:9.
 ```
 
-### `scene-gas-station` — recognized at the pump · ⬜ not generated
+### `scene-gas-station` — recognized at the pump · ✅ IN GAME
 > Fires at the "Known Around Town" reputation tier. The first time a stranger
 > knows the build before they know you. Small, warm, ordinary-life milestone.
 ```
