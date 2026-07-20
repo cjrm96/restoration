@@ -652,6 +652,115 @@ glinting, an easy "you're square, nice doing business" energy, neighborly and
 light. Keep the lower-left quarter calm. 16:9.
 ```
 
+### `scene-pawn-shop` — the ring goes on the counter · ⬜ not generated
+> The take side of the ring-pawn beat. Paired with the redemption below. Quiet
+> shame, not noir menace, this is a good man doing a bad thing for a good reason.
+```
+Pixel art, a cramped downtown pawn shop interior under flat fluorescent light, a
+long glass counter case crowded with other people's hard times: watches, a
+guitar, class rings, a camera. Behind the counter a heavyset pawnbroker with a
+jeweler's loupe to his eye examines a small gold wedding band, not looking up,
+counting worn bills onto the glass with his other hand. In the foreground, seen
+from behind and to the side, the mechanic stands at the counter in his work
+jacket, shoulders tight, one hand still half-reaching after the ring he just slid
+across, clearly hating this. Barred window behind, a neon OPEN glow (no readable
+text), a wall of tagged guitars and tools. Muted greens and browns, one cold
+overhead light, quiet-shame mood, "I swore I'd never" energy. Keep the lower-left
+quarter calm. 16:9.
+```
+
+### `scene-pawn-shop-redeem` — the ring comes home · ⬜ not generated
+> The payoff bookend to `scene-pawn-shop`. Same counter, the weight lifted.
+```
+Pixel art, the same downtown pawn shop, warmer now with daylight through the
+barred window. The same pawnbroker slides the small gold wedding band back across
+the glass counter with two fingers, a torn pawn ticket beside it. In the
+foreground, seen from behind and to the side, the mechanic takes the ring back,
+shoulders finally dropping, tucking it carefully into his shirt pocket over his
+heart rather than a pocket. The glass case still crowded with other people's
+things, but his is leaving with him. Warmer light, relief and quiet redemption,
+"I brought it home" energy. Keep the lower-left quarter calm. 16:9.
+```
+
+### `scene-roll-cab` — the first real roll cab, bought new · ⬜ not generated
+> Fires on the Full Bank Tool Chest upgrade. A big-box discount tool warehouse,
+> the honest pride of buying your own the first time.
+```
+Pixel art, the interior of a big-box discount tool warehouse: bare concrete
+floors, tall steel pallet racks stacked to a high ceiling, orange clearance price
+tags everywhere (no readable text), a forklift in the background aisle. On the
+showroom floor sits a brand-new rolling tool cabinet, a real roll cab with deep
+drawers, a locking lid, and chrome pulls, catching the harsh overhead light. In
+the foreground, seen from behind and to the side, the mechanic stands with a hand
+resting on top of it, taking it in, work jacket on, the honest pride of buying his
+own the first time. A flat cart nearby. Bright utilitarian retail lighting,
+cavernous space, "no hand-me-downs this time" energy. Keep the lower-left quarter
+calm. 16:9.
+```
+
+### `scene-uncle-ray` — the man at the fence · ⬜ not generated
+> Fires at the first Regional. The mentor who quit, watching from the edge and
+> leaving before the trophies. Understated, bittersweet, no big gestures.
+```
+Pixel art, a regional car show at a county fairground seen across the field at
+golden hour, judged rows of classic cars and string lights soft in the
+background. In the mid-ground, alone at a chain-link fence at the edge of the
+event, stands an older man in a faded shop jacket and a ball cap, hands in his
+pockets, watching quietly, a little apart from the crowd, an old pickup parked
+behind him on the grass. His posture is proud but wistful, a man looking at
+something he taught someone else to do. In the soft-focus distance, the mechanic's
+show car sits in the judged rows, unaware he's being watched. Warm low light, long
+shadows, bittersweet "he came, and he'll leave before the trophies" energy. Keep
+the lower-left quarter calm. 16:9.
+```
+
+### `scene-dale-brakes` — Dale remembers the truck · ⬜ not generated
+> A shop scene once you're a trusted regular. The taciturn mechanic and the
+> truck's ghost history. Warm, weathered, unhurried.
+```
+Pixel art, the interior of a small weathered independent mechanic's shop, one
+open bay with a hydraulic lift, pegboard walls, an old parts calendar, a work
+bench cluttered with tools. A lean older mechanic in coveralls, Dale, stands
+beside the player's patina-blue 1960s pickup with a clipboard and a pen paused in
+the air, mid-sentence, looking at the truck with the flicker of an old memory, not
+at the player. In the foreground, seen from behind and to the side, the mechanic
+(the player) listens, hands in pockets. Warm shop-light and a shaft of daylight
+from the open bay door, dust in the air, unhurried, "I did the brakes on this
+truck in '89" energy, weathered and personal. Keep the lower-left quarter calm.
+16:9.
+```
+
+### `scene-brand-deal` — a word by the truck · ⬜ not generated
+> Fires on the first brand-deal offer. A marketing rep pulling the player aside
+> at a meet, the first taste of the hobby turning into a business.
+```
+Pixel art, a casual car meet in a lot at golden hour, cars backed in with hoods
+up and small clusters of enthusiasts in the background. In the mid-ground, a
+younger man in a clean company polo shirt and sunglasses, phone already out,
+leans in toward the player with an easy salesman's grin, holding out a business
+card. In the foreground, seen from behind and to the side, the mechanic in a
+grease-marked shirt is caught mid-wipe with a shop rag, a bemused "who, me?" tilt
+to his posture, his project truck beside him. Warm low sun, chrome and phone
+screens catching the light, "been watching your stuff blow up online" energy,
+friendly and slightly surreal for a guy with a wrench. Keep the lower-left quarter
+calm. 16:9.
+```
+
+### `scene-gas-station` — recognized at the pump · ⬜ not generated
+> Fires at the "Known Around Town" reputation tier. The first time a stranger
+> knows the build before they know you. Small, warm, ordinary-life milestone.
+```
+Pixel art, a fuel station at dusk under a lit canopy, the player's project truck
+parked at a pump, nozzle in the filler. In the mid-ground, a stranger at the next
+island over leans around his own car and calls across the lot with a raised hand
+and a grin of recognition. In the foreground, seen from behind and to the side,
+the mechanic looks up from the pump, caught a little off guard and quietly pleased.
+Warm canopy lights against a deep dusk sky, price sign glowing (no readable text),
+convenience-store windows lit behind. Ordinary-life, "somebody I've never met
+knows the truck" milestone energy, small and warm. Keep the lower-left quarter
+calm. 16:9.
+```
+
 ---
 
 ## Non-game slots (store pages / dev logs)

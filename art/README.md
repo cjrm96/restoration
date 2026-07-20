@@ -56,6 +56,13 @@ never these files directly. Keep the masters untouched.
 | `scene-bank-loan-paid.png` | Bank loan paid-off cutscene, the account closed and the file stamped PAID. Fires when the bank loan is cleared. |
 | `scene-tool-truck-loan.png` | Tool truck tab opened cutscene, the Snap-it man writes you in the book at the curb. Fires when the tool truck tab is opened. Distinct from `scene-tool-truck` (the 72-inch bank delivery). |
 | `scene-tool-truck-loan-paid.png` | Tool truck tab paid-off cutscene, the page torn out of the book, square with the truck. Fires when the tool truck tab is cleared. |
+| `scene-pawn-shop.png` | Ring-pawn cutscene, the glass counter and worn bills. Fires when the wedding ring is pawned. |
+| `scene-pawn-shop-redeem.png` | Ring-redemption cutscene, the ring slid back across the glass. Fires when the pawn ticket is cleared. |
+| `scene-roll-cab.png` | First real roll cab bought new off a big-box discount tool store floor. Fires on the Full Bank Tool Chest storage upgrade. |
+| `scene-uncle-ray.png` | Uncle Ray at the chain-link fence, watching your first Regional and leaving before the trophies. Fires at the first Regional show. |
+| `scene-dale-brakes.png` | Dale the mechanic remembering he did the truck's brakes in '89. Fires as a shop scene once you're a trusted regular. |
+| `scene-brand-deal.png` | First brand deal, a marketing rep pulling you aside at a meet. Fires on the first brand-deal offer. |
+| `scene-gas-station.png` | Recognized at the gas station, a stranger clocks the truck from online. Fires at the "Known Around Town" reputation tier. |
 
 Two superseded uploads (`Title Screen - Edited.png`, `restoration complete -
 Edited.png`) carried a small watermark sparkle and were dropped in favor of
