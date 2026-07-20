@@ -2412,6 +2412,20 @@
         box-shadow:
           0 24px 60px rgba(0, 0, 0, 0.55),
           inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        /* Kept hidden during the cold-load window (before the splash JS runs,
+           which on the itch build only happens once the whole file parses) so
+           the player sees just the painted backdrop, not a half-built title
+           card. The JS marks the splash ready and fades the real one in. */
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+      .splash-corner {
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+      #splash.splash-ready .splash-inner,
+      #splash.splash-ready .splash-corner {
+        opacity: 1;
       }
       .splash-badge {
         font-size: 56px;
@@ -9457,9 +9471,9 @@
       /* ═══════════════════════════════════════════
      CONSTANTS
   ═══════════════════════════════════════════ */
-      const ROADWORTHY_ENGINE = 15,
-        ROADWORTHY_TRANSMISSION = 15,
-        ROADWORTHY_BRAKES = 15;
+      const ROADWORTHY_ENGINE = 25,
+        ROADWORTHY_TRANSMISSION = 25,
+        ROADWORTHY_BRAKES = 25;
       const FUEL_PRICE = 4,
         MAX_FUEL = 60,
         PAYCHECK_AMOUNT = 1000,
@@ -22076,6 +22090,10 @@ addEventListener("DOMContentLoaded",function(){
               `<button class="${it.cls || "splash-menu-item"}${i === 0 ? " sel" : ""}" onclick="${it.fn}">${it.label}</button>`,
           )
           .join("")}</div>`;
+        // The title card is hidden until now (see .splash-inner CSS) so the
+        // cold-load window shows only the painted backdrop. Reveal the fully
+        // built card, fading it in over the art.
+        sp.classList.add("splash-ready");
       })();
 
       // Keyboard shortcuts. Esc follows the pause-menu convention:
