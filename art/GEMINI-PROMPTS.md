@@ -237,6 +237,77 @@ the edge of the light. Grand, theatrical, big-league mood — the top of the
 mountain.
 ```
 
+### Special-event venues — the sub-events with their own cinematic look
+
+Wired via `SHOW_EVENT_CS_ART`: these events override their tier's art in the
+show cinematic, so drag night never looks like Main Street.
+
+#### `show-drag` — Night Drag Series · ✅ IN GAME
+```
+A pixel-art night drag strip under tall stadium lights. Two lanes of cracked
+concrete running to a vanishing point, a christmas-tree starting light tower
+glowing amber and green between the lanes, two classic American cars staged at
+the line nose-forward, faint tire smoke drifting from a burnout box, painted
+lane lines and a wide start stripe. Low grandstands of spectator silhouettes
+along one side, dark tree line and deep purple night sky above the light glow.
+Tense, engines-loaded, "stage and go" energy. 2:1 banner, lower-center calm.
+```
+
+#### `show-autocross` — Weeknight Autocross · ✅ IN GAME
+```
+A pixel-art autocross course on a wide empty parking lot at dusk, a grid of
+bright orange traffic cones laid out in a tight slalom, a single classic car
+mid-corner leaning hard on its outside tires with a puff of tire scrub, one
+cone tipped over. A folding table with timing gear and a couple of helmeted
+enthusiasts standing by their own cars at the edge, chalk course lines on the
+asphalt, low sun throwing long cone shadows, warehouse rooflines and a purple
+sky behind. Casual, grassroots, "beat your own time" energy. 2:1 banner,
+lower-center calm.
+```
+
+#### `show-drift` — Drift Battles · ✅ IN GAME
+```
+A pixel-art drift event at night, a classic coupe fully sideways through a
+floodlit corner with a thick plume of white tire smoke pouring off the rear,
+opposite-lock steering, a stacked-tire wall lining the clipping point. A small
+judges' stand and a hillside of spectator silhouettes behind, portable flood
+towers casting hard cones of light through the smoke, deep night sky. Loud,
+smoky, showy, "commit or crash" energy. 2:1 banner, lower-center calm.
+```
+
+#### `show-hillclimb` — Hill Climb Time Trials · ✅ IN GAME
+```
+A pixel-art mountain hill-climb, a narrow winding two-lane road switchbacking
+up a pine-covered slope at golden hour, a classic car attacking an uphill
+hairpin with hay bales stacked on the apex and a rock face on the inside. A
+small start banner (blank, no text) at the bottom, a valley and ridgelines
+fading into dusk haze below, a lone corner marshal silhouette with a flag.
+Focused, remote, "just you and the clock" energy. 2:1 banner, lower-center
+calm.
+```
+
+#### `show-concours` — Concours Prestige Invitational · ✅ IN GAME
+```
+A pixel-art concours d'elegance on a manicured country-club lawn at golden
+hour, immaculate classic cars spaced far apart on clipped green grass, each on
+a small display card stand (blank, no text), a white judging tent with pennant
+flags, well-dressed spectator silhouettes strolling with programs, a grand
+clubhouse and tall shade trees behind, soft warm light, dew sheen on the grass.
+Refined, white-glove, "best in the world" energy. 2:1 banner, lower-center
+calm.
+```
+
+#### `show-concours-lemons` — Concours d'Lemons · ✅ IN GAME
+```
+A pixel-art tongue-in-cheek car show on a manicured country-club lawn at golden
+hour, but the cars are proudly terrible: rusty survivors, primer-spot patina,
+duct-taped trim and mismatched panels, spaced out on clipped green grass. A
+hand-lettered joke trophy on a wobbly card table, judges in loud mismatched
+blazers laughing, a scruffy pennant-flag tent, a grand clubhouse behind. Warm
+light, dew on the grass. Cheeky, "worst in show wins" energy. 2:1 banner,
+lower-center calm.
+```
+
 ### `scene-dig-race` — Buck's dig race at the school stoplight · 2:1
 ```
 Pixel art: two classic American cars side by side at a stoplight on an empty
@@ -586,7 +657,7 @@ motes drifting in the sun. Exhale, relief, hard-won freedom, "I own it again"
 energy. Keep the lower-left quarter calm. 16:9.
 ```
 
-### `scene-bank-loan` — the legit money, a stamp that says APPROVED · ⬜ not generated
+### `scene-bank-loan` — the legit money, a stamp that says APPROVED · ✅ IN GAME
 > The honest, daylight counterpart to the loan shark. Same "you took money to
 > chase this" beat, none of the menace. Paired with the payoff below.
 ```
@@ -605,7 +676,7 @@ noir. Clean cool office light with one warm shaft from the window. Keep the
 lower-left quarter calm. 16:9.
 ```
 
-### `scene-bank-loan-paid` — debt closed on time, the file stamped PAID · ⬜ not generated
+### `scene-bank-loan-paid` — debt closed on time, the file stamped PAID · ✅ IN GAME
 > The quiet-dignity bookend to `scene-bank-loan`. Same branch, account closed,
 > understated, no confetti, earned.
 ```
@@ -621,7 +692,7 @@ Understated, earned, "made every payment and own it outright" energy. Warm hones
 afternoon light. Keep the lower-left quarter calm. 16:9.
 ```
 
-### `scene-tool-truck-loan` — the Snap-it man writes you on the tab · ⬜ not generated
+### `scene-tool-truck-loan` — the Snap-it man writes you on the tab · ✅ IN GAME
 > NOT the same as `scene-tool-truck` (that one delivers the 72-inch bank). This
 > is the curbside handshake when he extends you credit, a chattier, friendlier
 > money beat. Paired with the payoff below.
@@ -639,7 +710,7 @@ sun, chrome catching the light, an easy neighborly deal, "pay when you can, I'll
 find you" energy, friendly not menacing. Keep the lower-left quarter calm. 16:9.
 ```
 
-### `scene-tool-truck-loan-paid` — square with the truck, the page torn out · ⬜ not generated
+### `scene-tool-truck-loan-paid` — square with the truck, the page torn out · ✅ IN GAME
 > The payoff bookend to `scene-tool-truck-loan`. Same curb, tab closed.
 ```
 Pixel art, same golden-hour curb, same chrome-and-red tool truck at the curb with

@@ -21,6 +21,12 @@ never these files directly. Keep the masters untouched.
 | `show-local.png` | Local Car Show — Main Street with flags. |
 | `show-regional.png` | Regional Classic Show — fairground, string lights, ferris wheel. |
 | `show-national.png` | National Classic Show — convention hall, velvet ropes. |
+| `show-drag.png` | Night Drag Series cinematic — staged lanes under stadium lights. |
+| `show-autocross.png` | Weeknight Autocross cinematic — cones on a dusk parking lot. |
+| `show-drift.png` | Drift Battles cinematic — sideways through the floodlit corner. |
+| `show-hillclimb.png` | Hill Climb Time Trials cinematic — the switchback at golden hour. |
+| `show-concours.png` | Concours Prestige Invitational cinematic — the manicured lawn. |
+| `show-concours-lemons.png` | Concours d'Lemons cinematic — the proudly terrible lawn show. |
 | `scene-sunday-drive.png` | Family Saturday / Sunday drive cut scene (family in the truck through town). |
 | `scene-dig-race.png` | Buck's dig-race challenge at the school stoplight. |
 | `scene-restoration-complete.png` | Restoration-complete reveal — the proud-mechanic moment. |
