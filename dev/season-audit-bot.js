@@ -70,7 +70,14 @@ const SEED = Number(process.argv[2] || 1);
         if (state.pendingScene) { window.__beatLog.push({ week: state.week, season: state.seasonNumber||1, t: "scene", id: state.pendingScene.id || state.pendingScene.title }); resolvePendingScene(0); return "scene"; }
         if (state.pendingUnlock) { acknowledgeUnlock(false); return "unlock"; }
         if (state.pendingEvent) { window.__beatLog.push({ week: state.week, season: state.seasonNumber||1, t: "event", id: (state.pendingEvent && state.pendingEvent.title) || "event" }); resolveEvent(state.money > 800); return "event"; }
-        if (state.pendingMarketplaceOffer) { respondMarketplaceOffer(true); return "mkOffer"; }
+        if (state.pendingMarketplaceOffer) {
+          // Some offers open a second-step scenario (parking-lot meet, trade,
+          // etc.) that stays in the Messenger popup with its own reply buttons.
+          // Resolve that with the scenario responder, not another accept, or
+          // the offer never clears.
+          if (state.pendingMarketplaceOffer.scenarioActive) { respondMarketplaceScenario(0); return "mkScenario"; }
+          respondMarketplaceOffer(true); return "mkOffer";
+        }
         if (state.pendingCarOffer) { respondCarOffer("decline"); return "carOffer"; }
         if (state.weekRecap) { dismissWeekRecap(); return "recap"; }
         if (state.noticeQueue && state.noticeQueue.length) { dismissNotice(); return "notice"; }
