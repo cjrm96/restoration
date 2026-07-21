@@ -191,6 +191,39 @@ const pass = (msg) => console.log("✓", msg);
   if (showOk !== true) fail("show flow: " + showOk);
   pass("show entry + cinematic + result");
 
+  // ── the weekly Shop Log recap is always the LAST card of the week. It is
+  // stashed in state.pendingRecap during the advance and only promoted into
+  // state.weekRecap once every other beat has cleared (no queued scene/event,
+  // no notice, no live show/cutscene). This guards the reorg that stopped the
+  // recap from cutting into the middle of a show sequence. ──
+  const recapLastOk = await page.evaluate(() => {
+    state.weekRecap = null; state.pendingScene = null; state.pendingEvent = null;
+    state.pendingUnlock = null; state.showLoading = false; state.showStage = null;
+    state.showStore = false; state.cutscene = null;
+    state.pendingRecap = { week: state.week, money: 0, followers: 0, installs: 0, idle: false, missedMeet: false };
+    // A queued notice blocks promotion.
+    state.noticeQueue = [{ text: "QA notice", tone: "good" }]; state.eventQueue = [];
+    promoteRecapIfClear();
+    if (state.weekRecap) return "recap promoted while a notice was still queued";
+    // A queued scene/event blocks promotion.
+    state.noticeQueue = []; state.eventQueue = [{ kind: "scene", payload: { id: "qa", choices: [] } }];
+    promoteRecapIfClear();
+    if (state.weekRecap) return "recap promoted while the event queue was non-empty";
+    // A live scene blocks promotion.
+    state.eventQueue = []; state.pendingScene = { id: "qa", choices: [] };
+    promoteRecapIfClear();
+    if (state.weekRecap) return "recap promoted while a scene was on screen";
+    // Everything clear → recap finally surfaces.
+    state.pendingScene = null;
+    promoteRecapIfClear();
+    if (!state.weekRecap) return "recap never surfaced after everything cleared";
+    if (state.pendingRecap) return "pendingRecap not cleared after promotion";
+    state.weekRecap = null; state.pendingRecap = null; state.noticeQueue = [];
+    return true;
+  });
+  if (recapLastOk !== true) fail("recap ordering: " + recapLastOk);
+  pass("week recap always lands last (deferred behind every other beat)");
+
   // ── results screen renders its panels (judge card / rep / rival) ──
   // Drive renderResult() directly with synthetic results so the assertions
   // don't depend on which show the RNG happened to offer. A judged axis show

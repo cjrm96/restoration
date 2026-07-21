@@ -9543,7 +9543,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.33.2";
+      const GAME_VERSION = "0.33.3";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -9720,6 +9720,7 @@
           pendingCarOffer: null,
           yardPulls: [],
           pendingScene: null,
+          pendingRecap: null,
           garageLore: 0,
           buyerHistory: [],
           rivalFeed: [],
@@ -11503,6 +11504,35 @@
       function queueScene(scene) {
         if (modalBusy()) queueEvent("scene", scene);
         else state.pendingScene = scene;
+      }
+      // The weekly Shop Log recap is stashed in state.pendingRecap during the
+      // week advance and only shown once EVERYTHING else has cleared, so it is
+      // always the last card of the week. Any queued scene, event, notice,
+      // cutscene, unlock, victory or live show blocks the promotion; when the
+      // last of them is dismissed a render fires, this runs, and the recap
+      // finally surfaces. pendingRecap deliberately stays out of modalBusy() so
+      // the eventQueue keeps draining underneath the waiting recap.
+      function recapBlockersActive() {
+        return (
+          !!state.pendingScene ||
+          !!state.pendingEvent ||
+          !!state.pendingUnlock ||
+          !!state.pendingVictory ||
+          !!state.cutscene ||
+          !!state.showStage ||
+          state.showLoading ||
+          state.showStore ||
+          state.seasonWrap ||
+          state.gameOver ||
+          !!(state.eventQueue && state.eventQueue.length) ||
+          !!(state.noticeQueue && state.noticeQueue.length)
+        );
+      }
+      function promoteRecapIfClear() {
+        if (state.pendingRecap && !state.weekRecap && !recapBlockersActive()) {
+          state.weekRecap = state.pendingRecap;
+          state.pendingRecap = null;
+        }
       }
       function queueWeeklyEvent(ev) {
         if (modalBusy()) queueEvent("event", ev);
@@ -14344,7 +14374,14 @@
         // No weekly "on to week N+1" recap when the season just ended, there is
         // no next week and the season recap already covers it (state.week has
         // rolled past seasonLength by the time the finale is handled below).
-        state.weekRecap = state.tutorialComplete && state.week <= state.seasonLength
+        //
+        // The recap is STASHED here, not shown. It is the last thing the player
+        // should see each week: every story beat, cutscene, rival ping and
+        // social notice queued by this same advance drains first, then
+        // promoteRecapIfClear() (called from render) flips it into
+        // state.weekRecap once nothing else is pending. Setting weekRecap
+        // directly here made the Shop Log cut into the middle of the sequence.
+        state.pendingRecap = state.tutorialComplete && state.week <= state.seasonLength
           ? {
               week: state.week - 1,
               money: state.money - (typeof state.weekStartMoney === "number" ? state.weekStartMoney : state.money),
@@ -15171,6 +15208,9 @@
             id: "glove_box_first_local",
             title: "$" + fee + " in the glove box",
             emoji: "💵",
+            // Ride the Local show backdrop behind the choice so the beat plays
+            // over the Main Street imagery instead of a plain dark card.
+            art: "show-local",
             text: `You're rolling in early, getting in line for the registration table. Reaching for the parking pass, your hand finds a folded $${fee} bill wedged behind it. You don't remember putting it there. The registration line ahead has Mike from down the street, looking at his wallet like it owes him money. Off to the side, the head judge is alone for a second.`,
             choices: [
               {
@@ -21395,6 +21435,9 @@ addEventListener("DOMContentLoaded",function(){
         checkOnboardUnlocks();
         checkAchievements();
         processEventQueue();
+        // Once the queues above have drained, let the stashed weekly recap
+        // surface, always the final card of the week.
+        promoteRecapIfClear();
         updateHeaderChrome(mode === "full");
         let touched = false;
         if (mode === "full") {
