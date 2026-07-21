@@ -144,6 +144,8 @@ const pass = (msg) => console.log("✓", msg);
   await page.evaluate(() => {
     const car = currentCar();
     car.engine = 50; car.transmission = 40; car.brakes = 40; car.body = 45;
+    // Steering is a roadworthy gate as of the v0.34 sim expansion.
+    car.steering = 40;
     state.noticeQueue = []; render("full");
   });
   await page.waitForTimeout(300);
@@ -152,6 +154,40 @@ const pass = (msg) => console.log("✓", msg);
   await page.keyboard.press("Enter");
   await page.waitForTimeout(300);
   pass("roadworthy → Marketplace unlock");
+
+  // ── sim expansion (v0.34): the 4 new systems are real judged stats.
+  // Cooling/fuel/exhaust/steering must be registered cats, each fillable to
+  // 100 from its own parts, steering must gate roadworthiness, judging axes
+  // must weigh them, and a pre-split car must get them seeded on migration. ──
+  const simOk = await page.evaluate(() => {
+    const need = ["cooling", "fuel", "exhaust", "steering"];
+    if (!need.every((c) => CATS.includes(c) && CAT_LABELS[c] && CAT_ICONS[c]))
+      return "a new cat is missing from CATS/labels/icons";
+    if (CATS.length !== 16) return "CATS length is " + CATS.length + ", expected 16";
+    for (const c of need) {
+      const sum = PARTS.filter((x) => x.category === c).reduce((a, x) => a + x.imp, 0);
+      if (sum < 80) return c + " parts only sum +" + sum + " (< 80, can't reach 100)";
+    }
+    // steering gates roadworthiness
+    const car = currentCar();
+    car.engine = 40; car.transmission = 40; car.brakes = 40; car.steering = 10;
+    if (roadworthy(car)) return "roadworthy with steering below the gate";
+    car.steering = 30;
+    if (!roadworthy(car)) return "not roadworthy after steering cleared the gate";
+    // judging weighs the new stats
+    const weighed = Object.values(JUDGING_AXES).some((a) =>
+      need.some((c) => a.weights && a.weights[c] > 0),
+    );
+    if (!weighed) return "no judging axis weighs any new system";
+    // migration seeds a pre-split car from its mechanical condition
+    const old = { engine: 50, transmission: 40, brakes: 30, suspension: 20, electrical: 30 };
+    ensureCarSystems(old);
+    if (!need.every((c) => typeof old[c] === "number" && old[c] > 0))
+      return "ensureCarSystems did not seed a pre-split car";
+    return true;
+  });
+  if (simOk !== true) fail("sim expansion: " + simOk);
+  pass("sim expansion: 4 new judged systems, steering gate, seeded on migration");
 
   // ── list a part, let the week roll → Compete unlock ──
   // (Compete opens a week after the first listing, or on a first sale — but

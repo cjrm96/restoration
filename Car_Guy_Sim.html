@@ -5823,15 +5823,24 @@
         },
       ];
 
+      // The build sheet, grouped like a real one: drivetrain systems first,
+      // then chassis, then cosmetics. Cooling/Fuel/Exhaust/Steering are the
+      // sim-expansion systems (v0.34.0), each its own condition that
+      // getOverall averages and show judging weighs, so a clean engine on a
+      // rotted steering box no longer wins.
       const CATS = [
         "engine",
+        "cooling",
+        "fuel",
+        "exhaust",
         "transmission",
+        "differential",
         "brakes",
         "suspension",
+        "steering",
         "wheels",
         "tires",
         "electrical",
-        "differential",
         "body",
         "paint",
         "interior",
@@ -5839,13 +5848,17 @@
       ];
       const CAT_LABELS = {
         engine: "Engine",
+        cooling: "Cooling",
+        fuel: "Fuel System",
+        exhaust: "Exhaust",
         transmission: "Transmission",
+        differential: "Differential",
         brakes: "Brakes",
         suspension: "Suspension",
+        steering: "Steering",
         wheels: "Wheels",
         tires: "Tires",
         electrical: "Electrical",
-        differential: "Differential",
         body: "Body",
         paint: "Paint",
         interior: "Interior",
@@ -5853,13 +5866,17 @@
       };
       const CAT_ICONS = {
         engine: "⚙️",
+        cooling: "❄️",
+        fuel: "⛽",
+        exhaust: "💨",
         transmission: "⚙️",
+        differential: "🔩",
         brakes: "🛑",
         suspension: "🛠",
+        steering: "🎯",
         wheels: "⚪",
         tires: "⚪",
         electrical: "⚡",
-        differential: "🔩",
         body: "🔧",
         paint: "🎨",
         interior: "💺",
@@ -6635,6 +6652,362 @@
           imp: 12,
           desc: "Discs out back to match the front. Fade disappears and the pedal gets serious.",
           tools: ["t2","t8","t18","t15"],
+        },
+
+        // ── Sim expansion v0.34.0: Cooling, Fuel, Exhaust, Steering ──
+        // Four support systems that used to be invisible. Each is its own
+        // 0-100 bar now, averaged into overall and weighed by show judging;
+        // steering also gates roadworthiness. Per-system +Value sums to the
+        // low 80s-90s so a fully-sorted system reaches 100 from a project
+        // truck's baseline, same shape as the other bars.
+
+        // Cooling ── keeps the engine's power from cooking itself.
+        {
+          id: 138,
+          name: "Radiator Hose Set",
+          category: "cooling",
+          tier: "Budget",
+          diy: 60,
+          mult: 2.2,
+          imp: 8,
+          desc: "Forty-year-old hoses go soft and let go on the highway. Fresh rubber and clamps, no more roadside geyser.",
+          tools: ["t1"],
+        },
+        {
+          id: 139,
+          name: "Fan Clutch",
+          category: "cooling",
+          tier: "Budget",
+          diy: 75,
+          mult: 2.2,
+          imp: 8,
+          desc: "A worn clutch lets the fan freewheel when you need it most. New one grabs and pulls air in traffic.",
+          tools: ["t1"],
+        },
+        {
+          id: 140,
+          name: "Fan Shroud",
+          category: "cooling",
+          tier: "Budget",
+          diy: 55,
+          mult: 2.2,
+          imp: 7,
+          desc: "Without it the fan just stirs air. The shroud makes it pull through the whole core the way the factory meant.",
+          tools: ["t1"],
+        },
+        {
+          id: 141,
+          name: "Coolant Overflow Kit",
+          category: "cooling",
+          tier: "Budget",
+          diy: 45,
+          mult: 2.2,
+          imp: 7,
+          desc: "A recovery tank so she stops puking coolant on the ground every time she gets warm. Small part, big peace of mind.",
+          tools: ["t1"],
+        },
+        {
+          id: 142,
+          name: "Electric Cooling Fan Kit",
+          category: "cooling",
+          tier: "Quality",
+          diy: 240,
+          mult: 2.0,
+          imp: 20,
+          desc: "Thermostatic electric fans that only pull when she's hot, free up a little power and hold temp dead steady in a show line.",
+          tools: ["t1","t13"],
+        },
+        {
+          id: 143,
+          name: "Aluminum Radiator Upgrade",
+          category: "cooling",
+          tier: "Show Grade",
+          diy: 520,
+          mult: 1.8,
+          imp: 32,
+          desc: "A big polished aluminum core with twice the capacity. She could idle through July with the AC on and never climb past halfway.",
+          tools: ["t1","t18"],
+        },
+
+        // Fuel system ── everything between the tank and the carb.
+        {
+          id: 144,
+          name: "Fuel Filter Service",
+          category: "fuel",
+          tier: "Budget",
+          diy: 40,
+          mult: 2.2,
+          imp: 6,
+          desc: "Twenty years of tank varnish caught in a two-dollar filter. Swap it and she stops stumbling at the top of third.",
+          tools: ["t1"],
+        },
+        {
+          id: 145,
+          name: "Fuel Hose & Line Set",
+          category: "fuel",
+          tier: "Budget",
+          diy: 70,
+          mult: 2.2,
+          imp: 6,
+          desc: "Cracked rubber lines are how a project car becomes a driveway fire. Fresh hose end to end, clamped right.",
+          tools: ["t1"],
+        },
+        {
+          id: 146,
+          name: "Fuel Filler Neck & Grommet",
+          category: "fuel",
+          tier: "Budget",
+          diy: 55,
+          mult: 2.2,
+          imp: 5,
+          desc: "The rusted-out neck that dribbles gas down the quarter panel every fill-up. New neck and grommet, clean fills.",
+          tools: ["t1"],
+        },
+        {
+          id: 147,
+          name: "Locking Gas Cap",
+          category: "fuel",
+          tier: "Budget",
+          diy: 30,
+          mult: 2.2,
+          imp: 4,
+          desc: "Seals right and keeps the swap-meet crowd's siphon hose out of your tank overnight.",
+          tools: ["t1"],
+        },
+        {
+          id: 148,
+          name: "Gas Tank Replacement",
+          category: "fuel",
+          tier: "Quality",
+          diy: 260,
+          mult: 2.0,
+          imp: 13,
+          desc: "Drop the rusty original and hang a clean tank. No more sediment, no more pinholes weeping in the driveway.",
+          tools: ["t1","t18"],
+        },
+        {
+          id: 149,
+          name: "Fuel Sending Unit",
+          category: "fuel",
+          tier: "Quality",
+          diy: 150,
+          mult: 2.0,
+          imp: 9,
+          desc: "So the gauge tells the truth instead of reading full until she coughs on the shoulder.",
+          tools: ["t1","t13"],
+        },
+        {
+          id: 150,
+          name: "Fuel Tank Selector Valve",
+          category: "fuel",
+          tier: "Quality",
+          diy: 180,
+          mult: 2.0,
+          imp: 9,
+          desc: "Rebuilds the dual-tank switch so both tanks feed clean and the dash light finally means something.",
+          tools: ["t1","t13"],
+        },
+        {
+          id: 151,
+          name: "Pre-Bent Stainless Fuel Lines",
+          category: "fuel",
+          tier: "Quality",
+          diy: 220,
+          mult: 2.0,
+          imp: 12,
+          desc: "Mandrel-bent stainless that follows the frame like the factory line, but never rusts and looks the part underneath.",
+          tools: ["t1","t18"],
+        },
+        {
+          id: 152,
+          name: "EFI Conversion Kit",
+          category: "fuel",
+          tier: "Show Grade",
+          diy: 1400,
+          mult: 1.8,
+          imp: 26,
+          desc: "Self-learning fuel injection where the carb used to sit. Cold starts on the first crank, idles like a new truck, never floods on the trailer ramp.",
+          tools: ["t1","t2","t13"],
+        },
+
+        // Exhaust ── power and the sound the whole lot turns around for.
+        {
+          id: 153,
+          name: "Exhaust Heat Shield Kit",
+          category: "exhaust",
+          tier: "Budget",
+          diy: 60,
+          mult: 2.2,
+          imp: 6,
+          desc: "Keeps header heat off the floorpan and your right foot. Cheap insurance for the wiring and your boot sole.",
+          tools: ["t1","t18"],
+        },
+        {
+          id: 154,
+          name: "Exhaust Manifold Set",
+          category: "exhaust",
+          tier: "Budget",
+          diy: 140,
+          mult: 2.2,
+          imp: 9,
+          desc: "The cracked cast originals tick on cold start and leak fumes into the cab. Fresh manifolds, honest and quiet.",
+          tools: ["t1","t2","t8"],
+        },
+        {
+          id: 155,
+          name: "Muffler Replacement",
+          category: "exhaust",
+          tier: "Budget",
+          diy: 90,
+          mult: 2.2,
+          imp: 8,
+          desc: "The rusted-through can that made her sound like a lawnmower with a cold. A proper muffler and she has a voice again.",
+          tools: ["t1","t18"],
+        },
+        {
+          id: 156,
+          name: "Dual Exhaust System",
+          category: "exhaust",
+          tier: "Quality",
+          diy: 380,
+          mult: 2.0,
+          imp: 15,
+          desc: "Full dual pipes out the back. She breathes on both banks now and the idle turns heads two aisles over.",
+          tools: ["t1","t7","t18"],
+        },
+        {
+          id: 157,
+          name: "Glasspack Exhaust",
+          category: "exhaust",
+          tier: "Quality",
+          diy: 240,
+          mult: 2.0,
+          imp: 12,
+          desc: "Straight-through glasspacks with the mellow burble the old timers grin at and the young guys film.",
+          tools: ["t1","t7","t18"],
+        },
+        {
+          id: 158,
+          name: "Chrome Exhaust Tips",
+          category: "exhaust",
+          tier: "Quality",
+          diy: 120,
+          mult: 2.0,
+          imp: 8,
+          desc: "Polished tips that finish the back of the truck so the pipes you built actually get seen.",
+          tools: ["t1"],
+        },
+        {
+          id: 159,
+          name: "Performance Header Set",
+          category: "exhaust",
+          tier: "Show Grade",
+          diy: 700,
+          mult: 1.8,
+          imp: 26,
+          desc: "Ceramic-coated long-tube headers, each primary tuned to length. Wakes the top end up and sounds like money leaving the line.",
+          tools: ["t1","t2","t8","t18"],
+        },
+
+        // Steering ── a truck you can't point isn't roadworthy.
+        {
+          id: 160,
+          name: "Tie Rod & End Set",
+          category: "steering",
+          tier: "Budget",
+          diy: 90,
+          mult: 2.2,
+          imp: 7,
+          desc: "Worn tie rod ends are the wander and the death-wobble on the freeway. Fresh ends and she tracks straight and true.",
+          tools: ["t1","t18"],
+        },
+        {
+          id: 161,
+          name: "Pitman Arm",
+          category: "steering",
+          tier: "Budget",
+          diy: 70,
+          mult: 2.2,
+          imp: 6,
+          desc: "The arm off the steering box that takes all the slop first. A new one tightens the whole feel of the wheel.",
+          tools: ["t1","t8","t18"],
+        },
+        {
+          id: 162,
+          name: "Idler Arm",
+          category: "steering",
+          tier: "Budget",
+          diy: 70,
+          mult: 2.2,
+          imp: 6,
+          desc: "The pitman's partner on the other side. Worn out, the front end steers like a shopping cart. Replaced, it settles down.",
+          tools: ["t1","t18"],
+        },
+        {
+          id: 163,
+          name: "Power Steering Hose Set",
+          category: "steering",
+          tier: "Budget",
+          diy: 60,
+          mult: 2.2,
+          imp: 5,
+          desc: "Stops the weeping high-pressure line that leaves a puddle and a whine every time you crank it over.",
+          tools: ["t1"],
+        },
+        {
+          id: 164,
+          name: "Center / Drag Link",
+          category: "steering",
+          tier: "Quality",
+          diy: 160,
+          mult: 2.0,
+          imp: 10,
+          desc: "The link that ties the whole steering together. Fresh joints here take the last of the wander out of the wheel.",
+          tools: ["t1","t18"],
+        },
+        {
+          id: 165,
+          name: "King Pin Set",
+          category: "steering",
+          tier: "Quality",
+          diy: 240,
+          mult: 2.0,
+          imp: 12,
+          desc: "Rebuild the front spindles on new king pins. Slop-free, greased, and she finally holds a line without a fight.",
+          tools: ["t1","t8","t18"],
+        },
+        {
+          id: 166,
+          name: "Power Steering Pump",
+          category: "steering",
+          tier: "Quality",
+          diy: 220,
+          mult: 2.0,
+          imp: 11,
+          desc: "The groaning pump that fights you in a parking lot. A rebuilt unit turns the wheel with a finger.",
+          tools: ["t1","t2"],
+        },
+        {
+          id: 167,
+          name: "Steering Gear Box",
+          category: "steering",
+          tier: "Quality",
+          diy: 300,
+          mult: 2.0,
+          imp: 13,
+          desc: "Rebuilt box with the lash set right. Kills the dead spot on center where she used to hunt at speed.",
+          tools: ["t1","t2","t18"],
+        },
+        {
+          id: 168,
+          name: "Power Steering Conversion",
+          category: "steering",
+          tier: "Show Grade",
+          diy: 1100,
+          mult: 1.8,
+          imp: 22,
+          desc: "Full power steering box and pump where the armstrong setup used to be. Modern feel, one-finger parking, still looks period under the hood.",
+          tools: ["t1","t2","t8","t18"],
         },
       ];
 
@@ -9473,7 +9846,12 @@
   ═══════════════════════════════════════════ */
       const ROADWORTHY_ENGINE = 25,
         ROADWORTHY_TRANSMISSION = 25,
-        ROADWORTHY_BRAKES = 25;
+        ROADWORTHY_BRAKES = 25,
+        // A truck you can't steer isn't roadworthy either. Cooling, fuel and
+        // exhaust feed show performance and judging rather than gating the
+        // drive, so the entry checklist stays engine / trans / brakes /
+        // steering.
+        ROADWORTHY_STEERING = 25;
       const FUEL_PRICE = 4,
         MAX_FUEL = 60,
         PAYCHECK_AMOUNT = 1000,
@@ -9543,7 +9921,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.33.3";
+      const GAME_VERSION = "0.34.0";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -9571,9 +9949,13 @@
               model: "F-100",
               emoji: "🚚",
               engine: 18,
+              cooling: 16,
+              fuel: 15,
+              exhaust: 14,
               transmission: 12,
               brakes: 14,
               suspension: 16,
+              steering: 15,
               wheels: 20,
               tires: 18,
               electrical: 14,
@@ -9760,6 +10142,31 @@
         return Math.round(sum / CATS.length);
       };
 
+      // The sim-expansion systems that didn't exist before v0.34.0. Any car
+      // built before them (a pre-0.34 save, or a BUYABLE_CARS literal that
+      // predates the split) gets them seeded from its own mechanical
+      // condition, so a rough project truck has rough support systems and a
+      // finished build inherits its finished state. Idempotent: only fills a
+      // stat that is genuinely absent, never overwrites real progress.
+      const NEW_SYSTEM_CATS = ["cooling", "fuel", "exhaust", "steering"];
+      function ensureCarSystems(car) {
+        if (!car) return car;
+        const base = clamp(
+          Math.round(
+            ((car.engine || 0) +
+              (car.transmission || 0) +
+              (car.brakes || 0) +
+              (car.suspension || 0) +
+              (car.electrical || 0)) /
+              5,
+          ),
+        );
+        NEW_SYSTEM_CATS.forEach((cat) => {
+          if (typeof car[cat] !== "number") car[cat] = base;
+        });
+        return car;
+      }
+
       // ── Show judging axes ──
       // Specialty shows weigh specific systems instead of judging every car
       // on flat overall. Judged score blends overall (55%) with the axis
@@ -9770,13 +10177,16 @@
         power: {
           label: "Power & Drivetrain",
           icon: "🐎",
-          weights: { engine: 0.35, transmission: 0.2, differential: 0.15, tires: 0.15, suspension: 0.15 },
+          // Exhaust and fuel delivery join the drivetrain math: a built engine
+          // that can't breathe or feed doesn't make the numbers.
+          weights: { engine: 0.3, exhaust: 0.12, fuel: 0.08, transmission: 0.15, differential: 0.13, tires: 0.12, suspension: 0.1 },
           buckBias: 3, // Buck's Stallion is a runner
         },
         handling: {
           label: "Handling & Braking",
           icon: "🌀",
-          weights: { suspension: 0.3, brakes: 0.25, tires: 0.25, wheels: 0.1, transmission: 0.1 },
+          // Steering is half of handling, a loose box scrubs the whole score.
+          weights: { suspension: 0.25, steering: 0.2, brakes: 0.2, tires: 0.2, wheels: 0.08, transmission: 0.07 },
           buckBias: 0,
         },
         beauty: {
@@ -9788,7 +10198,9 @@
         reliability: {
           label: "Mechanical Reliability",
           icon: "🔩",
-          weights: { engine: 0.25, electrical: 0.25, brakes: 0.2, transmission: 0.15, suspension: 0.15 },
+          // Cooling and fuel are reliability's whole story: overheating or
+          // starving on the drive out is how a clean build loses this axis.
+          weights: { engine: 0.2, cooling: 0.18, fuel: 0.12, electrical: 0.2, brakes: 0.12, transmission: 0.1, suspension: 0.08 },
           buckBias: 0,
         },
       };
@@ -10069,7 +10481,8 @@
           !!car &&
           car.engine >= ROADWORTHY_ENGINE &&
           car.transmission >= ROADWORTHY_TRANSMISSION &&
-          car.brakes >= ROADWORTHY_BRAKES
+          car.brakes >= ROADWORTHY_BRAKES &&
+          car.steering >= ROADWORTHY_STEERING
         );
       }
       function activeSponsors() {
@@ -10327,6 +10740,7 @@
           engine: Math.max(0, ROADWORTHY_ENGINE - car.engine),
           transmission: Math.max(0, ROADWORTHY_TRANSMISSION - car.transmission),
           brakes: Math.max(0, ROADWORTHY_BRAKES - car.brakes),
+          steering: Math.max(0, ROADWORTHY_STEERING - car.steering),
         };
         const nextShowTarget =
           counts.coffee < 2
@@ -13163,6 +13577,12 @@
             }
           });
           ensureArray("noticeQueue");
+          // v0.34.0 sim expansion: seed the new per-car systems (cooling,
+          // fuel, exhaust, steering) on any car saved before the split, from
+          // that car's own mechanical condition so a mid-restoration build
+          // keeps its shape instead of the four new bars reading as zero.
+          ensureArray("cars");
+          state.cars.forEach(ensureCarSystems);
           // Baseline the newer milestone beats so existing saves don't
           // suddenly re-announce a rank they earned long ago, or replay the
           // first-brand-deal intro after they've already run deals.
@@ -16007,6 +16427,9 @@
           `Vehicle purchase: ${c.year} ${c.make} ${c.model}`,
         );
         const bought = { ...data, installedParts: [] };
+        // Seed the sim-expansion systems from this car's mechanical condition
+        // (BUYABLE_CARS literals predate the split).
+        ensureCarSystems(bought);
         // Every purchase is a bet, most cars are hiding something, good or
         // bad, that only turns up once you're a couple of jobs deep.
         assignCarQuirk(bought);
@@ -19473,6 +19896,7 @@ addEventListener("DOMContentLoaded",function(){
           if (car.engine < ROADWORTHY_ENGINE) gaps.push("engine");
           if (car.transmission < ROADWORTHY_TRANSMISSION) gaps.push("transmission");
           if (car.brakes < ROADWORTHY_BRAKES) gaps.push("brakes");
+          if (car.steering < ROADWORTHY_STEERING) gaps.push("steering");
           return gaps.length
             ? `Get the ${gaps.join(", ")} sorted. Once she's roadworthy, the Marketplace opens up. Post to Social while the wrenches turn.`
             : "She's roadworthy, the Marketplace is opening up.";
@@ -19488,6 +19912,7 @@ addEventListener("DOMContentLoaded",function(){
           if (car.engine < ROADWORTHY_ENGINE) gaps.push("engine");
           if (car.transmission < ROADWORTHY_TRANSMISSION) gaps.push("transmission");
           if (car.brakes < ROADWORTHY_BRAKES) gaps.push("brakes");
+          if (car.steering < ROADWORTHY_STEERING) gaps.push("steering");
           return `Get the ${gaps.join(", ")} sorted so it can drive itself to ${next ? next.name : "a show"} ${next ? deadline : ""}.`.trim();
         }
         const paint = getCategoryCompletion(car, "paint");
@@ -19796,6 +20221,7 @@ addEventListener("DOMContentLoaded",function(){
             const engineGap = Math.max(0, ROADWORTHY_ENGINE - car.engine);
             const transGap = Math.max(0, ROADWORTHY_TRANSMISSION - car.transmission);
             const brakeGap = Math.max(0, ROADWORTHY_BRAKES - car.brakes);
+            const steerGap = Math.max(0, ROADWORTHY_STEERING - car.steering);
             if (rw) {
               // Once the player has taken any car to its first show,
               // the 'Roadworthy · Time to compete' banner has done its
@@ -19803,7 +20229,7 @@ addEventListener("DOMContentLoaded",function(){
               if ((state.history || []).length > 0) return `<div class="coach-nudge">🧰 <span>This week:</span> ${thisWeekNudge(car)}</div>`;
               return `<div style="display:flex;align-items:center;gap:10px;background:rgba(143,203,126,0.1);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">✅</span><div><div class="small" style="color:var(--green-bright);font-weight:bold">Roadworthy</div><div class="tiny muted">The car can drive itself to a show. Time to compete.</div></div></div>`;
             }
-            return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">⚠️</span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " ✓"} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " ✓"} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " ✓"}${onboardStageVal() <= 1 ? `<div class="tiny" style="color:var(--gold-soft);margin-top:4px">🔓 Get her running and the Marketplace opens up.</div>` : ""}</div></div></div>`;
+            return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">⚠️</span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " ✓"} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " ✓"} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " ✓"} · Steering ${car.steering}/${ROADWORTHY_STEERING}${steerGap ? " (need +" + steerGap + ")" : " ✓"}${onboardStageVal() <= 1 ? `<div class="tiny" style="color:var(--gold-soft);margin-top:4px">🔓 Get her running and the Marketplace opens up.</div>` : ""}</div></div></div>`;
           })()}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 Free Budget part ready, tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div onclick="installNextYardPull()" style="cursor:pointer;background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck, tap to install the next one, free.</span><span style="opacity:0.7">→</span></div>` : ""; })()}${subcontent}`,
         )}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${(state.installsDone || 0) > 0 || activeTasksForCar(car.id).length ? mobileFold("notes", "📋 Shop Notes", workspaceData().name, panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Build Speed", `+${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${roadworthy(car) ? "" : chalkRow("Roadworthy", "Not yet", "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}`, "", "#1d1611", "clipboard")) : ""}</div></div>`;
       }
@@ -20225,7 +20651,7 @@ addEventListener("DOMContentLoaded",function(){
         // same as the no-ride case, instead of only erroring on click.
         const busy = hasActiveRestorations();
         const noRideBanner = !ride.ok
-          ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border:1px solid rgba(196,109,96,0.4);margin-bottom:12px;padding:10px 12px"><div class="tiny" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">🚫 No way to get there</div><div class="tiny muted" style="line-height:1.5">${ride.msg} Get the project running (engine ${ROADWORTHY_ENGINE}+, transmission ${ROADWORTHY_TRANSMISSION}+, brakes ${ROADWORTHY_BRAKES}+) and the trip opens up.</div></div>`
+          ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border:1px solid rgba(196,109,96,0.4);margin-bottom:12px;padding:10px 12px"><div class="tiny" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">🚫 No way to get there</div><div class="tiny muted" style="line-height:1.5">${ride.msg} Get the project running (engine ${ROADWORTHY_ENGINE}+, transmission ${ROADWORTHY_TRANSMISSION}+, brakes ${ROADWORTHY_BRAKES}+, steering ${ROADWORTHY_STEERING}+) and the trip opens up.</div></div>`
           : busy
             ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border:1px solid rgba(196,109,96,0.4);margin-bottom:12px;padding:10px 12px"><div class="tiny" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">🔧 Jobs on the bench</div><div class="tiny muted" style="line-height:1.5">Finish or park your current restoration jobs first, a Saturday out burns the whole week and you can't leave a build mid-wrench.</div></div>`
             : "";
