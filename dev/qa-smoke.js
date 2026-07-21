@@ -189,6 +189,30 @@ const pass = (msg) => console.log("✓", msg);
   if (simOk !== true) fail("sim expansion: " + simOk);
   pass("sim expansion: 4 new judged systems, steering gate, seeded on migration");
 
+  // ── Phase 3 extras: lifestyle purchases that pay back in followers + resale
+  // and NEVER touch overall / roadworthiness / judging. ──
+  const extrasOk = await page.evaluate(() => {
+    if (!Array.isArray(EXTRAS) || EXTRAS.length < 15) return "EXTRAS list missing or too small";
+    const car = currentCar();
+    car.extras = [];
+    const ov0 = getOverall(car), rw0 = roadworthy(car), resale0 = carResaleBaseline(car);
+    const fol0 = state.followers, money0 = state.money;
+    state.money = 99999;
+    const e = EXTRAS[0];
+    buyExtra(e.id);
+    if (!car.extras.includes(e.id)) return "buyExtra did not add the extra";
+    if (getOverall(car) !== ov0) return "an extra changed overall (should not)";
+    if (roadworthy(car) !== rw0) return "an extra changed roadworthiness (should not)";
+    if (carResaleBaseline(car) <= resale0) return "extra did not raise resale value";
+    if (e.followers > 0 && state.followers <= fol0) return "extra did not add followers";
+    buyExtra(e.id); // second buy must be rejected
+    if (car.extras.filter((x) => x === e.id).length !== 1) return "extra bought twice";
+    state.money = money0; car.extras = [];
+    return true;
+  });
+  if (extrasOk !== true) fail("extras: " + extrasOk);
+  pass("extras: followers + resale, no effect on score/roadworthy");
+
   // ── list a part, let the week roll → Compete unlock ──
   // (Compete opens a week after the first listing, or on a first sale — but
   // never during the pre-season, so drop into the competitive calendar first.)

@@ -7011,6 +7011,55 @@
         },
       ];
 
+      // ── Sim expansion Phase 3: Creature Comforts & Extras (v0.35.0) ──
+      // Lifestyle systems that make her a truck you'd actually live with:
+      // climate, audio, the bed, towing, the little correct-hardware details.
+      // These are deliberately NOT scoring stats, they don't touch overall,
+      // roadworthiness or show judging. They're cash sinks that pay back in
+      // followers (the scene loves a finished, livable build) and resale value
+      // (a truck with cold A/C, a wood bed and a tow package is worth more).
+      const EXTRAS_SYSTEMS = [
+        { id: "hvac", label: "Climate & Comfort", icon: "❄️", blurb: "Cold air in July, heat in December. The difference between a show piece and a truck you drive." },
+        { id: "audio", label: "Audio", icon: "🔊", blurb: "Something to listen to on the long way home. Pure want, zero need." },
+        { id: "bed", label: "Bed & Cargo", icon: "🛻", blurb: "It's a truck. The bed is half of what people love about it." },
+        { id: "towing", label: "Towing", icon: "🔗", blurb: "Turns her into a truck that earns her keep." },
+        { id: "hardware", label: "Hardware & Detail", icon: "🔩", blurb: "The correct bolts, seals and plates. Nobody notices until they do." },
+      ];
+      const EXTRAS = [
+        // Climate & Comfort
+        { id: "x_ac_service", system: "hvac", name: "A/C Recharge & Service", cost: 90, followers: 12, value: 120, desc: "Get the factory air blowing cold again instead of pushing warm regret out the vents." },
+        { id: "x_heater_core", system: "hvac", name: "Heater Core Replacement", cost: 120, followers: 10, value: 110, desc: "Kills the sweet-smelling fog on the windshield and finally puts heat where you want it." },
+        { id: "x_blower", system: "hvac", name: "Blower Motor & Resistor", cost: 80, followers: 8, value: 80, desc: "So the fan has more than one speed, and that speed isn't 'off'." },
+        { id: "x_vents", system: "hvac", name: "Cabin Vents & Controls", cost: 70, followers: 8, value: 70, desc: "Fresh vent flaps and knobs that actually move the doors they're connected to." },
+        { id: "x_ac_convert", system: "hvac", name: "Full A/C Conversion (R134a)", cost: 420, followers: 40, value: 460, desc: "Modern refrigerant and a rebuilt system. Ice-cold, reliable, and legal to recharge anywhere." },
+        { id: "x_climate_resto", system: "hvac", name: "Climate Control Restoration", cost: 700, followers: 70, value: 820, desc: "Every duct, cable and blend door restored to factory-new. She heats and cools like she rolled off the line." },
+        // Audio
+        { id: "x_am_radio", system: "audio", name: "Period AM Radio Restoration", cost: 80, followers: 12, value: 90, desc: "The correct pushbutton radio, working, with that warm mono hum. Period-perfect and it plays." },
+        { id: "x_speakers", system: "audio", name: "Door & Dash Speakers", cost: 90, followers: 12, value: 80, desc: "Actual speakers instead of the blown paper cones the last owner left in there." },
+        { id: "x_bt_headunit", system: "audio", name: "Hidden Bluetooth Head Unit", cost: 140, followers: 22, value: 120, desc: "Stock-looking face, modern guts. Your phone pairs and nobody's the wiser." },
+        { id: "x_subwoofer", system: "audio", name: "Under-Seat Subwoofer", cost: 260, followers: 30, value: 160, desc: "A little low end tucked out of sight so the cruise-in playlist actually thumps." },
+        { id: "x_custom_audio", system: "audio", name: "Full Custom Audio Build", cost: 600, followers: 60, value: 380, desc: "Clean amp rack, real components, wiring you'd show off. Sounds as good as she looks." },
+        // Bed & Cargo
+        { id: "x_wood_bed", system: "bed", name: "Wood Bed Floor Restoration", cost: 180, followers: 25, value: 240, desc: "Oak planks and polished bed strips. The single photo that makes the whole build go around online." },
+        { id: "x_bed_liner", system: "bed", name: "Spray-In Bed Liner", cost: 150, followers: 16, value: 150, desc: "Tough textured liner so she can still be a truck without chewing up fresh paint." },
+        { id: "x_bed_rails", system: "bed", name: "Bed Rail Caps & Tie-Downs", cost: 90, followers: 10, value: 90, desc: "Caps the rusted rail tops and gives you something to strap a load to." },
+        { id: "x_tonneau", system: "bed", name: "Rolled & Tucked Tonneau Cover", cost: 320, followers: 34, value: 280, desc: "A fitted cover that keeps the weather out and finishes the back end clean." },
+        // Towing
+        { id: "x_hitch", system: "towing", name: "Receiver Hitch & Wiring", cost: 160, followers: 12, value: 150, desc: "A frame-mounted receiver and a proper harness so she can pull a trailer to the next swap meet." },
+        { id: "x_tow_package", system: "towing", name: "Heavy Tow Package", cost: 480, followers: 24, value: 420, desc: "Trans cooler, wiring, and a Class III setup. Turns the truck into something that earns its keep." },
+        // Hardware & Detail
+        { id: "x_bolt_kit", system: "hardware", name: "Concours Bolt & Fastener Kit", cost: 110, followers: 16, value: 140, desc: "Correct-finish hardware throughout. The judges who flip a car over notice, and so do the buyers." },
+        { id: "x_weatherstrip", system: "hardware", name: "Weatherstrip & Seal Kit", cost: 140, followers: 15, value: 170, desc: "New rubber all around. No more wind roar, no more drips, doors that shut with a solid thunk." },
+        { id: "x_decals", system: "hardware", name: "Correct Decals & Data Plates", cost: 90, followers: 20, value: 120, desc: "Factory-correct stickers, tags and door-jamb plates. The details that prove you did your homework." },
+      ];
+      function extrasValue(car) {
+        if (!car || !Array.isArray(car.extras)) return 0;
+        return car.extras.reduce((sum, id) => {
+          const e = EXTRAS.find((x) => x.id === id);
+          return sum + (e ? e.value : 0);
+        }, 0);
+      }
+
       const SOCAL_TOOL_COSTS = {
         t1: 120,
         t2: 180,
@@ -9921,7 +9970,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.34.1";
+      const GAME_VERSION = "0.35.0";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -10164,6 +10213,8 @@
         NEW_SYSTEM_CATS.forEach((cat) => {
           if (typeof car[cat] !== "number") car[cat] = base;
         });
+        // Phase 3 lifestyle extras live in their own list, empty by default.
+        if (!Array.isArray(car.extras)) car.extras = [];
         return car;
       }
 
@@ -12367,7 +12418,9 @@
         const base = carBasePrice(car);
         const overall = getOverall(car);
         const mult = 0.55 + (overall / 100) * 1.55; // 0.55x rough … 2.1x concours
-        return Math.max(Math.round(base * 0.4), Math.round(base * mult));
+        // Creature-comfort extras add their value straight to the resale floor,
+        // a livable, fully-finished truck is worth more than the score alone.
+        return Math.max(Math.round(base * 0.4), Math.round(base * mult)) + extrasValue(car);
       }
       function carAskingPrice(car) {
         return Math.round(carResaleBaseline(car) * 1.18);
@@ -16593,6 +16646,33 @@
         state.shopSub = sub;
         requestRender("full");
       }
+      // Buy a lifestyle extra for the current car: cash out, followers in, and
+      // the car's resale floor rises by the extra's value. One of each per car.
+      function buyExtra(id) {
+        const car = currentCar();
+        if (!car) return;
+        const extra = EXTRAS.find((x) => x.id === id);
+        if (!extra) return;
+        if (!Array.isArray(car.extras)) car.extras = [];
+        if (car.extras.includes(id)) return toast("Already on this build.", "err");
+        if (state.money < extra.cost) return toast("Not enough cash for that.", "err");
+        state.money -= extra.cost;
+        recordMoneyChange(-extra.cost, `Extra: ${extra.name}`);
+        car.extras.push(id);
+        if (extra.followers) {
+          state.followers += extra.followers;
+          clampFollowers();
+        }
+        addGarageLore(1);
+        playSfx("coin");
+        toast(
+          `${extra.name} done.${extra.followers ? ` The scene noticed, +${fmtF(extra.followers)} followers.` : ""} Adds about $${fmt(extra.value)} to her resale.`,
+          "event-good",
+        );
+        checkMilestones();
+        saveGame();
+        requestRender("full");
+      }
       function toggleDense(id) {
         state.denseDetail = state.denseDetail === id ? null : id;
         requestRender("full");
@@ -20075,7 +20155,7 @@ addEventListener("DOMContentLoaded",function(){
         if (!car) return renderNoCar();
         // Unknown subtab (stale save, old id) renders blank content -
         // fall back to the suggested board instead.
-        if (!["suggested", "parts", "tools", "workspace"].includes(state.shopSub))
+        if (!["suggested", "parts", "tools", "workspace", "extras"].includes(state.shopSub))
           state.shopSub = "suggested";
         let subcontent = "";
 
@@ -20270,6 +20350,33 @@ addEventListener("DOMContentLoaded",function(){
             .join("")}</div>`;
         }
 
+        if (state.shopSub === "extras") {
+          if (!Array.isArray(car.extras)) car.extras = [];
+          const ownedCount = car.extras.length;
+          const totalVal = extrasValue(car);
+          const groups = EXTRAS_SYSTEMS.map((sys) => {
+            const items = EXTRAS.filter((e) => e.system === sys.id);
+            const rows = items
+              .map((e) => {
+                const owned = car.extras.includes(e.id);
+                return `<div class="feed-item" style="${owned ? "opacity:0.72;border-left:3px solid #87c77b" : ""}">
+                <div class="feed-text">${e.name}${owned ? ' <span class="tiny good">· done ✓</span>' : ""}</div>
+                <div class="tiny muted" style="margin:3px 0 6px;line-height:1.45">${e.desc}</div>
+                <div class="feed-meta">+${fmtF(e.followers)} followers · +$${fmt(e.value)} resale</div>
+                ${owned ? "" : button(state.money < e.cost ? `Need $${fmt(e.cost)}` : `Add · $${fmt(e.cost)}`, `buyExtra('${e.id}')`, state.money < e.cost, "", "width:100%;margin-top:8px;font-size:12px")}
+              </div>`;
+              })
+              .join("");
+            return panel(
+              `${sys.icon} ${sys.label}`,
+              `<div class="tiny muted" style="margin-bottom:10px">${sys.blurb}</div>${rows}`,
+              "",
+              "#c2a37d",
+            );
+          }).join("");
+          subcontent = `<div class="small muted" style="margin-bottom:12px;line-height:1.5">Creature comforts and finishing touches. These don't change your show score, they make her a truck you'd actually drive, win over the scene, and add real money to her resale.${ownedCount ? ` <span style="color:var(--gold-soft)">${ownedCount} added, +$${fmt(totalVal)} resale so far.</span>` : ""}</div>${groups}`;
+        }
+
         if (state.shopSub === "tools") {
           const wsIdxNow = getWorkspaceIndex(state.workshopLevel);
           const inCat = TOOLS_LIST.filter(
@@ -20357,7 +20464,7 @@ addEventListener("DOMContentLoaded",function(){
               return `<div style="display:flex;align-items:center;gap:10px;background:rgba(143,203,126,0.1);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">✅</span><div><div class="small" style="color:var(--green-bright);font-weight:bold">Roadworthy</div><div class="tiny muted">The car can drive itself to a show. Time to compete.</div></div></div>`;
             }
             return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">⚠️</span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " ✓"} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " ✓"} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " ✓"} · Steering ${car.steering}/${ROADWORTHY_STEERING}${steerGap ? " (need +" + steerGap + ")" : " ✓"}${onboardStageVal() <= 1 ? `<div class="tiny" style="color:var(--gold-soft);margin-top:4px">🔓 Get her running and the Marketplace opens up.</div>` : ""}</div></div></div>`;
-          })()}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 Free Budget part ready, tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div onclick="installNextYardPull()" style="cursor:pointer;background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck, tap to install the next one, free.</span><span style="opacity:0.7">→</span></div>` : ""; })()}${subcontent}`,
+          })()}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts", "setShopSub('parts')")}${tab("Extras", state.shopSub === "extras", "setShopSub('extras')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 Free Budget part ready, tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div onclick="installNextYardPull()" style="cursor:pointer;background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck, tap to install the next one, free.</span><span style="opacity:0.7">→</span></div>` : ""; })()}${subcontent}`,
         )}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${(state.installsDone || 0) > 0 || activeTasksForCar(car.id).length ? mobileFold("notes", "📋 Shop Notes", workspaceData().name, panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Build Speed", `+${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${roadworthy(car) ? "" : chalkRow("Roadworthy", "Not yet", "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}`, "", "#1d1611", "clipboard")) : ""}</div></div>`;
       }
 
