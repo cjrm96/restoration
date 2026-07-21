@@ -9921,7 +9921,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.34.0";
+      const GAME_VERSION = "0.34.1";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -10476,6 +10476,16 @@
       function nextToolStorage() {
         return TOOL_STORAGE_LEVELS[toolStorageIdx() + 1];
       }
+      // The top two boxes (Full Bank Tool Chest, Snap-it 72" Bank) are a
+      // rite of passage bought new, they carry their own delivery cutscenes.
+      // The swap meet only deals the first two upgrades; anything above the
+      // Tool Cart is new-only, so the swap returns nothing there.
+      const SWAP_MAX_STORAGE_IDX = 2; // "cart"
+      function nextSwapToolStorage() {
+        const nextIdx = toolStorageIdx() + 1;
+        if (nextIdx > SWAP_MAX_STORAGE_IDX) return null;
+        return TOOL_STORAGE_LEVELS[nextIdx];
+      }
       function roadworthy(car) {
         return (
           !!car &&
@@ -10733,6 +10743,30 @@
         }
         return null;
       }
+      // Show Grade parts are the deep end. They stay out of the build list and
+      // the suggestions until the category's Budget-tier basics are done, so a
+      // rough project never dangles a $8k show paint job before the primer is
+      // even on. Categories with no Budget parts have nothing to gate behind.
+      function showTierUnlocked(car, category) {
+        if (!car) return false;
+        const budgetParts = PARTS.filter(
+          (p) => p.category === category && p.tier === "Budget",
+        );
+        if (!budgetParts.length) return true;
+        return budgetParts.every((p) => car.installedParts.includes(p.id));
+      }
+      // A suggested move is only worth suggesting if the player can act on it
+      // right now: DIY with the tools and cash in hand, or afford to send it to
+      // the shop. Anything else is a wish, not a next move.
+      function moveIsActionable(part) {
+        const requiredTools = part.tools || [];
+        const hasAllTools = requiredTools.every((tid) =>
+          state.ownedTools.includes(tid),
+        );
+        const canDiy = hasAllTools && state.money >= partCost(part, "diy");
+        const canShop = state.money >= partCost(part, "shop");
+        return canDiy || canShop;
+      }
       function getSuggestedRestorations(car) {
         if (!car) return [];
         const counts = getShowCounts();
@@ -10754,7 +10788,9 @@
           (part) =>
             !car.installedParts.includes(part.id) &&
             !findActiveTask(car.id, part.id) &&
-            car[part.category] < 100,
+            car[part.category] < 100 &&
+            // Don't suggest a Show Grade job before the category's basics.
+            (part.tier !== "Show Grade" || showTierUnlocked(car, part.category)),
         ).map((part) => {
           const requiredTools = part.tools || [];
           const hasAllTools = requiredTools.every((tid) =>
@@ -10798,6 +10834,7 @@
             recommendedMethod,
             recommendedCost,
             hasAllTools,
+            actionable: moveIsActionable(part),
             priority,
             tag,
             why,
@@ -10825,6 +10862,7 @@
             type: "polish",
             cat,
             recommendedCost: POLISH_COST,
+            actionable: state.money >= POLISH_COST,
             priority,
             tag,
             why,
@@ -10833,15 +10871,18 @@
           };
         }).filter(Boolean);
 
-        return [...partPicks, ...polishPicks]
-          .sort(
-            (a, b) =>
-              b.priority - a.priority ||
-              (a.recommendedCost || 0) - (b.recommendedCost || 0) ||
-              ((b.part && b.part.imp) || b.imp || 0) -
-                ((a.part && a.part.imp) || a.imp || 0),
-          )
-          .slice(0, 3);
+        const ranked = [...partPicks, ...polishPicks].sort(
+          (a, b) =>
+            b.priority - a.priority ||
+            (a.recommendedCost || 0) - (b.recommendedCost || 0) ||
+            ((b.part && b.part.imp) || b.imp || 0) -
+              ((a.part && a.part.imp) || a.imp || 0),
+        );
+        // Only surface moves the player can actually make right now. If they're
+        // too broke for anything, fall back to the cheapest so the board still
+        // points somewhere instead of going blank.
+        const actionable = ranked.filter((m) => m.actionable);
+        return (actionable.length ? actionable : ranked.slice(0, 1)).slice(0, 3);
       }
 
 
@@ -12337,6 +12378,8 @@
       function listCarForSale(carId) {
         const car = getCarById(carId);
         if (!car) return;
+        if ((state.cars || []).length <= 1)
+          return sellCarsLockedNudge();
         if (isCarListed(carId)) return toast("That build is already listed.", "err");
         if (hasActiveRestorations(carId))
           return toast("Finish or wait out the active jobs before you list it.", "err");
@@ -13079,6 +13122,41 @@
         requestRender("full");
       }
 
+      // Same flip play as the swap meet, but from the Pick-A-Part yard: grab a
+      // used part cheap and resell it on the Marketplace instead of pulling it
+      // for the build. Each yard part is one piece, so grabbing it to flip
+      // takes it off the pull board.
+      function buyJunkyardFlipPart(partId) {
+        if (state.scavengeChoice !== "junkyard")
+          return toast("You're not at the yard right now.", "err");
+        const stockIdx = (state.junkyardStock || []).findIndex((s) => s.partId === partId);
+        if (stockIdx === -1) return toast("Already grabbed or gone.", "err");
+        const stock = state.junkyardStock[stockIdx];
+        const part = PARTS.find((p) => p.id === partId);
+        if (!part) return;
+        const buy = Math.max(15, Math.round(part.diy * 0.3));
+        if (state.money < buy) return toast("Cash only at the yard.", "err");
+        const resale = Math.max(25, Math.round(part.diy * 0.5 * (stock.conditionMult || 1)));
+        state.money -= buy;
+        recordMoneyChange(-buy, `Pick-A-Part: ${part.name} (to flip)`);
+        state.partsInventory.push({
+          id: `flip_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          name: `${part.name} · yard pull`,
+          sourcePart: part.name,
+          category: part.category,
+          tier: part.tier,
+          askingPrice: Math.round(resale * 1.35),
+          baselineValue: resale,
+          listed: false,
+          sold: false,
+        });
+        state.junkyardStock.splice(stockIdx, 1);
+        playSfx("coin");
+        toast(`Grabbed the ${part.name} to flip for $${fmt(buy)}. List it on the Marketplace and make the spread.`, "ok");
+        saveGame();
+        requestRender("full");
+      }
+
       function buySwapTool(toolId) {
         if (state.scavengeChoice !== "swap")
           return toast("You're not at the swap right now.", "err");
@@ -13123,8 +13201,14 @@
       function buySwapToolStorage() {
         if (state.scavengeChoice !== "swap")
           return toast("You're not at the swap right now.", "err");
-        const next = nextToolStorage();
-        if (!next) return toast("Your tool storage is already maxed out.", "err");
+        const next = nextSwapToolStorage();
+        if (!next) {
+          // Either fully upgraded, or the only upgrade left is a top-tier box
+          // the swap doesn't carry.
+          return nextToolStorage()
+            ? toast("That box is new-only, no swap-meet copies. Buy it new from Space & Storage.", "err")
+            : toast("Your tool storage is already maxed out.", "err");
+        }
         const price = swapToolStoragePrice();
         if (state.money < price) return toast("Cash only at the swap.", "err");
         state.money -= price;
@@ -13992,12 +14076,12 @@
               choices: [{ label: "See you Thursday", lore: 6 }],
             });
           }
-          if (mechanicDiscount() > rateBefore) {
-            toast(
-              `Dale waves you off at the register. "Regulars rate." He's knocking ${Math.round(mechanicDiscount() * 100)}% off your work orders now.`,
-              "event-good",
-            );
-          }
+          // The regulars-rate discount gets announced exactly once per bump.
+          // The milestone scene IS the narrative reveal, so when it fires this
+          // visit it carries the real number and the generic register toast
+          // stays quiet, no more "12% off" toast stacking on a modal that
+          // promised 15%.
+          let daleDiscountAnnounced = false;
           if (!state.mechanic.metOnce) {
             state.mechanic.metOnce = true;
             queueScene({
@@ -14019,11 +14103,15 @@
               !state.mechanic.milestoneSeen
             ) {
               state.mechanic.milestoneSeen = true;
+              daleDiscountAnnounced = true;
+              // Speak the rate the ladder actually gives at this tier so the
+              // beat and the register never disagree.
+              const ratePct = Math.round(mechanicDiscount() * 100);
               queueScene({
                 id: DALE_MILESTONE_SCENE.id,
                 title: DALE_MILESTONE_SCENE.title,
                 emoji: DALE_MILESTONE_SCENE.emoji,
-                text: DALE_MILESTONE_SCENE.text,
+                text: `You drop the truck off again and Dale meets you in the lot before you can get out. 'I been thinking,' he says. 'You keep showing up, you don't argue the bill, you bring the right parts when I ask. From here on out, my work goes ${ratePct}% off for you. You earned it.'`,
                 choices: DALE_MILESTONE_SCENE.choices.map((c) => ({
                   label: c.label,
                   lore: c.lore,
@@ -14033,6 +14121,13 @@
             } else if (Math.random() < 0.35) {
               toast(pickFresh(DALE_SHOP_FLAVOR, "daleShop"), "ok");
             }
+          }
+          // A later tier bump (20%, 25%) with no scene still gets a heads-up.
+          if (!daleDiscountAnnounced && mechanicDiscount() > rateBefore) {
+            toast(
+              `Dale waves you off at the register. "Regulars rate." He's knocking ${Math.round(mechanicDiscount() * 100)}% off your work orders now.`,
+              "event-good",
+            );
           }
         }
         toast(
@@ -16510,8 +16605,17 @@
         state.sponsorWatchExpanded = !state.sponsorWatchExpanded;
         requestRender("full");
       }
+      // The Sell Cars tab is locked when there's nothing there to sell without
+      // stranding the player: one project car and no wife's daily driver left
+      // to move. The wife's-car beat is a separate car, so while it's still
+      // available the tab opens even with a single project (the project itself
+      // still can't be listed as your last car).
+      function sellCarTabLocked() {
+        const wifeCarAvailable = !state.wifeCarSold && !!currentCar();
+        return (state.cars || []).length <= 1 && !wifeCarAvailable;
+      }
       function setMarketTab(tab) {
-        if (tab === "sellcar" && (state.cars || []).length <= 1)
+        if (tab === "sellcar" && sellCarTabLocked())
           return sellCarsLockedNudge();
         state.marketTab = tab;
         playSfx("click");
@@ -17286,7 +17390,13 @@ addEventListener("DOMContentLoaded",function(){
         iframe.setAttribute("aria-hidden", "true");
         iframe.setAttribute("tabindex", "-1");
         iframe.loading = "eager";
-        const outdoor = (kind === "show" || key === "curb") && key !== "Cars & Coffee";
+        // The National venue is the indoor Championship Hall, not an open-air
+        // field, so it stays off the outdoor list (no drifting clouds or bird
+        // floating through the convention hall behind the podium).
+        const outdoor =
+          (kind === "show" || key === "curb") &&
+          key !== "Cars & Coffee" &&
+          key !== "National";
         // Clouds belong to open-air scenes only. Indoor workshops (carport,
         // storage, home garage, warehouse) can have a sky-colored window rect
         // in their art, which used to get synthetic drifting clouds injected -
@@ -20085,15 +20195,32 @@ addEventListener("DOMContentLoaded",function(){
         }
 
         if (state.shopSub === "parts") {
+          // Show Grade work is hidden until this category's Budget basics are
+          // done, no dangling an $8k show job before the primer's on.
+          const showGateOpen = showTierUnlocked(car, state.shopCat);
           const avail = PARTS.filter(
             (p) =>
               p.category === state.shopCat &&
-              !car.installedParts.includes(p.id),
+              !car.installedParts.includes(p.id) &&
+              (p.tier !== "Show Grade" || showGateOpen),
           ).sort((a, b) => {
             const t =
               (TIER_ORDER[a.tier] ?? 99) - (TIER_ORDER[b.tier] ?? 99);
             return t !== 0 ? t : a.id - b.id;
           });
+          // If Show Grade parts exist for this category but the basics aren't
+          // done yet, tell the player they open up rather than hiding silently.
+          const lockedShowParts =
+            !showGateOpen &&
+            PARTS.some(
+              (p) =>
+                p.category === state.shopCat &&
+                p.tier === "Show Grade" &&
+                !car.installedParts.includes(p.id),
+            );
+          const showLockHint = lockedShowParts
+            ? `<div class="tiny muted" style="margin:0 0 12px;padding:8px 10px;background:rgba(217,162,79,0.05);border:1px dashed rgba(217,162,79,0.3);border-radius:8px">🔒 Show Grade ${CAT_LABELS[state.shopCat].toLowerCase()} work opens up once the Budget basics here are done.</div>`
+            : "";
           // Fine-tuning card for the active category, appears once every part
           // in this silo is installed. Replaces the old standalone Fine Tuning
           // panel so the polish action lives next to the parts that earn it.
@@ -20111,7 +20238,7 @@ addEventListener("DOMContentLoaded",function(){
                 : `${remaining}/${POLISH_PER_WEEK} sessions left this week. +${POLISH_GAIN} per pass.`;
             fineTuneMarkup = `<div class="info-box" style="background:rgba(168,132,221,0.06);border-color:rgba(168,132,221,0.45);margin-bottom:14px"><div class="flex between center" style="gap:10px;margin-bottom:6px"><div><div class="small" style="color:var(--purple-bright);font-weight:bold">${action.emoji} ${action.verb} · pre-show polish</div><div class="tiny muted" style="margin-top:2px">${sub}</div></div><div style="min-width:140px">${button(maxed ? "Maxed" : `+${POLISH_GAIN} · $${POLISH_COST}`, `polishCategory('${state.shopCat}')`, blocked, "", "width:100%;padding:7px 8px;font-size:12px")}</div></div></div>`;
           }
-          subcontent = `<div class="cat-pill-row">${CATS.map((cat) => `<button class="cat-pill ${state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')"><span class="cat-pill-icon">${CAT_ICONS[cat]}</span>${CAT_LABELS[cat]}</button>`).join("")}</div><div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div>${state.diyTried && state.shopTried ? "" : `<div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>`}${fineTuneMarkup}${state.shopCat === "paint" ? paintBoothPanel(car) : ""}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}<div class="dense-grid">${avail
+          subcontent = `<div class="cat-pill-row">${CATS.map((cat) => `<button class="cat-pill ${state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')"><span class="cat-pill-icon">${CAT_ICONS[cat]}</span>${CAT_LABELS[cat]}</button>`).join("")}</div><div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div>${state.diyTried && state.shopTried ? "" : `<div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>`}${fineTuneMarkup}${showLockHint}${state.shopCat === "paint" ? paintBoothPanel(car) : ""}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}<div class="dense-grid">${avail
             .map((p) => {
               const rq = p.tools || [];
               const miss = rq.filter((tid) => !state.ownedTools.includes(tid));
@@ -20269,9 +20396,11 @@ addEventListener("DOMContentLoaded",function(){
             return `<button class="cat-pill ${state.showSub === t ? "active" : ""}" onclick="setShowSub('${t}')"><span class="cat-pill-icon">${SHOW_TIER_ICONS[t]}</span>${t}</button>`;
           })
           .join("")}</div>`;
-        // The season's scene taste, always visible from the prep board so
-        // the player can read the room before committing a build direction.
-        const tasteBanner = familySelected
+        // The season's scene taste, shown from the prep board so the player
+        // can read the room before committing a build direction. A "split"
+        // season has no lean, so the banner would just take up space telling
+        // the player nothing, hide it and let the shows speak for themselves.
+        const tasteBanner = familySelected || sceneTasteId() === "split"
           ? ""
           : `<div class="tiny" style="text-align:center;padding:7px 10px;margin:2px 0 8px;color:var(--gold-soft);background:rgba(217,162,79,0.06);border:1px solid rgba(217,162,79,0.22);border-radius:8px;line-height:1.5">${SCENE_TASTES[sceneTasteId()].showLine}</div>`;
         const tierShows = shows.filter((s) => s.tier === state.showSub);
@@ -20388,14 +20517,27 @@ addEventListener("DOMContentLoaded",function(){
       }
 
 
+      // Timed, finish-line events, no judges, no clipboard, just the clock.
+      // Their result screen is framed as a run, not a scoring. Drift Battles is
+      // deliberately NOT here: it really is judged (line, angle, style).
+      const RACE_SHOWS = new Set([
+        "Night Drag Series",
+        "Weeknight Autocross",
+        "Hill Climb Time Trials",
+      ]);
+      function isRaceShow(name) {
+        return RACE_SHOWS.has(name);
+      }
       // Judge card, for shows that weigh a specific axis, break the score
       // down by system so the placement is legible: which systems the venue
       // cared about, how each one scored, and the overall/axis blend that
       // produced the baseline. Weak systems read red so the player knows
-      // exactly what to fix before the next one.
+      // exactly what to fix before the next one. For races the same breakdown
+      // is reframed around the clock instead of a judging panel.
       function renderJudgeCard(r) {
         const jc = r && r.judgeCard;
         if (!jc) return "";
+        const race = r && isRaceShow(r.show);
         const barCol = (v) =>
           v >= 75 ? "#87c77b" : v >= 50 ? "#d8a24f" : "#d38a76";
         const rows = jc.cats
@@ -20406,6 +20548,16 @@ addEventListener("DOMContentLoaded",function(){
           })
           .join("");
         const baseline = Math.round(jc.overall * 0.55 + jc.axisScore * 0.45);
+        if (race) {
+          const intro = `<div class="tiny muted" style="margin-bottom:9px">No judges out here, just the clock. This run came down to <b style="color:var(--text)">${jc.icon} ${jc.label}</b>, and your weakest systems cost you the most time.</div>`;
+          const foot = `<div class="judge-foot"><span>Build <b>${jc.overall}</b> + ${jc.icon} <b>${jc.axisScore}</b> down the track</span><span>Finished <b>${placeLabel(r.place)}</b></span></div>`;
+          return panel(
+            "How the Run Went",
+            `${intro}${rows}${foot}`,
+            "",
+            "#c2a37d",
+          );
+        }
         const intro = `<div class="tiny muted" style="margin-bottom:9px">This venue weighed <b style="color:var(--text)">${jc.icon} ${jc.label}</b>. Your weakest systems here dragged the score the most.</div>`;
         const foot = `<div class="judge-foot"><span>Overall <b>${jc.overall}</b> ×55% + ${jc.icon} <b>${jc.axisScore}</b> ×45%</span><span>Judged baseline <b>${baseline}</b></span></div>`;
         return panel(
@@ -20562,12 +20714,20 @@ addEventListener("DOMContentLoaded",function(){
                 : target.id !== state.carId
                   ? `<div class="tiny muted" style="margin-top:4px">→ Will land on your ${target.year} ${target.make} (other tab).</div>`
                   : "";
+              // A yard part is one physical piece: pull it for your build, or
+              // grab it cheap to flip on the Marketplace. The flip option
+              // works even when nothing in the garage can take the part, so a
+              // good score is never a dead end.
+              const flipBuy = Math.max(15, Math.round(part.diy * 0.3));
               return `<div class="feed-item">
                 <div class="feed-kicker">PICK-A-PART · ${(part.tier || "").toUpperCase()}</div>
                 <div class="feed-text">${part.name}</div>
                 <div class="feed-meta">+${yardImp} ${CAT_LABELS[part.category]} (vs +${part.imp} new) · normally $${fmt(part.diy)} new</div>
                 ${missingNote}${noTargetNote}
-                ${button(`Pull it · $${fmt(s.price)}`, `pullYardPart(${part.id})`, state.money < s.price || missing.length > 0 || noTarget, "", "width:100%;margin-top:8px;font-size:12px")}
+                <div class="btn-row two" style="margin-top:8px">
+                ${button(`Pull it · $${fmt(s.price)}`, `pullYardPart(${part.id})`, state.money < s.price || missing.length > 0 || noTarget, "", "width:100%;font-size:12px")}
+                ${button(state.money < flipBuy ? `Need $${fmt(flipBuy)}` : `Grab to flip · $${fmt(flipBuy)}`, `buyJunkyardFlipPart(${part.id})`, state.money < flipBuy, "", "width:100%;font-size:12px;background:#4a3c2e;border-color:#6b5840;color:var(--text)")}
+                </div>
               </div>`;
             })
             .join("");
@@ -20581,7 +20741,8 @@ addEventListener("DOMContentLoaded",function(){
           )}</div>`;
         }
         if (atTrip && choice === "swap") {
-          const nextStore = nextToolStorage();
+          const nextStore = nextSwapToolStorage();
+          const realNext = nextToolStorage();
           const boxFull = state.ownedTools.length >= toolStorageData().maxTools;
           const chestPrice = swapToolStoragePrice();
           const chestCard = nextStore
@@ -20592,7 +20753,13 @@ addEventListener("DOMContentLoaded",function(){
                 <div class="tiny muted" style="margin-top:4px;line-height:1.5">${nextStore.desc}${boxFull ? ` <span style="color:var(--gold)">Your ${toolStorageData().name} is full, grab this to keep buying.</span>` : ""}</div>
                 ${button(state.money < chestPrice ? `Need $${fmt(chestPrice)}` : `Upgrade · $${fmt(chestPrice)}`, "buySwapToolStorage()", state.money < chestPrice, "", "width:100%;margin-top:8px;font-size:12px")}
               </div>`
-            : "";
+            : realNext
+              ? `<div class="feed-item" style="opacity:0.75">
+                <div class="feed-kicker">POMONA SWAP · TOOL STORAGE</div>
+                <div class="feed-text">${realNext.emoji} ${realNext.name}</div>
+                <div class="tiny muted" style="margin-top:4px;line-height:1.5">Nobody at the swap has a ${realNext.name} worth hauling home. A box this serious you buy new, off the store floor.</div>
+              </div>`
+              : "";
           const flipCards = (state.swapFlipStock || []).map((s) => {
             const part = PARTS.find((pp) => pp.id === s.partId);
             if (!part) return "";
@@ -20783,6 +20950,10 @@ addEventListener("DOMContentLoaded",function(){
           : `<div class="small muted">No live listings right now. List a take-off part and it should appear here immediately.</div>`;
 
         const sellableCars = state.cars.filter((c) => !isCarListed(c.id));
+        // You can never list your only build, selling it strands you with
+        // nothing to work on. (The wife's daily driver above is a separate car
+        // and isn't subject to this.)
+        const onlyBuild = (state.cars || []).length <= 1;
         const carSellMarkup = sellableCars.length
           ? sellableCars
               .map((c) => {
@@ -20790,12 +20961,17 @@ addEventListener("DOMContentLoaded",function(){
                 const val = carResaleBaseline(c);
                 const ask = carAskingPrice(c);
                 const jobs = hasActiveRestorations(c.id);
+                const blockLabel = jobs
+                  ? "Finish active jobs first"
+                  : onlyBuild
+                    ? "Your only build, get a second project first"
+                    : `List for sale · ask $${fmt(ask)}`;
                 return `
       <div class="feed-item">
         <div class="feed-kicker">YOUR BUILD</div>
         <div class="feed-text">${c.year} ${c.make} ${c.model}</div>
         <div class="feed-meta">${ov}/100 overall · est. value $${fmt(val)}</div>
-        ${button(jobs ? "Finish active jobs first" : `List for sale · ask $${fmt(ask)}`, `listCarForSale(${c.id})`, jobs, "", "width:100%;margin-top:8px")}
+        ${button(blockLabel, `listCarForSale(${c.id})`, jobs || onlyBuild, "", "width:100%;margin-top:8px")}
       </div>`;
               })
               .join("")
@@ -20858,7 +21034,7 @@ addEventListener("DOMContentLoaded",function(){
         // Selling cars needs a spare, with a single project in the garage,
         // there's nothing to sell without stranding the player, so the tab is
         // locked and dimmed until they own a second car.
-        const sellCarsLocked = (state.cars || []).length <= 1;
+        const sellCarsLocked = sellCarTabLocked();
         let marketTab = state.marketTab || "sell";
         if (marketTab === "sellcar" && sellCarsLocked) marketTab = "sell";
         const pillRow = `<div class="cat-pill-row">${[
@@ -21774,6 +21950,12 @@ addEventListener("DOMContentLoaded",function(){
           state.carId,
           state.gameOver ? 1 : 0,
           state.seasonWrap ? 1 : 0,
+          // Pre-season week + the gig board: advancing the off-season week
+          // rolls a fresh board, and without these in the signature the main
+          // content stayed cached on the old (all-done) jobs while only the
+          // topbar moved. That read as "advance did nothing".
+          state.preWeek || 0,
+          (state.gigs || []).map((g) => `${g.id}:${g.done ? 1 : 0}`).join(","),
           !!state.result,
           state.shopCat,
           state.shopSub,
@@ -21813,6 +21995,10 @@ addEventListener("DOMContentLoaded",function(){
                 `${i.id}:${i.listed ? 1 : 0}:${i.listingTone || ""}:${i.askingPrice}`,
             )
             .join(","),
+          // Car listings: without this the Marketplace kept showing a just-
+          // listed car under "List a Car" until some other state change forced
+          // a re-render. Now listing it moves it straight to the active board.
+          (state.carListings || []).map((l) => `${l.carId}:${l.askingPrice || l.price || 0}`).join(","),
           (state.buyerHistory || [])
             .slice(0, 4)
             .map((b) => `${b.week}:${b.item}:${b.amount}`)
