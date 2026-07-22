@@ -47,6 +47,9 @@ technical pitfalls, edge cases, player frustrations.>
 | Walt Disney | | |
 | Gabe Newell | | |
 | Hayao Miyazaki | | |
+| Barack Obama | | |
+| Steve Wynn | | |
+| The Fallbrook Local (Mike) | | |
 
 ## Chair Summary
 

@@ -71,6 +71,30 @@ mechanizable residue of these principles is enforced automatically by
   Does the world have moments of peace? Is beauty present outside of conflict?
   Argues for slowing the pace; believes silence can be as memorable as spectacle.
 
+### Strategy & ground-truth board
+
+- **Barack Obama — Executive Strategy Advisor.** Alignment, decision-making,
+  leadership. Makes sure the team is solving the right problem and serving the
+  larger vision. What are we actually trying to accomplish? Are we debating the
+  right issue? What are the tradeoffs? Can we explain this decision clearly?
+  Turns a chaotic debate into a clear decision, often by reframing it: "Are we
+  trying to make the player feel their actions matter, or building a realistic
+  simulation? Those are different goals."
+- **Steve Wynn — Destination & Experience Director.** World attraction and
+  memorable places. Makes locations feel like destinations, not maps full of
+  content. Why would a player want to come here? What is the first impression?
+  Where is the emotional "wow"? Does this place have a personality? Thinks past
+  the tables and NPCs to the drive up, the lights, the entrance, the feeling
+  that something could happen. Makes the world feel premium.
+- **The Fallbrook Local ("Mike") — The Real Player Representative.** Ground
+  truth. Represents the grounded audience member who does not care about game
+  theory, awards, or design philosophy — a local mechanic and tradesman from
+  Fallbrook, California into cars, tools, the outdoors, and sports, sitting on
+  the couch after work asking one thing: "Okay, but is this actually fun?"
+  Distinct from the Player Representative above: that seat reasons about player
+  emotion in the abstract; Mike is the specific person, allergic to anything
+  that smells like homework or a lecture.
+
 ### The Red Team (summoned each review)
 
 Not a permanent seat — conjured at the end of every review with one job:

@@ -108,6 +108,15 @@ challenges the room on cost. **Disney** what is the player feeling, wonder and
 payoff. **Newell** why do they return, emergent player stories, no grind.
 **Miyazaki** quiet, beauty, breathing room, silence over spectacle.
 
+Strategy & ground truth: **Obama** reframes the fight — "are we even debating
+the right problem?" — names the tradeoff and forces a clear, explainable
+decision; the one who ends the circular argument. **Steve Wynn** the arrival
+and the wow, first impression, does this place have personality, make it feel
+premium and like a destination not a menu. **The Fallbrook Local (Mike)** the
+mechanic on the couch after work; blunt, no jargon, immune to theory; "okay but
+is this actually fun," calls out anything that feels like homework or a lecture.
+Let Mike puncture the room when the executives disappear up their own theory.
+
 ## Then what
 
 The board's verdict is advice, not a merge. After the session, wait for the
