@@ -26,6 +26,19 @@ const fail = (msg) => { console.error("✗ FAIL:", msg); process.exit(1); };
 const pass = (msg) => console.log("✓", msg);
 
 (async () => {
+  // ── board gate (fast, text-only, no browser) ──
+  // The mechanizable subset of the Executive Design Review Board: em-dashes,
+  // production/meta jargon, and the GAME_VERSION bump ritual. Runs first so a
+  // lint-level miss fails in milliseconds instead of after a Chromium launch.
+  {
+    const { execFileSync } = require("child_process");
+    try {
+      execFileSync("node", [path.join(__dirname, "board-gate.js")], { stdio: "inherit" });
+    } catch (e) {
+      fail("board gate failed (see above) — fix before uploading");
+    }
+  }
+
   const browser = await chromium.launch(EXEC ? { executablePath: EXEC } : {});
   const page = await browser.newPage({ viewport: { width: 1240, height: 900 } });
   const errors = [];
