@@ -213,6 +213,40 @@ const pass = (msg) => console.log("✓", msg);
   if (extrasOk !== true) fail("extras: " + extrasOk);
   pass("extras: followers + resale, no effect on score/roadworthy");
 
+  // ── buyer vignettes on selling a build (mirror of the seller beats), one per
+  // overall tier, and milestone-tool beats (first welder/hoist/booth). ──
+  const beatsOk = await page.evaluate(() => {
+    const clr = () => { state.pendingScene = null; state.pendingEvent = null; state.weekRecap = null; state.pendingRecap = null; state.noticeQueue = []; state.eventQueue = []; state.showLoading = false; state.showStage = null; state.cutscene = null; state.pendingUnlock = null; state.pendingCarOffer = null; };
+    state.firstCarSaleShown = true; // exercise the recurring buyer path, not the one-time first-sale beat
+    const tiers = { flip: 40, mid: 68, show: 92 };
+    for (const [tier, ov] of Object.entries(tiers)) {
+      const car = { id: 90000 + ov, year: 1970, make: "QA", model: "Rig", installedParts: [] };
+      CATS.forEach((c) => (car[c] = ov));
+      state.cars.push(car);
+      clr();
+      completeCarSale(car.id, 12345, "@QABuyer");
+      if (!state.pendingScene || !String(state.pendingScene.id).startsWith("buyer_"))
+        return "no buyer vignette on " + tier + " sale";
+      if (state.pendingScene.art !== "scene-first-car-sale") return tier + " buyer lost its art";
+      if (!/12,?345/.test(state.pendingScene.text)) return tier + " buyer text missing the sale amount";
+      resolvePendingScene(0);
+    }
+    clr();
+    // milestone tool beat: first welder fires once, then never again
+    state.money = 9999999; state.workshopLevel = "warehouse"; state.toolStorageLevel = "snapon72";
+    state.ownedTools = state.ownedTools.filter((t) => t !== "t5"); state.toolBeatWelder = false;
+    buyTool("t5");
+    if (!state.pendingScene || state.pendingScene.id !== "toolBeatWelder") return "first welder fired no beat";
+    resolvePendingScene(0);
+    state.ownedTools = state.ownedTools.filter((t) => t !== "t5"); clr();
+    buyTool("t5");
+    if (state.pendingScene) return "milestone tool beat re-fired on a second buy";
+    clr();
+    return true;
+  });
+  if (beatsOk !== true) fail("sell/tool beats: " + beatsOk);
+  pass("buyer vignettes (all tiers) + milestone-tool beats fire once");
+
   // ── buying a car plays a seller vignette (a story beat over the haul-home
   // art), one per price tier, and it resolves cleanly. ──
   const sellerOk = await page.evaluate(() => {

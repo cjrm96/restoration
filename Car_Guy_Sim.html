@@ -9970,7 +9970,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.36.0";
+      const GAME_VERSION = "0.37.0";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -12597,7 +12597,9 @@
           state.marketTab = "buy";
         }
         // First time you sell a real build (not a scrap flip): the bittersweet
-        // "watch it drive away, count the stack, on to the next" beat.
+        // "watch it drive away, count the stack, on to the next" beat. After
+        // that, every sale plays a buyer vignette, whoever showed up to take
+        // it, the mirror of the driveway scene you got when you bought it.
         if (
           !state.firstCarSaleShown &&
           soldOverall >= 60 &&
@@ -12612,6 +12614,8 @@
             sub: `${carName}, gone to a new owner for $${fmt(amount)}. Count the stack on the hood of the next project. Bittersweet, but this is the business.`,
             cta: "On to the next",
           });
+        } else if (state.tutorialComplete) {
+          queueBuyerScene({ carName, amount, buyer: buyerName, soldOverall });
         }
         saveGame();
         requestRender("full");
@@ -15173,6 +15177,36 @@
         });
       }
 
+      // The serious tools are rites of passage, not line items. The first
+      // welder, the first hoist, the first real booth, each one changes what
+      // you're capable of, so each gets a one-time Garage Life beat the first
+      // time one lands in the box. Ordinary tools stay a clean purchase.
+      const TOOL_BEATS = [
+        {
+          tools: ["t5", "t6"],
+          flag: "toolBeatWelder",
+          emoji: "🔥",
+          title: "First Bead",
+          text: "The welder's on the bench, gas bottle chained to the leg, and you've watched enough videos to be dangerous. First bead looks like a bird walked through cold oatmeal. The second one's worse. Somewhere around the twentieth, metal starts sticking to metal the way it's supposed to, and something in the garage shifts. You're not just bolting parts on anymore. You can make them now.",
+          choices: [{ label: "Grind it down and run another", lore: 6 }],
+        },
+        {
+          tools: ["t3"],
+          flag: "toolBeatHoist",
+          emoji: "🏗",
+          title: "Out Of The Bay",
+          text: "Load leveler, chains, and a leg you'll stub in the dark for the next year. You hook the lifting eyes and pull, and the block comes up slow out of the engine bay, turning a little, forty years of somebody else's decisions swinging in the air on your chain. Then it's on the stand, and the whole short block is yours to open up.",
+          choices: [{ label: "Crack the timing cover", lore: 6 }],
+        },
+        {
+          tools: ["t12"],
+          flag: "toolBeatBooth",
+          emoji: "🎨",
+          title: "Filtered Air",
+          text: "Plastic sheeting, filtered air, and a light that shows every flaw you'd rather it didn't. No more dust nibs from a driveway rattle-can job, no more bugs landing in the clear. The first panel you shoot in here lays down wet and deep and even, and you just stand there breathing through the respirator, looking at it. This is where the good money gets made.",
+          choices: [{ label: "Let it flash, then pull the tape", lore: 6 }],
+        },
+      ];
       function buyTool(id) {
         const tool = TOOLS_LIST.find((t) => t.id === id);
         const check = canOwnTool(tool);
@@ -15180,6 +15214,22 @@
         state.money -= tool.cost;
         recordMoneyChange(-tool.cost, `Tool purchase: ${tool.name}`);
         state.ownedTools.push(tool.id);
+        // Rite-of-passage tools fire a one-time beat.
+        try {
+          const beat = TOOL_BEATS.find(
+            (b) => b.tools.includes(tool.id) && !state[b.flag],
+          );
+          if (beat && state.tutorialComplete) {
+            state[beat.flag] = true;
+            queueScene({
+              id: beat.flag,
+              emoji: beat.emoji,
+              title: beat.title,
+              text: beat.text,
+              choices: beat.choices,
+            });
+          }
+        } catch (e) {}
         if (!state.firstToolPurchased) {
           state.firstToolPurchased = true;
           state.money += 40;
@@ -16678,6 +16728,124 @@
             emoji: pick.emoji || "🤝",
             title: pick.title,
             text: pick.text,
+            choices: pick.choices,
+          });
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      // The other side of the driveway. When you sell a build you poured a
+      // season into, the buyer showing up to take it deserves a beat too, the
+      // mirror of the seller vignettes. Tiered by how finished the car was:
+      // rough flips draw one kind of buyer, show cars another. Text is built at
+      // sale time so it can name the car and the money. Same writers' room.
+      const BUYER_SCENES = {
+        flip: [
+          {
+            id: "young_gun",
+            emoji: "🧢",
+            title: "First Project",
+            text: (x) => `He shows up in a borrowed truck, too excited for a car this rough, and you recognize the look because you wore it. "First project," he says, not really a question. He counts out the $${fmt(x.amount)} slow, twice. He has no idea what he just signed up for. Neither did you.`,
+            choices: [
+              { label: "Tell him the truth about the work ahead", lore: 8, note: "You gave him the honest version, the hours, the money, the marriage strain. He nodded through all of it and loaded it anyway. Good. He'll need to have been warned." },
+              { label: "Let him have the dream", lore: 6, followers: 10, note: "You kept your mouth shut and let him drive off grinning. Some things you have to find out with your own knuckles. He'll learn. Or he won't, and it'll sit under a tarp. Either way it was his to choose." },
+            ],
+          },
+          {
+            id: "flipper_buy",
+            emoji: "💸",
+            title: "Turnover",
+            text: (x) => `He barely walks around it. Already knows where he's relisting it, already knows his number, hands you the $${fmt(x.amount)} folded so you can't count it in front of him. Doesn't ask a single question about the ${x.carName}. To him it isn't a car, it's a line item with a week to live on his lot.`,
+            choices: [
+              { label: "Take the cash, no hard feelings", lore: 5, note: "Business is business. He was gone before you finished counting, already texting the next guy. You'll probably see the same car listed by Friday for two grand more." },
+            ],
+          },
+          {
+            id: "dad_and_kid",
+            emoji: "👨‍👦",
+            title: "Something For Us To Do",
+            text: (x) => `He pulls up with a teenager who won't look up from the phone, right until the kid sees the car and forgets he owns a phone. "Something for us to do on weekends," the dad says, quiet, like he's been waiting years to have a reason. That $${fmt(x.amount)} buys more than a project. That one you don't mind letting go.`,
+            choices: [
+              { label: "Throw in the spare parts, wish them luck", lore: 9, followers: 15, note: "You loaded the odds and ends you'd been hoarding for it into the kid's arms. The dad shook your hand too long and didn't say much. He didn't have to." },
+            ],
+          },
+        ],
+        mid: [
+          {
+            id: "highschool_dream",
+            emoji: "🕰",
+            title: "Since He Was Seventeen",
+            text: (x) => `He's forty if he's a day, and he's wanted one of these since high school. Now he's got the money and, finally, the nerve. He hands over the $${fmt(x.amount)} like it might not be real, like somebody's going to tap his shoulder and take the ${x.carName} back. Nobody does. It's his.`,
+            choices: [
+              { label: "Tell him it was worth the wait", lore: 7, followers: 12, note: "He got in, sat a second with both hands on the wheel, and let out a breath he'd been holding since he was seventeen. Then he drove it home slow, the way you savor a thing you waited for." },
+            ],
+          },
+          {
+            id: "three_hours_cash",
+            emoji: "🧾",
+            title: "Drove Three Hours",
+            text: (x) => `Saw it online, drove across two counties, envelope in his jacket the whole way. He didn't come to haggle, he came to make sure it was real before he gave up a whole Saturday and $${fmt(x.amount)}. He walks it once, nods, and pays. "Worth the drive," he says, and means the car.`,
+            choices: [
+              { label: "Shake on it, send him home happy", lore: 6, note: "He'd already booked a hotel halfway back in case the deal took two days. Didn't need it. He was on the road before noon with the title on the passenger seat." },
+            ],
+          },
+          {
+            id: "trader_buy",
+            emoji: "🤝",
+            title: "Knows What It's Worth",
+            text: (x) => `This one knows exactly what he's looking at. Offers a hair under, not to insult you, just reflex, and pays the $${fmt(x.amount)} the second you hold firm. Runs a thumb along a panel you sweated over and nods once. "Clean work." He'll flip it. You both know it. He respects that you built it right enough to be worth flipping.`,
+            choices: [
+              { label: "Take the compliment and the cash", lore: 6, followers: 8, note: `"Clean work" from a man who has seen a thousand of them is worth more than the sale. He gave you a card and said to call him next time before you list it.` },
+            ],
+          },
+        ],
+        show: [
+          {
+            id: "collector_buy",
+            emoji: "🧤",
+            title: "Never See Rain Again",
+            text: (x) => `Enclosed trailer, white gloves, a man who checks the underside before he checks the paint. The ${x.carName} is going into a climate-controlled room to sit under a cover, and the $${fmt(x.amount)} is nothing to him. It's the safest thing that could happen to the car. You built it to be driven. You don't say that.`,
+            choices: [
+              { label: "\"Drive it once in a while. For me.\"", lore: 9, followers: 20, note: "He smiled the way people smile at a thing they have no intention of doing. \"We'll see,\" he said. You watched the trailer doors close on a year of your life and a car that'll never feel the road again." },
+              { label: "Let it go without a word", lore: 7, note: "You handed him the keys, took the money, and didn't editorialize. It's his now. What he does with it stopped being your business the second the cash hit your hand. Mostly you believe that." },
+            ],
+          },
+          {
+            id: "he_will_drive_it",
+            emoji: "🌅",
+            title: "The One You Hope For",
+            text: (x) => `He's the buyer you build for and rarely get. Pays the $${fmt(x.amount)} without ceremony, then tells you he's taking his wife to the coast in it next month, the trip they never took when they were broke and young. He's going to put miles on it. Bugs on the paint. Memories in the seats. That's the one that makes the whole season worth it.`,
+            choices: [
+              { label: "Tell him to send you a photo from the coast", lore: 10, followers: 25, note: "Six weeks later a photo landed in your DMs: the car at an overlook, the ocean behind it, two people you'll never meet leaning on a fender you block-sanded by hand. You saved it. Some sales you keep." },
+            ],
+          },
+          {
+            id: "the_broker",
+            emoji: "🕴",
+            title: "For A Client",
+            text: (x) => `You never meet the buyer. A broker in a pressed shirt handles it for a client who "prefers privacy," wires the $${fmt(x.amount)}, and has a transporter at the curb inside the hour. One signature, a firm handshake, and the ${x.carName} rolls up a ramp into a truck bound for somewhere you'll never know. Big money, and cold as a bank lobby.`,
+            choices: [
+              { label: "Sign it and let it disappear", lore: 6, note: "The wire cleared before the transporter left the block. Wherever it went, you'll never see it at a show, never see it online, never know if it's loved or just owned. It's the cleanest sale you'll ever hate a little." },
+            ],
+          },
+        ],
+      };
+      function queueBuyerScene(ctx) {
+        try {
+          const ov = ctx.soldOverall || 0;
+          const tier = ov < 55 ? "flip" : ov < 80 ? "mid" : "show";
+          const pool = BUYER_SCENES[tier] || [];
+          if (!pool.length) return false;
+          const pick = pickFresh(pool, "buyer_" + tier, Math.max(1, pool.length - 1));
+          if (!pick) return false;
+          queueScene({
+            id: "buyer_" + pick.id,
+            art: "scene-first-car-sale",
+            emoji: pick.emoji || "🤝",
+            title: pick.title,
+            text: typeof pick.text === "function" ? pick.text(ctx) : pick.text,
             choices: pick.choices,
           });
           return true;
