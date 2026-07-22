@@ -10,6 +10,13 @@ nature and cannot be a test. When a change warrants a review, run the board and
 commit the write-up here as `NNN-slug.md` (copy `_TEMPLATE.md`), next to the
 code it justifies — the same way `../story-notes-*.md` capture story passes.
 
+**Convene it with the `/board` command** (`.claude/skills/board/`): type
+`/board <your idea>` to stage the full session live in chat, person by person
+— Round One, an open boardroom where the executives argue back and forth and
+form coalitions, the Red Team, a vote from every seat, and a chair summary.
+Variants: "quick board" (skip Round One), "just ask Carmack and Benzies"
+(a subset), or add "and log it" to also write the review to `NNN-slug.md`.
+
 **When a review is warranted** (judgment, never auto-required): a new gameplay
 mechanic, story beat, quest, AI behavior, world system, economy or progression
 change, a UI feature, or a technical architecture change. A one-line fix, a

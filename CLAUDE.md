@@ -29,11 +29,13 @@ inlines the art back into `dist/Car_Guy_Sim.html` (gitignored).
 
 ## Design reviews (the Executive Design Review Board)
 
-Significant changes get pressure-tested before implementation. The board's
-roster, rules, and meeting format live in `dev/reviews/BOARD.md`; when a change
-warrants a written review, log it under `dev/reviews/` (see that folder's
-README). The board is a design-phase deliberation, not a test; its
-machine-checkable rules are enforced by `dev/board-gate.js` (step 3).
+Significant changes get pressure-tested before implementation. Convene the
+board with the **`/board <idea>`** command (`.claude/skills/board/`), which
+stages the full session live in chat, person by person. The roster, rules, and
+meeting format live in `dev/reviews/BOARD.md`; when a change warrants a written
+review, log it under `dev/reviews/` (see that folder's README). The board is a
+design-phase deliberation, not a test; its machine-checkable rules are enforced
+by `dev/board-gate.js` (step 3).
 
 ## Shipping to itch (the web build)
 
