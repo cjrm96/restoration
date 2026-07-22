@@ -9970,7 +9970,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.37.1";
+      const GAME_VERSION = "0.38.0";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -11382,6 +11382,45 @@
           title: beat.title,
           text: beat.text,
           choices: [{ label: n >= 3 ? "Nod. Keep working." : "Take the wrench", lore: 6 }],
+        });
+      }
+
+      // The road not taken has a weight the ledger never shows. A player who
+      // never sells her car and never pawns the ring is carrying the whole
+      // build on discipline, and the fall path gets a cutscene and an
+      // aftermath while restraint gets one porch-light line at the very end.
+      // So once a season, when the strain is real, she notices out loud. This
+      // is the mirror of the ring aftermath: same marriage, quieter cost.
+      function maybeVirtueBeat() {
+        if (!state.tutorialComplete || state.week < 6) return;
+        const L = moralLedger();
+        if (!L.cleanHands) return;
+        if (state.virtueBeatSeason === (state.seasonNumber || 1)) return;
+        // Restraint only reads as a choice when there was something to give up.
+        // Gate on genuine strain: thin on cash, or deep enough into a build
+        // that the tempting shortcuts are right there on the shelf.
+        const thin = (state.money || 0) < 400;
+        const deepIn = (state.installsDone || 0) >= 6;
+        if (!thin && !deepIn) return;
+        if (state.pendingScene || Math.random() > 0.14) return;
+        if (!claimLifeBeat()) return;
+        state.virtueBeatSeason = state.seasonNumber || 1;
+        state.wifePepTalks = (state.wifePepTalks || 0) + 1;
+        const beat = thin
+          ? {
+              title: "The Part That Waited",
+              text: "The catalog's open on the workbench to the exact part you need, and the account can't cover it this week. You could sell something. There's always something to sell. Instead you close the laptop. She comes out with two mugs, sees the screen go dark, and doesn't ask. Just sets one down next to you. \"It'll be there next week,\" she says. \"So will I.\"",
+            }
+          : {
+              title: "The Thing You Didn't Do",
+              text: "You ran the money three times looking for a way through, and every version ended at the same two things you swore you'd never touch: her car in the driveway, the ring on the dresser. You closed the notebook. She found you in the garage not working, just sitting. \"Whatever you were thinking about in here,\" she said, \"thank you for not doing it.\" She knew. She always knows.",
+            };
+        queueScene({
+          id: "virtue_s" + (state.seasonNumber || 1),
+          emoji: "🤍",
+          title: beat.title,
+          text: beat.text,
+          choices: [{ label: "Sit with it a minute", lore: 8 }],
         });
       }
 
@@ -14096,18 +14135,29 @@
           const rateBefore = mechanicDiscount();
           state.mechanic.shopVisits = (state.mechanic.shopVisits || 0) + 1;
           // "Oh, you're the one." Dale said it on day one and never explained.
-          // Once you're a real regular, he does. The truck has a ghost.
+          // Once you're a real regular, he does. Every project car has a
+          // ghost, an owner who parked it and quit, so Dale remembers each
+          // build you bring him, not just the F-100 you started on.
+          const daleProj = currentCar();
+          if (!state.daleTruckToldCars) {
+            // Migrate the old single-fire flag: if they already heard it, it
+            // landed on whatever they were wrenching, so don't replay it there.
+            state.daleTruckToldCars = state.daleTruckTold && daleProj ? [daleProj.id] : [];
+          }
           if (
-            !state.daleTruckTold && mechanicDiscount() >= 0.12 &&
-            (state.cars || []).some((c) => c.year === 1965 && c.model === "F-100")
+            daleProj && mechanicDiscount() >= 0.12 &&
+            !state.daleTruckToldCars.includes(daleProj.id)
           ) {
+            state.daleTruckToldCars.push(daleProj.id);
             state.daleTruckTold = true;
-            queueScene({
+            const daleF100 = daleProj.year === 1965 && daleProj.model === "F-100";
+            const daleScene = {
               id: "dale_truck",
-              art: "scene-dale-brakes",
               emoji: "🔧",
               title: "He Remembers Her",
-              text: "Dale's writing up the estimate when he stops, pen in the air. \"You know I did the brakes on this truck. Spring of '89. Fella that owned her was gonna drive her to the coast when he retired.\" He looks at the F-100 a long second, then back at the clipboard. \"Kept the tarp on her twenty years instead. Never finished anything in his life.\" He slides the estimate across. \"So. You gonna be different?\"",
+              text: daleF100
+                ? "Dale's writing up the estimate when he stops, pen in the air. \"You know I did the brakes on this truck. Spring of '89. Fella that owned her was gonna drive her to the coast when he retired.\" He looks at the F-100 a long second, then back at the clipboard. \"Kept the tarp on her twenty years instead. Never finished anything in his life.\" He slides the estimate across. \"So. You gonna be different?\""
+                : `Dale's writing up the estimate when he stops, pen in the air. "You know I knew this ${daleProj.model}. Turned wrenches on her back when, before she got parked. Fella that owned her had big plans too." He looks at the ${daleProj.make} a long second, then back at the clipboard. "Then one winter he just quit. Threw a tarp over her and never finished a thing in his life." He slides the estimate across. "So. You gonna be different?"`,
               choices: [
                 {
                   label: '"Yeah. I am."',
@@ -14120,7 +14170,11 @@
                   note: 'Dale watches you set the keys on the counter instead of answering. "Yep," he says, to nobody in particular. "You\'re the one." Answering with your hands. He respects that more.',
                 },
               ],
-            });
+            };
+            // The brakes art shows the F-100 specifically, so only the truck
+            // gets it; other builds play the beat on a plain card.
+            if (daleF100) daleScene.art = "scene-dale-brakes";
+            queueScene(daleScene);
           }
           // The elder's clock. Once, at full trust, in a subordinate clause.
           if (!state.daleClockTold && mechanicDiscount() >= 0.25) {
@@ -15103,6 +15157,7 @@
 
         maybeTriggerRivalBeat();
         maybeKidWrenchBeat();
+        maybeVirtueBeat();
         if (reason !== "after show") maybeRollEvent();
         if (reason !== "after show") maybeTriggerGarageMoment();
         if (reason !== "after show") maybeFridayNightHangout();
@@ -15114,6 +15169,7 @@
         maybeOfferBrandDeal();
         maybeOfferCollab();
         maybeOfferRingPawn();
+        maybeOfferRingPawnStretch();
         maybeTriggerBirthday();
         if (missedSocialPost) {
           toast(
@@ -15700,21 +15756,14 @@
         pushNotice(line, "good");
       }
 
-      function maybeOfferRingPawn() {
-        if (state.weddingRingPawned) return;
-        if (!state.wifeCarSold) return;
-        // Player has to be all-in: every loan tapped, every dollar borrowed
-        // already. Ring pawn is the move when there's nothing left to sell.
-        if (state.bankLoanBalance <= 0) return;
-        if (state.sharkLoanBalance <= 0) return;
-        if (state.toolTruckBalance <= 0) return;
-        if (modalBusy()) return;
-        if (Math.random() > 0.35) return;
+      // Both roads to the pawn shop end at the same glass case and the same
+      // two choices. Only the reason you're standing there changes.
+      function queueRingPawnOffer(text) {
         queueScene({
           id: "ring_pawn_offer",
           title: "The pawn shop is open late",
           emoji: "💍",
-          text: "It's 10:47 PM. You're standing across the street from a pawn shop you've driven past a hundred times and never thought about. Three loans out, the wife's car already gone, and the bank account thirty bucks deep. Your wedding ring has been sitting on the dresser since you started painting last weekend. She has never once doubted this build. That's what makes the thought so ugly. She wouldn't even notice tonight.",
+          text,
           choices: [
             {
               label: "Pawn the ring · +$5,000",
@@ -15732,6 +15781,49 @@
             },
           ],
         });
+      }
+
+      function maybeOfferRingPawn() {
+        if (state.weddingRingPawned || state.ringEverPawned) return;
+        if (!state.wifeCarSold) return;
+        // The bottom of the reckless road: every loan tapped, the wife's car
+        // already gone. Ring pawn is the move when there's nothing left.
+        if (state.bankLoanBalance <= 0) return;
+        if (state.sharkLoanBalance <= 0) return;
+        if (state.toolTruckBalance <= 0) return;
+        if (modalBusy()) return;
+        if (Math.random() > 0.35) return;
+        queueRingPawnOffer(
+          "It's 10:47 PM. You're standing across the street from a pawn shop you've driven past a hundred times and never thought about. Three loans out, the wife's car already gone, and the bank account thirty bucks deep. Your wedding ring has been sitting on the dresser since you started painting last weekend. She has never once doubted this build. That's what makes the thought so ugly. She wouldn't even notice tonight.",
+        );
+      }
+
+      // The second door. The reckless path above needs the wife's car already
+      // sold and every loan maxed, so a careful player never reaches it and
+      // never faces the fork. But an ordinary run can corner you just as hard
+      // late in the season, truck finally ready, trophy in reach, and no cash
+      // to chase it. Restraint should be tested there too, not only at rock
+      // bottom. Mutually exclusive with the path above by the wifeCarSold gate.
+      function maybeOfferRingPawnStretch() {
+        if (state.weddingRingPawned || state.ringEverPawned) return;
+        if (state.wifeCarSold) return; // the reckless path owns that case
+        if (state.pendingScene || modalBusy()) return;
+        const car = currentCar();
+        if (!car || !roadworthy(car)) return;
+        // Late season, chasing the big show, and genuinely broke with debt
+        // already working, not merely cash-poor by choice.
+        if (state.week < (state.seasonLength || 22) - 6) return;
+        if ((state.history || []).length === 0) return;
+        if (state.money > 250) return;
+        const anyLoan =
+          (state.bankLoanBalance || 0) > 0 ||
+          (state.sharkLoanBalance || 0) > 0 ||
+          (state.toolTruckBalance || 0) > 0;
+        if (!anyLoan) return;
+        if (Math.random() > 0.3) return;
+        queueRingPawnOffer(
+          "It's past ten and you're parked across from a pawn shop you've driven by a hundred times and never once thought about. The season's biggest show is weeks out, the truck is finally ready, and the account is thirty bucks from empty with every loan already working. Your wedding ring has been on the dresser since you started painting. She has never once doubted this build. That's what makes the thought so ugly. She wouldn't even notice tonight.",
+        );
       }
 
       function maybeOfferBrandDeal() {
