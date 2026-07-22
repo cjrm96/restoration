@@ -4740,11 +4740,29 @@
    │  Prepend it before the scene text so the whole set looks like one world. │
    └─────────────────────────────────────────────────────────────────────────┘
 
-     Match the pixel-art style of the reference images exactly: chunky
-     hand-placed pixels, warm dusk color palette (deep purple sky fading to
-     gold), strong rim lighting on subjects, cozy garage Americana, dithered
-     gradients, cinematic composition, eye-level camera. No text, no logos,
-     no watermarks, no UI elements in the image, art only.
+     Pixel-art illustration, chunky hand-placed pixels at a CONSISTENT medium
+     resolution (a crisp 16-bit console look: roughly 480px of vertical detail
+     upscaled clean, visible square pixels but not blocky). Uniform, restrained
+     ordered dithering for gradients, the SAME dither density in every image.
+     Never photo-real, never smooth digital painting, never soft anti-aliased
+     edges.
+
+     Palette LAW: deep bruised-purple sky fading down to amber/gold at the
+     horizon; warm tungsten pools of foreground light against cool blue shadow;
+     strong rim lighting on subjects; dusk or blue-hour always. Cozy garage
+     Americana.
+
+     PLAYER CHARACTER LAW, no exceptions: the player/mechanic is ALWAYS a solid
+     near-black silhouette. No face, no facial features, no skin tone, no
+     visible eyes or expression, ever. Read him through posture and rim light
+     only, he is a blank avatar the player projects onto. Named side characters
+     MAY have rendered faces; the player never does.
+
+     CAMERA: eye-level, slight 3/4 angle for interiors, cinematic composition,
+     consistent horizon height across a set.
+
+     No baked-in text, logos, watermarks, UI, emoji, icons, or notification
+     shapes. Art only.
 
    Notes that apply to every prompt:
      - NO baked-in text. The game draws its own titles/buttons over the art,
@@ -4773,12 +4791,18 @@
    overlay. 16:9 aspect ratio.
 
    [ scene-barn-find ]  Intro tutorial beat (behind "Welcome" popup). 2:1.
+   Style note: the covered car and camera MUST match [ scene-restored-barn ] so
+   the find/reveal bookend lines up. Generate with the restored-barn image fed
+   in as a reference; keep the same barn, same framing, only cooler dawn light.
    ...........................................................................
-   Pixel art, early morning light: a weathered barn with its doors just pulled
-   open, dust hanging in sunbeams, revealing the silhouette of a car under a
-   dusty tarp. A set of keys dangling from a hand in the foreground corner.
-   Hopeful, "found treasure" mood. Wide banner composition, subject
-   centered-low. 2:1 aspect ratio.
+   Pixel art, cool early-dawn light: a weathered barn with its doors just pulled
+   open, dust hanging in pale sunbeams from a small rear window, revealing a car
+   under a dusty grey tarp. The tarp drapes the silhouette of a late-1960s
+   fastback muscle car (long hood, fastback roofline, the same car shape
+   revealed in the restored-barn image). A hand in the lower-right foreground
+   holds a dangling set of keys, a brass key catching the light. Hopeful, "found
+   treasure" mood. Same doors-open composition as the restored-barn reference,
+   subject centered-low. 2:1 aspect ratio.
 
    ═══════════════════════════════════════════════════════════════════════════
    CHAPTER 2, THE GRIND (build / restoration arc)
@@ -4808,13 +4832,23 @@
    up from the curb, sheltered but cramped.
 
    [ workspace-storage ]  Tier 3, The Storage Unit. 16:9.
+   Style note: MUST be 16:9 and share the eye-level 3/4 camera, pixel
+   resolution, and dither density of [ workspace-home-garage ]. Generate it
+   with the home-garage and carport images fed in as references so the tier
+   progression reads as one workshop leveling up.
    ...........................................................................
-   A pixel-art scene of a rented self-storage unit at night, its orange roll-up
-   door open, warm light spilling out onto the asphalt. Inside, a classic car
-   takes up most of the space, surrounded by metal shelving with parts boxes, a
-   clamp-on work lamp, and a small rolling tool cart. A mechanic in silhouette
-   works at the rear of the car. Other closed storage doors stretch away into
-   the dark. Secret hideout mood.
+   Interior three-quarter view from just inside a rented self-storage unit at
+   night, eye-level camera matching the home-garage shot. The orange roll-up
+   door is up; warm light spills from a single clamp-on work lamp onto a classic
+   American project car that fills most of the unit, front three-quarter to
+   camera. Metal shelving along one wall stacked with cardboard parts boxes, a
+   small red rolling tool cart, a folding chair. Concrete floor with a faint oil
+   stain. Through the open door behind, a row of other closed storage doors
+   recedes into blue-dark night. The mechanic is a solid black silhouette,
+   crouched at the front wheel with a wrench, rim-lit by the work lamp. Cramped,
+   secret-hideout mood, one honest step up from the carport. Match the
+   home-garage reference exactly for pixels, dither, and the warm-pool-against-
+   purple lighting. 16:9 aspect ratio. Keep the lower-left calm.
 
    [ workspace-home-garage ]  Tier 4, The Home Garage (the reference look). 16:9.
    ...........................................................................
@@ -4826,14 +4860,18 @@
    Established, capable, cozy, this is the reference garage look.
 
    [ workspace-dream-shop ]  Tier 5, The Dream Shop. 16:9.
+   Style note: the current render's neon wall sign is malformed (doubled/broken
+   outline). Regenerate with the existing dream-shop image fed back in as a
+   reference and hold the composition; fix ONLY the neon sign.
    ...........................................................................
-   A pixel-art scene of a dream hot-rod shop at night. A classic car raised on
-   a two-post lift over a glossy checkered floor, bathed in cool overhead shop
-   lights with a warm neon sign glow (abstract neon shapes, no readable text)
-   on the back wall. Stainless tool cabinets, a parts washer, an engine on a
-   stand, a shelf of gold trophies catching the light. A mechanic in silhouette
-   stands beneath the lifted car, wrench in hand. Triumphant "made it" mood,
-   richer lighting than a home garage.
+   A dream hot-rod shop at night. A classic car raised on a two-post lift over a
+   glossy checkered floor, bathed in cool overhead shop lights with a warm neon
+   glow on the back wall. Stainless tool cabinets, a parts washer, an engine on
+   a stand, a shelf of gold trophies catching the light. A mechanic in
+   silhouette stands beneath the lifted car, wrench in hand. The neon wall sign
+   is ONE clean single-stroke abstract shape (a simple car outline or piston
+   glyph), no doubled or broken outlines, no tangled duplicate lines, no
+   readable text. Triumphant "made it" mood, richer lighting than a home garage.
 
    [ scene-restoration-complete ]  Restoration-complete reveal. 16:9.
    ...........................................................................
@@ -5215,28 +5253,30 @@
    for contrast. Tools, rags, coffee mugs scattered naturally. Easy, unhurried
    camaraderie. Keep the lower-left quarter calm.
 
-   [ scene-going-viral ]  You wake up famous, the morning after.  (not yet generated)
-   Style note: PAINTED bedroom morning. NO emoji/icons/notification shapes coming
-   out of the phone, just the screen glow and his reaction. The wife's face is
+   [ scene-going-viral ]  You wake up famous, the morning after.
+   Style note: the disbelief must read through POSTURE and the cold phone-glow
+   rim light on a faceless silhouette, never a rendered face. NO emoji/icons/
+   notification shapes from the phone, just the screen glow. The wife's face is
    NEVER shown, keep her turned away / seen from behind, as in every wife scene.
    ...........................................................................
-   Pixel art, warm early-morning light: a suburban bedroom, sun cutting through
-   half-open window blinds in dusty golden bars across the bed. The mechanic sits
-   bolted upright against the headboard, blanket pooled at his waist, gripping his
-   phone in both hands and staring at it, jaw slack, eyes wide, the cold blue-white
-   glow of the screen throwing hard light up onto his stunned, stubbled face while
-   the rest of the room stays warm amber. The phone is clearly going off, a faint
-   motion-blur buzz around it and a bright unreadable blaze of a screen, but NO
-   emoji, icons, hearts, or notification shapes floating out of it, just the glow
-   and his disbelief. Beside him his wife is still mostly asleep, seen only from
-   behind, her back and tousled hair on the pillow, one shoulder and an arm above
-   the blanket as she just begins to stir, her face turned away and unseen. A
-   nightstand with an alarm clock, a lamp, a coffee mug, a set of keys. A work
+   Warm early-morning light: a suburban bedroom, sun cutting through half-open
+   window blinds in dusty golden bars across the bed. The mechanic sits bolted
+   upright against the headboard as a solid black silhouette, no face, blanket
+   pooled at his waist, both hands gripping a phone he stares down at. The phone
+   screen blazes cold blue-white and that light rims the edge of his faceless
+   head, shoulders, and knuckles in hard electric blue while the rest of the room
+   stays warm amber; his tense frozen posture reads as disbelief without any
+   facial features. A faint motion-blur buzz around the phone and a bright
+   unreadable blaze of screen, but NO emoji, icons, hearts, or notification
+   shapes, just the glow. Beside him his wife is still mostly asleep, seen only
+   from behind, her back and tousled hair on the pillow, one shoulder and an arm
+   above the blanket as she just begins to stir, her face turned away and unseen.
+   A nightstand with an alarm clock, a lamp, a coffee mug, a set of keys. A work
    jacket over the chair, boots by the door. The whole room warm and quiet except
-   the electric glow on his face and the look of pure disbelief. "Something just
-   happened" energy, the morning your life changed. Keep the lower-left calm.
+   the one electric cold light source. "Something just happened" energy, the
+   morning your life changed. Keep the lower-left calm.
 
-   [ scene-tijuana-paint ]  The risky south-of-the-border repaint run.  (not yet generated)
+   [ scene-tijuana-paint ]  The risky south-of-the-border repaint run.
    ...........................................................................
    Pixel art, hot dusty golden-hour light: a bustling little body shop just across
    the border in a Mexican town, hand-painted signs in warm reds and yellows (no
@@ -5251,7 +5291,7 @@
    sketchy and a lot charming, a real risk-reward car-guy adventure. Golden light,
    long shadows. Keep the lower-left quarter calm.
 
-   [ scene-loan-shark ]  The deal itself, noir and menacing.  (not yet generated)
+   [ scene-loan-shark ]  The deal itself, noir and menacing.
    Style note: paired with [ scene-loan-shark-paid ] below for the payoff, same
    room, opposite mood.
    ...........................................................................
@@ -5268,7 +5308,7 @@
    cigar smoke curling. Desperate, "this is a bad idea and you're doing it anyway"
    energy. Keep the lower-left quarter calm.
 
-   [ scene-loan-shark-paid ]  The debt is cleared, you get the title back.  (not yet generated)
+   [ scene-loan-shark-paid ]  The debt is cleared, you get the title back.
    Style note: the payoff bookend to [ scene-loan-shark ], same room, gloom gone.
    ...........................................................................
    Pixel art, bright and relieved daylight version of the loan-shark back room, now
@@ -5425,15 +5465,21 @@
 
    [ scene-gas-station ]  Recognized at the pump. IN GAME.
    Style note: fires at the "Known Around Town" reputation tier. The first time a
-   stranger knows the build before they know you. Small, warm, ordinary-life milestone.
+   stranger knows the build before they know you. Small, warm, ordinary-life
+   milestone. The player is a faceless silhouette; the recognizing stranger is a
+   rendered side character (faces allowed). Match the pixel resolution and dither
+   density of the Uncle Ray reference, NO comic halftone dots.
    ...........................................................................
-   Pixel art, a fuel station at dusk under a lit canopy, the player's project truck at a
-   pump with the nozzle in the filler. In the mid-ground, a stranger at the next island
-   leans around his own car and calls across the lot with a raised hand and a grin of
-   recognition. In the foreground, from behind and to the side, the mechanic looks up
-   from the pump, caught off guard and quietly pleased. Warm canopy lights against a
-   deep dusk sky, a glowing price sign, lit store windows behind. Ordinary-life,
-   "somebody I've never met knows the truck" energy. Keep the lower-left quarter calm.
+   A fuel station at dusk under a lit canopy, the player's project truck at a
+   pump with the nozzle in the filler. In the mid-ground, a stranger at the next
+   island (a rendered side character, face allowed) leans around his own car and
+   calls across the lot with a raised hand and a grin of recognition. In the
+   foreground, from behind and to the side, the mechanic looks up from the pump
+   as a solid black silhouette with no face, rim-lit along one shoulder by the
+   canopy light, his posture caught off guard and quietly pleased. Warm canopy
+   lights against a deep dusk sky, a glowing price sign with no readable text, lit
+   store windows behind. Ordinary-life, "somebody I've never met knows the truck"
+   energy. Keep the lower-left quarter calm.
 
    ═══════════════════════════════════════════════════════════════════════════
    NON-GAME SLOTS (for store pages / dev logs)
@@ -9970,7 +10016,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.37.0";
+      const GAME_VERSION = "0.37.1";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
