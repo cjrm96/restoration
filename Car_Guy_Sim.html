@@ -9482,6 +9482,7 @@
           name: "Hector “The Hammer” Vargas",
           handle: "@HammerVargas47",
           short: "Hector",
+          car: "Hector's '68 Road Runner",
           favBuild: "stock",
           showsAt: ["Local", "Regional", "National"],
           allyLine: "Hector told the old guard you're 'one of the good ones.' From him, that's a blood oath.",
@@ -9505,6 +9506,7 @@
           name: "Ricky “ChromeDaddy” Malone",
           handle: "@ChromeDaddyRick",
           short: "ChromeDaddy",
+          car: "ChromeDaddy's mirror-glass '70 Chevelle",
           favBuild: "restomod",
           showsAt: ["Cars & Coffee", "Local"],
           allyLine: "ChromeDaddy put your build on his main feed and tagged his sponsors. You're in the circle now.",
@@ -9528,6 +9530,7 @@
           name: "Street Sammy “Slam” Ruiz",
           handle: "@SlamRuiz",
           short: "Sammy",
+          car: "Sammy's street-built '69 Camaro",
           favBuild: "restomod",
           showsAt: ["Local", "Regional"],
           allyLine: "Sammy stopped calling it luck. He calls you 'the one to beat' now, to your face, even.",
@@ -9551,6 +9554,7 @@
           name: "Leo “The Ghost” Harlan",
           handle: "@GhostHarlan",
           short: "Ghost",
+          car: "The Ghost's sleeper '67 GTO",
           favBuild: "stock",
           showsAt: ["Regional", "National"],
           allyLine: "The Ghost gave you his number. Nobody has The Ghost's number. Guard it with your life.",
@@ -10016,7 +10020,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.40.0";
+      const GAME_VERSION = "0.41.0";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -11638,6 +11642,26 @@
         return !!(state.rivals && state.rivals[id] && state.rivals[id].allied);
       }
       const RIVAL_TIER_LABEL = { cold: "Skeptical", warm: "Respectful", ally: "🤝 Ally" };
+
+      // A named rival's judged-show score. They build to their taste, so they
+      // punch a little above the anonymous field when the show's axis suits
+      // their leaning: restomod runners on power/handling, period builds on
+      // reliability. Respect eases the edge, an ally isn't there to bury you.
+      // Kept in the same competitive band as the anonymous fillers so swapping
+      // a filler for a rival doesn't move the difficulty.
+      function rivalPersonaScore(rival, show, compMax) {
+        const lo = show.minScore + 6;
+        let s = lo + Math.random() * Math.max(4, compMax - lo);
+        const axis = show.axis;
+        if (axis) {
+          if (rival.favBuild === "restomod" && (axis === "power" || axis === "handling")) s += 3;
+          if (rival.favBuild === "stock" && axis === "reliability") s += 3;
+        }
+        const tier = rivalTier(rival.id);
+        if (tier === "ally") s -= 4;
+        else if (tier === "warm") s -= 1.5;
+        return clamp(s);
+      }
 
       // ── Scene memory & reputation ──
       // The scene remembers big beats (notable moments) and tracks how much
@@ -16171,15 +16195,32 @@
           effectiveOverall >= 80
             ? Math.min(95, Math.max(80, effectiveOverall - 3))
             : 90;
-        let compPool = [...COMPS]
+        // Named rivals who actually run this show type take real slots in the
+        // field instead of anonymous fillers, so the paddock chatter on the
+        // results screen belongs to cars that were genuinely on the lawn. The
+        // field stays four deep, so placement and prize math don't move.
+        const attendingRivals = RIVALS.filter((r) =>
+          (r.showsAt || []).includes(show.tier),
+        ).sort(() => Math.random() - 0.5);
+        // Cap named rivals per field so a stranger or two still shows up and
+        // the lineup isn't the exact same faces every single week.
+        const namedInField = attendingRivals.slice(0, 3).map((r) => ({
+          name: r.car || `${r.short}'s build`,
+          score: rivalPersonaScore(r, show, compMax),
+          isRival: true,
+          rivalId: r.id,
+        }));
+        const fillerCount = Math.max(0, 4 - namedInField.length);
+        const fillers = [...COMPS]
           .sort(() => Math.random() - 0.5)
-          .slice(0, 4)
+          .slice(0, fillerCount)
           .map((name) => ({
             name,
             score: clamp(
               show.minScore + 5 + Math.random() * (compMax - show.minScore),
             ),
           }));
+        let compPool = [...namedInField, ...fillers];
         let buckInShow = false;
         // Buck shows up at every show, but his Cars & Coffee energy is
         // casual, same Stallion, no trophy chase. Buck stays competitive
@@ -16198,6 +16239,7 @@
           name: "Buck's '67 Stallion",
           score: buckScore,
           isRival: true,
+          isBuck: true,
         });
         buckInShow = true;
         state.rival.showsEntered++;
@@ -16214,7 +16256,7 @@
 
         const place = all.findIndex((e) => e.isPlayer) + 1;
         const buckPlace = buckInShow
-          ? all.findIndex((e) => e.isRival) + 1
+          ? all.findIndex((e) => e.isBuck) + 1
           : null;
         state.rival.lastPlace = buckPlace;
         if (buckPlace) {
@@ -16429,6 +16471,24 @@
               }
             });
           }
+        }
+        // Respect isn't a one-way ratchet. A named rival who showed up, ran
+        // their build, and put a clean gap on you while you finished off the
+        // podium can cool back toward skeptical. Allies are past that, they've
+        // already made up their mind about you.
+        if (show.tier !== "Cars & Coffee" && place > 3) {
+          namedInField.forEach((entry) => {
+            if (rivalIsAllied(entry.rivalId)) return;
+            const rivalPlace = all.indexOf(entry) + 1;
+            if (
+              rivalPlace > 0 &&
+              rivalPlace < place &&
+              rivalRespect(entry.rivalId) > 0 &&
+              Math.random() < 0.5
+            ) {
+              bumpRivalRespect(entry.rivalId, -1);
+            }
+          });
         }
         maybeRivalShowReaction(show, place, rivalCrossings);
         if (state.result) {
