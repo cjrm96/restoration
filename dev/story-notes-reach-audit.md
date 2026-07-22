@@ -75,11 +75,39 @@ but never sees either arc land.
    `wifePepTalks`, so her presence echoes back through the world-talks-back
    radio. The median player's story now has weight before the finale.
 
+## Follow-up shipped after ops review (v0.39.0)
+
+Ops pushed harder on the reward-curve inversion: the disciplined median player
+deserved a full arc about restraint, not a single line, and the two buried
+character beats needed freeing from a specific car and a multi-season grind.
+Committee reviewed the drafts before ship (continuity, partnership-not-rescue,
+and line-polish notes all applied). Shipped:
+
+1. **The restraint arc**, a true three-beat mirror of the fall, staged and
+   stateful (`state.restraintStage`, `maybeRestraintBeat()`), advancing only
+   while `cleanHands` holds:
+   - *The Part That Waited / The Thing You Didn't Do* - the notebook closes.
+   - *The Same Counter* - he goes to the same pawn shop but slides his OWN
+     tools across the glass, not the ring. Pays more effort for less money to
+     keep his hands clean. This is the cost, made concrete.
+   - *What She Put In* - she knew all along, redeemed his tools with her own
+     set-aside money, and meets him as a partner. The ache stays in.
+   The completed arc sets `moralLedger().heldTheLine`, which now branches the
+   victory wife-DM and the finale "cost" screen, so restraint lands its own
+   ending instead of borrowing the generic clean-hands line.
+
+2. **Dale "Thursday" un-buried**: gate lowered from 25% discount (near-max
+   trust, multi-season) to 20%, reachable by a shop-loyal player inside one
+   season.
+
+3. **"He Remembers Her"** was un-caged from the '65 F-100 in v0.38.0 (per-car
+   tracking), so legacy builds now get it too.
+
 ## Still open (deliberately not shipped yet)
 
-- **Dale "Thursday" and the kid's "Right One"** remain multi-season / deep-
-  loyalty gated. That is arguably correct (payoffs should cost something), but
-  worth revisiting if legacy-run completion turns out to be rare.
+- **The kid's "Right One"** still needs a three-season run to land. Arguably
+  correct (a generational payoff should cost seasons), but revisit if legacy
+  completion proves rare.
 - **The generational handoff** (the kid pulls the tarp off their own car, you
   stand at the fence like Ray) is still the one true finale left to write. It
   should come last, once we know the road to it is well-traveled.

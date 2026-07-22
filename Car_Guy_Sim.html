@@ -9970,7 +9970,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.38.0";
+      const GAME_VERSION = "0.39.0";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -11385,42 +11385,92 @@
         });
       }
 
-      // The road not taken has a weight the ledger never shows. A player who
-      // never sells her car and never pawns the ring is carrying the whole
-      // build on discipline, and the fall path gets a cutscene and an
-      // aftermath while restraint gets one porch-light line at the very end.
-      // So once a season, when the strain is real, she notices out loud. This
-      // is the mirror of the ring aftermath: same marriage, quieter cost.
-      function maybeVirtueBeat() {
+      // The restraint arc. The fall gets three beats, temptation, the pawn,
+      // the aftermath, and the disciplined player used to get one porch-light
+      // line at the very end. So the road not taken is now its own arc of
+      // equal weight, staged and stateful, the mirror of the ring:
+      //   1. The notebook closes. He won't touch the two things he swore off.
+      //   2. The same counter. He pawns his OWN things, not the ring, and
+      //      pays more effort for less money to keep his hands clean. This is
+      //      the cost, made concrete: what restraint actually takes from him.
+      //   3. She kept the receipt. She knew all along, and meets him in it.
+      // Only advances while cleanHands holds; sell the car or pawn the ring
+      // and the arc simply stops, because he chose the other road.
+      function maybeRestraintBeat() {
         if (!state.tutorialComplete || state.week < 6) return;
         const L = moralLedger();
         if (!L.cleanHands) return;
-        if (state.virtueBeatSeason === (state.seasonNumber || 1)) return;
+        if (state.pendingScene) return;
+        const stage = state.restraintStage || 0;
+        if (stage >= 3) return;
+        // Space the beats out so the arc breathes across the season.
+        if (state.restraintLastWeek != null && state.week - state.restraintLastWeek < 4)
+          return;
         // Restraint only reads as a choice when there was something to give up.
-        // Gate on genuine strain: thin on cash, or deep enough into a build
-        // that the tempting shortcuts are right there on the shelf.
         const thin = (state.money || 0) < 400;
         const deepIn = (state.installsDone || 0) >= 6;
         if (!thin && !deepIn) return;
-        if (state.pendingScene || Math.random() > 0.14) return;
+        if (Math.random() > 0.16) return;
         if (!claimLifeBeat()) return;
-        state.virtueBeatSeason = state.seasonNumber || 1;
+        state.restraintLastWeek = state.week;
         state.wifePepTalks = (state.wifePepTalks || 0) + 1;
-        const beat = thin
-          ? {
-              title: "The Part That Waited",
-              text: "The catalog's open on the workbench to the exact part you need, and the account can't cover it this week. You could sell something. There's always something to sell. Instead you close the laptop. She comes out with two mugs, sees the screen go dark, and doesn't ask. Just sets one down next to you. \"It'll be there next week,\" she says. \"So will I.\"",
-            }
-          : {
-              title: "The Thing You Didn't Do",
-              text: "You ran the money three times looking for a way through, and every version ended at the same two things you swore you'd never touch: her car in the driveway, the ring on the dresser. You closed the notebook. She found you in the garage not working, just sitting. \"Whatever you were thinking about in here,\" she said, \"thank you for not doing it.\" She knew. She always knows.",
-            };
+
+        if (stage === 0) {
+          state.restraintStage = 1;
+          const beat = thin
+            ? {
+                title: "The Part That Waited",
+                text: "The catalog's open on the workbench to the exact part you need, and the account can't cover it this week. You could sell something. There's always something to sell. Instead you close the laptop. She comes out with two mugs, sees the screen go dark, and doesn't ask. Just sets one down next to you. \"It'll be there next week,\" she says. \"So will I.\"",
+              }
+            : {
+                title: "The Thing You Didn't Do",
+                text: "You ran the money three times looking for a way through, and every version ended at the same two things you swore you'd never touch: her car in the driveway, the ring on the dresser. You closed the notebook. She found you in the garage not working, just sitting. \"Whatever you were thinking about in here,\" she said, \"thank you for not doing it.\" She knew. She always knows.",
+              };
+          queueScene({
+            id: "restraint_1",
+            emoji: "🤍",
+            title: beat.title,
+            text: beat.text,
+            choices: [{ label: "Sit with it a minute", lore: 8 }],
+          });
+          return;
+        }
+
+        if (stage === 1) {
+          state.restraintStage = 2;
+          queueScene({
+            id: "restraint_2",
+            emoji: "🤍",
+            title: "The Same Counter",
+            text: "You end up at the pawn shop after all. Same fluorescent light, same glass case full of other people's hard times. But it isn't the ring you slide across. It's your good socket set, the timing light, the watch off your own wrist. The broker counts out less than they're worth and you take it anyway, because the ring's still in your pocket and it's staying there. You'll buy the tools back. Someday. That isn't the point tonight.",
+            choices: [
+              {
+                label: "Take it and drive home",
+                money: 1800,
+                lore: 12,
+                note: "You drove home lighter in the truck bed. The build moves again. The dresser is untouched, and that is the only number that matters.",
+                noteTone: "ok",
+              },
+            ],
+          });
+          return;
+        }
+
+        // stage === 2 -> the payoff
+        state.restraintStage = 3;
         queueScene({
-          id: "virtue_s" + (state.seasonNumber || 1),
+          id: "restraint_3",
           emoji: "🤍",
-          title: beat.title,
-          text: beat.text,
-          choices: [{ label: "Sit with it a minute", lore: 8 }],
+          title: "What She Put In",
+          text: "There's an envelope on the workbench with your name on it. Inside: cash she'd been quietly setting aside from her own paychecks, and the pawn tickets for your tools and the watch, already redeemed. Under that, a note in her handwriting. \"I found the tickets in your jacket. You sold your own things so you'd never have to touch mine. I've known for a few weeks now.\" And smaller, at the bottom: \"Partners. You should have let me help sooner.\"",
+          choices: [
+            {
+              label: "Go find her",
+              lore: 16,
+              note: "The tools are back in the drawer where they live. You didn't say much and neither did she, but something settled. You kept your hands clean and it cost you, and she saw every minute of it.",
+              noteTone: "event-good",
+            },
+          ],
         });
       }
 
@@ -14176,8 +14226,11 @@
             if (daleF100) daleScene.art = "scene-dale-brakes";
             queueScene(daleScene);
           }
-          // The elder's clock. Once, at full trust, in a subordinate clause.
-          if (!state.daleClockTold && mechanicDiscount() >= 0.25) {
+          // The elder's clock. Once, at deep (not maxed) trust, in a
+          // subordinate clause. Lowered from the 25% top rung so a shop-loyal
+          // player can actually reach it inside a single season, instead of it
+          // sitting buried behind a multi-season grind almost nobody finishes.
+          if (!state.daleClockTold && mechanicDiscount() >= 0.2) {
             state.daleClockTold = true;
             queueScene({
               id: "dale_clock",
@@ -15157,7 +15210,7 @@
 
         maybeTriggerRivalBeat();
         maybeKidWrenchBeat();
-        maybeVirtueBeat();
+        maybeRestraintBeat();
         if (reason !== "after show") maybeRollEvent();
         if (reason !== "after show") maybeTriggerGarageMoment();
         if (reason !== "after show") maybeFridayNightHangout();
@@ -16583,6 +16636,7 @@
           tookShark: !!state.sharkEverTaken,
           sharkOutstanding: (state.sharkLoanBalance || 0) > 0,
           cleanHands: !state.wifeCarSold && !state.ringEverPawned,
+          heldTheLine: !state.wifeCarSold && !state.ringEverPawned && (state.restraintStage || 0) >= 3,
           familyForward: (state.familyCruises || 0) >= 6,
         };
       }
@@ -16590,11 +16644,13 @@
         const L = moralLedger();
         const wifeVictoryText = L.ringOutstanding
           ? "You did it. You actually did it. I'm so proud I can't see straight. Come home. And, hey, don't say anything about June tonight. Tonight we just won. June is a different day."
-          : L.cleanHands && L.familyForward
-            ? "I TOLD YOU. Week one and this morning both. My husband builds champions AND still made it to tee-ball. Come home, the kids waited up, I want the whole thing twice."
-            : L.soldCar
-              ? "National Champion. Look at you. I'm proud, I really am. I'm also still catching rides to work, but not tonight. Tonight I'll take the trophy photo. Come home."
-              : "I TOLD YOU. I told you in week one and I told you this morning. My husband builds champions. Come home, there's cake, the kids waited up, and I want to hear the whole thing twice.";
+          : L.heldTheLine
+            ? "National Champion. You never once made me choose between this dream and my own two things, and I know exactly what that cost you, because I watched you sell your own to keep mine. My husband builds champions the hard way. Come home. We both waited up."
+            : L.cleanHands && L.familyForward
+              ? "I TOLD YOU. Week one and this morning both. My husband builds champions AND still made it to tee-ball. Come home, the kids waited up, I want the whole thing twice."
+              : L.soldCar
+                ? "National Champion. Look at you. I'm proud, I really am. I'm also still catching rides to work, but not tonight. Tonight I'll take the trophy photo. Come home."
+                : "I TOLD YOU. I told you in week one and I told you this morning. My husband builds champions. Come home, there's cake, the kids waited up, and I want to hear the whole thing twice.";
         pushCharacterDM({ id: "wife-victory", a: "💍", c: "purple", h: "The Wife", t: wifeVictoryText });
         const bw = (state.buck && state.buck.beatenCount) || 0;
         const bl = (state.buck && state.buck.lostToCount) || 0;
@@ -19964,7 +20020,9 @@ addEventListener("DOMContentLoaded",function(){
                   : `Buck still took the season series, ${bl}-${bw}. The National trophy says you won the argument anyway.`
               : "";
           const L = moralLedger();
-          const wifeLine = L.cleanHands
+          const wifeLine = L.heldTheLine
+            ? "Inside, the porch light's on and your socket set is back in the drawer where it belongs, the pawn tickets torn up on the bench. She's on the front steps with two beers and the good blanket, waiting up. You kept your hands clean and it nearly took the skin with it, and she watched every minute. She didn't say anything when you pulled in. She didn't have to."
+            : L.cleanHands
             ? "Inside, the porch light's on, and she's not in the microwave-note business tonight. She's on the front steps with two beers and the good blanket, waiting up. She didn't say anything when you pulled in. She didn't have to."
             : L.ringOutstanding
               ? "Inside, the porch light's on and there's a note on the microwave: \"Champion.\" You read it four times. You keep thinking about the empty ring box on the dresser and a pawn case downtown you still owe. You won the whole thing. It doesn't feel finished."
