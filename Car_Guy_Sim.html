@@ -9970,7 +9970,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.35.0";
+      const GAME_VERSION = "0.36.0";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -16563,6 +16563,128 @@
         requestRender("full");
       }
 
+      // Every car has a person behind it. Buying one used to be a click and a
+      // generic haul-home beat; now the sale plays as a driveway vignette in
+      // the game's clipped, unsentimental register, keyed to how rough the car
+      // is (matching the classified-ad kicker tiers on the listing). Dialogue
+      // written in a simulated Taylor-Sheridan writers' room, notes and all.
+      const SELLER_SCENES = {
+        rough: [
+          {
+            id: "widow",
+            emoji: "🔑",
+            title: "The Farmhouse",
+            text: "The address is a farmhouse with a still windmill. She's on the porch with a coffee can of keys and picks one out without looking. \"He bought it the year we married. Said he'd have it running for our anniversary.\" She doesn't say which one. \"Just get it out of the barn. That's all I'm asking.\"",
+            choices: [
+              { label: "\"I'll finish it. I promise.\"", lore: 8, followers: 20, note: "She nodded like she'd heard it before, from him. \"They all mean it,\" she said, and went back inside. You loaded it in the quiet." },
+              { label: "Say thank you and load it", lore: 6, note: "No promises. She seemed to prefer that. She watched from the porch until the trailer turned onto the county road." },
+            ],
+          },
+          {
+            id: "kid",
+            emoji: "📱",
+            title: "The Rental Driveway",
+            text: "He's got it on ramps in a rental driveway, a tutorial playing on a phone propped on a milk crate. Ring light in the garage he clearly hasn't paid off. \"I was gonna do it all myself,\" he says, and he believed that once. Then he names a price low enough to sting himself, and looks at the ground. First of the month's coming.",
+            choices: [
+              { label: "Shake on it. Tell him the next one's his to build right.", lore: 8, followers: 15, note: "He laughed, surprised, and stood up a little straighter. \"Yeah. Yeah, next time.\" Maybe there'll be a next time. You hope there is." },
+              { label: "Pay it and load up", lore: 5, note: "You paid what he asked and didn't chisel him on a bad day. He helped you strap it down without a word." },
+            ],
+          },
+          {
+            id: "estate_son",
+            emoji: "📋",
+            title: "Lot Cleared By Friday",
+            text: "He meets you at a property with a For Sale sign already in the yard, spreadsheet open on his phone. \"Dad had four of these. This is the last, and the bank wants the lot cleared Friday.\" You start to ask about it and he holds up a hand. \"I don't need the story. I grew up in it.\" Cash today, it's yours.",
+            choices: [
+              { label: "Nod, count it out, load up", lore: 7, note: "He counted the cash twice, not because he doubted you, just habit now. He didn't watch it leave. He was already looking at the house." },
+            ],
+          },
+        ],
+        mid: [
+          {
+            id: "trader",
+            emoji: "🛠",
+            title: "The Pole Barn",
+            text: "Three projects in a pole barn, a fourth on the trailer ready to take the spot yours is leaving. \"I don't fall in love with 'em,\" he says, wiping his hands on a rag that only makes them dirtier. He names his number and doesn't chase it when you don't flinch. \"You'll do more with it than I would. I'd have just started something else.\"",
+            choices: [
+              { label: "Cash in his hand, done", lore: 6, note: "He pocketed it without counting, already glancing at the next one on the trailer. \"Come back when you need something,\" he said. He meant it." },
+            ],
+          },
+          {
+            id: "moving",
+            emoji: "📦",
+            title: "Half In Boxes",
+            text: "The garage is half in boxes. New job in another state, a badge already printed with his name on it. \"She said the collection doesn't come with us.\" He hands you the title and a folder of receipts like he's mad at the folder. \"Runs. Mostly. Don't call me if it doesn't after Tuesday.\"",
+            choices: [
+              { label: "Take the folder, wish him luck", lore: 7, note: "He shook your hand harder than he needed to. \"Take care of it.\" Then, quieter, to the empty garage more than to you: \"It was a good one.\"" },
+            ],
+          },
+          {
+            id: "divorce",
+            emoji: "✍️",
+            title: "Line Forty-One",
+            text: "He meets you at a storage-unit row, not a driveway. That tells you enough. \"Lawyer's got it on a list as an asset. Line forty-one.\" He almost smiles at that. \"Only thing on the list I built with my hands. And it's the one that goes.\" He signs on the hood, fast.",
+            choices: [
+              { label: "Sign it. Say nothing.", lore: 9, note: "You didn't offer anything and he didn't want it. He rolled the door down on the empty unit, got in his truck, and sat there a minute before he drove off." },
+            ],
+          },
+        ],
+        clean: [
+          {
+            id: "old_timer",
+            emoji: "🧓",
+            title: "Out Of The Weather",
+            text: "He built it right and wants you to know it, walking you around slow, pointing at welds you'd never have found. Then he stops at the door. \"Hands don't do what I tell 'em anymore. Doctor took the keys before my wife did.\" He looks at you a long second. \"You got somewhere to keep it out of the weather?\"",
+            choices: [
+              { label: "Tell him the truth, wherever's cheapest for now", lore: 9, note: "He didn't love it, but he'd rather be told. \"Long as it's dry,\" he said, and handed you the keys like they weighed something." },
+              { label: "Tell him it's going in a heated garage", lore: 6, followers: -10, note: "His face eased, and you felt worse for the ease than the lie. He waved from the driveway until you couldn't see him. Maybe you'll build it somewhere nice enough to make it true." },
+            ],
+          },
+          {
+            id: "collector",
+            emoji: "🏆",
+            title: "Eleven, My Wife Counted",
+            text: "Climate-controlled shop, epoxy floors, something else up on the lift. This one's parked by the door, the one he calls his daily and never drives. \"I've got eleven. My wife counted.\" Clean title, a binder of records, a price that isn't a question. He shakes your hand once, firm, already looking at the empty spot you just made.",
+            choices: [
+              { label: "Take the binder, shake his hand", lore: 6, note: "The binder was tabbed and dated back thirty years. \"It's all in there,\" he said, and it was. He'd already stopped thinking about this one." },
+            ],
+          },
+          {
+            id: "deck",
+            emoji: "🚩",
+            title: "Deck's Corner Lot",
+            text: "Corner lot, plastic flags, a guy named Deck who took it in a trade and wants the floor space back. \"Came off a hoarder's estate. I don't know cars like this. I know turnover.\" He quotes a number he's plainly guessing at, and does not care whether he guessed high or low. Sold either way, far as he's concerned.",
+            choices: [
+              { label: "Pay the man and roll the dice", lore: 7, note: "Deck was already waving the next tire-kicker over before your trailer cleared the flags. Whatever you just bought, it's yours to find out." },
+            ],
+          },
+        ],
+      };
+      function queueSellerScene(price) {
+        try {
+          // Price sorts the sellers, not condition: the buyable cars are all
+          // similar shape mechanically, but price spreads cleanly from a cheap
+          // barn project to a cherished, pricier build. The widow and the kid
+          // belong on the cheap end; the old timer and the collector on the
+          // dear one.
+          const tier = price < 7000 ? "rough" : price < 10500 ? "mid" : "clean";
+          const pool = SELLER_SCENES[tier] || [];
+          if (!pool.length) return false;
+          const pick = pickFresh(pool, "seller_" + tier, Math.max(1, pool.length - 1));
+          if (!pick) return false;
+          queueScene({
+            id: "seller_" + pick.id,
+            art: "loading-haul-home",
+            emoji: pick.emoji || "🤝",
+            title: pick.title,
+            text: pick.text,
+            choices: pick.choices,
+          });
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
       function buyCar(id) {
         const c = BUYABLE_CARS.find((x) => x.id === id);
         if (state.money < c.price) return toast("Not enough cash.", "err");
@@ -16584,14 +16706,19 @@
         state.cars.push(bought);
         state.carId = c.id;
         pushSceneBuzz(`Somebody just dragged home a ${c.year} ${c.make} ${c.model}. The scene has opinions.`);
-        playCutscene({
-          art: "loading-haul-home",
-          kicker: "The haul home",
-          title: `${c.year} ${c.make} ${c.model}`,
-          sub: "Strapped to the trailer, one taillight taped, sunset in the mirror. Best drive of the month, and the budget hasn’t hit yet.",
-          cta: "Back it into the garage",
-        });
+        // The sale is a story now: a driveway vignette with whoever's letting
+        // it go, keyed to how rough the car is. Falls back to the old haul-home
+        // beat only if the vignette can't be built, so a purchase never stalls.
         state.view = "workshop";
+        if (!queueSellerScene(c.price)) {
+          playCutscene({
+            art: "loading-haul-home",
+            kicker: "The haul home",
+            title: `${c.year} ${c.make} ${c.model}`,
+            sub: "Strapped to the trailer, one taillight taped, sunset in the mirror. Best drive of the month, and the budget hasn’t hit yet.",
+            cta: "Back it into the garage",
+          });
+        }
         saveGame();
         requestRender("full");
       }

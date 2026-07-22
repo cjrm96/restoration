@@ -213,6 +213,43 @@ const pass = (msg) => console.log("✓", msg);
   if (extrasOk !== true) fail("extras: " + extrasOk);
   pass("extras: followers + resale, no effect on score/roadworthy");
 
+  // ── buying a car plays a seller vignette (a story beat over the haul-home
+  // art), one per price tier, and it resolves cleanly. ──
+  const sellerOk = await page.evaluate(() => {
+    const tiers = ["rough", "mid", "clean"];
+    if (!tiers.every((t) => Array.isArray(SELLER_SCENES[t]) && SELLER_SCENES[t].length))
+      return "a seller tier is empty";
+    // each price tier must have at least one buyable car so no vignette is dead
+    const priceTier = (p) => (p < 7000 ? "rough" : p < 10500 ? "mid" : "clean");
+    const covered = new Set(BUYABLE_CARS.map((c) => priceTier(c.price)));
+    if (!tiers.every((t) => covered.has(t))) return "a seller tier has no buyable cars";
+    state.money = 999999;
+    const c = BUYABLE_CARS.find((x) => !state.cars.find((y) => y.id === x.id));
+    if (!c) return "no car to buy";
+    // Snapshot so this check leaves the garage exactly as it found it (later
+    // checks depend on the current car staying roadworthy).
+    const prevCarId = state.carId;
+    // Clear any blocking surfaces so the vignette lands in pendingScene rather
+    // than the deferred event queue (queueScene routes on modalBusy()).
+    state.pendingScene = null; state.pendingEvent = null; state.weekRecap = null;
+    state.pendingRecap = null; state.noticeQueue = []; state.eventQueue = [];
+    state.showLoading = false; state.showStage = null; state.showStore = false;
+    state.cutscene = null; state.pendingUnlock = null;
+    buyCar(c.id);
+    const okScene = state.pendingScene && String(state.pendingScene.id).startsWith("seller_");
+    const okArt = state.pendingScene && state.pendingScene.art === "loading-haul-home";
+    if (okScene) resolvePendingScene(0);
+    // Roll the purchase back so the rest of the suite runs on the original car.
+    state.cars = state.cars.filter((x) => x.id !== c.id);
+    state.carId = prevCarId;
+    state.pendingScene = null; state.noticeQueue = []; state.eventQueue = [];
+    if (!okScene) return "buying a car did not queue a seller vignette";
+    if (!okArt) return "seller vignette lost its backdrop art";
+    return true;
+  });
+  if (sellerOk !== true) fail("seller vignettes: " + sellerOk);
+  pass("seller vignettes: story beat on purchase, all tiers covered");
+
   // ── list a part, let the week roll → Compete unlock ──
   // (Compete opens a week after the first listing, or on a first sale — but
   // never during the pre-season, so drop into the competitive calendar first.)
