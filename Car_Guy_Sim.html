@@ -4594,8 +4594,8 @@
           </g>
         </svg>
         <div class="splash-tagline">
-          Congratulations on pissing off your wife, you just came home with a
-          new project car. Get it restored for Nationals!
+          You ran the numbers. They didn't work. You bought the dead car
+          anyway. Now get it ready for Nationals.
         </div>
         <div id="splashActions">
           <button class="splash-btn" onclick="startGame()">Start Wrenchin'</button>
@@ -9970,7 +9970,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.37.0";
+      const GAME_VERSION = "0.37.1";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -19757,7 +19757,7 @@ addEventListener("DOMContentLoaded",function(){
         const arc = victoryArc();
         if (arc === "prodigy")
           return [
-            "Twenty-two weeks ago, this car was a shape under a tarp that nobody wanted.",
+            `${state.seasonLength} weeks ago, this car was a shape under a tarp that nobody wanted.`,
             "One season. That's all you needed.",
             "Listen, they're reading the results.",
           ];
@@ -19832,7 +19832,7 @@ addEventListener("DOMContentLoaded",function(){
         if (stage === "barn") {
           const barnSub =
             arc === "prodigy"
-              ? "A set of keys, a barn full of dust, and a shape under a tarp nobody else wanted. That was twenty-two weeks ago. Tonight that same shape rolled across a National stage with the whole scene on its feet."
+              ? `A set of keys, a barn full of dust, and a shape under a tarp nobody else wanted. That was ${state.seasonLength} weeks ago. Tonight that same shape rolled across a National stage with the whole scene on its feet.`
               : arc === "grind"
                 ? `A set of keys, a barn full of dust, and a shape under a tarp nobody else wanted. That was ${seasonCountWord(seasonN)} ago. The cover came off for the last time tonight, in front of everybody.`
                 : arc === "longroad"
