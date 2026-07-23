@@ -10020,7 +10020,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.41.0";
+      const GAME_VERSION = "0.42.0";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -10110,6 +10110,22 @@
             bestTier: null,
             startOverall: 17,
           },
+          // Family time budget. Every week is spent one of two ways at the
+          // ledger level: out on the build and the hustle (away), or home
+          // (a quiet week). These are recorded once per week advance and read
+          // by the family arc so being home competes with everything else.
+          // Per-season counters reset at season roll; the lifetime and standing
+          // fields carry across so the marriage remembers.
+          homeWeeksSeason: 0,
+          awayWeeksSeason: 0,
+          homeWeeksTotal: 0,
+          neglectStreak: 0,
+          homeStrainSeasons: 0,
+          lastSeasonStanding: null,
+          seasonOpenFamilyBeat: null,
+          homeBalanceBeatSeason: 0,
+          quietWeekBeatSeen: false,
+          daleArrivalSeason: 0,
           pendingEvent: null,
           gameOver: false,
           seasonWrap: false,
@@ -11521,6 +11537,35 @@
               noteTone: "event-good",
             },
           ],
+        });
+      }
+
+      // The cost of the road taken, made unmissable. When the family time
+      // ledger reads "strained" (a long run of weeks out on the build with no
+      // quiet week home) and the season is far enough along to have earned it,
+      // one cold beat lands. It asks nothing and offers nothing back. She
+      // doesn't lecture. She says less than she used to, and that is the point.
+      // Fires at most once per season, guaranteed shown (queued, never a random
+      // gate, this is the one beat the board insisted stay unmissable), and it
+      // leaves a permanent mark: homeStrainSeasons carries across season rolls
+      // so the marriage remembers the year you weren't around.
+      function maybeHomeBalanceBeat() {
+        if (!state.tutorialComplete) return;
+        const season = state.seasonNumber || 1;
+        if (state.homeBalanceBeatSeason === season) return;
+        if (state.week < 10) return;
+        const L = familyTimeLedger();
+        if (L.standing !== "strained") return;
+        state.homeBalanceBeatSeason = season;
+        state.homeStrainSeasons = (state.homeStrainSeasons || 0) + 1;
+        state.lastSeasonStanding = "strained";
+        claimLifeBeat();
+        queueScene({
+          id: "home_balance_" + season,
+          emoji: "🌙",
+          title: "The Porch Light",
+          text: "You come in past ten again, grease to the elbow, and the house is already dark. Plate in the microwave, note under it in her handwriting. It doesn't say much. It used to say more. You stand in the kitchen and read the four words twice, and outside the porch light is still on, the way she leaves it, the way she always leaves it, waiting up in the only way she has left.",
+          choices: [{ label: "Turn it off and go up", lore: 6 }],
         });
       }
 
@@ -14332,6 +14377,9 @@
             });
           } else {
             state.mechanic.trust = Math.min(10, (state.mechanic.trust || 0) + 1);
+            const dropSeason = state.seasonNumber || 1;
+            const firstDropThisSeason =
+              dropSeason >= 2 && state.daleArrivalSeason !== dropSeason;
             if (
               state.mechanic.trust >= 5 &&
               !state.mechanic.milestoneSeen
@@ -14351,6 +14399,18 @@
                   lore: c.lore,
                   note: c.note,
                 })),
+              });
+            } else if (firstDropThisSeason) {
+              // The arrival. First drop of a new season, the shop is a place
+              // you know now, not a stop on a map. The drive up, the bay door,
+              // the radio, the fact that he doesn't look up. A destination.
+              state.daleArrivalSeason = dropSeason;
+              queueScene({
+                id: "dale_arrival_s" + dropSeason,
+                emoji: "🔧",
+                title: "Back At Dale's",
+                text: "You take the long gravel drive down to the shop and it's all still there: the hand-painted sign nobody's touched up in twenty years, the wall of hubcaps catching the morning sun, the radio going somewhere in the back. Dale's under a car and doesn't come out, just calls your name over the compressor before he's even seen the truck. He knows the sound of you pulling in. A whole season away and the place takes you back like you never left.",
+                choices: [{ label: "Roll the truck in", lore: 4 }],
               });
             } else if (Math.random() < 0.35) {
               toast(pickFresh(DALE_SHOP_FLAVOR, "daleShop"), "ok");
@@ -14963,6 +15023,37 @@
           sub: "Snow's off the driveway, the salt's washed away, and every car guy in town is pulling covers off and firing engines. Fresh season, open road. Let's build.",
           cta: "Back to the garage",
         });
+        // The marriage carries across the boundary. Read the season that just
+        // ended before its counters reset: if the player let it go strained,
+        // the new season opens on a cold callback that does not reset with the
+        // calendar; if he kept the balance, it opens warm. Then reset only the
+        // per-season split, the neglect streak and the lifetime totals carry so
+        // a bad stretch does not get wiped clean by a snowfall.
+        {
+          const L = familyTimeLedger();
+          const endedStrained = L.standing === "strained" || (state.homeBalanceBeatSeason === (state.seasonNumber || 1) - 1);
+          const keptSteady = !endedStrained && L.homeShare >= 0.35 && L.homeWeeks >= 3;
+          state.lastSeasonStanding = endedStrained ? "strained" : keptSteady ? "steady" : "even";
+          if (endedStrained) {
+            queueScene({
+              id: "season_open_family_strained",
+              emoji: "🌙",
+              title: "First Morning",
+              text: "First morning of the new season and you're up before the house, coffee going, keys already in your hand. She comes down in her robe, sees the boots by the door, and doesn't say anything about last year. Just, \"Try to be around some this one.\" Not a fight. Not even a request, really. Just something she's decided to say once, and then let go of.",
+              choices: [{ label: "Mean it this time", lore: 6 }],
+            });
+          } else if (keptSteady) {
+            queueScene({
+              id: "season_open_family_steady",
+              emoji: "☀️",
+              title: "First Morning",
+              text: "First morning of the new season. She's already up, two coffees poured, and she hands you one on the way to the garage like it's the most natural thing in the world. \"Go on,\" she says. \"I'll bring the kids out later.\" A whole year of you being around bought this, the easy way she says it, and you almost miss how rare it is.",
+              choices: [{ label: "Take the coffee", lore: 6 }],
+            });
+          }
+          state.homeWeeksSeason = 0;
+          state.awayWeeksSeason = 0;
+        }
         saveGame();
         requestRender("full");
       }
@@ -15063,6 +15154,52 @@
       }
 
       /* ═══════════════════════════════════════════
+     FAMILY TIME BUDGET
+     The scarce resource this game is really about is weeks. There are 22 in a
+     season and every one is spent either out on the build (away) or home (a
+     quiet week). This is the single place that split is recorded and read, so
+     the family arc never has to poke twelve call sites to know how the player
+     has been spending his time. recordWeekSplit runs once per advance;
+     familyTimeLedger is a pure read.
+  ═══════════════════════════════════════════ */
+      // Called exactly once per week advance, from performWeekAdvance. wasHome
+      // is true when the week resolved as a quiet/idle week (no wrenching, no
+      // show, no content). Bookkeeping only, no player-facing effect of its own.
+      function recordWeekSplit(wasHome) {
+        if (wasHome) {
+          state.homeWeeksSeason = (state.homeWeeksSeason || 0) + 1;
+          state.homeWeeksTotal = (state.homeWeeksTotal || 0) + 1;
+          state.neglectStreak = 0;
+        } else {
+          state.awayWeeksSeason = (state.awayWeeksSeason || 0) + 1;
+          state.neglectStreak = (state.neglectStreak || 0) + 1;
+        }
+      }
+      // Pure read of how the player has been spending his weeks. standing is
+      // the one value the family arc keys off: "steady" when he's been home
+      // recently, "stretched" after a few weeks out, "strained" once the away
+      // streak runs long. elapsed is home + away this season, never zero-div.
+      function familyTimeLedger() {
+        const home = state.homeWeeksSeason || 0;
+        const away = state.awayWeeksSeason || 0;
+        const elapsed = home + away;
+        const streak = state.neglectStreak || 0;
+        const homeShare = elapsed > 0 ? home / elapsed : 0;
+        let standing = "steady";
+        if (streak >= 5) standing = "strained";
+        else if (streak >= 3) standing = "stretched";
+        return {
+          homeWeeks: home,
+          awayWeeks: away,
+          homeWeeksTotal: state.homeWeeksTotal || 0,
+          neglectStreak: streak,
+          elapsed,
+          homeShare,
+          standing,
+        };
+      }
+
+      /* ═══════════════════════════════════════════
      WEEK ADVANCE
   ═══════════════════════════════════════════ */
       function performWeekAdvance(reason = "time") {
@@ -15118,8 +15255,31 @@
               sub: "No show this weekend, no parts on the porch. So everybody piles in, windows down, ice cream on the way back. The build keeps. This is what it's for.",
               cta: "Head home",
             });
+          } else if (
+            // The earned quiet week. Once a game, late in a season the player
+            // spent mostly at home, a beat that asks nothing at all. No choice,
+            // no reward, no meter. Just the peace the whole thing is for. It
+            // only lands for a player who kept the balance, so it reads as
+            // something the road not taken bought him.
+            !state.quietWeekBeatSeen &&
+            state.week >= state.seasonLength - 5 &&
+            familyTimeLedger().standing === "steady" &&
+            familyTimeLedger().homeShare >= 0.3 &&
+            claimLifeBeat()
+          ) {
+            state.quietWeekBeatSeen = true;
+            playCutscene({
+              art: "scene-empty-garage",
+              kicker: "A quiet week",
+              title: "Nothing To Do",
+              sub: "The truck's under the cover, the list is short, nobody's waiting on you. You leave the light off and the door down and go sit on the porch with her while the kids run the yard out. For once the garage can wait, and it does.",
+              cta: "Stay a while",
+            });
           }
         }
+        // Record how this week was spent into the family time budget, once the
+        // game proper is under way. Quiet week home, everything else away.
+        if (state.tutorialComplete) recordWeekSplit(idleWeek);
         // No weekly "on to week N+1" recap when the season just ended, there is
         // no next week and the season recap already covers it (state.week has
         // rolled past seasonLength by the time the finale is handled below).
@@ -15281,6 +15441,7 @@
         maybeTriggerRivalBeat();
         maybeKidWrenchBeat();
         maybeRestraintBeat();
+        maybeHomeBalanceBeat();
         if (reason !== "after show") maybeRollEvent();
         if (reason !== "after show") maybeTriggerGarageMoment();
         if (reason !== "after show") maybeFridayNightHangout();
@@ -22041,6 +22202,17 @@ addEventListener("DOMContentLoaded",function(){
         "those judges saw a car. they didn't see the two years. their loss. come home, i made the good pasta.",
         "hey. you okay? don't answer from the garage. come inside first.",
       ];
+      // When the time ledger reads strained, she says less. Same channel,
+      // colder register. A win barely registers with her; a loss gets one flat
+      // line instead of the pasta and the pep talk. The distance is the point.
+      const WIFE_DMS_WIN_COOL = [
+        "saw it went well. that's good.",
+        "congrats. kids were asking where you were.",
+      ];
+      const WIFE_DMS_LOSS_COOL = [
+        "ok. long day here too.",
+        "there's a plate in the microwave.",
+      ];
       const RIVAL_DM_WARM = [
         "not bad out there. had you pegged as all hype. i was maybe 60% wrong.",
         "alright, the build's legit. don't tell anyone i said so.",
@@ -22110,10 +22282,19 @@ addEventListener("DOMContentLoaded",function(){
       // sometimes after a win, usually after a rough one.
       function maybeWifeShowDM(place, tier) {
         if (tier === "Cars & Coffee") return;
-        if (place === 1 && Math.random() < 0.45) {
-          pushCharacterDM({ id: "wife-show", a: "💍", c: "purple", h: "The Wife", t: pickFresh(WIFE_DMS_WIN, "dm:wife:win") });
-        } else if (place >= 5 && Math.random() < 0.55) {
-          pushCharacterDM({ id: "wife-show", a: "💍", c: "purple", h: "The Wife", t: pickFresh(WIFE_DMS_LOSS, "dm:wife:loss") });
+        // Rarer than it was, and read through the time ledger. When she's been
+        // getting the present version of you, the warm lines; when she hasn't,
+        // she goes quiet more often and colder when she does answer. The
+        // weekly chatter was cut back so the beats that land actually land.
+        const strained = familyTimeLedger().standing === "strained";
+        if (place === 1) {
+          if (Math.random() < (strained ? 0.5 : 0.3)) {
+            pushCharacterDM({ id: "wife-show", a: "💍", c: "purple", h: "The Wife", t: pickFresh(strained ? WIFE_DMS_WIN_COOL : WIFE_DMS_WIN, strained ? "dm:wife:win:cool" : "dm:wife:win") });
+          }
+        } else if (place >= 5) {
+          if (Math.random() < (strained ? 0.6 : 0.35)) {
+            pushCharacterDM({ id: "wife-show", a: "💍", c: "purple", h: "The Wife", t: pickFresh(strained ? WIFE_DMS_LOSS_COOL : WIFE_DMS_LOSS, strained ? "dm:wife:loss:cool" : "dm:wife:loss") });
+          }
         }
       }
       function renderPhoneMessagesApp() {
