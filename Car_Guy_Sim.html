@@ -10020,7 +10020,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.42.0";
+      const GAME_VERSION = "0.43.0";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -10126,6 +10126,7 @@
           homeBalanceBeatSeason: 0,
           quietWeekBeatSeen: false,
           daleArrivalSeason: 0,
+          weekendHome: false,
           pendingEvent: null,
           gameOver: false,
           seasonWrap: false,
@@ -15179,6 +15180,11 @@
       // the one value the family arc keys off: "steady" when he's been home
       // recently, "stretched" after a few weeks out, "strained" once the away
       // streak runs long. elapsed is home + away this season, never zero-div.
+      // The strained bar is six straight weeks out, not five: a playtest of the
+      // real ledger showed a player who takes even an occasional quiet week
+      // (roughly one home week every six) would trip the strain beat at five,
+      // which reads as punishing normal play. Six means the strain only lands
+      // on a genuinely absent stretch, and any home week at all keeps it clear.
       function familyTimeLedger() {
         const home = state.homeWeeksSeason || 0;
         const away = state.awayWeeksSeason || 0;
@@ -15186,7 +15192,7 @@
         const streak = state.neglectStreak || 0;
         const homeShare = elapsed > 0 ? home / elapsed : 0;
         let standing = "steady";
-        if (streak >= 5) standing = "strained";
+        if (streak >= 6) standing = "strained";
         else if (streak >= 3) standing = "stretched";
         return {
           homeWeeks: home,
@@ -15241,7 +15247,15 @@
           missedSocialPost &&
           !(state.history || []).some((h) => h.week === previousWeek) &&
           !state.activeRestorations.some((t) => !t.completed);
-        if (idleWeek) {
+        // A deliberately chosen home weekend (the Saturday spent with them
+        // instead of at the yard or a show) counts as home the same way an idle
+        // week does, even if the player wrenched earlier in the week. This is
+        // the lever the budget exists for: the player actively spends the
+        // scarce weekend on the family and the streak heals for it.
+        const choseHome = !!state.weekendHome;
+        state.weekendHome = false;
+        const homeWeek = idleWeek || choseHome;
+        if (homeWeek) {
           addGarageLore(1);
           // A quiet week IS the family time now, the default path, not a
           // menu choice. The first one introduces the rhythm properly.
@@ -15278,8 +15292,9 @@
           }
         }
         // Record how this week was spent into the family time budget, once the
-        // game proper is under way. Quiet week home, everything else away.
-        if (state.tutorialComplete) recordWeekSplit(idleWeek);
+        // game proper is under way. A home week (idle or deliberately chosen)
+        // heals the streak; everything else builds it.
+        if (state.tutorialComplete) recordWeekSplit(homeWeek);
         // No weekly "on to week N+1" recap when the season just ended, there is
         // no next week and the season recap already covers it (state.week has
         // rolled past seasonLength by the time the finale is handled below).
@@ -15455,7 +15470,7 @@
         maybeOfferRingPawn();
         maybeOfferRingPawnStretch();
         maybeTriggerBirthday();
-        if (missedSocialPost) {
+        if (missedSocialPost && !choseHome) {
           toast(
             "You rolled into a new week without dropping any content. The algorithm forgot you for a minute.",
             "event-bad",
@@ -21511,6 +21526,25 @@ addEventListener("DOMContentLoaded",function(){
         endScavengeTrip(false);
       }
 
+      // The third thing you can do with a Saturday: spend it home. Sits beside
+      // the two road trips as a first-class weekend choice. No gas, no gate, no
+      // ride needed, you're not going anywhere. It burns the week the same way
+      // a trip or a show does, so it costs you the parts you didn't scavenge
+      // and the placing you didn't chase. What it buys is not on the ledger as
+      // a payout: the neglect streak heals, and the marriage keeps its footing.
+      // Nothing to save-scum, because there's no bonus, only a Saturday spent.
+      function takeWeekendHome() {
+        if (state.atTrip)
+          return toast("You're already out for the day. Head home to end the Saturday.", "err");
+        if (hasActiveRestorations())
+          return toast("Finish or park your current jobs first, then the weekend's yours.", "err");
+        if (!canAdvanceWeekCheck(true)) return;
+        state.weekendHome = true;
+        playSfx("click");
+        toast("You left the tools where they lay and gave the weekend to the family.", "ok");
+        advanceWeek("weekend home");
+      }
+
       function renderScavengeTrip() {
         const choice = state.scavengeChoice;
         const atTrip = !!state.atTrip && !!choice;
@@ -21653,13 +21687,24 @@ addEventListener("DOMContentLoaded",function(){
             <div class="tiny muted" style="margin-bottom:8px">$${SWAP_GAS_COST} gas + $${SWAP_ENTRY_FEE} entry + $${SWAP_PARKING_COST} parking = <span style="color:var(--text)">$${SWAP_TRIP_COST}</span></div>
             ${button(`Hit the Swap · $${SWAP_TRIP_COST}`, "commitScavengeTrip('swap')", !ride.ok || busy || state.money < SWAP_TRIP_COST || !swapCount, "", "width:100%")}
           </div>`;
+        // The home card: a Saturday spent with them instead of out on the hunt.
+        // No cost, no ride needed (the truck can be in pieces and you can still
+        // be present). It burns the weekend like the trips do; the trade is the
+        // parts you didn't pull against being around. Always available unless a
+        // job's mid-wrench on the bench.
+        const homeCard = `<div style="background:rgba(143,203,126,0.07);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:12px">
+            <div class="small" style="color:var(--green-bright);font-weight:bold;margin-bottom:6px">🏠 Home this weekend</div>
+            <div class="tiny" style="color:var(--text);margin-bottom:8px">No gas, no gate, no tables</div>
+            <div class="tiny muted" style="margin-bottom:8px">The Saturday's yours. Spend it with them instead of on the truck.</div>
+            ${button("Spend it home", "takeWeekendHome()", busy, "", "width:100%;background:#6f9a5a;border-color:var(--green-bright)")}
+          </div>`;
         return `<div style="margin-bottom:14px">${heroPanel(
           "Saturday Road Trip",
-          "Pick-A-Part or Pomona Swap",
+          "The yard, the swap, or home",
           (state.scavengeTripsTaken || 0) < 2
-            ? "Pick one. Bring cash. The trip burns the weekend, same as entering a show."
+            ? "Pick one. The Saturday's gone either way, so spend it where it counts."
             : "",
-          `${noRideBanner}<div class="info-box" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;background:transparent;border:none;padding:0">${yardCard}${swapCard}</div>`,
+          `${noRideBanner}<div class="info-box" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;background:transparent;border:none;padding:0">${yardCard}${swapCard}${homeCard}</div>`,
           "blue",
         )}</div>`;
       }
