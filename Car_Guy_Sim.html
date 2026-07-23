@@ -5574,6 +5574,57 @@
         ART_KEYS.map((k) => [k, "assets/art/" + k + ".webp"])
       ) /*__END_ART_MAP__*/;
 
+      // The radio interview stages on its own cutscene: the shop at night, the
+      // bench radio lit up, a mic in the light, the ON AIR plate glowing. Hand
+      // drawn as an inline SVG in the game's crisp geometric idiom (same family
+      // as the workshop and show backdrops) and registered straight into
+      // CUTSCENE_ART as a data URI, so it needs no webp file and the itch build
+      // stays self contained without touching the art pipeline. A human painted
+      // scene-radio-interview.webp can drop in later by adding the key to
+      // ART_KEYS; until then this is the shipped cutscene, not a placeholder.
+      const RADIO_INTERVIEW_SVG = `<svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="riSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1410"/><stop offset="1" stop-color="#0d0a08"/></linearGradient>
+<linearGradient id="riWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2118"/><stop offset="1" stop-color="#1a140e"/></linearGradient>
+<linearGradient id="riFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#241c14"/><stop offset="1" stop-color="#120d09"/></linearGradient>
+<radialGradient id="riCone" cx="0.5" cy="0" r="0.9"><stop offset="0" stop-color="#f2d79a" stop-opacity="0.45"/><stop offset="0.5" stop-color="#e3b45f" stop-opacity="0.12"/><stop offset="1" stop-color="#e3b45f" stop-opacity="0"/></radialGradient>
+<radialGradient id="riGlow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#f0b84a" stop-opacity="0.9"/><stop offset="1" stop-color="#f0b84a" stop-opacity="0"/></radialGradient>
+<radialGradient id="riVig" cx="0.5" cy="0.46" r="0.75"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.72"/></radialGradient>
+</defs>
+<rect width="640" height="360" fill="url(#riSky)"/>
+<rect x="0" y="0" width="640" height="236" fill="url(#riWall)"/>
+<rect x="0" y="236" width="640" height="124" fill="url(#riFloor)"/>
+<g opacity="0.5" fill="#3a2e20"><rect x="40" y="40" width="150" height="96"/><rect x="450" y="30" width="150" height="120"/></g>
+<g stroke="#4b3a26" stroke-width="2" opacity="0.4"><line x1="40" y1="64" x2="190" y2="64"/><line x1="40" y1="88" x2="190" y2="88"/><line x1="40" y1="112" x2="190" y2="112"/><line x1="64" y1="40" x2="64" y2="136"/><line x1="112" y1="40" x2="112" y2="136"/><line x1="160" y1="40" x2="160" y2="136"/></g>
+<g fill="#5a452c" opacity="0.7"><rect x="70" y="52" width="10" height="26"/><rect x="120" y="50" width="8" height="30"/><rect x="150" y="98" width="26" height="8"/><rect x="470" y="46" width="9" height="28"/><rect x="520" y="44" width="7" height="34"/><rect x="560" y="92" width="24" height="8"/></g>
+<rect x="300" y="0" width="60" height="150" fill="url(#riCone)"/>
+<line x1="330" y1="0" x2="330" y2="70" stroke="#2a2018" stroke-width="3"/>
+<ellipse cx="330" cy="80" rx="26" ry="12" fill="#3a2c1c"/>
+<ellipse cx="330" cy="76" rx="20" ry="9" fill="#f4dca0"/>
+<ellipse cx="330" cy="74" rx="9" ry="5" fill="#fff6de"/>
+<rect x="150" y="236" width="360" height="14" fill="#2c2116"/>
+<rect x="150" y="250" width="360" height="70" fill="#20180f"/>
+<rect x="356" y="194" width="158" height="50" rx="6" fill="#241a12" stroke="#4a3822" stroke-width="2"/>
+<circle cx="384" cy="219" r="13" fill="#120d08" stroke="#6b5533" stroke-width="2"/>
+<circle cx="384" cy="219" r="6" fill="url(#riGlow)"/>
+<circle cx="416" cy="219" r="13" fill="#120d08" stroke="#6b5533" stroke-width="2"/>
+<line x1="416" y1="219" x2="424" y2="212" stroke="#f0b84a" stroke-width="2"/>
+<rect x="440" y="206" width="60" height="26" rx="3" fill="#0c0906"/>
+<g stroke="#f0b84a" stroke-width="2" opacity="0.85"><line x1="448" y1="228" x2="448" y2="216"/><line x1="455" y1="228" x2="455" y2="210"/><line x1="462" y1="228" x2="462" y2="220"/><line x1="469" y1="228" x2="469" y2="207"/><line x1="476" y1="228" x2="476" y2="214"/><line x1="483" y1="228" x2="483" y2="222"/><line x1="490" y1="228" x2="490" y2="212"/></g>
+<g stroke="#f0b84a" stroke-width="2" fill="none" opacity="0.45"><path d="M520 200 q14 19 0 38"/><path d="M532 190 q24 29 0 58"/></g>
+<line x1="300" y1="330" x2="300" y2="250" stroke="#161009" stroke-width="6"/>
+<rect x="286" y="238" width="28" height="16" rx="8" fill="#0d0906"/>
+<ellipse cx="300" cy="226" rx="17" ry="24" fill="#1a1209"/>
+<ellipse cx="300" cy="226" rx="17" ry="24" fill="none" stroke="#5a4224" stroke-width="2"/>
+<g stroke="#3a2a18" stroke-width="1.5" opacity="0.8"><line x1="286" y1="214" x2="314" y2="214"/><line x1="285" y1="224" x2="315" y2="224"/><line x1="286" y1="234" x2="314" y2="234"/></g>
+<rect x="452" y="150" width="140" height="36" rx="4" fill="#160a08" stroke="#7d2b26" stroke-width="2"/>
+<circle cx="470" cy="168" r="4" fill="#e86a5a"/>
+<text x="486" y="175" font-family="Verdana, sans-serif" font-size="18" font-weight="bold" letter-spacing="2" fill="#e86a5a">ON AIR</text>
+<rect width="640" height="360" fill="url(#riVig)"/>
+</svg>`;
+      CUTSCENE_ART["scene-radio-interview"] =
+        "data:image/svg+xml," + encodeURIComponent(RADIO_INTERVIEW_SVG);
+
       const WORKSPACE_LEVELS = [
         {
           id: "curb",
@@ -9594,26 +9645,22 @@
         { source: "DANNY", line: "Real car guys don't check the weather. They check the driveway for oil drips." },
       ];
 
+      // Trimmed hard in 0.45.0: the radio interview is now radio's reason to
+      // exist, so the ambient ad and caller filler was cut back to a handful.
+      // The DJ banter and traffic stay: they feed the world ticker and they are
+      // the stage the interview cuts into.
       const RADIO_ADS = [
         { source: "EDDIE'S USED PARTS", line: "If it starts, it's a deal. If it doesn't, that's a feature. Eddie's, out by the railroad tracks, past the third pothole." },
         { source: "HARBOR FRIGHT", line: "This week only, a complete socket set with only four missing sizes. Forty-nine dollars and hope." },
-        { source: "CHROME THEORY", line: "Your patina isn't patina. It's neglect. Chrome Theory Detail, we see you." },
-        { source: "DYNOFLOW PERFORMANCE", line: "Dynoflow. Because bragging rights need numbers and we have a sharpie." },
         { source: "RUST-OFF ANONYMOUS", line: "Is your project more Bondo than metal? You're not alone. Wednesday nights, community center, coffee and regrets." },
-        { source: "BACKYARD BUILT CO.", line: "Parts sourced from the swap meet, shipped from our garage. No returns. No questions. Backyard Built." },
-        { source: "MIDNIGHT MOTOR OIL", line: "The only oil brave enough to admit we haven't changed the formula since 1987. Midnight, it runs, probably." },
-        { source: "APEX SPEED CO.", line: "Buy the shifter knob before you buy the transmission. That's the Apex philosophy." },
         { source: "GASKET GODS", line: "Why pay for a new gasket when you can pay us to cut one from a cereal box? Gasket Gods. We improvise." },
       ];
 
       const RADIO_CALLERS = [
         { source: "CALLER", line: "Yeah uh, I yarded my quarter panel out with a chain. Chain won. Call me back if you've ever won against a chain." },
-        { source: "CALLER", line: "So I traded a working snowblower for a Chevelle shell and I think I came out ahead. Am I crazy?" },
         { source: "CALLER", line: "My wife said I can have two more projects or one divorce. Just wanted to update the listeners." },
         { source: "CALLER", line: "I bought a running truck from Marketplace. It started once. In the seller's driveway. Under duress." },
-        { source: "CALLER", line: "Hey Danny, the 'free lifter tick' you told me to ignore turned into a free rod knock. Thanks for nothing." },
         { source: "CALLER", line: "I'm at the swap meet. There's a guy selling a 'numbers matching' engine out of a minivan. What do I do." },
-        { source: "CALLER", line: "My kid asked what carburetor meant and I just started crying. He's five. Too young to know this grief." },
         { source: "CALLER", line: "Just bought primer in three different shades. Told myself it's a design choice. Tell me it's a design choice." },
       ];
 
@@ -10020,7 +10067,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.44.1";
+      const GAME_VERSION = "0.45.0";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -10127,6 +10174,9 @@
           quietWeekBeatSeen: false,
           daleArrivalSeason: 0,
           weekendHome: false,
+          interviewsFired: {},
+          pendingInterview: null,
+          interview: null,
           pendingEvent: null,
           gameOver: false,
           seasonWrap: false,
@@ -11128,6 +11178,49 @@
           clampFollowers();
         }
         if (choice.buzz) pushSceneBuzz(choice.buzz);
+        // Radio interview ripples: the one junction. Followers landed above; a
+        // sponsor plug pays a little only if one is actually active; the rival
+        // and the wife are feelings, not stats, dropped into the DM channel we
+        // already have. Then the interview chains to its second question or its
+        // sign-off. Nothing here is a farmable number except the small,
+        // one-time-per-interview follower and plug bumps.
+        if (choice.plugSponsor) {
+          const sp = activeSponsors().slice(-1)[0];
+          if (sp) {
+            state.money += 150;
+            recordMoneyChange(150, `${sp.name} liked the shout-out`);
+          }
+        }
+        if (choice.rivalPoke && state.buck) {
+          pushCharacterDM({ id: "buck-radio", a: "🐎", c: "red", h: "@BuckStallion67", t: "heard your little radio hit. taillights, huh. cute. we'll see who's talking after the next one. - B" });
+        }
+        if (choice.rivalRespect && state.buck) {
+          pushCharacterDM({ id: "buck-radio", a: "🐎", c: "red", h: "@BuckStallion67", t: "...classy thing to say on air. don't let it go to your head. won't happen again." });
+        }
+        if (choice.wifeDM) {
+          const line = choice.wifeDM === "warm"
+            ? "heard you on the way to pick up the kids. had to pull over for a second. that was really something."
+            : choice.wifeDM === "heard"
+              ? "i heard the honest part. thank you for saying it out loud where i could hear it."
+              : "heard you swear on air this was the last build. laughed so hard the kids asked what was funny. didn't tell them.";
+          pushCharacterDM({ id: "wife-radio", a: "💍", c: "purple", h: "The Wife", t: line });
+        }
+        if (choice.onResolve === "interviewStep" && state.interview) {
+          const iv = state.interview;
+          iv.tone = choice.interviewTone || iv.tone;
+          if (iv.step === 1) {
+            const q2 = pickInterviewQ(iv.tone);
+            if (q2) {
+              iv.usedIds.push(q2.id);
+              iv.step = 2;
+              queueEvent("scene", buildInterviewScene(q2, 2, iv.tone));
+            } else {
+              queueRadioSignoff();
+            }
+          } else {
+            queueRadioSignoff();
+          }
+        }
         if (choice.keyedCutscene) {
           playCutscene({
             art: "scene-wife-car-keyed",
@@ -11313,6 +11406,176 @@
         checkMilestones();
         saveGame();
         requestRender("full");
+      }
+
+      /* ═══════════════════════════════════════════
+     THE RADIO INTERVIEW
+     Radio's reason to exist. After a milestone win the shop radio you already
+     hear cuts to YOUR interview, in the room you built. Two questions drawn
+     from a state-weighted pool (six that read the player's season), three
+     answers each, one shallow tone-branch: the first answer's tone (cocky /
+     gracious / honest) picks the framing and slice of the second question.
+     Variety comes from the pool and the weighting, never from length, so it is
+     always two questions and always different. The ripples land in the systems
+     already here as one junction, followers, a sponsor plug, a rival's ear, and
+     the family as a FEELING (a wife DM), never a farmable stat. Rare: the first
+     win at each tier, guarded so it fires once.
+  ═══════════════════════════════════════════ */
+      const INTERVIEW_DJ = "Drive-Time on 101.5, The Wrench";
+      // when(): relative weight given current state, 0 skips the question.
+      // followTones: which first-answer tones this reads well as a follow-up to.
+      const INTERVIEW_QUESTIONS = [
+        {
+          id: "family",
+          when: () => { const s = familyTimeLedger().standing; return s === "strained" ? 5 : s === "stretched" ? 3 : 2; },
+          followTones: ["gracious", "honest"],
+          q: "Folks say you're in that shop most nights. Your people still remember what you look like?",
+          answers: [
+            { label: '"They\'ll remember the trophies."', tone: "cocky", followers: 60, note: "You gave the mic a grin the whole town could hear. Some of them loved it." },
+            { label: '"Every one of these has got their name on it too."', tone: "gracious", followers: 30, wifeDM: "warm", note: "You said it plain, and you meant it." },
+            { label: '"...Less than they should. I\'m working on it."', tone: "honest", followers: 15, wifeDM: "heard", note: "The booth went quiet for a second. So did you." },
+          ],
+        },
+        {
+          id: "rival",
+          when: () => (state.buck && state.buck.metOnce && (((state.buck.beatenCount || 0) + (state.buck.lostToCount || 0)) > 0)) ? 4 : 0,
+          followTones: ["cocky", "honest"],
+          q: "Everybody in this town measures themselves against Buck Stallion. You in that fight?",
+          answers: [
+            { label: '"Buck races my taillights."', tone: "cocky", followers: 80, rivalPoke: true, note: "The patio is going to replay that one all week." },
+            { label: '"Buck pushes me. Wouldn\'t be here without a rival like him."', tone: "gracious", followers: 35, rivalRespect: true, note: "Even Buck couldn't argue with that one." },
+            { label: '"Some nights he\'s got my number. Some nights I\'ve got his."', tone: "honest", followers: 40, note: "Honest scorekeeping. The scene respects that." },
+          ],
+        },
+        {
+          id: "sponsor",
+          when: () => activeSponsors().length ? 3 : 0,
+          followTones: ["cocky", "gracious"],
+          q: "You've got decals on that thing now. Selling out already?",
+          answers: [
+            { label: '"They came to me."', tone: "cocky", followers: 60, plugSponsor: true, note: "Your sponsor is going to love that clip." },
+            { label: '"They believed early. I don\'t forget that."', tone: "gracious", followers: 30, plugSponsor: true, note: "Loyalty plays well on the air, and off it." },
+            { label: '"Chrome costs money. Somebody\'s gotta pay for it."', tone: "honest", followers: 20, note: "The working guys nodded at that." },
+          ],
+        },
+        {
+          id: "origin",
+          when: () => 2,
+          followTones: ["gracious", "honest"],
+          q: "This whole thing started with a barn-find nobody else wanted. What'd you see in it?",
+          answers: [
+            { label: '"A trophy nobody else was sharp enough to spot."', tone: "cocky", followers: 55, note: "Bold. The clip traveled." },
+            { label: '"A second chance. For the truck, and maybe me too."', tone: "gracious", followers: 25, wifeDM: "warm", note: "That one landed in a few living rooms." },
+            { label: '"Honest? I just couldn\'t stand to watch it rot."', tone: "honest", followers: 20, note: "Every car guy listening knew exactly what you meant." },
+          ],
+        },
+        {
+          id: "money",
+          when: () => ((state.bankLoanBalance || 0) > 0 || (state.sharkLoanBalance || 0) > 0) ? 3 : 2,
+          followTones: ["cocky", "honest"],
+          q: "Guys go broke chasing this. You ever think about quitting while you're ahead?",
+          answers: [
+            { label: '"Quitting\'s for people who lose."', tone: "cocky", followers: 55, note: "The bravado plays. The bank statement disagrees, quietly." },
+            { label: '"Every dollar\'s come back around. So far."', tone: "gracious", followers: 25, note: "Careful optimism. The room bought it." },
+            { label: '"Every season I swear it\'s the last build. Never is."', tone: "honest", followers: 30, wifeDM: "knowing", note: "Somewhere, somebody who knows you laughed." },
+          ],
+        },
+        {
+          id: "future",
+          when: () => 2,
+          followTones: ["cocky", "gracious", "honest"],
+          q: "So what's next for you?",
+          answers: [
+            { label: '"Nationals. Then whatever\'s bigger than Nationals."', tone: "cocky", followers: 65, note: "You put the whole scene on notice." },
+            { label: '"One more clean build. Bring the family to the show."', tone: "gracious", followers: 30, wifeDM: "warm", note: "The nicest thing anyone said on air all week." },
+            { label: '"Ask me after I sleep for about a week."', tone: "honest", followers: 25, note: "The most relatable answer they'd heard in a while." },
+          ],
+        },
+      ];
+      function pickInterviewQ(tone) {
+        const used = (state.interview && state.interview.usedIds) || [];
+        let pool = INTERVIEW_QUESTIONS.filter((q) => !used.includes(q.id) && q.when() > 0);
+        if (!pool.length) return null;
+        if (tone) {
+          const sliced = pool.filter((q) => (q.followTones || []).includes(tone));
+          if (sliced.length) pool = sliced;
+        }
+        const total = pool.reduce((a, q) => a + q.when(), 0);
+        let r = Math.random() * total;
+        for (const q of pool) { r -= q.when(); if (r <= 0) return q; }
+        return pool[pool.length - 1];
+      }
+      const INTERVIEW_TONE_FRAME = {
+        cocky: "Ha. Alright, hotshot. ",
+        gracious: "That's decent of you. ",
+        honest: "Mm. Appreciate the straight answer. ",
+      };
+      function buildInterviewScene(q, step, tone) {
+        const frame = step === 2 && tone ? (INTERVIEW_TONE_FRAME[tone] || "") : "";
+        return {
+          id: "radio_interview_" + q.id,
+          emoji: "🎙️",
+          title: INTERVIEW_DJ,
+          text: (step === 1 ? "The DJ leans into the mic. " : "") + frame + '"' + q.q + '"',
+          choices: q.answers.map((a) => ({
+            label: a.label,
+            followers: a.followers || 0,
+            note: a.note || "",
+            noteTone: "event-good",
+            plugSponsor: !!a.plugSponsor,
+            rivalPoke: !!a.rivalPoke,
+            rivalRespect: !!a.rivalRespect,
+            wifeDM: a.wifeDM || null,
+            interviewTone: a.tone,
+            onResolve: "interviewStep",
+          })),
+        };
+      }
+      function startRadioInterview(tier) {
+        const q1 = pickInterviewQ(null);
+        if (!q1) return;
+        state.interview = { tier, step: 1, usedIds: [q1.id], tone: null };
+        playCutscene({
+          art: "scene-radio-interview",
+          kicker: "On the air",
+          title: tier === "Local" ? "You're on the radio." : "They want you back on the air.",
+          sub: "The shop radio crackles and it's your name coming out of the speakers. The DJ's got you on the line, live, in the room you built it in.",
+          cta: "Take the call",
+        });
+        queueScene(buildInterviewScene(q1, 1, null));
+      }
+      // Fired from render once the show result and every other card have cleared,
+      // so the interview lands back in the shop, not on top of the trophy screen.
+      function maybeFireRadioInterview() {
+        if (!state.pendingInterview) return;
+        if (state.interview) return;
+        if (recapBlockersActive() || state.pendingRecap) return;
+        if (state.view === "result" || state.showStage || state.showLoading) return;
+        const tier = state.pendingInterview.tier;
+        state.pendingInterview = null;
+        startRadioInterview(tier);
+      }
+      // Called from the show resolve: the first win at each real tier earns an
+      // interview, once. Guarded by a per-tier flag so it never repeats.
+      function maybeEarnInterview(place, tier) {
+        if (place !== 1) return;
+        if (tier !== "Local" && tier !== "Regional" && tier !== "National") return;
+        if (!state.interviewsFired) state.interviewsFired = {};
+        if (state.interviewsFired[tier]) return;
+        state.interviewsFired[tier] = true;
+        state.pendingInterview = { tier };
+      }
+      // Two questions, then out. The DJ signs off, and the reward that isn't a
+      // stat: your own kid heard you on the radio. Clears the interview session.
+      function queueRadioSignoff() {
+        state.interview = null;
+        queueEvent("scene", {
+          id: "radio_signoff",
+          emoji: "📻",
+          title: INTERVIEW_DJ,
+          text: '"That\'s the one and only, live from the shop floor. Go build something." The line clicks dead. Out past the bay door you can hear your own kid yelling through the screen that you were ON THE RADIO, like it\'s the biggest thing that has ever happened to anybody.',
+          choices: [{ label: "Get back to work", lore: 6, note: "You wiped your hands and picked the wrench back up, grinning like an idiot. The speakers slid back to the usual drive-time nothing.", noteTone: "event-good" }],
+        });
       }
 
       // ── Project-car surprises ──
@@ -16644,6 +16907,9 @@
             `You just beat the field at ${show.name}. Buck is going to hear about this.`,
           );
           if (show.tier === "Local") maybeAddBuckReaction("firstLocalWin");
+          // First win at each real tier earns a radio interview, fired later
+          // once the trophy screen and every other card have cleared.
+          maybeEarnInterview(place, show.tier);
         }
         const buckBeatenBefore = (state.buck && state.buck.beatenCount) || 0;
         if (buckInShow && state.buck) {
@@ -22922,6 +23188,9 @@ addEventListener("DOMContentLoaded",function(){
         checkOnboardUnlocks();
         checkAchievements();
         processEventQueue();
+        // The radio interview waits until the trophy screen and every queued
+        // card have cleared, then cuts in back at the shop.
+        maybeFireRadioInterview();
         // Once the queues above have drained, let the stashed weekly recap
         // surface, always the final card of the week.
         promoteRecapIfClear();
