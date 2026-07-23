@@ -10020,7 +10020,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.43.0";
+      const GAME_VERSION = "0.44.0";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -10143,7 +10143,6 @@
           weddingRingPawned: false,
           birthdayReceived: false,
           fakeFollowersBought: false,
-          polishesThisWeek: 0,
           weekStartMoney: 5000,
           showLoading: false,
           pendingShowId: null,
@@ -10332,7 +10331,76 @@
       function judgedShowScore(car, show) {
         if (!car) return 0;
         if (!show || !show.axis || !JUDGING_AXES[show.axis]) return getOverall(car);
-        return Math.round(getOverall(car) * 0.55 + axisScoreOf(car, show.axis) * 0.45);
+        const base = Math.round(getOverall(car) * 0.55 + axisScoreOf(car, show.axis) * 0.45);
+        return Math.max(0, base + setupAxisBias(car, show.axis));
+      }
+
+      // ── The Setup ──
+      // The back half is no longer a grind toward 100 (parts alone reach the
+      // show gates; polish was cut). The finishing decision is the Setup: the
+      // build's character. It is a zero-sum bias applied here at show scoring,
+      // never a stored-stat rewrite, so eligibility (which gates on raw
+      // getOverall) is untouched and a re-tune can never corrupt a build.
+      // A specialized setup lifts its axis and gives up the opposite by the
+      // same amount, so All-Rounder (no lean, no penalty) stays a real choice
+      // rather than a trap. The swing sits in the same small band as scene
+      // taste, so a Setup nudges a close finish, it never buys a win alone.
+      const SETUP_BIAS = 4;
+      const SETUPS = [
+        { id: "balanced", label: "All-Rounder", emoji: "⚖️", axis: null, opp: null, note: "No lean either way. Walks into any show without a handicap." },
+        { id: "brawler", label: "Street Brawler", emoji: "🐎", axis: "power", opp: "beauty", note: "Tuned to run. Loves a power show, soft under the concours lights." },
+        { id: "shine", label: "Sunday Shine", emoji: "✨", axis: "beauty", opp: "power", note: "Built to be looked at. Owns a beauty field, quiet at the strip." },
+        { id: "carver", label: "Canyon Carver", emoji: "🌀", axis: "handling", opp: "reliability", note: "Sharp and eager. Wins on a course, hates a long reliability haul." },
+        { id: "ironhorse", label: "Iron Horse", emoji: "🔩", axis: "reliability", opp: "handling", note: "Sorted to just go and go. Owns the long run, dull in the corners." },
+      ];
+      function setupDef(car) {
+        return SETUPS.find((s) => s.id === (car && car.setup)) || SETUPS[0];
+      }
+      // The zero-sum point swing this setup lends a given show axis: + on its
+      // own axis, - on the opposite, 0 everywhere else and for All-Rounder.
+      function setupAxisBias(car, showAxis) {
+        const s = setupDef(car);
+        if (!s.axis || !showAxis) return 0;
+        if (showAxis === s.axis) return SETUP_BIAS;
+        if (showAxis === s.opp) return -SETUP_BIAS;
+        return 0;
+      }
+      // One-line read of how a setup meets a show, for the pre-entry card so the
+      // player chooses a show informed, never blindsided at the entry gate.
+      function setupMatchupLine(car, show) {
+        if (!show || !show.axis || !JUDGING_AXES[show.axis]) return "";
+        const b = setupAxisBias(car, show.axis);
+        const s = setupDef(car);
+        if (b > 0) return `${s.emoji} ${s.label} is in its element here (+${b}).`;
+        if (b < 0) return `${s.emoji} ${s.label} fights the room here (${b}).`;
+        return `${s.emoji} ${s.label}, neutral setup for this one.`;
+      }
+      const RETUNE_COST = 120;
+      function setCarSetup(id) {
+        const car = currentCar();
+        if (!car) return toast("No car in the garage to tune.", "err");
+        const s = SETUPS.find((x) => x.id === id);
+        if (!s) return;
+        if ((car.setup || "balanced") === id) return toast("She's already dialed in that way.", "err");
+        const first = !car.setup;
+        if (!first) {
+          if (hasActiveRestorations())
+            return toast("Finish or park your jobs first, a re-tune takes the weekend on the rack.", "err");
+          if (state.money < RETUNE_COST)
+            return toast(`A re-tune runs $${RETUNE_COST} and a weekend in the shop.`, "err");
+          state.money -= RETUNE_COST;
+          recordMoneyChange(-RETUNE_COST, `Re-tune: ${s.label}`);
+        }
+        car.setup = id;
+        playSfx(first ? "success" : "wrench");
+        if (first) {
+          toast(`${s.emoji} Dialed in as ${s.label}. ${s.note}`, "event-good");
+          saveGame();
+          requestRender("full");
+        } else {
+          toast(`${s.emoji} Re-tuned to ${s.label}. The weekend's gone, but she's set up new.`, "event-good");
+          advanceWeek("setup re-tune");
+        }
       }
 
       // ── Scene taste ──
@@ -10557,9 +10625,29 @@
         const styleRow = car.buildStyle
           ? `<div class="tiny" style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(217,162,79,0.14);color:var(--gold-soft)">Build direction: <b style="color:var(--text-bright)">${car.buildStyle === "stock" ? "Numbers-matching stock" : "Restomod"}</b> · ${car.buildStyle === "stock" ? "Regional and National judges favor it" : "Cars & Coffee and Local crowds love it"}${sceneTasteId() !== "split" ? ` · ${SCENE_TASTES[sceneTasteId()].icon} ${(sceneTasteId() === "purist") === (car.buildStyle === "stock") ? `It's a ${SCENE_TASTES[sceneTasteId()].label.toLowerCase()}, the scene's leaning your way` : `It's a ${SCENE_TASTES[sceneTasteId()].label.toLowerCase()}, you're building against the grain this season`}` : ""}</div>`
           : `<div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(217,162,79,0.14)"><div class="tiny" style="color:var(--gold-soft);font-weight:bold;margin-bottom:6px">Pick a build direction (one-time)</div><div class="btn-row two">${button("Keep it stock", "commitBuildStyle('stock')", false, "", "width:100%")}${button("Make it a restomod", "commitBuildStyle('restomod')", false, "", "width:100%")}</div><div class="tiny muted" style="margin-top:6px">Not a paint choice, this sets who scores it higher. Stock wins Regionals and Nationals; restomods turn heads at Cars &amp; Coffee and Local shows.</div></div>`;
+        const cur = setupDef(car);
+        const setupButtons = SETUPS.map((s) => {
+          const active = (car.setup || "balanced") === s.id;
+          return button(
+            `${s.emoji} ${s.label}`,
+            `setCarSetup('${s.id}')`,
+            active,
+            "",
+            "font-size:11px;padding:6px 10px;" + (active ? "background:var(--gold);color:#1a1206;border-color:var(--gold);" : ""),
+          );
+        }).join("");
+        const costHint = car.setup
+          ? `Re-tune runs $${RETUNE_COST} and a weekend on the rack.`
+          : `The first setup is free. Changing it later costs $${RETUNE_COST} and a weekend.`;
+        // The Setup is the finishing decision now that the polish grind is gone:
+        // the build's character for the shows it will enter. Shown once she's
+        // roadworthy, since it only matters at a show.
+        const setupRow = roadworthy(car)
+          ? `<div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(217,162,79,0.14)"><div class="tiny" style="color:var(--gold-soft);font-weight:bold;margin-bottom:6px">Setup, the build's character</div><div class="tiny muted" style="margin-bottom:7px">Currently: <b style="color:var(--text-bright)">${cur.emoji} ${cur.label}</b> · ${cur.note}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${setupButtons}</div><div class="tiny muted" style="margin-top:6px">${costHint} It shifts how judges score her by show type; it never touches the build itself.</div></div>`
+          : "";
         return panel(
           "Paint Booth & Build Direction",
-          `${boothBody}${styleRow}`,
+          `${boothBody}${styleRow}${setupRow}`,
           "",
           "#d19a3f",
         );
@@ -10960,36 +11048,11 @@
           };
         });
 
-        // Late-game polish picks: when a category has every part installed but
-        // the score is short of 100, fine-tuning is the only path to the cap.
-        const overall = getOverall(car);
-        const polishPicks = CATS.map((cat) => {
-          const status = getCategoryCompletion(car, cat);
-          if (!status || !status.allDone || status.current >= 100) return null;
-          const headroom = 100 - status.current;
-          const imp = Math.min(POLISH_GAIN, headroom);
-          let priority = (imp / POLISH_COST) * 100 + 12;
-          let tag = "Fine-tune for the last points";
-          let why = `Every part in ${CAT_LABELS[cat].toLowerCase()} is installed. Fine-tuning is the only way to push it past ${status.current} toward 100.`;
-          if (status.current < overall - 2) {
-            priority += 30;
-            tag = "Lift the dragging score";
-            why = `${CAT_LABELS[cat]} is below the rest of the build at ${status.current}/100, fine-tuning is the only way to lift it.`;
-          }
-          return {
-            type: "polish",
-            cat,
-            recommendedCost: POLISH_COST,
-            actionable: state.money >= POLISH_COST,
-            priority,
-            tag,
-            why,
-            current: status.current,
-            imp,
-          };
-        }).filter(Boolean);
-
-        const ranked = [...partPicks, ...polishPicks].sort(
+        // The back half is no longer a grind toward 100. Once every part in a
+        // category is in, the build's raw scores are set; the finishing
+        // decision is the Setup (its character for the shows it will enter),
+        // made in the paint booth, not a per-category top-off here.
+        const ranked = [...partPicks].sort(
           (a, b) =>
             b.priority - a.priority ||
             (a.recommendedCost || 0) - (b.recommendedCost || 0) ||
@@ -15373,7 +15436,6 @@
         state.weekStartInstalls = state.installsDone || 0;
         state.weekStartMoney = state.money;
         state.enteredShowsThisWeek = [];
-        state.polishesThisWeek = 0;
         state.rival.score = getRivalBaseScore();
         state.postShowWeekLocked = false;
 
@@ -15944,24 +16006,6 @@
         requestRender("full");
       }
 
-      const POLISH_ACTIONS = {
-        engine: { verb: "Dyno Tune", emoji: "📈" },
-        transmission: { verb: "Shift Recalibrate", emoji: "⚙️" },
-        brakes: { verb: "Pad Bed-In", emoji: "🛑" },
-        suspension: { verb: "Alignment Tweak", emoji: "📐" },
-        wheels: { verb: "Spin Balance", emoji: "⚪" },
-        tires: { verb: "Pressure Dial-In", emoji: "💨" },
-        electrical: { verb: "Ground Rework", emoji: "⚡" },
-        differential: { verb: "Diff Lash Setup", emoji: "🔩" },
-        body: { verb: "Wet Sand Pass", emoji: "💧" },
-        paint: { verb: "Cut and Buff", emoji: "✨" },
-        interior: { verb: "Detail Clean", emoji: "🧴" },
-        chrome: { verb: "Chrome Polish Pass", emoji: "✨" },
-      };
-      const POLISH_PER_WEEK = 3;
-      const POLISH_COST = 80;
-      const POLISH_GAIN = 3;
-
       function getCategoryCompletion(car, cat) {
         if (!car) return null;
         const partsInCat = PARTS.filter((p) => p.category === cat);
@@ -15969,36 +16013,6 @@
         const installed = new Set(car.installedParts || []);
         const allDone = partsInCat.every((p) => installed.has(p.id));
         return { allDone, current: car[cat] || 0 };
-      }
-
-      function polishCategory(cat) {
-        const car = currentCar();
-        if (!car) return toast("No car in the garage to polish.", "err");
-        const status = getCategoryCompletion(car, cat);
-        if (!status || !status.allDone)
-          return toast(
-            "Need every part installed in that category before fine-tuning.",
-            "err",
-          );
-        if (car[cat] >= 100) return toast("That category is maxed out.", "err");
-        if ((state.polishesThisWeek || 0) >= POLISH_PER_WEEK)
-          return toast(
-            `Out of fine-tuning time this week (${POLISH_PER_WEEK} per week).`,
-            "err",
-          );
-        if (state.money < POLISH_COST)
-          return toast(`Need $${POLISH_COST} for the supplies.`, "err");
-        state.money -= POLISH_COST;
-        car[cat] = Math.min(100, car[cat] + POLISH_GAIN);
-        state.polishesThisWeek = (state.polishesThisWeek || 0) + 1;
-        recordMoneyChange(-POLISH_COST, `Fine tune: ${CAT_LABELS[cat]}`);
-        playSfx("wrench");
-        toast(
-          `${POLISH_ACTIONS[cat]?.verb || "Polished"} on ${CAT_LABELS[cat]}. +${POLISH_GAIN} (${car[cat]}/100).`,
-          "ok",
-        );
-        saveGame();
-        requestRender("full");
       }
 
       function buyFakeFollowers() {
@@ -20935,20 +20949,6 @@ addEventListener("DOMContentLoaded",function(){
                 ? suggested
                     .slice(0, 4)
                     .map((item) => {
-                      if (item.type === "polish") {
-                        const action = POLISH_ACTIONS[item.cat] || { verb: "Polish", emoji: "✨" };
-                        const remaining = Math.max(0, POLISH_PER_WEEK - (state.polishesThisWeek || 0));
-                        const blocked = remaining <= 0 || state.money < POLISH_COST;
-                        const status = remaining <= 0
-                          ? `No fine-tuning sessions left this week (${POLISH_PER_WEEK}/${POLISH_PER_WEEK} used). Resets next week.`
-                          : `${remaining}/${POLISH_PER_WEEK} sessions left this week · +${POLISH_GAIN} per pass.`;
-                        return panel(
-                          `${action.emoji} ${action.verb} · ${CAT_LABELS[item.cat]}`,
-                          `<div class="smart-tag">${item.tag}</div><div class="small muted" style="margin-bottom:8px">Cost: <span style="color:var(--text);font-weight:bold">$${POLISH_COST}</span> per pass <span style="color:var(--text-dim)">·</span> Score: <span style="color:var(--text);font-weight:bold">${item.current}/100</span></div><div class="small muted" style="margin-bottom:10px">Improvement: <span class="good" style="font-weight:bold">+${POLISH_GAIN} ${CAT_LABELS[item.cat]}</span></div><div class="tiny muted" style="margin-bottom:10px">${item.why}</div><div class="tiny muted" style="margin-bottom:10px">${status}</div>${button(blocked && state.money < POLISH_COST ? `Need $${POLISH_COST}` : remaining <= 0 ? "Maxed out this week" : `+${POLISH_GAIN} · $${POLISH_COST}`, `polishCategory('${item.cat}')`, blocked, "", "width:100%;background:rgba(168,132,221,0.15);border-color:rgba(168,132,221,0.6);color:var(--purple-bright)")}`,
-                          `Pre-show fine-tuning · ${CAT_LABELS[item.cat]}`,
-                          "#a884dd",
-                        );
-                      }
                       const p = item.part;
                       const activeTask = findActiveTask(car.id, p.id);
                       const starterFree =
@@ -21028,24 +21028,7 @@ addEventListener("DOMContentLoaded",function(){
           const showLockHint = lockedShowParts
             ? `<div class="tiny muted" style="margin:0 0 12px;padding:8px 10px;background:rgba(217,162,79,0.05);border:1px dashed rgba(217,162,79,0.3);border-radius:8px">🔒 Show Grade ${CAT_LABELS[state.shopCat].toLowerCase()} work opens up once the Budget basics here are done.</div>`
             : "";
-          // Fine-tuning card for the active category, appears once every part
-          // in this silo is installed. Replaces the old standalone Fine Tuning
-          // panel so the polish action lives next to the parts that earn it.
-          const tuneStatus = getCategoryCompletion(car, state.shopCat);
-          let fineTuneMarkup = "";
-          if (tuneStatus && tuneStatus.allDone) {
-            const action = POLISH_ACTIONS[state.shopCat] || { verb: "Polish", emoji: "✨" };
-            const remaining = Math.max(0, POLISH_PER_WEEK - (state.polishesThisWeek || 0));
-            const maxed = tuneStatus.current >= 100;
-            const blocked = maxed || remaining <= 0 || state.money < POLISH_COST;
-            const sub = maxed
-              ? "Maxed out. Concours-clean."
-              : remaining <= 0
-                ? `No fine-tuning sessions left this week (${POLISH_PER_WEEK}/${POLISH_PER_WEEK} used). Resets next week.`
-                : `${remaining}/${POLISH_PER_WEEK} sessions left this week. +${POLISH_GAIN} per pass.`;
-            fineTuneMarkup = `<div class="info-box" style="background:rgba(168,132,221,0.06);border-color:rgba(168,132,221,0.45);margin-bottom:14px"><div class="flex between center" style="gap:10px;margin-bottom:6px"><div><div class="small" style="color:var(--purple-bright);font-weight:bold">${action.emoji} ${action.verb} · pre-show polish</div><div class="tiny muted" style="margin-top:2px">${sub}</div></div><div style="min-width:140px">${button(maxed ? "Maxed" : `+${POLISH_GAIN} · $${POLISH_COST}`, `polishCategory('${state.shopCat}')`, blocked, "", "width:100%;padding:7px 8px;font-size:12px")}</div></div></div>`;
-          }
-          subcontent = `<div class="cat-pill-row">${CATS.map((cat) => `<button class="cat-pill ${state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')"><span class="cat-pill-icon">${CAT_ICONS[cat]}</span>${CAT_LABELS[cat]}</button>`).join("")}</div><div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div>${state.diyTried && state.shopTried ? "" : `<div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>`}${fineTuneMarkup}${showLockHint}${state.shopCat === "paint" ? paintBoothPanel(car) : ""}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}<div class="dense-grid">${avail
+          subcontent = `<div class="cat-pill-row">${CATS.map((cat) => `<button class="cat-pill ${state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')"><span class="cat-pill-icon">${CAT_ICONS[cat]}</span>${CAT_LABELS[cat]}</button>`).join("")}</div><div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div>${state.diyTried && state.shopTried ? "" : `<div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>`}${showLockHint}${state.shopCat === "paint" ? paintBoothPanel(car) : ""}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}<div class="dense-grid">${avail
             .map((p) => {
               const rq = p.tools || [];
               const miss = rq.filter((tid) => !state.ownedTools.includes(tid));
@@ -21322,7 +21305,7 @@ addEventListener("DOMContentLoaded",function(){
               const checklistMarkup = `<div class="info-box" style="margin-bottom:10px;background:rgba(0,0,0,0.18);padding:10px 12px"><div class="tiny" style="color:var(--gold-soft);letter-spacing:1.5px;font-weight:bold;margin-bottom:6px">${show.tier === "Cars & Coffee" ? "PREP" : "SHOW PREP"}</div>${checks.map((c) => `<div class="tiny" style="line-height:1.7;color:${c.ok ? "#9fd18e" : "#e07a7a"}">${c.ok ? "✓ " + c.pass : "✗ " + c.fail}</div>`).join("")}</div>`;
               return panel(
                 show.name,
-                `${show.blurb ? `<div class="tiny muted" style="margin-bottom:10px;line-height:1.5;font-style:italic">${show.blurb}</div>` : ""}${show.axis && JUDGING_AXES[show.axis] ? `<div class="tiny" style="margin-bottom:8px;color:var(--gold-soft)">${JUDGING_AXES[show.axis].icon} Judged on ${JUDGING_AXES[show.axis].label} · your build scores ~${judgedShowScore(car, show)} here (${getOverall(car)} overall)</div>` : ""}<div class="show-prizes" style="margin-bottom:10px">${show.tier === "Cars & Coffee" ? `<div class="show-prize">No judges, no places</div><div class="show-prize">Free part raffle for showing up</div>` : show.prizes.map((p, i) => `<div class="show-prize">${["1st", "2nd", "3rd", "4th", "5th"][i]} · $${p}</div>`).join("")}</div>${show.enteredThisWeek ? `<div class="tiny warn" style="margin-bottom:8px">Already entered this week</div>` : show.seasonClosed ? `<div class="tiny warn" style="margin-bottom:8px">Closed until next spring</div>` : show.weeksUntil === 0 ? `<div class="tiny good" style="margin-bottom:8px">${show.seasonWindow ? `Nationals open · closes after week ${show.seasonWindow.end}` : "Happening this week"}</div>` : `<div class="tiny muted" style="margin-bottom:8px">${show.seasonWindow ? `Opens week ${show.seasonWindow.start} · ${show.weeksUntil} week(s) out` : `Starts in ${show.weeksUntil} week(s)`}</div>`}${rivalLine}${localSponsor ? `<div class="tiny good" style="margin-bottom:8px">${localSponsor.name} covers Local entry fee.</div>` : ""}${bonus > 0 && show.tier !== "Cars & Coffee" ? `<div class="tiny good" style="margin-bottom:8px">Sponsor bonus: +$${bonus}</div>` : ""}${checklistMarkup}${button(
+                `${show.blurb ? `<div class="tiny muted" style="margin-bottom:10px;line-height:1.5;font-style:italic">${show.blurb}</div>` : ""}${show.axis && JUDGING_AXES[show.axis] ? `<div class="tiny" style="margin-bottom:8px;color:var(--gold-soft)">${JUDGING_AXES[show.axis].icon} Judged on ${JUDGING_AXES[show.axis].label} · your build scores ~${judgedShowScore(car, show)} here (${getOverall(car)} overall)</div>` : ""}${show.axis && JUDGING_AXES[show.axis] && setupAxisBias(car, show.axis) !== 0 ? `<div class="tiny" style="margin-bottom:8px;color:${setupAxisBias(car, show.axis) > 0 ? "var(--green-bright)" : "var(--red-bright)"}">${setupMatchupLine(car, show)}</div>` : ""}<div class="show-prizes" style="margin-bottom:10px">${show.tier === "Cars & Coffee" ? `<div class="show-prize">No judges, no places</div><div class="show-prize">Free part raffle for showing up</div>` : show.prizes.map((p, i) => `<div class="show-prize">${["1st", "2nd", "3rd", "4th", "5th"][i]} · $${p}</div>`).join("")}</div>${show.enteredThisWeek ? `<div class="tiny warn" style="margin-bottom:8px">Already entered this week</div>` : show.seasonClosed ? `<div class="tiny warn" style="margin-bottom:8px">Closed until next spring</div>` : show.weeksUntil === 0 ? `<div class="tiny good" style="margin-bottom:8px">${show.seasonWindow ? `Nationals open · closes after week ${show.seasonWindow.end}` : "Happening this week"}</div>` : `<div class="tiny muted" style="margin-bottom:8px">${show.seasonWindow ? `Opens week ${show.seasonWindow.start} · ${show.weeksUntil} week(s) out` : `Starts in ${show.weeksUntil} week(s)`}</div>`}${rivalLine}${localSponsor ? `<div class="tiny good" style="margin-bottom:8px">${localSponsor.name} covers Local entry fee.</div>` : ""}${bonus > 0 && show.tier !== "Cars & Coffee" ? `<div class="tiny good" style="margin-bottom:8px">Sponsor bonus: +$${bonus}</div>` : ""}${checklistMarkup}${button(
                     show.enteredThisWeek
                       ? "Already entered this week"
                       : show.seasonClosed
