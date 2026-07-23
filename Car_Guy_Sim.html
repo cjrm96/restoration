@@ -10020,7 +10020,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.44.0";
+      const GAME_VERSION = "0.44.1";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -15304,10 +15304,18 @@
         // the lifestyle, not a failure state. The shop homework (videos
         // about the next job, mostly) still counts for a little.
         const installsThisWeek = (state.installsDone || 0) - (typeof state.weekStartInstalls === "number" ? state.weekStartInstalls : state.installsDone || 0);
+        // A junkyard or swap Saturday and a Setup re-tune both advance the week
+        // with no parts installed, but the player was OUT on the car, not home.
+        // Those must never read as a quiet week, or the marriage cost evaporates
+        // for exactly the most obsessed player: a full-season playtest showed a
+        // junkyard-every-weekend build posting a spotless marriage. An away
+        // errand is an away week, same as a show.
+        const awayErrand = reason === "Saturday trip" || reason === "setup re-tune";
         const idleWeek =
           state.tutorialComplete &&
           installsThisWeek === 0 &&
           missedSocialPost &&
+          !awayErrand &&
           !(state.history || []).some((h) => h.week === previousWeek) &&
           !state.activeRestorations.some((t) => !t.completed);
         // A deliberately chosen home weekend (the Saturday spent with them
