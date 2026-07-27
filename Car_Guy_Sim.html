@@ -10034,7 +10034,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.45.2";
+      const GAME_VERSION = "0.46.0";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -17641,6 +17641,9 @@
       }
       function setShopCat(cat) {
         state.shopCat = cat;
+        // Picking a system from the strip always means the parts list, so
+        // coming back from Extras lands where the player expects.
+        state.shopSub = "parts";
         requestRender("full");
       }
       function setShopSub(sub) {
@@ -17691,13 +17694,62 @@
       // to move. The wife's-car beat is a separate car, so while it's still
       // available the tab opens even with a single project (the project itself
       // still can't be listed as your last car).
+      // The category strip inside All Builds. Extras used to be its own
+      // top-level tab beside All Builds and Tools, which put finishing touches
+      // at the same level as the whole build. It belongs with the systems it
+      // sits alongside, so it is the last pill in this row: every judged
+      // category first, then the comforts that are not judged at all.
+      function buildCatPillRow() {
+        const cats = CATS.map(
+          (cat) =>
+            `<button class="cat-pill ${state.shopSub === "parts" && state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')"><span class="cat-pill-icon">${CAT_ICONS[cat]}</span>${CAT_LABELS[cat]}</button>`,
+        ).join("");
+        const extras = `<button class="cat-pill ${state.shopSub === "extras" ? "active" : ""}" title="Creature comforts and finishing touches. Not judged, but they win over the scene and add real resale." onclick="setShopSub('extras')"><span class="cat-pill-icon">✨</span>Extras</button>`;
+        return `<div class="cat-pill-row">${cats}${extras}</div>`;
+      }
       function sellCarTabLocked() {
         const wifeCarAvailable = !state.wifeCarSold && !!currentCar();
         return (state.cars || []).length <= 1 && !wifeCarAvailable;
       }
+      // Marketplace sub-tabs during onboarding. A new player who gets the truck
+      // running in week one opens the Marketplace and finds four tabs, with the
+      // Road Trip (which burns the whole Saturday) sitting first. That is the
+      // wrong lesson for week one. The first week should teach one line: fix the
+      // car, post it, go to a Cars and Coffee. Selling a take-off part is the
+      // step that actually opens Compete, so Sell Tools and Parts is the only
+      // tab live until show season starts; the rest open with it.
+      // Returns the reason a tab is locked, or null when it is open.
+      // Safety: with an empty garage the lot must always be reachable, or the
+      // player is stranded with no project to build.
+      function marketTabLock(id) {
+        const preShow = onboardStageVal() < 3;
+        const noCars = !(state.cars || []).length;
+        if (id === "buy") {
+          if (noCars) return null;
+          return preShow
+            ? "The lot can wait. Get this one running and out to a show before you take on a second project."
+            : null;
+        }
+        if (id === "trip") {
+          return preShow
+            ? "A Saturday at the yard burns the whole week. Get the truck running and out to a show first, then go hunting for parts."
+            : null;
+        }
+        if (id === "sellcar") {
+          if (preShow)
+            return "Flipping cars comes later. Get the truck running and out to a show first.";
+          return sellCarTabLocked()
+            ? "You've only got the one car, sell it and there's nothing to build. Pick up a second project first."
+            : null;
+        }
+        return null;
+      }
       function setMarketTab(tab) {
-        if (tab === "sellcar" && sellCarTabLocked())
-          return sellCarsLockedNudge();
+        const why = marketTabLock(tab);
+        if (why) {
+          toast(why, "err");
+          return;
+        }
         state.marketTab = tab;
         playSfx("click");
         requestRender("full");
@@ -21290,7 +21342,7 @@ addEventListener("DOMContentLoaded",function(){
           const showLockHint = lockedShowParts
             ? `<div class="tiny muted" style="margin:0 0 12px;padding:8px 10px;background:rgba(217,162,79,0.05);border:1px dashed rgba(217,162,79,0.3);border-radius:8px">🔒 Show Grade ${CAT_LABELS[state.shopCat].toLowerCase()} work opens up once the Budget basics here are done.</div>`
             : "";
-          subcontent = `<div class="cat-pill-row">${CATS.map((cat) => `<button class="cat-pill ${state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')"><span class="cat-pill-icon">${CAT_ICONS[cat]}</span>${CAT_LABELS[cat]}</button>`).join("")}</div><div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div>${state.diyTried && state.shopTried ? "" : `<div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>`}${showLockHint}${state.shopCat === "paint" ? paintBoothPanel(car) : ""}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}<div class="dense-grid">${avail
+          subcontent = `${buildCatPillRow()}<div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div>${state.diyTried && state.shopTried ? "" : `<div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>`}${showLockHint}${state.shopCat === "paint" ? paintBoothPanel(car) : ""}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}<div class="dense-grid">${avail
             .map((p) => {
               const rq = p.tools || [];
               const miss = rq.filter((tid) => !state.ownedTools.includes(tid));
@@ -21346,7 +21398,7 @@ addEventListener("DOMContentLoaded",function(){
               "#c2a37d",
             );
           }).join("");
-          subcontent = `<div class="small muted" style="margin-bottom:12px;line-height:1.5">Creature comforts and finishing touches. These don't change your show score, they make her a truck you'd actually drive, win over the scene, and add real money to her resale.${ownedCount ? ` <span style="color:var(--gold-soft)">${ownedCount} added, +$${fmt(totalVal)} resale so far.</span>` : ""}</div>${groups}`;
+          subcontent = `${buildCatPillRow()}<div class="small muted" style="margin-bottom:12px;line-height:1.5">Creature comforts and finishing touches. These don't change your show score, they make her a truck you'd actually drive, win over the scene, and add real money to her resale.${ownedCount ? ` <span style="color:var(--gold-soft)">${ownedCount} added, +$${fmt(totalVal)} resale so far.</span>` : ""}</div>${groups}`;
         }
 
         if (state.shopSub === "tools") {
@@ -21436,7 +21488,7 @@ addEventListener("DOMContentLoaded",function(){
               return `<div style="display:flex;align-items:center;gap:10px;background:rgba(143,203,126,0.1);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">✅</span><div><div class="small" style="color:var(--green-bright);font-weight:bold">Roadworthy</div><div class="tiny muted">The car can drive itself to a show. Time to compete.</div></div></div>`;
             }
             return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">⚠️</span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " ✓"} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " ✓"} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " ✓"} · Steering ${car.steering}/${ROADWORTHY_STEERING}${steerGap ? " (need +" + steerGap + ")" : " ✓"}${onboardStageVal() <= 1 ? `<div class="tiny" style="color:var(--gold-soft);margin-top:4px">🔓 Get her running and the Marketplace opens up.</div>` : ""}</div></div></div>`;
-          })()}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts", "setShopSub('parts')")}${tab("Extras", state.shopSub === "extras", "setShopSub('extras')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 Free Budget part ready, tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div onclick="installNextYardPull()" style="cursor:pointer;background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck, tap to install the next one, free.</span><span style="opacity:0.7">→</span></div>` : ""; })()}${subcontent}`,
+          })()}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts" || state.shopSub === "extras", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 Free Budget part ready, tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div onclick="installNextYardPull()" style="cursor:pointer;background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck, tap to install the next one, free.</span><span style="opacity:0.7">→</span></div>` : ""; })()}${subcontent}`,
         )}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${(state.installsDone || 0) > 0 || activeTasksForCar(car.id).length ? mobileFold("notes", "📋 Shop Notes", workspaceData().name, panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Build Speed", `+${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${roadworthy(car) ? "" : chalkRow("Roadworthy", "Not yet", "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}`, "", "#1d1611", "clipboard")) : ""}</div></div>`;
       }
 
@@ -22143,9 +22195,10 @@ addEventListener("DOMContentLoaded",function(){
         // Selling cars needs a spare, with a single project in the garage,
         // there's nothing to sell without stranding the player, so the tab is
         // locked and dimmed until they own a second car.
-        const sellCarsLocked = sellCarTabLocked();
         let marketTab = state.marketTab || "sell";
-        if (marketTab === "sellcar" && sellCarsLocked) marketTab = "sell";
+        // Never sit on a locked tab: fall back to the one that always works and
+        // is the actual next step in week one anyway.
+        if (marketTabLock(marketTab)) marketTab = "sell";
         const pillRow = `<div class="cat-pill-row">${[
           ["trip", "🛻", "Road Trip"],
           ["sell", "💰", "Sell Tools & Parts"],
@@ -22153,15 +22206,13 @@ addEventListener("DOMContentLoaded",function(){
           ["buy", "🚗", "Buy Cars"],
         ]
           .map(([id, icon, label]) => {
-            const locked = id === "sellcar" && sellCarsLocked;
+            const why = marketTabLock(id);
+            const locked = !!why;
             const cls =
               "cat-pill" +
               (marketTab === id && !locked ? " active" : "") +
               (locked ? " pill-locked" : "");
-            const onclick = locked
-              ? "sellCarsLockedNudge()"
-              : `setMarketTab('${id}')`;
-            return `<button class="${cls}" onclick="${onclick}"><span class="cat-pill-icon">${locked ? "🔒" : icon}</span>${label}</button>`;
+            return `<button class="${cls}" title="${locked ? why.replace(/"/g, "&quot;") : label}" onclick="setMarketTab('${id}')"><span class="cat-pill-icon">${locked ? "🔒" : icon}</span>${label}</button>`;
           })
           .join("")}</div>`;
 
