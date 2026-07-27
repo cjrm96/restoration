@@ -10034,7 +10034,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.47.0";
+      const GAME_VERSION = "0.48.0";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -11503,6 +11503,11 @@
         return {
           id: "radio_interview_" + q.id,
           emoji: "🎙️",
+          // Carry the art on every card so the whole interview plays against the
+          // shop-radio scene instead of dropping back to the garage UI between
+          // questions. The opening cutscene and the questions become one beat.
+          art: "scene-radio-interview",
+          kicker: "On the air",
           title: INTERVIEW_DJ,
           text: (step === 1 ? "The DJ leans into the mic. " : "") + frame + '"' + q.q + '"',
           choices: q.answers.map((a) => ({
@@ -11559,6 +11564,8 @@
         state.interview = null;
         queueEvent("scene", {
           id: "radio_signoff",
+          art: "scene-radio-interview",
+          kicker: "On the air",
           emoji: "📻",
           title: INTERVIEW_DJ,
           text: '"That\'s the one and only, live from the shop floor. Go build something." The line clicks dead. Out past the bay door you can hear your own kid yelling through the screen that you were ON THE RADIO, like it\'s the biggest thing that has ever happened to anybody.',
@@ -11822,6 +11829,7 @@
           queueScene({
             id: "restraint_2",
             emoji: "🤍",
+            art: "scene-pawn-shop",
             title: "The Same Counter",
             text: "You end up at the pawn shop after all. Same fluorescent light, same glass case full of other people's hard times. But it isn't the ring you slide across. It's your good socket set, the timing light, the watch off your own wrist. The broker counts out less than they're worth and you take it anyway, because the ring's still in your pocket and it's staying there. You'll buy the tools back. Someday. That isn't the point tonight.",
             choices: [
@@ -11842,6 +11850,7 @@
         queueScene({
           id: "restraint_3",
           emoji: "🤍",
+          art: "scene-pawn-shop-redeem",
           title: "What She Put In",
           text: "There's an envelope on the workbench with your name on it. Inside: cash she'd been quietly setting aside from her own paychecks, and the pawn tickets for your tools and the watch, already redeemed. Under that, a note in her handwriting. \"I found the tickets in your jacket. You sold your own things so you'd never have to touch mine. I've known for a few weeks now.\" And smaller, at the bottom: \"Partners. You should have let me help sooner.\"",
           choices: [
@@ -11878,6 +11887,7 @@
         queueScene({
           id: "home_balance_" + season,
           emoji: "🌙",
+          art: "scene-empty-garage",
           title: "The Porch Light",
           text: "You come in past ten again, grease to the elbow, and the house is already dark. Plate in the microwave, note under it in her handwriting. It doesn't say much. It used to say more. You stand in the kitchen and read the four words twice, and outside the porch light is still on, the way she leaves it, the way she always leaves it, waiting up in the only way she has left.",
           choices: [{ label: "Turn it off and go up", lore: 6 }],
@@ -15353,6 +15363,7 @@
             queueScene({
               id: "season_open_family_strained",
               emoji: "🌙",
+              art: CUTSCENE_ART["scene-season-start"] ? "scene-season-start" : null,
               title: "First Morning",
               text: "First morning of the new season and you're up before the house, coffee going, keys already in your hand. She comes down in her robe, sees the boots by the door, and doesn't say anything about last year. Just, \"Try to be around some this one.\" Not a fight. Not even a request, really. Just something she's decided to say once, and then let go of.",
               choices: [{ label: "Mean it this time", lore: 6 }],
@@ -15361,6 +15372,7 @@
             queueScene({
               id: "season_open_family_steady",
               emoji: "☀️",
+              art: CUTSCENE_ART["scene-season-start"] ? "scene-season-start" : null,
               title: "First Morning",
               text: "First morning of the new season. She's already up, two coffees poured, and she hands you one on the way to the garage like it's the most natural thing in the world. \"Go on,\" she says. \"I'll bring the kids out later.\" A whole year of you being around bought this, the easy way she says it, and you almost miss how rare it is.",
               choices: [{ label: "Take the coffee", lore: 6 }],
@@ -20778,7 +20790,7 @@ addEventListener("DOMContentLoaded",function(){
         // the player decides instead of dropping to a plain dark modal.
         const sceneArt = scene.art && CUTSCENE_ART[scene.art];
         if (sceneArt) {
-          root.innerHTML = `<div class="modal" style="background:#0a0806;overflow:hidden"><div class="scene-art-backdrop cs-drift-a" style="position:absolute;inset:-7%;background:#0a0806 url('${CUTSCENE_ART[scene.art]}') center/cover no-repeat;opacity:0.85;pointer-events:none;will-change:transform"></div><div style="position:absolute;inset:0;background:radial-gradient(ellipse 130% 100% at 50% 40%, transparent 40%, rgba(5,4,3,0.72) 100%);pointer-events:none"></div><div class="modal-card notice-modal show-beat notice-neutral" style="position:relative;z-index:1;max-width:520px">${scene.emoji ? `<div class="notice-emoji">${scene.emoji}</div>` : ""}<div class="notice-kicker">Garage Life</div><div class="notice-title">${scene.title}</div><div class="notice-text">${scene.text}</div><div class="btn-row ${scene.choices && scene.choices.length === 3 ? "three" : scene.choices && scene.choices.length === 1 ? "one" : "two"}">${(scene.choices || []).map((choice, idx) => button(choice.label, `resolvePendingScene(${idx})`, false, "", `width:100%;${idx === 1 ? "background:#7da0c2;border-color:var(--blue-bright)" : idx === 2 ? "background:#4a3c2e;border-color:#6b5840;color:var(--text)" : ""}`)).join("")}</div></div></div>`;
+          root.innerHTML = `<div class="modal" style="background:#0a0806;overflow:hidden"><div class="scene-art-backdrop cs-drift-a" style="position:absolute;inset:-7%;background:#0a0806 url('${CUTSCENE_ART[scene.art]}') center/cover no-repeat;opacity:0.85;pointer-events:none;will-change:transform"></div><div style="position:absolute;inset:0;background:radial-gradient(ellipse 130% 100% at 50% 40%, transparent 40%, rgba(5,4,3,0.72) 100%);pointer-events:none"></div><div class="modal-card notice-modal show-beat notice-neutral" style="position:relative;z-index:1;max-width:520px">${scene.emoji ? `<div class="notice-emoji">${scene.emoji}</div>` : ""}<div class="notice-kicker">${scene.kicker || "Garage Life"}</div><div class="notice-title">${scene.title}</div><div class="notice-text">${scene.text}</div><div class="btn-row ${scene.choices && scene.choices.length === 3 ? "three" : scene.choices && scene.choices.length === 1 ? "one" : "two"}">${(scene.choices || []).map((choice, idx) => button(choice.label, `resolvePendingScene(${idx})`, false, "", `width:100%;${idx === 1 ? "background:#7da0c2;border-color:var(--blue-bright)" : idx === 2 ? "background:#4a3c2e;border-color:#6b5840;color:var(--text)" : ""}`)).join("")}</div></div></div>`;
           return true;
         }
         root.innerHTML = popupCard({
