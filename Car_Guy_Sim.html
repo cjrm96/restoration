@@ -10034,7 +10034,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.45.1";
+      const GAME_VERSION = "0.45.2";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -10795,9 +10795,30 @@
           state.showLoading
         );
       }
+      // The Advance Week button is a trap for a brand-new player. At week 1 the
+      // season's 22 weeks are the scarce resource, there is always an affordable
+      // first move (the cheapest DIY job is under $100 against a $5,000 start),
+      // and burning a week teaches nothing about the game. So it stays locked
+      // until the first part is on the truck, which is exactly what the tutorial
+      // card asks for, and it sits one step ahead of the other onboarding gates
+      // (Social at 3 installs, Marketplace at roadworthy, Compete at a listing).
+      // Safety valve: a player too broke to start any job gets it back, so no
+      // one can ever be stranded with no way to move time forward.
+      function advanceWeekUnlocked() {
+        if ((state.installsDone || 0) >= 1) return true;
+        if ((state.money || 0) < 400) return true;
+        return false;
+      }
       function promptAdvanceWeek(reason = "manual") {
         if (state.view === "result" || state.showLoading || state.showStage) {
           toast("Head back to the garage first.", "err");
+          return;
+        }
+        if (!advanceWeekUnlocked()) {
+          toast(
+            "Not yet. Get the first part on the truck, the season's only 22 weeks and you haven't turned a bolt.",
+            "err",
+          );
           return;
         }
         if (!canAdvanceWeekCheck(true)) return;
@@ -22902,12 +22923,23 @@ addEventListener("DOMContentLoaded",function(){
         getEl("followersChip").textContent = `📣 ${fmtF(state.followers)}`;
         const advanceWeekTopBtn = getEl("advanceWeekTopBtn");
         if (advanceWeekTopBtn) {
+          const notYet = !advanceWeekUnlocked();
           const advanceBlocked = !!(
+            notYet ||
             (currentCar() && hasActiveRestorations(currentCar().id)) ||
             state.view === "result" || state.showLoading || state.showStage
           );
           advanceWeekTopBtn.disabled = advanceBlocked;
-          advanceWeekTopBtn.textContent = "⏩ Advance Week";
+          // Before the first install it is not just disabled, it says why, and
+          // it drops out of the primary gold styling so the eye goes to the
+          // build instead of to the one button that would waste a week.
+          advanceWeekTopBtn.classList.toggle("btn-quiet", notYet);
+          advanceWeekTopBtn.textContent = notYet
+            ? "⏩ Advance Week (turn a bolt first)"
+            : "⏩ Advance Week";
+          advanceWeekTopBtn.title = notYet
+            ? "The season is only 22 weeks. Get the first part on the truck before you start burning them."
+            : "Move to next week.";
         }
         const loanBtn = getEl("openStoreBtn");
         const totalLoan = state.bankLoanBalance + state.sharkLoanBalance;
