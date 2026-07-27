@@ -1,4 +1,4 @@
-# Review 002 — Play the season before adding a fourth system
+# Review 003 — Play the season before adding a fourth system
 
 - **Date:** 2026-07-23
 - **Proposed by:** The chair (board convened on "what's next" after 0.44.0)

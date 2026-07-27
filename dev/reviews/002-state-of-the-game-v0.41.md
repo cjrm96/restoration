@@ -1,4 +1,4 @@
-# Review 001 — State of the Game at v0.41.0, and the week's direction
+# Review 002 — State of the Game at v0.41.0, and the week's direction
 
 - **Date:** 2026-07-23
 - **Proposed by:** The chair (board convened on the whole game, not a single feature)
