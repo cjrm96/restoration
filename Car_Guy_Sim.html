@@ -10034,7 +10034,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.46.0";
+      const GAME_VERSION = "0.47.0";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -19996,6 +19996,9 @@ addEventListener("DOMContentLoaded",function(){
         { id: "yard_dog", emoji: "🐕", name: "Yard Dog", desc: "Ten scavenge trips. You've got a favorite aisle.", test: () => (state.scavengeTripsTaken || 0) >= 10 },
         { id: "junkyard_regular", emoji: "⚙️", name: "Junkyard Regular", desc: "Twenty-five scavenge runs. The yard dog knows you.", test: () => (state.scavengeTripsTaken || 0) >= 25 },
         { id: "master_wrench", emoji: "🛠️", name: "Master Wrench", desc: "Two hundred and fifty parts installed by hand.", test: () => (state.installsDone || 0) >= 250 },
+        { id: "gold_ratchet", emoji: "🥇", name: "Fourteen Karat Flex", desc: "Bought the gold ratchet. Fourteen thousand dollars. Turns bolts exactly as well as the $12 one.", test: () => (state.ownedTools || []).includes("t_gold") },
+        { id: "gold_priorities", emoji: "🫠", name: "Priorities", desc: "Bought the gold ratchet while the truck was still on jack stands. She'll run eventually. The ratchet looks incredible.", test: () => (state.ownedTools || []).includes("t_gold") && !(state.cars || []).some((c) => roadworthy(c)) },
+        { id: "gold_on_credit", emoji: "💳", name: "Financed the Flex", desc: "Bought the gold ratchet with money you'd borrowed. The bank does not know what it paid for.", test: () => (state.ownedTools || []).includes("t_gold") && ((state.bankLoanBalance || 0) > 0 || (state.sharkLoanBalance || 0) > 0 || (state.toolTruckBalance || 0) > 0) },
         { id: "hundred_weeks", emoji: "📅", name: "A Hundred Weeks Deep", desc: "A hundred weeks in the garage. Time is a flat circle of bolts.", test: () => (state.totalWeeks || 0) >= 100 },
         { id: "legacy_filling", emoji: "🧱", name: "Legacy Wall Filling Up", desc: "Five finished builds enshrined on the Legacy Wall.", test: () => (state.legacyBuilds || []).length >= 5 },
         { id: "flat_out", emoji: "🖤", name: "Flat Out", desc: "Ran a matte finish. Bold. Divisive. Yours.", test: () => (state.cars || []).some((c) => c.finish === "matte") },
