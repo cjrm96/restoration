@@ -10034,7 +10034,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.48.0";
+      const GAME_VERSION = "0.48.1";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -20044,12 +20044,33 @@ addEventListener("DOMContentLoaded",function(){
         { id: "cash_cushion", emoji: "🛋️", name: "Cash Cushion", desc: "A quarter million in the bank, just sitting there.", test: () => (state.money || 0) >= 250000 },
         { id: "two_hundred_weeks", emoji: "⏳", name: "Two Hundred Weeks", desc: "Two hundred weeks in the garage. A whole era.", test: () => (state.totalWeeks || 0) >= 200 },
       ];
+      // Still sitting on the title screen? The splash element marks itself
+      // handed off the moment Start Wrenchin' runs and removes itself after the
+      // fade, so its presence without that mark means the player has not
+      // entered the game yet. A returning save would otherwise pop banners over
+      // the title card before the player has pressed anything.
+      function onTitleScreen() {
+        const sp = document.getElementById("splash");
+        return !!sp && sp.dataset.handoff !== "1";
+      }
       function checkAchievements() {
         if (!state.tutorialComplete) return;
-        // Hold achievement banners while a show result / cinematic / cutscene
-        // is on screen, a 'podiumed at a show' pop before the player sees
-        // their placement spoils the reveal. They fire once back in the garage.
+        // Hold achievement banners while anything else owns the screen. A
+        // 'podiumed at a show' pop before the player sees their placement
+        // spoils the reveal, and a banner sliding in over a story beat or the
+        // title card breaks the moment. Nothing is lost by waiting: this runs
+        // every render, so held banners fire the instant the screen is the
+        // player's again.
+        if (onTitleScreen()) return;
         if (state.view === "result" || state.showLoading || state.showStage || state.cutscene) return;
+        if (
+          state.pendingScene ||
+          state.pendingEvent ||
+          state.pendingUnlock ||
+          state.pendingVictory ||
+          state.seasonWrap
+        )
+          return;
         if (!state.achievementsUnlocked) state.achievementsUnlocked = {};
         if (!state.stylesRestored) state.stylesRestored = {};
         (state.cars || []).forEach((c) => {
