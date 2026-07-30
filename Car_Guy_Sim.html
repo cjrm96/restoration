@@ -10034,7 +10034,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.48.1";
+      const GAME_VERSION = "0.48.2";
 
       const getEl = (id) => document.getElementById(id);
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
@@ -18454,14 +18454,16 @@
         "svg.querySelectorAll('rect[fill=\\\"#ffcc00\\\"][opacity]').forEach(function(s,i){s.style.animation=\"cga-sun \"+(6+i*2)+\"s ease-in-out infinite\"});" +
         "if(OUT){var bird=el(\"g\",{fill:\"#20293a\"});bird.appendChild(el(\"rect\",{x:\"0\",y:\"52\",width:\"5\",height:\"2\"}));bird.appendChild(el(\"rect\",{x:\"4\",y:\"50\",width:\"3\",height:\"2\"}));bird.style.animation=\"cga-bird 34s linear infinite\";svg.appendChild(bird);}" +
         "if(PCAR){var road=null,roads=svg.querySelectorAll('rect[fill=\\\"#2d3142\\\"]');roads.forEach(function(rr){var yy=+rr.getAttribute('y'),ww=+rr.getAttribute('width');if(yy>=150&&ww>=380&&(!road||ww>+road.getAttribute('width')))road=rr;});" +
-        "if(road){var ry=+road.getAttribute(\"y\");var cg=el(\"g\",{});" +
-        "cg.appendChild(el(\"rect\",{x:\"0\",y:ry+22,width:\"74\",height:\"16\",fill:\"#823c3c\"}));" +
-        "cg.appendChild(el(\"rect\",{x:\"15\",y:ry+11,width:\"42\",height:\"13\",fill:\"#823c3c\"}));" +
-        "cg.appendChild(el(\"rect\",{x:\"21\",y:ry+14,width:\"30\",height:\"8\",fill:\"#26313d\"}));" +
-        "cg.appendChild(el(\"rect\",{x:\"1\",y:ry+25,width:\"3\",height:\"5\",fill:\"#e0655a\"}));" +
-        "cg.appendChild(el(\"rect\",{x:\"70\",y:ry+25,width:\"3\",height:\"5\",fill:\"#f4e2a0\"}));" +
-        "cg.appendChild(el(\"rect\",{x:\"10\",y:ry+36,width:\"15\",height:\"9\",fill:\"#14181f\"}));" +
-        "cg.appendChild(el(\"rect\",{x:\"50\",y:ry+36,width:\"15\",height:\"9\",fill:\"#14181f\"}));" +
+        "if(road){var ry=+road.getAttribute(\"y\");var cg=el(\"g\",{});var CS=1.45;" +
+        "var ig=el(\"g\",{transform:\"translate(\"+(37*(1-CS))+\",\"+((ry+45)*(1-CS))+\") scale(\"+CS+\")\"});" +
+        "ig.appendChild(el(\"rect\",{x:\"0\",y:ry+22,width:\"74\",height:\"16\",fill:\"#823c3c\"}));" +
+        "ig.appendChild(el(\"rect\",{x:\"15\",y:ry+11,width:\"42\",height:\"13\",fill:\"#823c3c\"}));" +
+        "ig.appendChild(el(\"rect\",{x:\"21\",y:ry+14,width:\"30\",height:\"8\",fill:\"#26313d\"}));" +
+        "ig.appendChild(el(\"rect\",{x:\"1\",y:ry+25,width:\"3\",height:\"5\",fill:\"#e0655a\"}));" +
+        "ig.appendChild(el(\"rect\",{x:\"70\",y:ry+25,width:\"3\",height:\"5\",fill:\"#f4e2a0\"}));" +
+        "ig.appendChild(el(\"rect\",{x:\"10\",y:ry+36,width:\"15\",height:\"9\",fill:\"#14181f\"}));" +
+        "ig.appendChild(el(\"rect\",{x:\"50\",y:ry+36,width:\"15\",height:\"9\",fill:\"#14181f\"}));" +
+        "cg.appendChild(ig);" +
         "cg.style.animation=\"cga-cross 23s linear infinite\";cg.style.animationDelay=\"5s\";svg.appendChild(cg);}}" +
         "}else{" +
         "for(var i=0;i<5;i++){var m=el(\"rect\",{x:70+i*130,y:60+(i%3)*26,width:\"2\",height:\"2\",fill:\"#efe2c6\",opacity:\"0\"});m.style.animation=\"cga-mote \"+(7+i*2)+\"s linear infinite\";m.style.animationDelay=(i*1.7)+\"s\";svg.appendChild(m)}" +
