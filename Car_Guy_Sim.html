@@ -328,6 +328,54 @@
         filter: saturate(0.35);
         cursor: not-allowed;
       }
+      /* A tab the player just earned arrives instead of appearing. The slot
+         opens empty, the icon flies out of the cut scene and drops into it,
+         and the tab pops in underneath. The dot stays lit until the first
+         visit, so the player is told where the thing lives and then gets to
+         walk over to it themselves. */
+      .tab.tab-arriving {
+        opacity: 0;
+        transform: scale(0.86);
+        pointer-events: none;
+      }
+      .tab.tab-landed {
+        animation: tabLand 560ms cubic-bezier(0.2, 1.5, 0.4, 1) both;
+      }
+      @keyframes tabLand {
+        0% { opacity: 0; transform: scale(0.86); box-shadow: 0 0 0 0 rgba(217, 162, 79, 0); }
+        38% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 24px 7px rgba(217, 162, 79, 0.55); }
+        100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(217, 162, 79, 0); }
+      }
+      .tab.tab-new {
+        border-color: rgba(217, 162, 79, 0.8);
+      }
+      .tab-new-dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        margin-left: 7px;
+        border-radius: 50%;
+        vertical-align: middle;
+        background: #e0b467;
+        animation: tabNewDot 1.8s ease-in-out infinite;
+      }
+      @keyframes tabNewDot {
+        0%, 100% { opacity: 0.4; box-shadow: 0 0 0 0 rgba(217, 162, 79, 0); }
+        50% { opacity: 1; box-shadow: 0 0 9px 2px rgba(217, 162, 79, 0.65); }
+      }
+      .unlock-flier {
+        position: fixed;
+        z-index: 2450;
+        pointer-events: none;
+        font-size: 34px;
+        line-height: 1;
+        filter: drop-shadow(0 5px 16px rgba(0, 0, 0, 0.7));
+        will-change: transform, opacity;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .tab.tab-landed { animation: none; }
+        .tab-new-dot { animation: none; opacity: 1; }
+      }
       .tab:hover:not(.active) {
         filter: brightness(1.1);
         color: #f0e0c0;
@@ -2245,6 +2293,24 @@
         color: #ddd0b6;
         line-height: 1.65;
         max-width: 540px;
+      }
+      /* The "and here is where it lives" line. Set apart from the story
+         copy because it is the one sentence the player needs to remember
+         after the art fades. */
+      .cs-home {
+        display: inline-block;
+        margin-top: 14px;
+        padding: 9px 14px;
+        max-width: 540px;
+        border-left: 3px solid #d8a24f;
+        background: linear-gradient(90deg, rgba(12, 9, 6, 0.92), rgba(12, 9, 6, 0.78));
+        border-radius: 0 6px 6px 0;
+        color: #f0d9a4;
+        font-size: 13.5px;
+        line-height: 1.55;
+        font-weight: bold;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
       }
       .cs-actions {
         margin-top: 18px;
@@ -9967,6 +10033,9 @@
         ROADWORTHY_STEERING = 25;
       const FUEL_PRICE = 4,
         MAX_FUEL = 60,
+        // What a new game starts with. Until it moves, there is nothing to
+        // read, so the fuel chip stays out of the way.
+        START_FUEL = 20,
         PAYCHECK_AMOUNT = 1000,
         PAYCHECK_CYCLE = 4;
 
@@ -10034,9 +10103,14 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.48.2";
+      const GAME_VERSION = "0.49.0";
 
       const getEl = (id) => document.getElementById(id);
+      // Which nav tab is currently mid-arrival, and the timers driving it.
+      // Declared up here because the modal gates read it long before the
+      // handoff code that owns it (see flyUnlockToTab).
+      let tabArriving = null;
+      let tabArrivalTimers = [];
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
       const TASK_WEEKS = { Budget: 1, Quality: 2, "Show Grade": 3 };
 
@@ -10046,7 +10120,7 @@
       function makeDefaultState() {
         return {
           money: 5000,
-          fuel: 20,
+          fuel: START_FUEL,
           fuelPurchase: 10,
           paycheckProgress: 0,
           week: 1,
@@ -10169,6 +10243,7 @@
           tutorialComplete: false,
           onboardStage: 0,
           pendingUnlock: null,
+          tabNew: null,
           tutorialStep: 0,
           sfxMuted: false,
           settings: {
@@ -12500,6 +12575,10 @@
           !!state.pendingEvent ||
           !!state.cutscene ||
           !!state.pendingUnlock ||
+          // The unlock icon is mid-flight to its new tab. Nothing new opens
+          // on top of it, or the one moment that teaches the player where a
+          // feature lives gets stepped on by the next queued scene.
+          !!tabArriving ||
           !!state.weekRecap ||
           state.view === "result" ||
           !!state.result ||
@@ -12552,6 +12631,7 @@
           !!state.pendingScene ||
           !!state.pendingEvent ||
           !!state.pendingUnlock ||
+          !!tabArriving ||
           !!state.pendingVictory ||
           !!state.cutscene ||
           !!state.showStage ||
@@ -17628,6 +17708,10 @@
         }
         const changed = v !== state.view;
         if (changed) state.phoneApp = "home";
+        // The dot on a freshly landed tab is a "you have not been here yet"
+        // marker, so walking in once puts it out.
+        if (state.tabNew === v || (v === "workshop" && state.tabNew === "garage"))
+          state.tabNew = null;
         state.view = v;
         // Every tab starts at the top, don't carry a deep build-screen
         // scroll over to Social (where the phone lives up top).
@@ -17788,11 +17872,11 @@
         const toneCls = tone === "blue" ? "hero-blue" : "";
         return `<div class="hero-panel ${toneCls} ${extraClass}">${kicker ? `<div class="hero-panel-kicker">${kicker}</div>` : ""}${title ? `<div class="hero-panel-title">${title}</div>` : ""}${sub ? `<div class="hero-panel-sub">${sub}</div>` : ""}${body}</div>`;
       }
-      function tab(label, active, onclick) {
+      function tab(label, active, onclick, attrs = "", extraClass = "", suffix = "") {
         const spaceIdx = label.indexOf(" ");
         const icon = spaceIdx === -1 ? label : label.slice(0, spaceIdx);
         const text = spaceIdx === -1 ? "" : label.slice(spaceIdx + 1);
-        return `<button class="tab ${active ? "active" : ""}" onclick="${onclick}">${icon}${text ? ` <span class="tab-label-text">${text}</span>` : ""}</button>`;
+        return `<button class="tab ${active ? "active" : ""}${extraClass}" onclick="${onclick}"${attrs ? " " + attrs : ""}>${icon}${text ? ` <span class="tab-label-text">${text}</span>` : ""}${suffix}</button>`;
       }
       function button(
         label,
@@ -20069,6 +20153,7 @@ addEventListener("DOMContentLoaded",function(){
           state.pendingScene ||
           state.pendingEvent ||
           state.pendingUnlock ||
+          tabArriving ||
           state.pendingVictory ||
           state.seasonWrap
         )
@@ -20148,7 +20233,8 @@ addEventListener("DOMContentLoaded",function(){
         if (
           !state.tutorialComplete || state.seasonWrap || state.pendingVictory ||
           state.showLoading || state.showStage || state.pendingScene ||
-          state.pendingEvent || state.showStore || state.pendingUnlock
+          state.pendingEvent || state.showStore || state.pendingUnlock ||
+          tabArriving
         )
           return false;
         const root = getEl("modalRoot");
@@ -20189,20 +20275,41 @@ addEventListener("DOMContentLoaded",function(){
       function onboardStageVal() {
         return typeof state.onboardStage === "number" ? state.onboardStage : 3;
       }
-      function tabUnlocked(id) {
+      // Two different kinds of closed, and they read differently on the bar.
+      // A tab the player has not earned yet gets no slot at all: week one is
+      // a single Build tab, and the bar grows a tab at a time as the game
+      // opens up. A tab that is earned but shut for now (Compete in the
+      // off-season) keeps its slot and says so, because the player already
+      // knows it is there and would notice it missing.
+      function tabEarned(id) {
         const s = onboardStageVal();
         if (id === "workshop" || id === "garage") return true;
         if (id === "career" || id === "legacy") return s >= 1;
         if (id === "dealership") return s >= 2;
-        if (id === "shows") return s >= 3 && !inPreSeason();
+        if (id === "shows") return s >= 3;
         return true;
       }
+      function tabUnlocked(id) {
+        if (id === "shows") return tabEarned("shows") && !inPreSeason();
+        return tabEarned(id);
+      }
+      // The slot is held back while the unlock cut scene is still up so the
+      // flying icon has somewhere empty to land when it closes.
+      function tabAwaitingArrival(id) {
+        return !!(state.pendingUnlock && state.pendingUnlock.tab === id);
+      }
+      // Each unlock says three things: what just opened, why it matters, and
+      // where it now lives. The last one is the part players forget, so it
+      // gets its own line and the icon flies there when the card closes.
       const ONBOARD_UNLOCKS = {
-        1: { tab: "career", emoji: "📱", title: "Your phone is blowing up", cta: "Open Social →",
+        1: { tab: "career", emoji: "📱", title: "Your phone is blowing up", cta: "Back to the truck",
+             home: "The phone rides on the Social tab from here on, top of the screen.",
              text: "Real restorations take real shop time from here on out. While the wrenches turn, the scene wants to see the build, post to Snapgram, CarTok, and MotorTube for cash and followers. Get big enough and sponsors come to you." },
-        2: { tab: "dealership", emoji: "📘", title: "The Marketplace is open", cta: "Open the Marketplace →",
+        2: { tab: "dealership", emoji: "📘", title: "The Marketplace is open", cta: "Back to the truck",
+             home: "The listings live on the Marketplace tab from here on, top of the screen.",
              text: "She runs. Word travels fast when a dead truck comes back to life. Now the money game opens up two ways: sell take-off parts (and cheap swap-meet scores) for the spread, or list a whole build, rough or finished, and let buyers bid. Buy low, restore, sell high. Saturday scavenge trips keep the donor parts cheap." },
-        3: { tab: "shows", emoji: "🏁", title: "Show season is calling", cta: "Open Compete →",
+        3: { tab: "shows", emoji: "🏁", title: "Show season is calling", cta: "Back to the truck",
+             home: "The show calendar lives on the Compete tab from here on, top of the screen.",
              text: "The listings made the rounds and the build has a name now, time to see how she stacks up in person. Ease in at a Cars & Coffee morning, climb through Local and Regional shows, and chase the National title before the season ends. Shows burn fuel to attend, so keep the tank topped, and word around the scene is it takes a 90-plus build to take Nationals." },
       };
       function checkOnboardUnlocks() {
@@ -20460,12 +20567,103 @@ addEventListener("DOMContentLoaded",function(){
           : workshopVibeDefault(tier);
       }
 
-      function acknowledgeUnlock(go) {
+      // The handoff. A player who gets teleported into a new tab has learned
+      // that the thing exists but not where it lives, so nothing carries over
+      // to the next time they want it. Instead the icon leaves the cut scene,
+      // flies to the spot on the nav bar that is now its home, and drops in.
+      // The player stays on the shop floor with a lit tab waiting for them.
+      function clearTabArrival() {
+        tabArrivalTimers.forEach(clearTimeout);
+        tabArrivalTimers = [];
+        tabArriving = null;
+        document.querySelectorAll(".unlock-flier").forEach((n) => n.remove());
+      }
+      function acknowledgeUnlock() {
         const u = state.pendingUnlock;
         state.pendingUnlock = null;
-        saveGame();
-        if (go && u) setView(u.tab);
-        else requestRender("full");
+        if (u) {
+          state.tabNew = u.tab;
+          saveGame();
+          flyUnlockToTab(u.tab, u.emoji);
+        } else {
+          saveGame();
+          requestRender("full");
+        }
+      }
+      // Fly the unlock's icon from the middle of the screen into its new slot
+      // on the nav bar. The slot renders empty first so the icon has a real
+      // target to land in; if anything about the measurement fails the tab
+      // still shows up, just without the trip.
+      function flyUnlockToTab(tabId, emoji) {
+        clearTabArrival();
+        tabArriving = tabId;
+        requestRender("full");
+        const finish = () => {
+          const el = document.querySelector(`.tab[data-tab="${tabId}"]`);
+          tabArriving = null;
+          // The flight held the modal layer shut, so anything that queued up
+          // behind it gets its turn now rather than waiting for the player's
+          // next action to shake it loose.
+          processEventQueue();
+          if (el) {
+            el.classList.remove("tab-arriving");
+            el.classList.add("tab-landed");
+            tabArrivalTimers.push(
+              setTimeout(() => {
+                el.classList.remove("tab-landed");
+                requestRender("full");
+              }, 620),
+            );
+          } else {
+            requestRender("full");
+          }
+          playSfx("success");
+        };
+        // Measure after the render has painted the (invisible) slot.
+        requestAnimationFrame(() => {
+          const target = document.querySelector(`.tab[data-tab="${tabId}"]`);
+          const reduced =
+            window.matchMedia &&
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          if (!target || reduced || typeof target.animate !== "function") {
+            finish();
+            return;
+          }
+          const r = target.getBoundingClientRect();
+          const flier = document.createElement("div");
+          flier.className = "unlock-flier";
+          flier.textContent = emoji || "✨";
+          document.body.appendChild(flier);
+          const fr = flier.getBoundingClientRect();
+          const startX = window.innerWidth / 2 - fr.width / 2;
+          const startY = window.innerHeight * 0.46 - fr.height / 2;
+          flier.style.left = `${startX}px`;
+          flier.style.top = `${startY}px`;
+          const dx = r.left + r.width / 2 - (startX + fr.width / 2);
+          const dy = r.top + r.height / 2 - (startY + fr.height / 2);
+          const anim = flier.animate(
+            [
+              { transform: "translate(0px, 0px) scale(1.35)", opacity: 0 },
+              { transform: "translate(0px, 0px) scale(1.35)", opacity: 1, offset: 0.12 },
+              {
+                transform: `translate(${dx * 0.55}px, ${dy * 0.42 - 46}px) scale(1.15)`,
+                opacity: 1,
+                offset: 0.62,
+              },
+              { transform: `translate(${dx}px, ${dy}px) scale(0.55)`, opacity: 0.9 },
+            ],
+            { duration: 900, easing: "cubic-bezier(0.45, 0.05, 0.3, 1)", fill: "forwards" },
+          );
+          playSfx("swoosh");
+          const land = () => {
+            flier.remove();
+            finish();
+          };
+          anim.onfinish = land;
+          // Belt and braces: if the animation never fires onfinish (tab
+          // backgrounded mid-flight), land it on a timer anyway.
+          tabArrivalTimers.push(setTimeout(land, 1150));
+        });
       }
       function lockedTabNudge() {
         const s = onboardStageVal();
@@ -20483,7 +20681,7 @@ addEventListener("DOMContentLoaded",function(){
         if (!u) return false;
         const csArt = CUTSCENE_ART[UNLOCK_CS_ART[u.tab]];
         if (csArt) {
-          root.innerHTML = `<div class="modal modal-cine"><div class="cs-art cs-drift-a" style="background-image:url('${csArt}')"></div><div class="cs-grain"></div><div class="cs-vignette"></div><div class="cs-bar cs-bar-top"></div><div class="cs-bar cs-bar-bot"></div><div class="cs-caption"><div class="cs-kicker">New unlock</div><div class="cs-title">${u.emoji} ${u.title}</div><div class="cs-sub">${u.text}</div><div class="cs-actions"><button class="notice-primary" onclick="acknowledgeUnlock(true)">${u.cta}</button><button class="tutorial-skip" onclick="acknowledgeUnlock(false)">Keep wrenching</button></div></div></div>`;
+          root.innerHTML = `<div class="modal modal-cine"><div class="cs-art cs-drift-a" style="background-image:url('${csArt}')"></div><div class="cs-grain"></div><div class="cs-vignette"></div><div class="cs-bar cs-bar-top"></div><div class="cs-bar cs-bar-bot"></div><div class="cs-caption"><div class="cs-kicker">New unlock</div><div class="cs-title">${u.emoji} ${u.title}</div><div class="cs-sub">${u.text}</div>${u.home ? `<div class="cs-home">${u.emoji} ${u.home}</div>` : ""}<div class="cs-actions"><button class="notice-primary" onclick="acknowledgeUnlock()">${u.cta}</button></div></div></div>`;
           return true;
         }
         root.innerHTML = popupCard({
@@ -20491,10 +20689,19 @@ addEventListener("DOMContentLoaded",function(){
           kicker: "New Unlock",
           emoji: u.emoji,
           title: u.title,
-          text: u.text,
-          actions: `<button class="notice-primary" onclick="acknowledgeUnlock(true)">${u.cta}</button><div style="margin-top:10px"><button class="tutorial-skip" onclick="acknowledgeUnlock(false)">Keep wrenching</button></div>`,
+          text: u.text + (u.home ? `<div class="cs-home">${u.emoji} ${u.home}</div>` : ""),
+          actions: `<button class="notice-primary" onclick="acknowledgeUnlock()">${u.cta}</button>`,
         });
         return true;
+      }
+
+      // While the unlock icon is flying to its tab, the modal layer stays
+      // empty. A scene queued earlier in the same beat is still pending and
+      // would otherwise pop up mid-flight, which is the exact pile-up this
+      // whole pass exists to stop. It renders a moment later, once the tab
+      // has landed and the player has seen where the thing lives.
+      function handoffHoldsScreen() {
+        return !!tabArriving;
       }
 
       function renderNoticeModal() {
@@ -22907,9 +23114,47 @@ addEventListener("DOMContentLoaded",function(){
         achBannerQueue.push(a);
         if (achBannerQueue.length === 1) showNextAchBanner();
       }
+      // Nothing lands on top of an intro beat. The tutorial card, the bedside
+      // box, and the unlock cut scenes each get the screen to themselves, so
+      // the ambient layers (radio bar, achievement banners) wait their turn
+      // rather than stacking on the one thing the player is reading.
+      function introBeatOnScreen() {
+        return !!(
+          !state.tutorialComplete ||
+          state.pendingScene ||
+          state.pendingUnlock ||
+          tabArriving ||
+          state.cutscene
+        );
+      }
+      let achBannerTimers = [];
+      let achBannerShowing = false;
+      function clearAchBannerTimers() {
+        achBannerTimers.forEach(clearTimeout);
+        achBannerTimers = [];
+      }
+      // A beat took the screen while a banner was already up. Pull the banner
+      // down and leave it at the head of the queue so it replays in full once
+      // the player has the screen back, rather than burning its five seconds
+      // behind a cut scene nobody can read it over.
+      function suspendAchBanner() {
+        if (!achBannerShowing) return;
+        clearAchBannerTimers();
+        achBannerShowing = false;
+        const root = document.getElementById("achBannerRoot");
+        if (root) root.innerHTML = "";
+        achBannerTimers.push(setTimeout(showNextAchBanner, 900));
+      }
       function showNextAchBanner() {
         const a = achBannerQueue[0];
-        if (!a) return;
+        if (!a || achBannerShowing) return;
+        // Hold, do not drop: the queue keeps its place and replays when the
+        // screen is the player's again.
+        if (introBeatOnScreen()) {
+          clearAchBannerTimers();
+          achBannerTimers.push(setTimeout(showNextAchBanner, 900));
+          return;
+        }
         let root = document.getElementById("achBannerRoot");
         if (!root) {
           root = document.createElement("div");
@@ -22917,15 +23162,22 @@ addEventListener("DOMContentLoaded",function(){
           document.body.appendChild(root);
         }
         root.innerHTML = `<div class="ach-banner"><div class="ach-banner-emoji">${a.emoji || "🏆"}</div><div><div class="ach-banner-kicker">Achievement unlocked</div><div class="ach-banner-name">${a.name}</div><div class="ach-banner-desc">${a.desc}</div></div></div>`;
-        setTimeout(() => {
-          const el = root.firstChild;
-          if (el) el.classList.add("ach-banner-out");
+        achBannerShowing = true;
+        clearAchBannerTimers();
+        achBannerTimers.push(
           setTimeout(() => {
-            root.innerHTML = "";
-            achBannerQueue.shift();
-            showNextAchBanner();
-          }, 420);
-        }, 5200);
+            const el = root.firstChild;
+            if (el) el.classList.add("ach-banner-out");
+            achBannerTimers.push(
+              setTimeout(() => {
+                root.innerHTML = "";
+                achBannerShowing = false;
+                achBannerQueue.shift();
+                showNextAchBanner();
+              }, 420),
+            );
+          }, 5200),
+        );
       }
 
       function pushNotice(text, tone) {
@@ -23008,8 +23260,18 @@ addEventListener("DOMContentLoaded",function(){
             trendChip.style.color = trend > 0 ? "#9fd18e" : "#e07a7a";
           }
         }
-        getEl("fuelChip").textContent = `⛽ ${state.fuel}/${MAX_FUEL}`;
-        getEl("followersChip").textContent = `📣 ${fmtF(state.followers)}`;
+        // A readout the player cannot move yet is just decoration competing
+        // with the car. Fuel only matters once there is somewhere to drive
+        // (Compete), followers only once there is somewhere to post (Social),
+        // so each chip shows up with the system that feeds it.
+        const fuelChip = getEl("fuelChip");
+        fuelChip.textContent = `⛽ ${state.fuel}/${MAX_FUEL}`;
+        fuelChip.style.display =
+          tabEarned("shows") || state.fuel !== START_FUEL ? "" : "none";
+        const followersChip = getEl("followersChip");
+        followersChip.textContent = `📣 ${fmtF(state.followers)}`;
+        followersChip.style.display =
+          tabEarned("career") || state.followers > 0 ? "" : "none";
         const advanceWeekTopBtn = getEl("advanceWeekTopBtn");
         if (advanceWeekTopBtn) {
           const notYet = !advanceWeekUnlocked();
@@ -23019,19 +23281,28 @@ addEventListener("DOMContentLoaded",function(){
             state.view === "result" || state.showLoading || state.showStage
           );
           advanceWeekTopBtn.disabled = advanceBlocked;
-          // Before the first install it is not just disabled, it says why, and
-          // it drops out of the primary gold styling so the eye goes to the
-          // build instead of to the one button that would waste a week.
-          advanceWeekTopBtn.classList.toggle("btn-quiet", notYet);
-          advanceWeekTopBtn.textContent = notYet
-            ? "⏩ Advance Week (turn a bolt first)"
-            : "⏩ Advance Week";
-          advanceWeekTopBtn.title = notYet
-            ? "The season is only 22 weeks. Get the first part on the truck before you start burning them."
-            : "Move to next week.";
+          // Before the first install it does not sit there greyed out with a
+          // scolding label, it simply is not there. The tutorial card already
+          // asks for the first bolt, and a disabled button the player cannot
+          // use still costs them a look. It arrives the moment it works.
+          advanceWeekTopBtn.style.display = notYet ? "none" : "";
+          advanceWeekTopBtn.classList.remove("btn-quiet");
+          advanceWeekTopBtn.textContent = "⏩ Advance Week";
+          advanceWeekTopBtn.title = "Move to next week.";
         }
         const loanBtn = getEl("openStoreBtn");
         const totalLoan = state.bankLoanBalance + state.sharkLoanBalance;
+        // The pawn desk and the shark should not be the second thing a player
+        // sees. Week one starts with five grand against an eighty dollar job,
+        // so the desk stays shut until the money game is actually open
+        // (Marketplace), the player is genuinely short, or they already owe.
+        const loansRelevant =
+          totalLoan > 0 ||
+          (state.toolTruckBalance || 0) > 0 ||
+          (state.ringPawnBalance || 0) > 0 ||
+          tabEarned("dealership") ||
+          (state.money || 0) < 400;
+        loanBtn.style.display = loansRelevant ? "" : "none";
         loanBtn.textContent =
           totalLoan > 0
             ? `Loans $${fmt(totalLoan)}`
@@ -23045,6 +23316,14 @@ addEventListener("DOMContentLoaded",function(){
         const tabsSignature = [
           state.view,
           state.carId,
+          // The bar itself changes shape as the game opens up, so what is
+          // earned, arriving, or still wearing its new dot is part of the
+          // signature, not just which tab is active.
+          onboardStageVal(),
+          inPreSeason() ? "pre" : "",
+          state.pendingUnlock ? "u:" + state.pendingUnlock.tab : "",
+          tabArriving ? "a:" + tabArriving : "",
+          state.tabNew ? "n:" + state.tabNew : "",
           state.cars
             .map((c) => `${c.id}:${c.year}:${c.make}:${c.emoji}`)
             .join(","),
@@ -23098,8 +23377,12 @@ addEventListener("DOMContentLoaded",function(){
           ["shows", "🏁 Compete"],
         ]
           .map(([id, label]) => {
+            // Not earned yet, or held back for the arrival animation: no slot.
+            if (!tabEarned(id) || tabAwaitingArrival(id)) return "";
             if (!tabUnlocked(id))
               return `<button class="tab locked" onclick="lockedTabNudge()">🔒 ${label.replace(/^[^ ]+ /, "")}</button>`;
+            const arriving = tabArriving === id;
+            const isNew = state.tabNew === id;
             return tab(
               label,
               id === "workshop"
@@ -23108,6 +23391,9 @@ addEventListener("DOMContentLoaded",function(){
                   ? state.view === "career" || state.view === "legacy"
                   : state.view === id,
               `setView('${id}')`,
+              `data-tab="${id}"`,
+              `${arriving ? " tab-arriving" : ""}${isNew ? " tab-new" : ""}`,
+              isNew && !arriving ? `<span class="tab-new-dot"></span>` : "",
             );
           })
           .join("");
@@ -23121,6 +23407,7 @@ addEventListener("DOMContentLoaded",function(){
           state.tutorialComplete ? "" : "tut:" + (state.tutorialStep || 0),
           state.pendingVictory ? "victory:" + (state.victoryStage || "pan") : "",
           state.pendingUnlock ? "unlock:" + state.pendingUnlock.tab : "",
+          tabArriving ? "fly:" + tabArriving : "",
           state.weekRecap ? "wr:" + state.weekRecap.week : "",
           state.showLoading ? 1 : 0,
           state.showStage || "",
@@ -23139,6 +23426,8 @@ addEventListener("DOMContentLoaded",function(){
 
       function renderModalLayer(force = false) {
         const modalRoot = getEl("modalRoot");
+        // If a beat just took the screen, any banner already up steps aside.
+        if (introBeatOnScreen()) suspendAchBanner();
         const nextModalSignature = getModalLayerSignature();
         const signatureChanged = nextModalSignature !== modalLayerSignature;
         // Marketplace popup lives in its own root and self-dedupes,
@@ -23152,7 +23441,7 @@ addEventListener("DOMContentLoaded",function(){
         if (!renderCheatModal()) {
           if (!renderSettingsModal()) {
             if (!renderTutorialModal()) {
-              if (!renderUnlockModal()) {
+              if (!renderUnlockModal() && !handoffHoldsScreen()) {
               if (!renderVictoryModal()) {
                 if (!renderShowCinematicModal()) {
                   if (!renderPendingSceneModal()) {
@@ -23702,6 +23991,13 @@ addEventListener("DOMContentLoaded",function(){
       function startWorldTicker() {
         const ticker = getEl("worldTicker");
         if (!ticker) return;
+        // The radio comes on once the player is actually in the garage. A
+        // full-width strip scrolling town gossip under the tutorial card is
+        // one more voice in a room that already has too many.
+        if (introBeatOnScreen()) {
+          setTimeout(startWorldTicker, 900);
+          return;
+        }
         ticker.hidden = false;
         document.body.classList.add("ticker-active");
         applyTickerExpanded();
@@ -24088,7 +24384,7 @@ addEventListener("DOMContentLoaded",function(){
             advanceTutorial();
           } else if (state.pendingUnlock) {
             e.preventDefault();
-            acknowledgeUnlock(true);
+            acknowledgeUnlock();
           } else if (state.weekRecap) {
             e.preventDefault();
             dismissWeekRecap();

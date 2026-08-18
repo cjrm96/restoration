@@ -149,9 +149,72 @@ const pass = (msg) => console.log("✓", msg);
   await page.waitForTimeout(300);
   let unlock = await page.evaluate(() => state.pendingUnlock && state.pendingUnlock.tab);
   if (unlock !== "career") fail("Social did not unlock after 3 installs (got " + unlock + ")");
+  // The nav bar grows a tab at a time: a tab the player has not earned gets
+  // no slot at all, and the slot for the one being unlocked stays empty until
+  // the icon has flown into it. Both must hold while the cut scene is up.
+  const barDuringUnlock = await page.evaluate(() =>
+    [...document.querySelectorAll("#mainTabs .tab")].map((t) => t.dataset.tab || "locked"),
+  );
+  if (barDuringUnlock.length !== 1 || barDuringUnlock[0] !== "workshop")
+    fail("nav bar during the Social unlock should be Build alone, got " + JSON.stringify(barDuringUnlock));
   await page.keyboard.press("Enter");
   await page.waitForTimeout(300);
   pass("3 installs → Social unlock");
+
+  // ── the handoff: the unlock icon flies from the cut scene to the nav bar
+  // and the tab lands there wearing a "not visited yet" dot, instead of the
+  // player being teleported into the tab. Nothing else may open mid-flight.
+  const midFlight = await page.evaluate(() => ({
+    flying: !!document.querySelector(".unlock-flier"),
+    modalEmpty: !document.getElementById("modalRoot").innerHTML,
+    view: state.view,
+  }));
+  if (!midFlight.flying) fail("no unlock icon in flight after the cut scene closed");
+  if (!midFlight.modalEmpty) fail("a modal opened on top of the unlock flight");
+  if (midFlight.view !== "workshop") fail("the handoff navigated away from the garage (got " + midFlight.view + ")");
+  await page.waitForTimeout(1400);
+  const landed = await page.evaluate(() => ({
+    tabs: [...document.querySelectorAll("#mainTabs .tab")].map((t) => t.dataset.tab),
+    dot: !!document.querySelector('.tab[data-tab="career"] .tab-new-dot'),
+    fliers: document.querySelectorAll(".unlock-flier").length,
+    tabNew: state.tabNew,
+    view: state.view,
+  }));
+  if (!landed.tabs.includes("career")) fail("Social tab never landed on the nav bar");
+  if (!landed.dot || landed.tabNew !== "career") fail("landed tab is missing its new-visit dot");
+  if (landed.fliers) fail("flight icon was left on the page");
+  if (landed.view !== "workshop") fail("player did not stay in the garage after the handoff");
+  // Walking into the tab once puts the dot out.
+  await page.evaluate(() => setView("career"));
+  await page.waitForTimeout(250);
+  const visited = await page.evaluate(() => ({ tabNew: state.tabNew, dot: !!document.querySelector(".tab-new-dot") }));
+  if (visited.tabNew || visited.dot) fail("new-visit dot survived the first visit");
+  await page.evaluate(() => setView("workshop"));
+  await page.waitForTimeout(250);
+  pass("unlock handoff: icon flies to its tab, dot clears on first visit");
+
+  // ── one thing at a time: an achievement banner that is already up when a
+  // beat takes the screen steps aside and replays in full afterwards, rather
+  // than burning its five seconds behind a cut scene. ──
+  await page.evaluate(() => {
+    // Clear whatever the unlock beat left pending so the banner has the
+    // screen to itself for this check.
+    state.pendingScene = null; state.pendingEvent = null; state.noticeQueue = []; state.eventQueue = [];
+    state.cutscene = null; state.pendingUnlock = null; clearTabArrival(); render("full");
+    achBannerQueue.length = 0; achievementBanner({ emoji: "🏆", name: "QA Beat", desc: "test" });
+  });
+  await page.waitForTimeout(400);
+  const bannerSeen = () => page.evaluate(() => !!document.querySelector("#achBannerRoot .ach-banner"));
+  if (!(await bannerSeen())) fail("achievement banner never showed");
+  await page.evaluate(() => { state.pendingScene = { id: "qa", title: "QA", emoji: "🔧", text: "beat", choices: [{ label: "ok" }] }; render("full"); });
+  await page.waitForTimeout(400);
+  if (await bannerSeen()) fail("achievement banner stayed up on top of a beat");
+  if ((await page.evaluate(() => achBannerQueue.length)) !== 1) fail("suspended banner was dropped instead of re-queued");
+  await page.evaluate(() => { state.pendingScene = null; render("full"); });
+  await page.waitForTimeout(1500);
+  if (!(await bannerSeen())) fail("suspended banner never replayed after the beat cleared");
+  await page.evaluate(() => { achBannerQueue.length = 0; clearAchBannerTimers(); achBannerShowing = false; const r = document.getElementById("achBannerRoot"); if (r) r.innerHTML = ""; });
+  pass("achievement banners step aside for a beat, then replay");
 
   // ── roadworthy → Marketplace unlock ──
   await page.evaluate(() => {
@@ -165,7 +228,11 @@ const pass = (msg) => console.log("✓", msg);
   unlock = await page.evaluate(() => state.pendingUnlock && state.pendingUnlock.tab);
   if (unlock !== "dealership") fail("Marketplace did not unlock at roadworthy (got " + unlock + ")");
   await page.keyboard.press("Enter");
-  await page.waitForTimeout(300);
+  // The handoff flight holds the modal layer shut while it plays, so give it
+  // time to land before driving the next step.
+  await page.waitForTimeout(1500);
+  if (!(await page.evaluate(() => [...document.querySelectorAll("#mainTabs .tab")].some((t) => t.dataset.tab === "dealership"))))
+    fail("Marketplace tab never landed on the nav bar");
   pass("roadworthy → Marketplace unlock");
 
   // ── sim expansion (v0.34): the 4 new systems are real judged stats.
@@ -229,7 +296,7 @@ const pass = (msg) => console.log("✓", msg);
   // ── buyer vignettes on selling a build (mirror of the seller beats), one per
   // overall tier, and milestone-tool beats (first welder/hoist/booth). ──
   const beatsOk = await page.evaluate(() => {
-    const clr = () => { state.pendingScene = null; state.pendingEvent = null; state.weekRecap = null; state.pendingRecap = null; state.noticeQueue = []; state.eventQueue = []; state.showLoading = false; state.showStage = null; state.cutscene = null; state.pendingUnlock = null; state.pendingCarOffer = null; };
+    const clr = () => { state.pendingScene = null; state.pendingEvent = null; state.weekRecap = null; state.pendingRecap = null; state.noticeQueue = []; state.eventQueue = []; state.showLoading = false; state.showStage = null; state.cutscene = null; state.pendingUnlock = null; state.pendingCarOffer = null; clearTabArrival(); };
     state.firstCarSaleShown = true; // exercise the recurring buyer path, not the one-time first-sale beat
     const tiers = { flip: 40, mid: 68, show: 92 };
     for (const [tier, ov] of Object.entries(tiers)) {
@@ -357,8 +424,14 @@ const pass = (msg) => console.log("✓", msg);
     state.eventQueue = []; state.pendingScene = { id: "qa", choices: [] };
     promoteRecapIfClear();
     if (state.weekRecap) return "recap promoted while a scene was on screen";
-    // Everything clear → recap finally surfaces.
+    // An unlock icon still flying to its tab blocks promotion too, the same
+    // way a live scene does: the handoff owns the screen until it lands.
     state.pendingScene = null;
+    flyUnlockToTab("career", "📱");
+    promoteRecapIfClear();
+    if (state.weekRecap) return "recap promoted while the unlock handoff was mid-flight";
+    // Everything clear → recap finally surfaces.
+    clearTabArrival();
     promoteRecapIfClear();
     if (!state.weekRecap) return "recap never surfaced after everything cleared";
     if (state.pendingRecap) return "pendingRecap not cleared after promotion";
