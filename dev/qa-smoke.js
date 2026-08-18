@@ -216,6 +216,116 @@ const pass = (msg) => console.log("✓", msg);
   await page.evaluate(() => { achBannerQueue.length = 0; clearAchBannerTimers(); achBannerShowing = false; const r = document.getElementById("achBannerRoot"); if (r) r.innerHTML = ""; });
   pass("achievement banners step aside for a beat, then replay");
 
+  // ── the hide-don't-lock rule, one level down. The nav bar drops tabs the
+  // player has not earned; the same has to hold for the pill strips inside
+  // the tabs, or the first visit to Marketplace and Compete is three dead
+  // buttons apiece. Temporarily-shut things (one car in the garage) still
+  // keep their pill and say why. ──
+  // These three checks drive the onboarding stage around to inspect screens
+  // the player has not reached yet, so the suite's own progression is stashed
+  // here and put back before the run continues.
+  const onboardStash = await page.evaluate(() => ({
+    stage: state.onboardStage, view: state.view, sub: state.shopSub,
+    cat: state.shopCat, visited: { ...(state.tabsVisited || {}) },
+  }));
+  const pillsOk = await page.evaluate(() => {
+    const stash = state.onboardStage;
+    state.onboardStage = 2;
+    if (marketTabEarned("trip") || marketTabEarned("sellcar"))
+      return "Road Trip / Sell Cars are earned before show season";
+    if (!marketTabEarned("sell")) return "Sell Tools & Parts must always be open";
+    state.onboardStage = 3;
+    if (!marketTabEarned("trip") || !marketTabEarned("sellcar") || !marketTabEarned("buy"))
+      return "the rest of the Marketplace did not open with show season";
+    // Empty garage keeps the lot reachable or the player is stranded.
+    const cars = state.cars;
+    state.cars = []; state.onboardStage = 0;
+    if (!marketTabEarned("buy")) return "the lot must stay reachable with an empty garage";
+    state.cars = cars; state.onboardStage = stash;
+    return true;
+  });
+  if (pillsOk !== true) fail("marketplace pills: " + pillsOk);
+
+  const shopUiOk = await page.evaluate(() => {
+    // Stage first, then navigate: setView bounces a tab the stage has not
+    // opened yet, which would leave us measuring the wrong screen.
+    state.onboardStage = 2; setView("dealership"); render("full");
+    // Only lock-shaped controls are in scope here. A button disabled for a
+    // live reason (cannot afford it right now) is ordinary UI, not a wall.
+    const dead = [...document.querySelectorAll("#appContent button")]
+      .filter((b) => b.classList.contains("pill-locked") || /🔒/.test(b.textContent));
+    if (dead.length)
+      return "Marketplace still shows " + dead.length + " locked control(s) pre-show: " +
+        dead.map((b) => b.textContent.replace(/\s+/g, " ").trim().slice(0, 30)).join(", ");
+    state.onboardStage = 3; setView("shows"); render("full");
+    const deadTiers = [...document.querySelectorAll("#appContent .cat-pill")]
+      .filter((b) => b.classList.contains("pill-locked") || /🔒/.test(b.textContent));
+    if (deadTiers.length) return "Compete still shows " + deadTiers.length + " locked tier pill(s)";
+    // The ladder is still communicated, just as one line instead of buttons.
+    if (!/Next rung/.test(document.getElementById("appContent").innerText))
+      return "the next-rung line went missing with the locked tier pills";
+    // Workspace ladder: current + next only, the rest named in a line.
+    setView("workshop"); setShopSub("workspace"); render("full");
+    const lockedRows = [...document.querySelectorAll("#appContent .dense-row")]
+      .filter((r) => /🔒/.test(r.textContent));
+    if (lockedRows.length) return "workspace ladder still renders " + lockedRows.length + " locked row(s)";
+    if (!/Further up the ladder/.test(document.getElementById("appContent").innerText))
+      return "workspace ladder lost the line naming what is above";
+    return true;
+  });
+  if (shopUiOk !== true) fail("locked pills: " + shopUiOk);
+  pass("hide-don't-lock holds inside Marketplace, Compete and the workspace ladder");
+
+  // ── a blocked DIY button names the tool it wants instead of showing a
+  // greyed price with no reason. ──
+  const diyOk = await page.evaluate(() => {
+    setView("workshop"); setShopSub("parts");
+    const car = currentCar();
+    const p = PARTS.find((x) => (x.tools || []).some((t) => !state.ownedTools.includes(t)) && x.category === state.shopCat && !car.installedParts.includes(x.id));
+    if (!p) { const any = PARTS.find((x) => (x.tools || []).some((t) => !state.ownedTools.includes(t))); if (!any) return true; state.shopCat = any.category; }
+    render("full");
+    const txt = document.getElementById("appContent").innerText;
+    if (!/🔒 Needs /.test(txt)) return "no blocked DIY button names its missing tool";
+    return true;
+  });
+  if (diyOk !== true) fail("diy reason: " + diyOk);
+  pass("blocked DIY buttons name the tool they need");
+
+  // ── offers do not ambush a screen the player has never opened. ──
+  const quietOk = await page.evaluate(() => {
+    state.tabsVisited = {}; state.pendingMarketplaceOffer = null; state.pendingCarOffer = null;
+    state.eventQueue = []; state.pendingScene = null; state.noticeQueue = [];
+    state.onboardStage = 3; setView("workshop"); setView("shows");
+    if (!onFirstVisitScreen()) return "first visit did not open the quiet window";
+    queueMarketplaceOffer({ itemId: "qa", buyerType: "hold", offer: 27 });
+    if (state.pendingMarketplaceOffer) return "an offer popped on a first visit";
+    if (!(state.eventQueue || []).some((e) => e.kind === "marketplace"))
+      return "the deferred offer was dropped instead of queued";
+    // Second visit is not a first visit, so it lands normally. Mark the
+    // other tab seen too, or stepping through it opens a window of its own.
+    firstVisitQuietUntil = 0;
+    state.tabsVisited.workshop = true;
+    setView("workshop"); setView("shows");
+    if (onFirstVisitScreen()) return "a revisit re-opened the quiet window";
+    processEventQueue();
+    if (!state.pendingMarketplaceOffer) return "the held offer never landed after the quiet window";
+    state.pendingMarketplaceOffer = null; state.eventQueue = [];
+    return true;
+  });
+  if (quietOk !== true) fail("first-visit quiet: " + quietOk);
+  pass("offer popups wait out a first visit, then land");
+
+  // Put the player back where the suite left them.
+  await page.evaluate((st) => {
+    state.onboardStage = st.stage; state.shopSub = st.sub; state.shopCat = st.cat;
+    state.tabsVisited = st.visited; firstVisitQuietUntil = 0;
+    state.pendingMarketplaceOffer = null; state.pendingCarOffer = null;
+    state.eventQueue = []; state.noticeQueue = []; state.pendingUnlock = null;
+    clearTabArrival();
+    setView(st.view); render("full");
+  }, onboardStash);
+  await page.waitForTimeout(400);
+
   // ── roadworthy → Marketplace unlock ──
   await page.evaluate(() => {
     const car = currentCar();
@@ -663,6 +773,40 @@ const pass = (msg) => console.log("✓", msg);
     const inlined = (region[1].match(/data:image\/webp;base64,/g) || []).length;
     if (inlined < 60) fail("web build inlined too few assets: " + inlined);
     pass(`web build self-contained (${inlined} assets inlined)`);
+  }
+
+  // ── the first playable screen at phone width, in a real narrow viewport.
+  // The narrow-screen rules live in a media block that sits after a wider
+  // one, so a re-ordered stylesheet can silently un-apply them and the page
+  // starts scrolling sideways. These numbers are the guard on that. ──
+  {
+    const phone = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    const perrs = [];
+    phone.on("pageerror", (e) => perrs.push("pageerror: " + e.message));
+    await phone.goto(GAME);
+    await phone.waitForTimeout(700);
+    await phone.keyboard.press("Enter"); await phone.waitForTimeout(1100);
+    await phone.keyboard.press("Enter"); await phone.waitForTimeout(500);
+    const tb = await phone.$("#modalRoot .tutorial-primary"); if (tb) await tb.click();
+    await phone.waitForTimeout(300);
+    await phone.evaluate(() => resolvePendingScene(0));
+    await phone.waitForTimeout(600);
+    await phone.evaluate(() => { state.noticeQueue = []; render("full"); });
+    await phone.waitForTimeout(400);
+    const m = await phone.evaluate(() => ({
+      doc: document.documentElement.scrollWidth, vp: window.innerWidth,
+      h: document.getElementById("appContent").scrollHeight, vh: window.innerHeight,
+      cards: [...document.querySelectorAll("#appContent .job-card")].length,
+      wrap: (() => { const el = document.querySelector(".shop-subtabs");
+        return el ? getComputedStyle(el).flexWrap : "missing"; })(),
+    }));
+    if (m.doc > m.vp + 2) fail(`phone: first screen scrolls sideways (doc ${m.doc} > vp ${m.vp})`);
+    if (m.wrap !== "nowrap") fail(`phone: sub-tab strip flex-wrap is '${m.wrap}', expected nowrap (media block order regressed)`);
+    if (m.cards > 2) fail(`phone: ${m.cards} suggested job cards on the first screen, expected at most 2`);
+    if (m.h > m.vh * 2) fail(`phone: first playable screen is ${m.h}px (${(m.h / m.vh).toFixed(2)} screens), budget is 2.0`);
+    if (perrs.length) fail("phone: " + perrs.join(" | "));
+    pass(`phone 390x844: no sideways scroll, ${m.cards} job cards, ${(m.h / m.vh).toFixed(2)} screens tall`);
+    await phone.close();
   }
 
   await browser.close();

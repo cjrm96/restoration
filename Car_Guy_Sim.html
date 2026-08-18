@@ -591,6 +591,15 @@
         display: grid;
         gap: 8px;
       }
+      /* Build tab sub-tabs (Next Jobs / All Builds / Tools / Space). Declared
+         here, above the phone media block, so the narrow-screen override for
+         it actually wins on source order. */
+      .shop-subtabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+      }
       .btn-row.two {
         grid-template-columns: 1fr 1fr;
       }
@@ -2083,6 +2092,57 @@
         .btn-row.two,
         .btn-row.three {
           grid-template-columns: 1fr;
+        }
+        /* ── phone: the Build tab, tightened ──
+           The first playable screen ran 2.6 phone screens of scroll before
+           the player had done anything. The job cards were the bulk of it,
+           so they lose their spare padding, the sub-tab strip scrolls in one
+           row instead of wrapping to two, and the reason line rides above
+           the list rather than repeating inside every card. */
+        .shop-subtabs {
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          scrollbar-width: none;
+          margin-bottom: 10px !important;
+          /* Without this the nowrap row's min-content width propagates up
+             through the grid and stretches the whole page sideways, so the
+             strip has to be allowed to shrink before it can scroll. */
+          min-width: 0;
+        }
+        /* Same reason, one level up: grid items default to min-width:auto. */
+        .grid-main > *,
+        .grid-main-shows > * {
+          min-width: 0;
+        }
+        .shop-subtabs::-webkit-scrollbar { display: none; }
+        .shop-subtabs .tab {
+          flex: 0 0 auto;
+          padding: 9px 14px;
+          font-size: 12px;
+        }
+        .suggest-meta {
+          gap: 6px !important;
+          margin-bottom: 9px !important;
+        }
+        .suggest-meta .smart-tag {
+          font-size: 10px;
+          padding: 2px 7px;
+        }
+        .job-card {
+          padding: 12px 13px 13px !important;
+          margin-bottom: 10px !important;
+        }
+        .job-card .panel-header {
+          margin-bottom: 7px !important;
+        }
+        .job-card .panel-title {
+          font-size: 15px;
+        }
+        .job-card .btn-row {
+          gap: 6px;
+        }
+        .job-card .btn {
+          padding: 10px 8px;
         }
       }
 
@@ -4427,6 +4487,10 @@
       /* ── Mobile header: compact the topbar + square the sticky corners.
          Placed last so it overrides the global Showroom polish pass. ── */
       @media (max-width: 640px) {
+        /* The 880px band above sets 22px, which wraps the Build tab's title
+           to three lines on a phone. The phone band earlier in the file asks
+           for 18px but loses on source order, so it is restated here. */
+        .hero-panel-title { font-size: 18px; }
         .topbar {
           padding: 8px 10px !important;
           gap: 6px !important;
@@ -10103,7 +10167,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.49.0";
+      const GAME_VERSION = "0.50.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -10111,6 +10175,15 @@
       // handoff code that owns it (see flyUnlockToTab).
       let tabArriving = null;
       let tabArrivalTimers = [];
+      // A tab the player has never opened is a screen they are still reading.
+      // The Marketplace offer popup deliberately sits outside the modal stack
+      // so it never blocks play, but that also let it land on top of a first
+      // impression. This holds it for a beat on a genuinely new screen.
+      let firstVisitQuietUntil = 0;
+      const FIRST_VISIT_QUIET_MS = 6000;
+      function onFirstVisitScreen() {
+        return Date.now() < firstVisitQuietUntil;
+      }
       const TASK_SECONDS = { Budget: 75, Quality: 150, "Show Grade": 225 };
       const TASK_WEEKS = { Budget: 1, Quality: 2, "Show Grade": 3 };
 
@@ -10244,6 +10317,7 @@
           onboardStage: 0,
           pendingUnlock: null,
           tabNew: null,
+          tabsVisited: {},
           tutorialStep: 0,
           sfxMuted: false,
           settings: {
@@ -12597,10 +12671,11 @@
         // Find the next item we can actually show. Marketplace offers
         // get held back if a popup is already up, they don't block
         // other modals and shouldn't be skipped, just deferred.
+        const quiet = onFirstVisitScreen();
         const idx = state.eventQueue.findIndex(
           (e) =>
-            !(e.kind === "marketplace" && (state.pendingMarketplaceOffer || state.pendingCarOffer)) &&
-            !(e.kind === "carOffer" && (state.pendingCarOffer || state.pendingMarketplaceOffer)),
+            !(e.kind === "marketplace" && (quiet || state.pendingMarketplaceOffer || state.pendingCarOffer)) &&
+            !(e.kind === "carOffer" && (quiet || state.pendingCarOffer || state.pendingMarketplaceOffer)),
         );
         if (idx === -1) return;
         const next = state.eventQueue.splice(idx, 1)[0];
@@ -12654,7 +12729,7 @@
         else state.pendingEvent = ev;
       }
       function queueMarketplaceOffer(offer) {
-        if (modalBusy() || state.pendingMarketplaceOffer || state.pendingCarOffer)
+        if (modalBusy() || onFirstVisitScreen() || state.pendingMarketplaceOffer || state.pendingCarOffer)
           queueEvent("marketplace", offer);
         else {
           state.pendingMarketplaceOffer = offer;
@@ -17712,6 +17787,18 @@
         // marker, so walking in once puts it out.
         if (state.tabNew === v || (v === "workshop" && state.tabNew === "garage"))
           state.tabNew = null;
+        if (!state.tabsVisited) state.tabsVisited = {};
+        if (changed && !state.tabsVisited[v]) {
+          state.tabsVisited[v] = true;
+          firstVisitQuietUntil = Date.now() + FIRST_VISIT_QUIET_MS;
+          // Let anything held back land once the player has taken the room in.
+          setTimeout(() => {
+            if (!onFirstVisitScreen()) {
+              processEventQueue();
+              requestRender("full");
+            }
+          }, FIRST_VISIT_QUIET_MS + 50);
+        }
         state.view = v;
         // Every tab starts at the top, don't carry a deep build-screen
         // scroll over to Social (where the phone lives up top).
@@ -17817,6 +17904,19 @@
       // Returns the reason a tab is locked, or null when it is open.
       // Safety: with an empty garage the lot must always be reachable, or the
       // player is stranded with no project to build.
+      // Same two kinds of shut as the nav bar. A tab the onboarding has not
+      // reached yet gets no pill at all, so week one opens the Marketplace on
+      // the one thing it wants the player to do. A tab that is open in
+      // principle but has nothing to work with right now (one car in the
+      // garage, nothing to sell) keeps its pill and says why, because the
+      // player already knows it exists.
+      function marketTabEarned(id) {
+        if (onboardStageVal() >= 3) return true;
+        // Safety: with an empty garage the lot must stay reachable or the
+        // player is stranded with no project to build.
+        if (id === "buy" && !(state.cars || []).length) return true;
+        return id === "sell";
+      }
       function marketTabLock(id) {
         const preShow = onboardStageVal() < 3;
         const noCars = !(state.cars || []).length;
@@ -17902,8 +18002,25 @@
       function mFoldToggle(el, id) {
         mFoldOpen[id] = el.open;
       }
+      // One place decides "this is a phone", and a re-render fires when the
+      // window crosses the line, so layout that branches in JS cannot get
+      // stuck on the wrong side of it after a rotate or a resize.
+      function isPhoneWidth() {
+        return !!(window.matchMedia && window.matchMedia("(max-width: 640px)").matches);
+      }
+      let lastPhoneWidth = null;
+      function watchPhoneWidth() {
+        lastPhoneWidth = isPhoneWidth();
+        window.addEventListener("resize", () => {
+          const now = isPhoneWidth();
+          if (now !== lastPhoneWidth) {
+            lastPhoneWidth = now;
+            requestRender("full");
+          }
+        });
+      }
       function mobileFold(id, label, value, html) {
-        const isPhone = window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
+        const isPhone = isPhoneWidth();
         if (!isPhone) return html;
         return `<details class="m-fold" ${mFoldOpen[id] ? "open" : ""} ontoggle="mFoldToggle(this,'${id}')"><summary>${label}<span class="m-fold-v">${value}</span></summary>${html}</details>`;
       }
@@ -21493,20 +21610,39 @@ addEventListener("DOMContentLoaded",function(){
               .sort((a, b) => b.score - a.score)
               .slice(0, 2);
             if (candidates.length) {
-              starterToolMarkup = `<div class="info-box" style="margin-bottom:12px;background:rgba(125,160,194,0.08);border-color:rgba(125,160,194,0.4)"><div class="small" style="color:var(--blue-bright);font-weight:bold;margin-bottom:6px">🛠 Pick up a starter tool first?</div><div class="tiny muted" style="margin-bottom:8px">DIY is cheaper than shop work, but needs the right tools. These would unlock the most jobs you have left:</div>${candidates
+              starterToolMarkup = mobileFold(
+                "starterTools",
+                "🛠 Starter tools",
+                `${candidates.length} pick${candidates.length === 1 ? "" : "s"}`,
+                `<div class="starter-tools info-box" style="margin-bottom:12px;background:rgba(125,160,194,0.08);border-color:rgba(125,160,194,0.4)"><div class="small" style="color:var(--blue-bright);font-weight:bold;margin-bottom:6px">🛠 Pick up a starter tool first?</div><div class="tiny muted" style="margin-bottom:8px">DIY is cheaper than shop work, but needs the right tools. These would unlock the most jobs you have left:</div>${candidates
                 .map(
                   ({ tool, score }) =>
                     `<div class="flex between center" style="margin-bottom:6px;gap:10px"><div><div class="small" style="color:var(--text)">${tool.emoji} ${tool.name}</div><div class="tiny muted">Unlocks ${score} more DIY ${score === 1 ? "option" : "options"}</div></div>${button(`Buy · $${fmt(tool.cost)}`, `buyTool('${tool.id}')`, false, "", "padding:6px 10px;font-size:11px")}</div>`,
                 )
-                .join("")}</div>`;
+                .join("")}</div>`,
+              );
             }
           }
+          // On a phone each of these cards runs ~340px, so four of them are
+          // four screens of scrolling before the player has done anything.
+          // Two is enough to make a choice; the rest are one tap away in All
+          // Builds, which the line under the list points at.
+          const phoneNow = isPhoneWidth();
+          const suggestCap = phoneNow ? 2 : 4;
+          // At this stage every card's reason is the same sentence with one
+          // word changed ("clears the engine requirement", "the steering
+          // requirement"). Said once above the list it is guidance; repeated
+          // on every card it is 56px of noise per card.
+          const sharedWhy =
+            phoneNow && suggested.length > 1
+              ? `<div class="small muted" style="margin:-2px 0 12px;line-height:1.55">${suggested[0].why}</div>`
+              : "";
           subcontent = `${starterToolMarkup}${panel(
             "Suggested Next Moves",
-            `${
+            `${sharedWhy}${
               suggested.length
                 ? suggested
-                    .slice(0, 4)
+                    .slice(0, suggestCap)
                     .map((item) => {
                       const p = item.part;
                       const activeTask = findActiveTask(car.id, p.id);
@@ -21539,8 +21675,8 @@ addEventListener("DOMContentLoaded",function(){
                           : "";
                       return panel(
                         `${p.name}${starterFree ? ` <span class="badge" style="color:var(--green)">NEIGHBOR GIFT</span>` : ""}`,
-                        `<div class="small muted" style="margin-bottom:10px;line-height:1.55">${item.why}</div>
-                         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px"><span class="smart-tag">${item.tag}</span><span class="tiny good" style="font-weight:bold">+${p.imp} ${CAT_LABELS[p.category]}</span></div>
+                        `${sharedWhy ? "" : `<div class="small muted" style="margin-bottom:10px;line-height:1.55">${item.why}</div>`}
+                         <div class="suggest-meta" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px"><span class="smart-tag">${item.tag}</span><span class="tiny good" style="font-weight:bold">+${p.imp} ${CAT_LABELS[p.category]}</span></div>
                          ${missing.length ? `<div class="tiny warn" style="margin-bottom:10px">Missing tools for DIY: ${missing.join(", ")}</div>` : ""}
                          ${activeTask
                            ? `<div class="info-box" data-task-id="${activeTask.id}"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:6px">In progress</div>${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>`
@@ -21550,11 +21686,12 @@ addEventListener("DOMContentLoaded",function(){
                         item.recommendedMethod === "diy"
                           ? "#87c77b"
                           : "#7da0c2",
+                        "job-card",
                       );
                     })
                     .join("")
                 : `<div class="small muted">Nothing left to suggest right now. Either the car is maxed out or everything is already in progress.</div>`
-            }${suggested.length > 4 ? `<div class="tiny muted" style="margin-top:8px;text-align:center">+${suggested.length - 4} more jobs waiting in All Builds</div>` : ""}`,
+            }${suggested.length > suggestCap ? `<div class="tiny muted" style="margin-top:8px;text-align:center;cursor:pointer" onclick="setShopSub('parts')">+${suggested.length - suggestCap} more job${suggested.length - suggestCap === 1 ? "" : "s"} waiting in All Builds →</div>` : ""}`,
             "",
             "#d8a24f",
           )}`;
@@ -21613,7 +21750,17 @@ addEventListener("DOMContentLoaded",function(){
                   ? `<span class="tiny muted">Maxed</span>`
                   : yardPull
                   ? button(`Install Pull · FREE`, `event.stopPropagation();installYardPull('${yardPull.id}')`, !hasAll || activeTasksByMethod(car.id, "shop").length || activeTasksForCar(car.id).length >= workspaceData().maxActive, "", "padding:5px 10px;font-size:11px;white-space:nowrap;background:#a47ed4;border-color:var(--purple-bright)")
-                  : `${button(`DIY $${fmt(starterFree ? 0 : dc)}`, `event.stopPropagation();installPart(${p.id},'diy',false)`, !hasAll || state.money < (starterFree ? 0 : dc) || activeTasksByMethod(car.id, "shop").length, "", "padding:5px 10px;font-size:11px;white-space:nowrap")}${button(`Shop $${fmt(starterFree ? 0 : sc)}`, `event.stopPropagation();installPart(${p.id},'shop',false)`, state.money < (starterFree ? 0 : sc) || activeTasksByMethod(car.id, "diy").length, "", "padding:5px 10px;font-size:11px;white-space:nowrap;background:#7da0c2;border-color:var(--blue-bright)")}`;
+                  : `${(() => {
+                      // A greyed price with no reason is a small mystery, and
+                      // this list repeats it. When the blocker is a tool the
+                      // player does not own, the button says so and names it,
+                      // instead of making them expand the row to find out.
+                      const t0 = miss.length ? TOOLS_LIST.find((t) => t.id === miss[0]) : null;
+                      const diyLabel = t0
+                        ? `🔒 Needs ${t0.name}`
+                        : `DIY $${fmt(starterFree ? 0 : dc)}`;
+                      return button(diyLabel, `event.stopPropagation();installPart(${p.id},'diy',false)`, !hasAll || state.money < (starterFree ? 0 : dc) || activeTasksByMethod(car.id, "shop").length, "", "padding:5px 10px;font-size:11px;white-space:nowrap");
+                    })()}${button(`Shop $${fmt(starterFree ? 0 : sc)}`, `event.stopPropagation();installPart(${p.id},'shop',false)`, state.money < (starterFree ? 0 : sc) || activeTasksByMethod(car.id, "diy").length, "", "padding:5px 10px;font-size:11px;white-space:nowrap;background:#7da0c2;border-color:var(--blue-bright)")}`;
               return `<div class="dense-row ${open ? "open" : ""}" style="border-left:3px solid ${tierCol(p.tier)}"><div class="dense-head" onclick="toggleDense('part_${p.id}')"><span class="dense-name">${p.name} ${badge}</span><span class="dense-imp good">+${p.imp}</span><span class="dense-actions">${headBtns}<span class="dense-chev">${open ? "▾" : "▸"}</span></span></div>${open ? `<div class="dense-body"><div class="tiny muted" style="margin:6px 0 8px">${p.tier} · ${p.desc}</div>${rq.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${rq.map((tid) => { const t = TOOLS_LIST.find((x) => x.id === tid); const owned = state.ownedTools.includes(tid); const can2 = canOwnTool(t); return `<span class="tool-chip ${owned ? "owned" : ""}">${t?.emoji} ${t?.name}${owned ? " ✓" : ` ${button(`$${fmt(t.cost)}`, `event.stopPropagation();buyTool('${tid}')`, !can2.ok || state.money < t.cost, "", "padding:2px 8px;font-size:10px;margin-left:5px")}`}</span>`; }).join("")}</div>` : ""}${activeTask ? `<div class="info-box" data-task-id="${activeTask.id}">${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>` : ""}${yardPull && !activeTask ? button(`Install yard pull · +${yardImp} (vs +${p.imp} new)`, `installYardPull('${yardPull.id}')`, !hasAll || maxed || activeTasksByMethod(car.id, "shop").length, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright);margin-top:4px") : ""}${state.freePart && p.tier === "Budget" && !maxed && !activeTask ? button("Sponsored · FREE", `installPart(${p.id},'shop',true)`, false, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright);margin-top:6px") : ""}</div>` : ""}</div>`;
             })
             .join("")}</div>`;
@@ -21700,16 +21847,22 @@ addEventListener("DOMContentLoaded",function(){
               const current = state.workshopLevel === w.id;
               const unlocked = i <= workshopIdx();
               const upcoming = i === workshopIdx() + 1;
-              // Hide old workspaces the player has already moved past, only show current and what's ahead
+              // Where you are and where you can go next, nothing else. The
+              // spaces further up the ladder were three rows of "🔒 Locked"
+              // taking real estate to describe a purchase nobody can make;
+              // the line under the grid names what is up there instead.
               if (unlocked && !current) return "";
+              if (!current && !upcoming) return "";
               const open = state.denseDetail === "ws_" + w.id;
               const action = current
                 ? `<span class="tiny good" style="font-weight:bold;white-space:nowrap">CURRENT</span>`
-                : upcoming
-                  ? button(`Upgrade $${fmt(w.cost)}`, "event.stopPropagation();upgradeWorkspace()", state.money < w.cost, "", "padding:5px 10px;font-size:11px;white-space:nowrap")
-                  : `<span class="tiny" style="color:#72695d;white-space:nowrap">🔒 Locked</span>`;
+                : button(`Upgrade $${fmt(w.cost)}`, "event.stopPropagation();upgradeWorkspace()", state.money < w.cost, "", "padding:5px 10px;font-size:11px;white-space:nowrap");
               return `<div class="dense-row ${open ? "open" : ""}" style="border-left:3px solid ${current ? "#9fd18e" : "#d8a24f"}"><div class="dense-head" onclick="toggleDense('ws_${w.id}')"><span class="dense-emoji">${w.emoji}</span><span class="dense-name">${w.name}</span><span class="tiny muted" style="white-space:nowrap">${w.maxActive} job${w.maxActive === 1 ? "" : "s"}</span>${action}<span class="dense-chev">${open ? "▾" : "▸"}</span></div>${open ? `<div class="dense-body"><div class="tiny muted" style="margin-top:6px">${w.desc}</div></div>` : ""}</div>`;
-            }).join("")}</div>`,
+            }).join("")}</div>${(() => {
+              const ahead = WORKSPACE_LEVELS.slice(workshopIdx() + 2);
+              if (!ahead.length) return "";
+              return `<div class="tiny muted" style="margin-top:8px;line-height:1.6">Further up the ladder: ${ahead.map((w) => `${w.emoji} ${w.name}`).join(", ")}. Each one buys you more jobs at once.</div>`;
+            })()}`,
             "",
             "#d8a24f",
           )}`;
@@ -21733,7 +21886,7 @@ addEventListener("DOMContentLoaded",function(){
               return `<div style="display:flex;align-items:center;gap:10px;background:rgba(143,203,126,0.1);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">✅</span><div><div class="small" style="color:var(--green-bright);font-weight:bold">Roadworthy</div><div class="tiny muted">The car can drive itself to a show. Time to compete.</div></div></div>`;
             }
             return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">⚠️</span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " ✓"} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " ✓"} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " ✓"} · Steering ${car.steering}/${ROADWORTHY_STEERING}${steerGap ? " (need +" + steerGap + ")" : " ✓"}${onboardStageVal() <= 1 ? `<div class="tiny" style="color:var(--gold-soft);margin-top:4px">🔓 Get her running and the Marketplace opens up.</div>` : ""}</div></div></div>`;
-          })()}<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts" || state.shopSub === "extras", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 Free Budget part ready, tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div onclick="installNextYardPull()" style="cursor:pointer;background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck, tap to install the next one, free.</span><span style="opacity:0.7">→</span></div>` : ""; })()}${subcontent}`,
+          })()}<div class="shop-subtabs">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts" || state.shopSub === "extras", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 Free Budget part ready, tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div onclick="installNextYardPull()" style="cursor:pointer;background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck, tap to install the next one, free.</span><span style="opacity:0.7">→</span></div>` : ""; })()}${subcontent}`,
         )}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${(state.installsDone || 0) > 0 || activeTasksForCar(car.id).length ? mobileFold("notes", "📋 Shop Notes", workspaceData().name, panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Build Speed", `+${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${roadworthy(car) ? "" : chalkRow("Roadworthy", "Not yet", "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}`, "", "#1d1611", "clipboard")) : ""}</div></div>`;
       }
 
@@ -21762,16 +21915,24 @@ addEventListener("DOMContentLoaded",function(){
           state.showSub = open[open.length - 1] || "Cars & Coffee";
         }
         const familySelected = false;
-        const pillRow = `<div class="cat-pill-row">${tierOrder
-          .map((t) => {
-            if (!tierReachable(t)) {
-              const req = showProgressRequirement(SHOWS_MASTER.find((s) => s.tier === t));
-              const msg = (req.msg || "Locked for now.").replace(/'/g, "\\'");
-              return `<button class="cat-pill pill-locked" onclick="toast('${msg}', 'err')"><span class="cat-pill-icon">🔒</span>${t}</button>`;
-            }
-            return `<button class="cat-pill ${state.showSub === t ? "active" : ""}" onclick="setShowSub('${t}')"><span class="cat-pill-icon">${SHOW_TIER_ICONS[t]}</span>${t}</button>`;
-          })
-          .join("")}</div>`;
+        // The ladder is motivating, three dead buttons are not. Only the tiers
+        // the player can actually enter get a pill; the next rung up gets one
+        // quiet line naming what it takes, which is the same information the
+        // locked buttons carried and a quarter of the furniture.
+        const openTiers = tierOrder.filter(tierReachable);
+        const nextTier = tierOrder.find((t) => !tierReachable(t));
+        const nextTierNote = nextTier
+          ? `<div class="tiny muted" style="text-align:center;padding:6px 10px;margin:2px 0 8px">Next rung: <span style="color:var(--gold-soft);font-weight:bold">${nextTier}</span> · ${showProgressRequirement(SHOWS_MASTER.find((s) => s.tier === nextTier)).msg || "keep climbing."}</div>`
+          : "";
+        const pillRow =
+          openTiers.length < 2
+            ? ""
+            : `<div class="cat-pill-row">${openTiers
+                .map(
+                  (t) =>
+                    `<button class="cat-pill ${state.showSub === t ? "active" : ""}" onclick="setShowSub('${t}')"><span class="cat-pill-icon">${SHOW_TIER_ICONS[t]}</span>${t}</button>`,
+                )
+                .join("")}</div>`;
         // The season's scene taste, shown from the prep board so the player
         // can read the room before committing a build direction. A "split"
         // season has no lean, so the banner would just take up space telling
@@ -21791,7 +21952,7 @@ addEventListener("DOMContentLoaded",function(){
           "Show Prep Board",
           onboardStageVal() >= 3 ? "" : "Load the truck, check the fuel, roll it out",
           onboardStageVal() >= 3 ? "" : "Every show the car runs is one more story on the build.",
-          `${carPreview(car)}${familySelected ? "" : panel("Travel & Fuel", `<div class="info-box"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" style="padding:6px 8px;font-size:11px" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>+5 Gal · $20</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright);padding:6px 8px;font-size:11px" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill · $${fmt(fillAmount * FUEL_PRICE)}</button></div></div>`, "", "#7da0c2", "show-card")}${pillRow}${tasteBanner}<div class="cards">${visibleShows
+          `${carPreview(car)}${pillRow}${nextTierNote}${tasteBanner}<div class="cards">${visibleShows
             .map((show) => {
               const progressReq = showProgressRequirement(show);
               const locked = getOverall(car) < show.minScore || !progressReq.ok;
@@ -21878,7 +22039,7 @@ addEventListener("DOMContentLoaded",function(){
                 "show-card",
               );
             })
-            .join("")}${lockedAheadHint}</div>`,
+            .join("")}${lockedAheadHint}${familySelected ? "" : panel("Travel & Fuel", `<div class="info-box"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" style="padding:6px 8px;font-size:11px" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>+5 Gal · $20</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright);padding:6px 8px;font-size:11px" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill · $${fmt(fillAmount * FUEL_PRICE)}</button></div></div>`, "", "#7da0c2", "show-card")}</div>`,
           "gold",
           "corkboard",
         );
@@ -22444,22 +22605,28 @@ addEventListener("DOMContentLoaded",function(){
         // Never sit on a locked tab: fall back to the one that always works and
         // is the actual next step in week one anyway.
         if (marketTabLock(marketTab)) marketTab = "sell";
-        const pillRow = `<div class="cat-pill-row">${[
+        const marketPills = [
           ["trip", "🛻", "Road Trip"],
           ["sell", "💰", "Sell Tools & Parts"],
           ["sellcar", "🏷️", "Sell Cars"],
           ["buy", "🚗", "Buy Cars"],
-        ]
-          .map(([id, icon, label]) => {
-            const why = marketTabLock(id);
-            const locked = !!why;
-            const cls =
-              "cat-pill" +
-              (marketTab === id && !locked ? " active" : "") +
-              (locked ? " pill-locked" : "");
-            return `<button class="${cls}" title="${locked ? why.replace(/"/g, "&quot;") : label}" onclick="setMarketTab('${id}')"><span class="cat-pill-icon">${locked ? "🔒" : icon}</span>${label}</button>`;
-          })
-          .join("")}</div>`;
+        ].filter(([id]) => marketTabEarned(id));
+        // One live pill is not a row, it is a label, so the strip only draws
+        // when there is an actual choice to make.
+        const pillRow =
+          marketPills.length < 2
+            ? ""
+            : `<div class="cat-pill-row">${marketPills
+                .map(([id, icon, label]) => {
+                  const why = marketTabLock(id);
+                  const locked = !!why;
+                  const cls =
+                    "cat-pill" +
+                    (marketTab === id && !locked ? " active" : "") +
+                    (locked ? " pill-locked" : "");
+                  return `<button class="${cls}" title="${locked ? why.replace(/"/g, "&quot;") : label}" onclick="setMarketTab('${id}')"><span class="cat-pill-icon">${locked ? "🔒" : icon}</span>${label}</button>`;
+                })
+                .join("")}</div>`;
 
         if (marketTab === "trip") return pillRow + renderScavengeTrip();
 
@@ -24077,6 +24244,7 @@ addEventListener("DOMContentLoaded",function(){
       runBackgroundTick();
       runWorldRefreshTick();
       runMarketplacePingTick();
+      watchPhoneWidth();
       startWorldTicker();
 
       document.addEventListener("visibilitychange", () => {
