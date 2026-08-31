@@ -5583,7 +5583,8 @@
    THE INTRODUCTIONS, three beats that currently borrow art that does not
    match them. Each scene renders without art until its key exists, so these
    can land one at a time; add the key to ART_KEYS and swap the scene's
-   art: field when the file ships.
+   art: field when the file ships. All three obey the palette law above:
+   dusk, dawn or golden hour, never flat midday.
 
    [ scene-yard-invite ]  A friend hands you your Saturday.  ** NOT YET SHOT **
    Fires once on a quiet week a few parts into the build (maybeTriggerYardIntro),
@@ -5591,9 +5592,9 @@
    [ scene-buddy-help ], which is two men already wrenching; this one is the
    moment BEFORE, in the doorway, nobody working yet.
    ...........................................................................
-   Pixel art, late morning. Interior of a home garage looking out toward a
-   bright open roll-up door, the light coming in behind the figure so he reads
-   mostly as a warm silhouette. In the doorway a stocky man in a ballcap and
+   Blue-hour dawn, barely light out. Interior of a home garage looking toward
+   the open roll-up door, cold blue morning behind the figure and a warm
+   droplight inside, so he reads as a rim-lit silhouette against the doorway. In the doorway a stocky man in a ballcap and
    work shirt leans on the frame with a paper coffee cup in each hand, one held
    out toward the viewer, entirely at ease. Foreground right, on a cluttered
    workbench catching the light: a brand new part still half in its branded
@@ -5611,15 +5612,15 @@
    place you have not been to yet. Distinct from [ scene-swap-meet ], which is
    the arrival payoff once the player actually goes.
    ...........................................................................
-   Pixel art, bright flat midday. A driveway or garage apron, two men standing
-   over the open tailgate of a pickup, a hand-drawn swap-meet flyer and a folded
-   local paper spread on the tailgate between them, weighed down by a socket.
+   Dusk on the driveway, purple sky over an amber horizon. Two men stand at the
+   open tailgate of a pickup under a porch light, a hand-drawn swap-meet flyer
+   and a folded local paper spread between them, weighed down by a socket.
    The friend is mid-pitch, one hand spread wide to describe something enormous,
    the other holding a marked-up page; the viewer's stand-in listens with arms
    crossed. Behind them the project truck, clean and finished enough to look
    proud of. Pinned or laid out on the tailgate: a coffee-ringed price list, a
-   roll of cash, a Sharpie. High sun, hard short shadows, optimistic and
-   commercial rather than cosy. Keep the lower-left quarter calm.
+   roll of cash, a Sharpie. Warm porch light against cooling blue dusk,
+   optimistic and commercial rather than cosy. Keep the lower-left quarter calm.
 
    [ scene-shark-lot ]  Somebody prices your truck.  ** NOT YET SHOT **
    Fires once at a show when the player is past two shows and under a thousand
@@ -5628,8 +5629,9 @@
    none of the menace. Distinct from [ scene-loan-shark ], the back room, which
    is where the deal is actually struck if the player takes the card.
    ...........................................................................
-   Pixel art, flat overcast midday on a show field. Mid-shot of the player's
-   truck parked in a row, a paper placing card tucked under one wiper. Two men
+   Golden hour, the end of the show day, the field half emptied and long
+   shadows across the grass. Mid-shot of the player's truck still parked in the
+   row, a paper placing card tucked under one wiper. Two men
    have stopped at it: the big one in an unbuttoned loud shirt and gold chain
    stands a half-step too close, one knuckle resting on the fender, looking at
    the placing card rather than the car; the second, thinner, hangs back a pace
@@ -5637,9 +5639,9 @@
    already writing on the back of a business card. Everyone else in frame is
    background: other owners in folding chairs down the row, oblivious. No
    confrontation, no violence, just two people who have decided something about
-   you that you have not decided yet. Slightly desaturated against the warm show
-   palette so the pair read colder than the field around them. Keep the
-   lower-left quarter calm.
+   you that you have not decided yet. The pair sit in the cool shadow side of
+   the frame while the emptying field behind them stays warm and gold, so they
+   read colder than everything around them. Keep the lower-left quarter calm.
 
    ───────────────────────────────────────────────────────────────────────────
    [ scene-going-viral ]  You wake up famous, the morning after.
@@ -10426,7 +10428,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.58.1";
+      const GAME_VERSION = "0.58.2";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
