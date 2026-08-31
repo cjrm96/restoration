@@ -420,6 +420,58 @@ const pass = (msg) => console.log("✓", msg);
   if (tripsOk !== true) fail("Saturday trips: " + tripsOk);
   pass("the yard and the swap are each introduced by a friend before they exist");
 
+  // ── season one is one truck and one story. The lot stays shut so a second
+  // project cannot compete with the only arc the season is telling, and the
+  // one car that can change hands is the one that was never yours to flip. ──
+  const seasonOneOk = await page.evaluate(() => {
+    const stash = { season: state.seasonNumber, wife: state.wifeCarSold, stage: state.onboardStage,
+                    tab: state.marketTab, view: state.view, cars: state.cars.slice() };
+    const setup = (season, wifeSold, tab) => {
+      state.onboardStage = 3; state.pendingUnlock = null; clearTabArrival();
+      state.noticeQueue = []; state.tripsKnown = { yard: true, swap: true };
+      state.seasonNumber = season; state.wifeCarSold = wifeSold; state.marketTab = tab;
+      setView("dealership"); renderMainContent(true);
+      return document.getElementById("appContent").innerText;
+    };
+    const restore = () => {
+      Object.assign(state, { seasonNumber: stash.season, wifeCarSold: stash.wife,
+        onboardStage: stash.stage, marketTab: stash.tab, cars: stash.cars, noticeQueue: [] });
+      setView(stash.view); renderMainContent(true);
+    };
+    const bail = (m) => { restore(); return m; };
+    // Season one: no lot, and Sell Cars only while her car is still there.
+    setup(1, false, "sell");
+    if (marketTabEarned("buy")) return bail("the lot is open in season one");
+    if (marketTabLock("buy") === null) return bail("the lot is shut but reports itself open");
+    if (!marketTabEarned("sellcar")) return bail("Sell Cars is gone while her car is still in the driveway");
+    // And that tab is not a flipping business.
+    const t1 = setup(1, false, "sellcar");
+    if (/flip a build/i.test(t1)) return bail("season one still headlines it as a flipping business");
+    if (/list a build for sale/i.test(t1)) return bail("the flip listings render in season one");
+    if (!/other car in the driveway/i.test(t1)) return bail("her car lost its own framing");
+    // Decision made: nothing legitimate left to sell this season.
+    setup(1, true, "sell");
+    if (marketTabEarned("sellcar")) return bail("Sell Cars lingers after her car is gone");
+    // Season two opens both, and it is a business again.
+    if (state.cars.length < 2)
+      state.cars.push({ ...JSON.parse(JSON.stringify(state.cars[0])), id: 90210 });
+    setup(2, true, "sell");
+    if (!marketTabEarned("buy")) return bail("the lot never opened in season two");
+    if (!marketTabEarned("sellcar")) return bail("Sell Cars never came back in season two");
+    const t2 = setup(2, true, "sellcar");
+    if (!/flip a build/i.test(t2) || !/list a build for sale/i.test(t2))
+      return bail("season two did not restore the flipping business");
+    // Safety valve outranks all of it: an empty garage always reaches the lot.
+    const cars = state.cars; state.cars = []; state.seasonNumber = 1;
+    const stranded = marketTabEarned("buy") && !marketTabLock("buy");
+    state.cars = cars;
+    if (!stranded) return bail("a player with an empty garage cannot reach the lot");
+    restore();
+    return true;
+  });
+  if (seasonOneOk !== true) fail("season one shape: " + seasonOneOk);
+  pass("season one is one truck: lot shut, and only her car can change hands");
+
   // ── the mechanic is doing the work. While the shop has the truck the player
   // cannot be the one who stripped the bolt, lost the 10mm, or fixed one thing
   // and broke two more, and the car is not under their tarp for the storm
@@ -717,14 +769,21 @@ const pass = (msg) => console.log("✓", msg);
     const tripStash = JSON.parse(JSON.stringify(state.tripsKnown || {}));
     state.tripsKnown = { yard: false, swap: false };
     state.onboardStage = 2;
-    if (marketTabEarned("trip") || marketTabEarned("sellcar"))
-      return "Road Trip / Sell Cars are earned before anyone opened them";
+    if (marketTabEarned("trip"))
+      return "Road Trip is earned before anyone pointed the player at the yard";
     if (!marketTabEarned("sell")) return "Sell Tools & Parts must always be open";
     state.onboardStage = 3;
     if (marketTabEarned("trip"))
       return "show season alone opened the Road Trip board";
-    if (!marketTabEarned("sellcar") || !marketTabEarned("buy"))
-      return "the rest of the Marketplace did not open with show season";
+    // Buy Cars and Sell Cars no longer ride the onboarding stage at all: the
+    // lot is a season-two graduation and Sell Cars is her car in season one.
+    // The season-one check below owns both; here we only assert that reaching
+    // show season is not by itself what opens them.
+    const seasonStash = state.seasonNumber;
+    state.seasonNumber = 1;
+    if (marketTabEarned("buy"))
+      return "show season alone opened the lot";
+    state.seasonNumber = seasonStash;
     state.tripsKnown = tripStash;
     // Empty garage keeps the lot reachable or the player is stranded.
     const cars = state.cars;

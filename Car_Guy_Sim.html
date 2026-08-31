@@ -10497,7 +10497,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.60.2";
+      const GAME_VERSION = "0.61.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -18517,10 +18517,27 @@
         // The Road Trip board is a place a friend told you about, not a tab
         // that appears with the others when show season opens.
         if (id === "trip") return tripKnown("yard");
+        // Safety first, and it outranks everything below: an empty garage must
+        // always be able to reach the lot or the player is stranded with no
+        // project to build.
+        const noCars = !(state.cars || []).length;
+        if (id === "buy" && noCars) return true;
+        // Season one is one truck and one story. The barn find, the bedside
+        // box, the first start, the first show. A second project competes with
+        // the only arc the season is telling, so the lot stays shut until the
+        // player has finished a season, which makes opening it a graduation
+        // rather than a tab that was always sitting there.
+        if (id === "buy") return seasonNum() >= 2;
+        // Selling whole cars is the same story: not a business in season one.
+        // The one exception is the car that was never yours to flip. While her
+        // daily is still in the driveway the tab exists to hold that single
+        // decision, and once it is made, one way or the other, it goes away
+        // again until the lot opens.
+        if (id === "sellcar") {
+          if (seasonNum() >= 2) return true;
+          return !state.wifeCarSold && !!currentCar();
+        }
         if (onboardStageVal() >= 3) return true;
-        // Safety: with an empty garage the lot must stay reachable or the
-        // player is stranded with no project to build.
-        if (id === "buy" && !(state.cars || []).length) return true;
         return id === "sell";
       }
       function marketTabLock(id) {
@@ -18528,9 +18545,9 @@
         const noCars = !(state.cars || []).length;
         if (id === "buy") {
           if (noCars) return null;
-          return preShow
-            ? "The lot can wait. Get this one running and out to a show before you take on a second project."
-            : null;
+          return seasonNum() >= 2
+            ? null
+            : "The lot can wait. This season is about the one truck.";
         }
         if (id === "trip") {
           // Being told about the yard is what opens it. The old rule held it
@@ -18541,8 +18558,10 @@
             : "Nobody has told you where to go hunting for parts yet.";
         }
         if (id === "sellcar") {
-          if (preShow)
-            return "Flipping cars comes later. Get the truck running and out to a show first.";
+          // In season one the tab is only ever her car, and marketTabEarned
+          // has already hidden it if that decision is made. From season two the
+          // old rule stands: never let the player sell their last project.
+          if (seasonNum() < 2) return null;
           return sellCarTabLocked()
             ? "You've only got the one car, sell it and there's nothing to build. Pick up a second project first."
             : null;
@@ -23415,13 +23434,19 @@ addEventListener("DOMContentLoaded",function(){
         }
 
         if (marketTab === "sellcar") {
+          // Season one has no flipping business, only the one car that was
+          // never yours to flip. The tab keeps her decision and drops the
+          // listing machinery, and the headline stops calling it inventory.
+          const flipSeason = seasonNum() >= 2;
           return `${pillRow}${heroPanel(
-            "Flip a Build",
-            "Buy low, restore, sell high, or dump a project as-is",
+            flipSeason ? "Flip a Build" : "The Other Car in the Driveway",
+            flipSeason
+              ? "Buy low, restore, sell high, or dump a project as-is"
+              : "There is one set of keys here that is not yours to trade",
             "",
             `
       ${!state.wifeCarSold && currentCar() ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border-color:rgba(196,109,96,0.4);margin-bottom:12px"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:6px">🚙 Sell the wife's daily driver?</div><div class="tiny" style="color:var(--text);margin-bottom:8px">It's clean, it runs, and she's at her sister's for the weekend. The Marketplace listing practically writes itself. What could go wrong.</div>${button("List the wife's car · ~$8,000", "sellWifeCar()", false, "", "width:100%;background:linear-gradient(180deg,#c97d70 0%,#8c4e44 100%);border-color:#d99a8f;color:#1a120a;font-weight:bold")}</div>` : ""}
-      <div class="info-box">
+      ${flipSeason ? `<div class="info-box">
         <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">🚗 List a build for sale</div>
         <div class="tiny muted" style="margin-bottom:8px;line-height:1.5">Flip a project as-is or after a full restoration. Buyers DM you offers over the following weeks, haggle or hold out.</div>
         ${carSellMarkup}
@@ -23429,7 +23454,7 @@ addEventListener("DOMContentLoaded",function(){
       <div class="info-box">
         <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Your cars on the market</div>
         ${carListedMarkup}
-      </div>
+      </div>` : `<div class="tiny muted" style="line-height:1.6;padding:2px 2px 0">Selling builds is a second-season trade. Finish this one out first, and the lot opens with it.</div>`}
     `,
             "gold",
             "marketplace",
@@ -24430,6 +24455,15 @@ addEventListener("DOMContentLoaded",function(){
           state.denseDetail || "",
           state.showLockedTools ? 1 : 0,
           state.marketTab,
+          // What the Marketplace pill row is built from. These are covered
+          // transitively today (a season rolls the week over, selling her car
+          // moves money, learning a trip closes a scene) but the row now
+          // depends on them directly, so it should not rely on something else
+          // happening to change in the same tick.
+          seasonNum(),
+          state.wifeCarSold ? 1 : 0,
+          tripKnown("yard") ? 1 : 0,
+          tripKnown("swap") ? 1 : 0,
           state.showSub,
           state.marketplaceStashExpanded ? 1 : 0,
           state.marketplaceListedExpanded ? 1 : 0,
