@@ -329,6 +329,50 @@ const pass = (msg) => console.log("✓", msg);
   if (loansOk !== true) fail("loans introduction: " + loansOk);
   pass("loans desk stays shut until the shark introduces it, and refusing still opens it");
 
+  // ── the mechanic is doing the work. While the shop has the truck the player
+  // cannot be the one who stripped the bolt, lost the 10mm, or fixed one thing
+  // and broke two more, and the car is not under their tarp for the storm
+  // either. The scene and the neighbours carry on regardless. ──
+  const shopEventsOk = await page.evaluate(() => {
+    const stash = JSON.parse(JSON.stringify(state.activeRestorations || []));
+    const money0 = state.money;
+    if (carAtShop()) return "the car is already at the shop before this check";
+    const cultureAll = CAR_CULTURE_EVENTS.length, weeklyAll = WEEKLY_EVENTS.length;
+    if (CAR_CULTURE_EVENTS.filter(atHomeEventOk).length !== cultureAll)
+      return "beats were filtered while the car was home";
+    if (WEEKLY_EVENTS.filter(atHomeEventOk).length !== weeklyAll)
+      return "weekly beats were filtered while the car was home";
+    // send it out
+    state.money = 20000;
+    const car = currentCar();
+    const part = PARTS.find((p) => !car.installedParts.includes(p.id));
+    installPart(part.id, "shop", false);
+    if (!carAtShop()) return "sending work to the shop did not register";
+    const culture = CAR_CULTURE_EVENTS.filter(atHomeEventOk);
+    const weekly = WEEKLY_EVENTS.filter(atHomeEventOk);
+    if (culture.some((e) => e.atHome) || weekly.some((e) => e.atHome))
+      return "a hands-on beat survived the filter";
+    if (!culture.length || !weekly.length)
+      return "the shop week has no beats left at all, which empties the calendar";
+    // and nothing hands-on can be drawn
+    for (let i = 0; i < 200; i++) {
+      const a = culture[Math.floor(Math.random() * culture.length)];
+      const b = weekly[Math.floor(Math.random() * weekly.length)];
+      if ((a && a.atHome) || (b && b.atHome)) return "a hands-on beat was drawn at the shop";
+    }
+    // work finishes, the garage is the player's again
+    state.activeRestorations.forEach((t) => { t.finishTime = Date.now() - 1; });
+    resolveCompletedRestorations(false);
+    if (carAtShop()) return "the car never came home";
+    if (CAR_CULTURE_EVENTS.filter(atHomeEventOk).length !== cultureAll)
+      return "beats did not come back once the work finished";
+    state.activeRestorations = stash; state.money = money0;
+    state.noticeQueue = []; state.pendingScene = null; state.pendingEvent = null;
+    return { blocked: cultureAll - culture.length, kept: culture.length };
+  });
+  if (typeof shopEventsOk === "string") fail("shop-week events: " + shopEventsOk);
+  pass(`shop weeks: ${shopEventsOk.blocked} hands-on beats sit out, ${shopEventsOk.kept} scene beats carry on`);
+
   // ── pre-season ramp: season 1 opens straight into the competitive
   // calendar (no pre-season), but season 2+ opens in the 4-week off-season
   // with shows locked and the side-work gig board live and paying. Drive the

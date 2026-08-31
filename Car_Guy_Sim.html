@@ -9260,6 +9260,7 @@
       const CAR_CULTURE_EVENTS = [
         {
           id: "cc1",
+          atHome: true,
           emoji: "🔩",
           title: "The 10mm Enters Another Dimension",
           text: "You heard it hit the floor. That was the last confirmed sighting.",
@@ -9285,6 +9286,7 @@
         },
         {
           id: "cc2",
+          atHome: true,
           emoji: "🌀",
           title: "While Im In Here...",
           text: "You pulled one thing apart and now the whole front clip is emotionally involved.",
@@ -9305,6 +9307,7 @@
         },
         {
           id: "cc3",
+          atHome: true,
           emoji: "📦",
           title: "Wrong Part, Strong Confidence",
           text: "You got home, opened the box, and immediately knew this was absolutely not for your car.",
@@ -9324,6 +9327,7 @@
         },
         {
           id: "cc4",
+          atHome: true,
           emoji: "🔊",
           title: "That Noise Was Not There Before",
           text: "Test drive went great until a new sound introduced itself from somewhere expensive.",
@@ -9365,6 +9369,7 @@
         },
         {
           id: "cc6",
+          atHome: true,
           emoji: "😵",
           title: "Paint Booth by Optimism",
           text: "You considered spraying in a less-than-ideal setup because the weather looked pretty chill.",
@@ -9385,6 +9390,7 @@
         },
         {
           id: "cc7",
+          atHome: true,
           emoji: "🔩",
           title: "Snapped Bolt, Bad Mood",
           text: "That fastener was supposed to come loose. Instead it turned into a whole personality problem.",
@@ -9405,6 +9411,7 @@
         },
         {
           id: "cc8",
+          atHome: true,
           emoji: "🧠",
           title: "The Tool Was In Your Hand",
           text: "You spent ten full minutes looking for the tool that was literally in your hand the whole time.",
@@ -9424,6 +9431,7 @@
         },
         {
           id: "cc9",
+          atHome: true,
           emoji: "🧯",
           title: "You Fixed One Thing, Broke Two More",
           text: "What started as a simple cleanup somehow created fresh leaks and a new electrical question.",
@@ -9914,6 +9922,7 @@
         // Bad
         {
           id: "e1",
+          atHome: true,
           type: "bad",
           emoji: "💨",
           title: "Exhaust Manifold Cracked",
@@ -9924,6 +9933,7 @@
         },
         {
           id: "e2",
+          atHome: true,
           type: "bad",
           emoji: "💧",
           title: "Radiator Hose Let Go",
@@ -9934,6 +9944,7 @@
         },
         {
           id: "e3",
+          atHome: true,
           type: "bad",
           emoji: "🌧️",
           title: "Storm Damage to the Workspace",
@@ -9944,6 +9955,7 @@
         },
         {
           id: "e4",
+          atHome: true,
           type: "bad",
           emoji: "⛽",
           title: "Fuel Leak Under the Tank",
@@ -9953,6 +9965,7 @@
         },
         {
           id: "e5",
+          atHome: true,
           type: "bad",
           emoji: "🔩",
           title: "Stripped Bolt on the Manifold",
@@ -9962,6 +9975,7 @@
         },
         {
           id: "e6",
+          atHome: true,
           type: "bad",
           emoji: "💥",
           title: "Fender Ding from the Neighbor",
@@ -9971,6 +9985,7 @@
         },
         {
           id: "e7",
+          atHome: true,
           type: "bad",
           emoji: "🧰",
           title: "Tool Chest Tipped Over",
@@ -9981,6 +9996,7 @@
         },
         {
           id: "e7b",
+          atHome: true,
           type: "bad",
           emoji: "🔩",
           title: "Oops, you lost your 10mm",
@@ -10066,6 +10082,7 @@
         },
         {
           id: "e17",
+          atHome: true,
           type: "bad",
           emoji: "🛢️",
           title: "New Leak Unlocked",
@@ -10184,7 +10201,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.55.0";
+      const GAME_VERSION = "0.56.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -15443,6 +15460,19 @@
         return true;
       }
 
+      // The truck is at the shop and the mechanic is doing the work, so the
+      // player cannot be the one who stripped the bolt, lost the 10mm, or
+      // fixed one thing and broke two more. The car is not under their tarp
+      // for the storm either. Beats that need the truck in your own garage
+      // with your own hands on it sit the week out; the scene and the
+      // neighbours carry on as usual.
+      function carAtShop() {
+        const car = currentCar();
+        return !!(car && activeTasksByMethod(car.id, "shop").length);
+      }
+      function atHomeEventOk(ev) {
+        return !(ev && ev.atHome) || !carAtShop();
+      }
       function maybeRollEvent() {
         if (state.pendingScene || state.pendingEvent) return;
         // Ahead of the random beats: running out of money is not a coincidence
@@ -15451,10 +15481,9 @@
         if (maybeBreakdown()) return;
         if (maybeSpouseScenario()) return;
         if (Math.random() < 0.22) {
-          const ev =
-            CAR_CULTURE_EVENTS[
-              Math.floor(Math.random() * CAR_CULTURE_EVENTS.length)
-            ];
+          const pool = CAR_CULTURE_EVENTS.filter(atHomeEventOk);
+          if (!pool.length) return;
+          const ev = pool[Math.floor(Math.random() * pool.length)];
           queueScene({
             title: ev.title,
             emoji: ev.emoji,
@@ -15464,8 +15493,9 @@
           return;
         }
         if (Math.random() > 0.32) return;
-        const ev =
-          WEEKLY_EVENTS[Math.floor(Math.random() * WEEKLY_EVENTS.length)];
+        const weekly = WEEKLY_EVENTS.filter(atHomeEventOk);
+        if (!weekly.length) return;
+        const ev = weekly[Math.floor(Math.random() * weekly.length)];
         queueWeeklyEvent(ev);
       }
 
