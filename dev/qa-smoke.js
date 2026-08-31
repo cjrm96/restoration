@@ -373,6 +373,88 @@ const pass = (msg) => console.log("✓", msg);
   if (typeof shopEventsOk === "string") fail("shop-week events: " + shopEventsOk);
   pass(`shop weeks: ${shopEventsOk.blocked} hands-on beats sit out, ${shopEventsOk.kept} scene beats carry on`);
 
+  // ── the show flyer. A cleared check must not print its tick twice, and the
+  // payout has to put the win first instead of five identical chips. ──
+  const flyerOk = await page.evaluate(() => {
+    const stash = { stage: state.onboardStage, view: state.view, hist: state.history,
+                    money: state.money, fuel: state.fuel, act: state.activeRestorations };
+    state.onboardStage = 3; state.pendingUnlock = null; clearTabArrival();
+    state.noticeQueue = []; state.money = 5000; state.fuel = 50; state.activeRestorations = [];
+    const c = currentCar();
+    const car0 = { e: c.engine, t: c.transmission, b: c.brakes, s: c.steering };
+    c.engine = 70; c.transmission = 65; c.brakes = 65; c.steering = 65;
+    state.history = [{ tier: "Cars & Coffee", place: 2, show: "Coffee" }];
+    setView("shows"); render("full");
+    const card = document.querySelector(".panel.show-card");
+    const restore = () => {
+      Object.assign(c, { engine: car0.e, transmission: car0.t, brakes: car0.b, steering: car0.s });
+      Object.assign(state, { onboardStage: stash.stage, history: stash.hist, money: stash.money,
+        fuel: stash.fuel, activeRestorations: stash.act, noticeQueue: [] });
+      setView(stash.view); render("full");
+    };
+    if (!card) { restore(); return "no show card rendered"; }
+    const txt = card.innerText;
+    const res = (() => {
+      if (/✓[^\n]*✓/.test(txt)) return "a cleared check is printing its tick twice";
+      if (!card.querySelector(".show-status")) return "the flyer has no status badge";
+      const places = card.querySelectorAll(".payout-place");
+      if (places.length && !card.querySelector(".payout-place.win"))
+        return "the payout does not weight first place";
+      if (card.querySelector(".show-prize")) return "the old flat prize chips are still rendering";
+      return true;
+    })();
+    restore();
+    return res;
+  });
+  if (flyerOk !== true) fail("show flyer: " + flyerOk);
+  pass("show flyer: weighted payout, status badge, no doubled ticks");
+
+  // ── the named grid fills in over a season. Three of the four rivals run
+  // Local, so an uncapped field put every face in the game plus Buck on the
+  // lawn at the player's debut. ──
+  const gridOk = await page.evaluate(() => {
+    const cap = (runs) => (runs >= 9 ? 3 : runs >= 5 ? 2 : runs >= 2 ? 1 : 0);
+    if (cap(0) !== 0) return "named rivals turn up at the player's first show";
+    if (cap(1) !== 0) return "named rivals turn up at the second show";
+    if (cap(2) < 1 || cap(2) > 1) return "the grid does not fill in one face at a time";
+    if (cap(20) > 3) return "the cap does not hold at the top";
+    const local = RIVALS.filter((r) => (r.showsAt || []).includes("Local")).length;
+    if (local <= cap(0)) return "the cap is not actually below the roster size at a debut";
+    return true;
+  });
+  if (gridOk !== true) fail("rival grid: " + gridOk);
+  pass("rival grid fills in a face at a time, debut is Buck plus strangers");
+
+  // ── a show queued behind a story beat waits for the beat to be read. The
+  // glove-box choice used to start the show on a 60ms timer, so its outcome
+  // landed in the middle of the arrival cinematic and the standings. ──
+  const orderOk = await page.evaluate(() => {
+    if (typeof drainPendingShowEntry !== "function") return "the deferral is gone";
+    const stash = { pending: state.pendingShowEntry, q: state.noticeQueue,
+                    loading: state.showLoading };
+    // A card is still unread, so the queued show must stay put.
+    state.pendingShowEntry = 1;
+    state.noticeQueue = [{ text: "QA beat", tone: "good", emoji: "🎉" }];
+    drainPendingShowEntry();
+    if (state.pendingShowEntry !== 1)
+      return "the show was released while a card was still unread";
+    // Card read. Stub the entry point so releasing it cannot actually start a
+    // show here (parking showLoading would block modalBusy, which is the very
+    // thing under test), then confirm the deferral let go.
+    state.noticeQueue = [];
+    const realBegin = window.beginShowEntry;
+    let released = null;
+    window.beginShowEntry = (id) => { released = id; };
+    drainPendingShowEntry();
+    window.beginShowEntry = realBegin;
+    if (released !== 1) return "the show was never released once the beat finished";
+    if (state.pendingShowEntry !== null) return "the queued show was not cleared after release";
+    state.pendingShowEntry = stash.pending; state.noticeQueue = stash.q || [];
+    return true;
+  });
+  if (orderOk !== true) fail("beat/show ordering: " + orderOk);
+  pass("a show queued behind a beat waits until the beat has been read");
+
   // ── pre-season ramp: season 1 opens straight into the competitive
   // calendar (no pre-season), but season 2+ opens in the 4-week off-season
   // with shows locked and the side-work gig board live and paying. Drive the

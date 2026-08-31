@@ -625,18 +625,180 @@
         background: #2d2d2d;
         margin-left: 6px;
       }
-      .show-prizes {
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
+      /* ── The show flyer ──────────────────────────────────────────────
+         This card is a printed bill pinned to the board, so it should read
+         like one: a payout that puts the win first, the day's status where
+         you look for it, and a pre-flight strip that only raises its voice
+         about the thing actually stopping you. It used to be five identical
+         black chips, three stacked green sentences, and a form validator. */
+
+      .show-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 9px;
+        border-radius: 999px;
+        font-size: 10.5px;
+        font-weight: bold;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        white-space: nowrap;
       }
-      .show-prize {
-        background: #1b1714;
-        border: 1px solid #433a32;
+      .show-status::before {
+        content: "";
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: 0 0 7px currentColor;
+      }
+      .show-status.now {
+        color: #9fd18e;
+        background: rgba(143, 203, 126, 0.12);
+        border: 1px solid rgba(143, 203, 126, 0.42);
+      }
+      .show-status.soon {
+        color: #d8bd8a;
+        background: rgba(217, 162, 79, 0.1);
+        border: 1px solid rgba(217, 162, 79, 0.34);
+      }
+      .show-status.shut {
+        color: #9b9083;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.11);
+      }
+      .show-status.shut::before { box-shadow: none; opacity: 0.65; }
+
+      /* The payout, weighted. First place is the reason anybody enters, so it
+         gets the gold and the size; the rest of the ladder recedes in order. */
+      .show-payout {
+        display: flex;
+        align-items: stretch;
+        gap: 1px;
+        margin: 12px 0 13px;
+        border: 1px solid rgba(217, 162, 79, 0.24);
+        border-radius: 9px;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.26);
+      }
+      .payout-place {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 8px 6px 9px;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.016);
+      }
+      .payout-rank {
+        display: block;
+        font-size: 9.5px;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+        color: #8d8172;
+        margin-bottom: 3px;
+      }
+      .payout-cash {
+        display: block;
+        font-family: Georgia, serif;
+        font-size: 15px;
+        font-weight: bold;
+        color: #c3b49c;
+        line-height: 1;
+      }
+      .payout-place.win {
+        flex: 1.5 1 0;
+        background: linear-gradient(180deg, rgba(217, 162, 79, 0.19), rgba(217, 162, 79, 0.05));
+        box-shadow: inset 0 1px 0 rgba(255, 226, 168, 0.16);
+      }
+      .payout-place.win .payout-rank { color: #e2c184; }
+      .payout-place.win .payout-cash { font-size: 21px; color: #f5dda6; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6); }
+      .payout-place.minor { opacity: 0.62; }
+      .payout-place.minor .payout-cash { font-size: 13px; }
+      .payout-none {
+        flex: 1 1 100%;
+        padding: 11px 12px;
+        text-align: center;
+        font-size: 11.5px;
+        line-height: 1.5;
+        color: #b4a794;
+      }
+
+      /* Perks: a sponsor covering your fee is good news and should look it,
+         but it is a footnote next to the payout, not another headline. */
+      .show-perks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+      .show-perk {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 9px;
         border-radius: 6px;
-        padding: 5px 8px;
         font-size: 11px;
-        color: #ddcfb8;
+        line-height: 1.3;
+        color: #9fd18e;
+        background: rgba(143, 203, 126, 0.09);
+        border: 1px solid rgba(143, 203, 126, 0.28);
+      }
+      .show-perk.warn {
+        color: #e3b48a;
+        background: rgba(217, 162, 79, 0.09);
+        border-color: rgba(217, 162, 79, 0.3);
+      }
+
+      /* Pre-flight. Everything that is already fine reads as one quiet line,
+         because a finished checkbox is not news. Anything blocking you gets
+         its own bar and says what to do about it. */
+      .show-prep { margin-bottom: 12px; }
+      .prep-clear {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 12px;
+        font-size: 11px;
+        color: #7f9a74;
+        margin-bottom: 7px;
+      }
+      .prep-clear span::before {
+        content: "✓";
+        margin-right: 5px;
+        color: #8fcb7e;
+        font-weight: bold;
+      }
+      .prep-block {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 9px 11px;
+        border-radius: 8px;
+        background: rgba(196, 109, 96, 0.1);
+        border: 1px solid rgba(196, 109, 96, 0.4);
+        border-left-width: 3px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #f0cdc4;
+      }
+      .prep-block + .prep-block { margin-top: 6px; }
+      .prep-block-icon { flex: 0 0 auto; opacity: 0.9; }
+      .prep-ready {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 11px;
+        border-radius: 8px;
+        background: rgba(143, 203, 126, 0.09);
+        border: 1px solid rgba(143, 203, 126, 0.36);
+        border-left-width: 3px;
+        font-size: 12px;
+        font-weight: bold;
+        color: #b7e0a6;
+      }
+      @media (max-width: 560px) {
+        .payout-place { padding: 7px 3px 8px; }
+        .payout-rank { font-size: 8.5px; letter-spacing: 0.06em; }
+        .payout-cash { font-size: 13px; }
+        .payout-place.win .payout-cash { font-size: 18px; }
       }
       .toast {
         position: fixed;
@@ -10201,7 +10363,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.56.0";
+      const GAME_VERSION = "0.57.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -10361,6 +10523,7 @@
           tabsVisited: {},
           scenesSeen: {},
           loansUnlocked: false,
+          pendingShowEntry: null,
           sharkRefused: false,
           sharkMetWeek: null,
           tutorialStep: 0,
@@ -11539,10 +11702,12 @@
         }
         if (choice.gloveBoxAction) {
           if (choice.gloveBoxAction.bribe) state.bribeActive = true;
-          // Auto-enter the show after the scene closes, runs after the
-          // current scene-resolution cycle so state is settled first.
-          const showId = choice.gloveBoxAction.showId;
-          setTimeout(() => beginShowEntry(showId), 60);
+          // This choice pushes its outcome into the notice queue, and the show
+          // it leads into is a long cinematic. Firing the show on a 60ms timer
+          // meant the two overlapped: the player read what happened with Mike
+          // somewhere in the middle of the arrival scene and the standings.
+          // The show waits until the beat that led into it has been read.
+          state.pendingShowEntry = choice.gloveBoxAction.showId;
         }
         if (choice.sideBet) {
           state.buckSideBet = choice.sideBet;
@@ -11620,6 +11785,10 @@
         drainWeekAdvanceQueue("queued");
         checkMilestones();
         saveGame();
+        // If the choice raised no card of its own there is nothing to read and
+        // the show can roll straight in. If it did, this is a no-op and
+        // dismissNotice picks it up once the player has finished.
+        drainPendingShowEntry();
         requestRender("full");
       }
 
@@ -14530,6 +14699,8 @@
           state.showLoading = false;
           state.showStage = null;
           state.showStore = false;
+          // A show queued behind a beat must not fire itself on a reload.
+          state.pendingShowEntry = null;
           state.settingsOpen = false;
           state.weekAdvanceInProgress = false;
           state.weekAdvanceQueue = 0;
@@ -16990,9 +17161,17 @@
         const attendingRivals = RIVALS.filter((r) =>
           (r.showsAt || []).includes(show.tier),
         ).sort(() => Math.random() - 0.5);
-        // Cap named rivals per field so a stranger or two still shows up and
-        // the lineup isn't the exact same faces every single week.
-        const namedInField = attendingRivals.slice(0, 3).map((r) => ({
+        // The named grid fills in as the player earns it. Three of the four
+        // rivals run Local, so slicing at three put every face in the game on
+        // the lawn at the first Local show, Buck included: four rivals and one
+        // stranger, which spends the whole cast in one afternoon and makes a
+        // debut look like a grudge match. They arrive a face at a time now.
+        // Buck is not counted here, he enters every show on the calendar and
+        // says so, so early on he is the only name you recognise.
+        const runsSoFar = (state.history || []).length;
+        const namedCap =
+          runsSoFar >= 9 ? 3 : runsSoFar >= 5 ? 2 : runsSoFar >= 2 ? 1 : 0;
+        const namedInField = attendingRivals.slice(0, namedCap).map((r) => ({
           name: r.car || `${r.short}'s build`,
           score: rivalPersonaScore(r, show, compMax),
           isRival: true,
@@ -22289,42 +22468,79 @@ addEventListener("DOMContentLoaded",function(){
                   fail: `${show.minScore}+ overall (${getOverall(car)} now)`,
                 });
               }
+              // The tick is drawn by the strip, so these must not carry one
+              // of their own or every cleared line reads "✓ Roadworthy ✓".
               checks.push({
                 ok: roadworthy(car),
-                pass: "Roadworthy ✓",
-                fail: "Not roadworthy yet",
+                pass: "Roadworthy",
+                fail: "She is not roadworthy yet. Engine, transmission, brakes and steering all need to clear the line before she can drive herself there.",
               });
               checks.push({
                 ok: state.fuel >= fuelNeed,
-                pass: `${fuelNeed} gal fuel ✓`,
-                fail: `${fuelNeed} gal fuel (have ${state.fuel})`,
+                pass: `${fuelNeed} gal fuel`,
+                fail: `Not enough fuel for the trip. ${fuelNeed} gallons needed, ${state.fuel} in the tank.`,
               });
               if (entryFee > 0) {
                 checks.push({
                   ok: state.money >= entryFee,
-                  pass: `$${fmt(entryFee)} entry ✓`,
-                  fail: `$${fmt(entryFee)} entry (have $${fmt(state.money)})`,
+                  pass: `$${fmt(entryFee)} entry`,
+                  fail: `Entry is $${fmt(entryFee)} and you are holding $${fmt(state.money)}.`,
                 });
               }
               checks.push({
                 ok: !hasActiveRestorations(car.id),
-                pass: "No active jobs ✓",
-                fail: "Finish active restoration jobs",
+                pass: "Nothing on the lift",
+                fail: "She is still apart. Finish the work on the lift before loading her up.",
               });
               if (!progressReq.ok) {
                 checks.push({ ok: false, pass: "", fail: progressReq.msg });
               }
-              const checklistMarkup = `<div class="info-box" style="margin-bottom:10px;background:rgba(0,0,0,0.18);padding:10px 12px"><div class="tiny" style="color:var(--gold-soft);letter-spacing:1.5px;font-weight:bold;margin-bottom:6px">${show.tier === "Cars & Coffee" ? "PREP" : "SHOW PREP"}</div>${checks.map((c) => `<div class="tiny" style="line-height:1.7;color:${c.ok ? "#9fd18e" : "#e07a7a"}">${c.ok ? "✓ " + c.pass : "✗ " + c.fail}</div>`).join("")}</div>`;
+              // Cleared items collapse into one quiet line, because a ticked
+              // box is not news. Whatever is actually stopping you gets a bar
+              // of its own and says what to do about it.
+              const cleared = checks.filter((c) => c.ok && c.pass);
+              const blocking = checks.filter((c) => !c.ok);
+              const checklistMarkup = `<div class="show-prep">${
+                cleared.length
+                  ? `<div class="prep-clear">${cleared.map((c) => `<span>${c.pass}</span>`).join("")}</div>`
+                  : ""
+              }${
+                blocking.length
+                  ? blocking.map((c) => `<div class="prep-block"><span class="prep-block-icon">⚠️</span><span>${c.fail}</span></div>`).join("")
+                  : `<div class="prep-ready">🏁 <span>She is loaded and ready to roll.</span></div>`
+              }</div>`;
               return panel(
                 show.name,
-                `${show.blurb ? `<div class="tiny muted" style="margin-bottom:10px;line-height:1.5;font-style:italic">${show.blurb}</div>` : ""}${show.axis && JUDGING_AXES[show.axis] ? `<div class="tiny" style="margin-bottom:8px;color:var(--gold-soft)">${JUDGING_AXES[show.axis].icon} Judged on ${JUDGING_AXES[show.axis].label} · your build scores ~${judgedShowScore(car, show)} here (${getOverall(car)} overall)</div>` : ""}${show.axis && JUDGING_AXES[show.axis] && setupAxisBias(car, show.axis) !== 0 ? `<div class="tiny" style="margin-bottom:8px;color:${setupAxisBias(car, show.axis) > 0 ? "var(--green-bright)" : "var(--red-bright)"}">${setupMatchupLine(car, show)}</div>` : ""}<div class="show-prizes" style="margin-bottom:10px">${show.tier === "Cars & Coffee" ? `<div class="show-prize">No judges, no places</div><div class="show-prize">Free part raffle for showing up</div>` : show.prizes.map((p, i) => `<div class="show-prize">${["1st", "2nd", "3rd", "4th", "5th"][i]} · $${p}</div>`).join("")}</div>${show.enteredThisWeek ? `<div class="tiny warn" style="margin-bottom:8px">Already entered this week</div>` : show.seasonClosed ? `<div class="tiny warn" style="margin-bottom:8px">Closed until next spring</div>` : show.weeksUntil === 0 ? `<div class="tiny good" style="margin-bottom:8px">${show.seasonWindow ? `Nationals open · closes after week ${show.seasonWindow.end}` : "Happening this week"}</div>` : `<div class="tiny muted" style="margin-bottom:8px">${show.seasonWindow ? `Opens week ${show.seasonWindow.start} · ${show.weeksUntil} week(s) out` : `Starts in ${show.weeksUntil} week(s)`}</div>`}${rivalLine}${localSponsor ? `<div class="tiny good" style="margin-bottom:8px">${localSponsor.name} covers Local entry fee.</div>` : ""}${bonus > 0 && show.tier !== "Cars & Coffee" ? `<div class="tiny good" style="margin-bottom:8px">Sponsor bonus: +$${bonus}</div>` : ""}${checklistMarkup}${button(
+                `${show.blurb ? `<div class="tiny muted" style="margin-bottom:10px;line-height:1.5;font-style:italic">${show.blurb}</div>` : ""}${show.axis && JUDGING_AXES[show.axis] ? `<div class="tiny" style="margin-bottom:8px;color:var(--gold-soft)">${JUDGING_AXES[show.axis].icon} Judged on ${JUDGING_AXES[show.axis].label} · your build scores ~${judgedShowScore(car, show)} here (${getOverall(car)} overall)</div>` : ""}${show.axis && JUDGING_AXES[show.axis] && setupAxisBias(car, show.axis) !== 0 ? `<div class="tiny" style="margin-bottom:8px;color:${setupAxisBias(car, show.axis) > 0 ? "var(--green-bright)" : "var(--red-bright)"}">${setupMatchupLine(car, show)}</div>` : ""}<div class="show-payout">${show.tier === "Cars & Coffee" ? `<div class="payout-none">No judges and no places. Free part raffle for anyone who turns up.</div>` : show.prizes.map((p, i) => `<div class="payout-place ${i === 0 ? "win" : i >= 3 ? "minor" : ""}"><span class="payout-rank">${["1st", "2nd", "3rd", "4th", "5th"][i]}</span><span class="payout-cash">${p > 0 ? "$" + fmt(p) : "&mdash;"}</span></div>`).join("")}</div>${(() => {
+                  // When the day is, said once, where the eye lands first.
+                  const st = show.enteredThisWeek
+                    ? ["shut", "Already entered"]
+                    : show.seasonClosed
+                      ? ["shut", "Closed until spring"]
+                      : show.weeksUntil === 0
+                        ? ["now", show.seasonWindow ? `Open now, closes after week ${show.seasonWindow.end}` : "Happening this week"]
+                        : ["soon", show.seasonWindow ? `Opens week ${show.seasonWindow.start}` : `${show.weeksUntil} week${show.weeksUntil === 1 ? "" : "s"} out`];
+                  return `<div style="margin-bottom:10px"><span class="show-status ${st[0]}">${st[1]}</span></div>`;
+                })()}${rivalLine}${(() => {
+                  // Perks are good news, but they are a footnote beside the
+                  // payout, not another headline in the same green.
+                  const perks = [];
+                  if (localSponsor) perks.push(`<span class="show-perk">🤝 ${localSponsor.name} covers the entry fee</span>`);
+                  if (bonus > 0 && show.tier !== "Cars & Coffee") perks.push(`<span class="show-perk">💵 Sponsor bonus +$${fmt(bonus)}</span>`);
+                  return perks.length ? `<div class="show-perks">${perks.join("")}</div>` : "";
+                })()}${checklistMarkup}${button(
                     show.enteredThisWeek
                       ? "Already entered this week"
                       : show.seasonClosed
                         ? "Closed until spring"
                         : show.weeksUntil > 0
                           ? (show.seasonWindow ? `Opens week ${show.seasonWindow.start}` : `Starts in ${show.weeksUntil} week${show.weeksUntil === 1 ? "" : "s"}`)
-                          : show.tier === "Cars & Coffee" ? "Roll Up And Hang Out" : `Roll In And Compete · ${entryFee > 0 ? "$" + fmt(entryFee) : "Free"}`,
+                          : blocking.length
+                            ? blocking.length === 1 && !roadworthy(car) ? "Not roadworthy yet"
+                              : blocking.length === 1 && state.fuel < fuelNeed ? "Tank is too low"
+                              : blocking.length === 1 && hasActiveRestorations(car.id) ? "Still on the lift"
+                              : "Not ready to roll"
+                            : show.tier === "Cars & Coffee" ? "Roll Up And Hang Out" : `Roll In And Compete · ${entryFee > 0 ? "$" + fmt(entryFee) : "Free"}`,
                     `beginShowEntry(${show.id})`, off, "", "width:100%")}`,
                 `${show.tier} · ${show.tier === "Cars & Coffee" ? "casual meetup" : `base entry $${fmt(show.fee)}`} · fuel ${fuelNeed} gal`,
                 tc,
@@ -23654,7 +23870,18 @@ addEventListener("DOMContentLoaded",function(){
         state.noticeQueue.shift();
         playSfx("click");
         saveGame();
+        drainPendingShowEntry();
         requestRender("full");
+      }
+      // A show queued behind a story beat rolls in only once every card that
+      // beat raised has been read. modalBusy() is already the "is the player
+      // still reading something" test, so this waits on exactly that.
+      function drainPendingShowEntry() {
+        if (state.pendingShowEntry == null) return;
+        if (modalBusy()) return;
+        const id = state.pendingShowEntry;
+        state.pendingShowEntry = null;
+        beginShowEntry(id);
       }
 
       /* ═══════════════════════════════════════════
