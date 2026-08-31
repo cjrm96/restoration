@@ -5586,7 +5586,7 @@
    art: field when the file ships. All three obey the palette law above:
    dusk, dawn or golden hour, never flat midday.
 
-   [ scene-yard-invite ]  A friend hands you your Saturday.  ** NOT YET SHOT **
+   [ scene-yard-invite ]  A friend hands you your Saturday.  ** IN GAME **
    Fires once on a quiet week a few parts into the build (maybeTriggerYardIntro),
    and it is what opens the Road Trip board. Currently borrows
    [ scene-buddy-help ], which is two men already wrenching; this one is the
@@ -5605,7 +5605,7 @@
    light shaft. Nobody is working. Easy, warm, faintly conspiratorial. Keep the
    lower-left quarter calm for the caption.
 
-   [ scene-swap-invite ]  The pitch for Pomona.  ** NOT YET SHOT **
+   [ scene-swap-invite ]  The pitch for Pomona.  ** IN GAME **
    Fires once, later, after a Saturday has already been spent at the yard and
    the money game is open (maybeTriggerSwapIntro). Currently borrows
    [ scene-friday-night-lot ], which is night; this is a daytime pitch about a
@@ -5962,6 +5962,8 @@
         "scene-maiden-voyage",
         "scene-first-car-sale",
         "scene-buddy-help",
+        "scene-yard-invite",
+        "scene-swap-invite",
         "scene-season-end",
         "scene-season-start",
         "scene-friday-night-lot",
@@ -10443,7 +10445,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.58.3";
+      const GAME_VERSION = "0.59.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -12481,7 +12483,7 @@
         learnTrip("yard");
         queueScene({
           id: "yard_intro",
-          art: "scene-buddy-help",
+          art: "scene-yard-invite",
           title: "He Wants Your Saturday",
           emoji: "🧤",
           text:
@@ -12517,7 +12519,7 @@
         learnTrip("swap");
         queueScene({
           id: "swap_intro",
-          art: "scene-friday-night-lot",
+          art: "scene-swap-invite",
           title: "Pomona, End of the Month",
           emoji: "☕",
           text:
