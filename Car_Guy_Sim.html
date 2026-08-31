@@ -5622,7 +5622,7 @@
    roll of cash, a Sharpie. Warm porch light against cooling blue dusk,
    optimistic and commercial rather than cosy. Keep the lower-left quarter calm.
 
-   [ scene-shark-lot ]  Somebody prices your truck.  ** NOT YET SHOT **
+   [ scene-shark-lot ]  Somebody prices your truck.  ** IN GAME **
    Fires once at a show when the player is past two shows and under a thousand
    dollars (maybeTriggerSharkIntro), and it is what opens the Loans Desk.
    Currently borrows [ show-cars-and-coffee ], which is the right venue with
@@ -5964,6 +5964,7 @@
         "scene-buddy-help",
         "scene-yard-invite",
         "scene-swap-invite",
+        "scene-shark-lot",
         "scene-season-end",
         "scene-season-start",
         "scene-friday-night-lot",
@@ -10445,7 +10446,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.59.0";
+      const GAME_VERSION = "0.60.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -13035,7 +13036,7 @@
         state.sharkMetWeek = state.week;
         queueScene({
           id: "shark_intro",
-          art: "show-cars-and-coffee",
+          art: "scene-shark-lot",
           title: "Somebody Priced Your Truck",
           emoji: "🚬",
           text:
