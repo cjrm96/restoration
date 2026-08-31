@@ -10184,7 +10184,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.54.0";
+      const GAME_VERSION = "0.55.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -10343,6 +10343,9 @@
           tabNew: null,
           tabsVisited: {},
           scenesSeen: {},
+          loansUnlocked: false,
+          sharkRefused: false,
+          sharkMetWeek: null,
           tutorialStep: 0,
           sfxMuted: false,
           settings: {
@@ -11489,6 +11492,12 @@
             sold: false,
           });
         }
+        if (choice.sharkOffer) {
+          // Whichever way it went, the desk exists now. Refusing is not the
+          // end of it: he keeps the number, and so does the game.
+          state.loansUnlocked = true;
+          if (choice.sharkOffer === "walked") state.sharkRefused = true;
+        }
         if (choice.buckImpression) {
           if (!state.buck) state.buck = {};
           state.buck.metOnce = true;
@@ -12625,6 +12634,65 @@
         }
       }
 
+      /* ═══════════════════════════════════════════
+     THE LOANS DESK, AND HOW THE PLAYER FINDS IT
+     Nobody ever introduced this. The button simply appeared in the header
+     one week and the player was expected to work out that a pawn shop and
+     a loan shark lived behind it. So the desk stays shut until somebody
+     opens it for you, and the person who does that is the shark himself,
+     in the lot, at a show, when you are short. He finds the desperate;
+     that is the whole character. A player who stays solvent never meets
+     him, which is its own ending.
+  ═══════════════════════════════════════════ */
+      const SHARK_INTRO_CASH = 1000;
+      const SHARK_INTRO_SHOWS = 2;
+      function loansAvailable() {
+        return !!(
+          state.loansUnlocked ||
+          state.bankLoanBalance > 0 ||
+          state.sharkLoanBalance > 0 ||
+          (state.toolTruckBalance || 0) > 0 ||
+          (state.ringPawnBalance || 0) > 0
+        );
+      }
+      // He turns up when the money is thin and you have been seen at a couple
+      // of shows, not on a schedule. Once is enough: after this the desk is
+      // open whichever way the player answered him.
+      function maybeTriggerSharkIntro() {
+        if (state.loansUnlocked || state.sharkMetWeek != null) return false;
+        if (modalBusy()) return false;
+        if ((state.money || 0) >= SHARK_INTRO_CASH) return false;
+        if ((state.history || []).length < SHARK_INTRO_SHOWS) return false;
+        state.sharkMetWeek = state.week;
+        queueScene({
+          id: "shark_intro",
+          art: "show-cars-and-coffee",
+          title: "Somebody Priced Your Truck",
+          emoji: "🚬",
+          text:
+            "Two of them, walking the row, and they stop at yours. The big one in the loud shirt does a slow lap, taps the fender with one knuckle, and looks at the placing card on your windshield like it told him something. 'Good bones,' he says. 'Bad week.' He is not wrong on either count. 'I move money for people whose cars are better than their bank accounts. No paperwork, no credit check, no questions about what it is for.' He is already writing a number on the back of a card.",
+          choices: [
+            {
+              label: "Take the card",
+              lore: 2,
+              sharkOffer: "took",
+              note:
+                "You put it in your shirt pocket, and you both know what that means. The desk is open now. There is a bank downtown that does the same thing with paperwork and a rate that hurts less, and there is him. Both live behind the Loans button up top.",
+              noteTone: "event-bad",
+            },
+            {
+              label: "Not interested",
+              lore: 4,
+              sharkOffer: "walked",
+              note:
+                "He shrugs like it costs him nothing, because it does not. 'Card is good whenever.' He leaves it under your wiper anyway. You know where the money is now, his and the bank's both, and the bank asks for paperwork instead of your car. It is all behind the Loans button up top.",
+              noteTone: "event-good",
+            },
+          ],
+        });
+        saveGame();
+        return true;
+      }
       function isEarlyGame() {
         return state.week <= 3 && state.history.length === 0;
       }
@@ -14424,6 +14492,10 @@
           // catalogue seen so a returning player is never held on a beat they
           // sat through months ago. New games start with an empty map and so
           // get the hold on every first view, which is the point of it.
+          // A save from before the desk was introduced by a person has been
+          // using it all along. Do not take it away from them.
+          if (!Object.prototype.hasOwnProperty.call(parsed.state, "loansUnlocked"))
+            state.loansUnlocked = true;
           if (!savedHasScenesSeen) {
             state.scenesSeen = {};
             Object.keys(CUTSCENE_ART).forEach((k) => (state.scenesSeen[k] = true));
@@ -15236,6 +15308,8 @@
       }
 
       function openStore() {
+        // Nothing reaches the desk before somebody has introduced it.
+        if (!loansAvailable()) return;
         state.showStore = true;
         requestRender("chrome");
       }
@@ -15371,6 +15445,9 @@
 
       function maybeRollEvent() {
         if (state.pendingScene || state.pendingEvent) return;
+        // Ahead of the random beats: running out of money is not a coincidence
+        // and he does not arrive by dice roll.
+        if (maybeTriggerSharkIntro()) return;
         if (maybeBreakdown()) return;
         if (maybeSpouseScenario()) return;
         if (Math.random() < 0.22) {
@@ -17253,6 +17330,10 @@
         }
         if (show.tier === "Cars & Coffee" && state.buck && !state.buck.metOnce) {
           maybeTriggerBuckIntro();
+        } else {
+          // He works the row at a show, reading placing cards. Only when the
+          // truck is not already busy meeting Buck in the same lot.
+          maybeTriggerSharkIntro();
         }
         checkMilestones();
         saveGame();
@@ -23644,13 +23725,7 @@ addEventListener("DOMContentLoaded",function(){
         // sees. Week one starts with five grand against an eighty dollar job,
         // so the desk stays shut until the money game is actually open
         // (Marketplace), the player is genuinely short, or they already owe.
-        const loansRelevant =
-          totalLoan > 0 ||
-          (state.toolTruckBalance || 0) > 0 ||
-          (state.ringPawnBalance || 0) > 0 ||
-          tabEarned("dealership") ||
-          (state.money || 0) < 400;
-        loanBtn.style.display = loansRelevant ? "" : "none";
+        loanBtn.style.display = loansAvailable() ? "" : "none";
         loanBtn.textContent =
           totalLoan > 0
             ? `Loans $${fmt(totalLoan)}`

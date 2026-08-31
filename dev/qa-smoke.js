@@ -277,6 +277,58 @@ const pass = (msg) => console.log("✓", msg);
   if (spaceOk !== true) fail("Space & Storage gate: " + spaceOk);
   pass("Space & Storage waits for a full tool crate or a running truck");
 
+  // ── the loans desk is introduced by a person, not by a button appearing.
+  // It stays shut until the shark works the row at a show and finds somebody
+  // short, which means a player who stays solvent never meets him. Legacy
+  // saves must arrive with the desk they have always had. ──
+  const loansOk = await page.evaluate(() => {
+    const clr = () => {
+      state.pendingScene = null; state.pendingEvent = null; state.eventQueue = [];
+      state.noticeQueue = []; state.cutscene = null; state.pendingUnlock = null;
+      state.showStore = false; state.weekRecap = null; state.pendingRecap = null;
+      clearTabArrival();
+    };
+    const stash = { money: state.money, history: state.history, unlocked: state.loansUnlocked,
+                    met: state.sharkMetWeek, refused: state.sharkRefused };
+    state.loansUnlocked = false; state.sharkMetWeek = null; state.sharkRefused = false;
+    if (loansAvailable()) return "the desk is open before anyone introduced it";
+    openStore();
+    if (state.showStore) { closeStore(); return "openStore reached a desk that is not available"; }
+    // Broke but never seen at a show: he does not know you exist.
+    clr(); state.money = 400; state.history = [];
+    maybeTriggerSharkIntro();
+    if (state.pendingScene) return "he turned up before the player had been to any shows";
+    // Two shows in but solvent: he has no reason to stop.
+    clr(); state.money = 5000;
+    state.history = [{ tier: "Cars & Coffee", place: 3 }, { tier: "Cars & Coffee", place: 4 }];
+    maybeTriggerSharkIntro();
+    if (state.pendingScene) return "he approached a player who was not short";
+    // Short, and seen: he works the row.
+    clr(); state.money = 900;
+    maybeTriggerSharkIntro();
+    if (!state.pendingScene || state.pendingScene.id !== "shark_intro")
+      return "the shark never approached a broke player with two shows behind them";
+    if ((state.pendingScene.choices || []).length !== 2)
+      return "the offer is not refusable";
+    if (loansAvailable()) return "the desk opened before the scene resolved";
+    // Refusing still opens the desk, and is remembered, and costs nothing.
+    resolvePendingScene(1);
+    if (!state.loansUnlocked) return "walking away left the desk shut";
+    if (!state.sharkRefused) return "the refusal was not remembered";
+    if (state.sharkEverTaken) return "walking away still dirtied the moral ledger";
+    // And he only does it once.
+    clr(); state.money = 200; state.sharkMetWeek = state.sharkMetWeek || 1;
+    const before = state.pendingScene;
+    maybeTriggerSharkIntro();
+    if (state.pendingScene !== before) return "he approached a second time";
+    Object.assign(state, { money: stash.money, history: stash.history,
+      loansUnlocked: stash.unlocked, sharkMetWeek: stash.met, sharkRefused: stash.refused });
+    clr();
+    return true;
+  });
+  if (loansOk !== true) fail("loans introduction: " + loansOk);
+  pass("loans desk stays shut until the shark introduces it, and refusing still opens it");
+
   // ── pre-season ramp: season 1 opens straight into the competitive
   // calendar (no pre-season), but season 2+ opens in the 4-week off-season
   // with shows locked and the side-work gig board live and paying. Drive the
