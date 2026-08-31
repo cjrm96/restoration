@@ -10363,7 +10363,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.57.0";
+      const GAME_VERSION = "0.58.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -10524,6 +10524,7 @@
           scenesSeen: {},
           loansUnlocked: false,
           pendingShowEntry: null,
+          tripsKnown: { yard: false, swap: false },
           sharkRefused: false,
           sharkMetWeek: null,
           tutorialStep: 0,
@@ -12362,6 +12363,106 @@
         });
       }
 
+      /* ═══════════════════════════════════════════
+     THE SATURDAY TRIPS, AND WHO TELLS YOU ABOUT THEM
+     Nothing ever introduced the yard or the swap. The Road Trip pill turned
+     up with two others the week show season opened, and inside it were two
+     unexplained places asking for a Saturday each. The only writing that
+     explains either one fires after the player has already paid and
+     committed. Meanwhile the radio has been talking about swap meets and
+     Buck has been asking which junkyard your motor came from all season.
+
+     So a friend mentions them, the way this actually happens. The yard is
+     the parts tip and comes first. The swap is the social one where the
+     flipping lives, and it waits until there is a reason to care.
+  ═══════════════════════════════════════════ */
+      function tripKnown(which) {
+        return !!(state.tripsKnown && state.tripsKnown[which]);
+      }
+      function learnTrip(which) {
+        if (!state.tripsKnown) state.tripsKnown = { yard: false, swap: false };
+        state.tripsKnown[which] = true;
+      }
+      // A quiet week: nothing on the lift, no show today, nobody else talking.
+      function quietWeekForBeat() {
+        if (!state.tutorialComplete) return false;
+        if (state.cutscene || state.pendingScene || state.pendingEvent) return false;
+        if (state.view === "result" || state.showStage || state.showLoading) return false;
+        if (state.seasonWrap || state.gameOver) return false;
+        if (hasActiveRestorations()) return false;
+        return true;
+      }
+      function maybeTriggerYardIntro() {
+        if (tripKnown("yard")) return false;
+        if (!quietWeekForBeat()) return false;
+        // Wait until parts have cost real money, or the tip means nothing.
+        if ((state.installsDone || 0) < 3) return false;
+        if (!claimLifeBeat()) return false;
+        learnTrip("yard");
+        queueScene({
+          id: "yard_intro",
+          art: "scene-buddy-help",
+          title: "He Wants Your Saturday",
+          emoji: "🧤",
+          text:
+            "One of the crew leans in the doorway with two coffees and the specific energy of a man who has already decided what you are doing this weekend. He looks at the fresh part on your bench, then at the box it came in, then at you. 'You paid retail for that.' He is not asking. 'There is a whole row of these lying out at Pick-A-Part with the sun on them. Bring gloves, bring cash, bring a breaker bar, and we go Saturday. Costs you a tank of gas and a day. You will not pay retail again.'",
+          choices: [
+            {
+              label: "Saturday it is",
+              lore: 6,
+              note:
+                "You wrote it on the calendar in the kitchen, which makes it real. The Road Trip is on the Marketplace tab whenever you can spare the day. A Saturday out there costs you the week, so pick one where nothing is on the lift.",
+              noteTone: "event-good",
+            },
+            {
+              label: "Some other Saturday",
+              lore: 4,
+              note:
+                "He shrugged and drank both coffees. The place is not going anywhere, and neither is he. The Road Trip is on the Marketplace tab when you want it.",
+              noteTone: "event-good",
+            },
+          ],
+        });
+        saveGame();
+        return true;
+      }
+      function maybeTriggerSwapIntro() {
+        if (tripKnown("swap") || !tripKnown("yard")) return false;
+        // The swap is the money one, so it waits for the money game and for
+        // the player to have done a Saturday out at least once.
+        if (onboardStageVal() < 2) return false;
+        if ((state.scavengeTripsTaken || 0) < 1) return false;
+        if (!quietWeekForBeat()) return false;
+        if (!claimLifeBeat()) return false;
+        learnTrip("swap");
+        queueScene({
+          id: "swap_intro",
+          art: "scene-friday-night-lot",
+          title: "Pomona, End of the Month",
+          emoji: "☕",
+          text:
+            "Same friend, different pitch, and this one he has clearly been saving. 'The yard is where you go when you need a thing. Pomona is where you go to find out what a thing is worth.' A thousand tables before sunrise, coffee in a paper cup, and half the county trying to sell each other the same alternator. 'Guys out there price on a feeling. You have been staring at part numbers for months. You will see it before they do. Buy the mispriced stuff, walk it back to the Marketplace, keep the difference.'",
+          choices: [
+            {
+              label: "Buy low, sell high",
+              lore: 6,
+              note:
+                "Pomona is on the Road Trip board now, next to the yard. The yard is for parts you need. The swap is for parts somebody else has not worked out the price of yet.",
+              noteTone: "event-good",
+            },
+            {
+              label: "I just need parts, not a side hustle",
+              lore: 5,
+              note:
+                "He let it go, mostly. Pomona is on the Road Trip board next to the yard whenever the mood takes you, and the tables do not care why you came.",
+              noteTone: "event-good",
+            },
+          ],
+        });
+        saveGame();
+        return true;
+      }
+
       function maybeTriggerBuckIntro() {
         if (!state.buck || state.buck.metOnce) return;
         if (state.pendingScene || state.pendingEvent) return;
@@ -13908,6 +14009,10 @@
       }
 
       function commitScavengeTrip(location) {
+        // Neither place is on the map until somebody has taken you there in
+        // conversation first.
+        if (location === "junkyard" && !tripKnown("yard")) return;
+        if (location === "swap" && !tripKnown("swap")) return;
         if (state.atTrip)
           return toast("You're already at this Saturday's trip.", "err");
         if (hasActiveRestorations())
@@ -14682,6 +14787,11 @@
           // using it all along. Do not take it away from them.
           if (!Object.prototype.hasOwnProperty.call(parsed.state, "loansUnlocked"))
             state.loansUnlocked = true;
+          // Same for the Saturday trips: a save from before anybody thought to
+          // mention the yard has been driving out there for months.
+          if (!Object.prototype.hasOwnProperty.call(parsed.state, "tripsKnown"))
+            state.tripsKnown = { yard: true, swap: true };
+          if (!state.tripsKnown) state.tripsKnown = { yard: false, swap: false };
           if (!savedHasScenesSeen) {
             state.scenesSeen = {};
             Object.keys(CUTSCENE_ART).forEach((k) => (state.scenesSeen[k] = true));
@@ -15649,6 +15759,8 @@
         // Ahead of the random beats: running out of money is not a coincidence
         // and he does not arrive by dice roll.
         if (maybeTriggerSharkIntro()) return;
+        if (maybeTriggerYardIntro()) return;
+        if (maybeTriggerSwapIntro()) return;
         if (maybeBreakdown()) return;
         if (maybeSpouseScenario()) return;
         if (Math.random() < 0.22) {
@@ -18268,6 +18380,9 @@
       // garage, nothing to sell) keeps its pill and says why, because the
       // player already knows it exists.
       function marketTabEarned(id) {
+        // The Road Trip board is a place a friend told you about, not a tab
+        // that appears with the others when show season opens.
+        if (id === "trip") return tripKnown("yard");
         if (onboardStageVal() >= 3) return true;
         // Safety: with an empty garage the lot must stay reachable or the
         // player is stranded with no project to build.
@@ -18284,9 +18399,12 @@
             : null;
         }
         if (id === "trip") {
-          return preShow
-            ? "A Saturday at the yard burns the whole week. Get the truck running and out to a show first, then go hunting for parts."
-            : null;
+          // Being told about the yard is what opens it. The old rule held it
+          // shut until show season, which would now show a pill a friend just
+          // pointed you at and then refuse to let you through it.
+          return tripKnown("yard")
+            ? null
+            : "Nobody has told you where to go hunting for parts yet.";
         }
         if (id === "sellcar") {
           if (preShow)
@@ -22896,7 +23014,7 @@ addEventListener("DOMContentLoaded",function(){
             <div class="small" style="color:var(--gold);font-weight:bold;margin-bottom:6px">🛠 Pomona Swap</div>
             <div class="tiny" style="color:var(--text);margin-bottom:8px">${swapCount} tool${swapCount === 1 ? "" : "s"} on tables today</div>
             <div class="tiny muted" style="margin-bottom:8px">$${SWAP_GAS_COST} gas + $${SWAP_ENTRY_FEE} entry + $${SWAP_PARKING_COST} parking = <span style="color:var(--text)">$${SWAP_TRIP_COST}</span></div>
-            ${button(`Hit the Swap · $${SWAP_TRIP_COST}`, "commitScavengeTrip('swap')", !ride.ok || busy || state.money < SWAP_TRIP_COST || !swapCount, "", "width:100%")}
+            ${tripKnown("swap") ? button(`Hit the Swap · $${SWAP_TRIP_COST}`, "commitScavengeTrip('swap')", !ride.ok || busy || state.money < SWAP_TRIP_COST || !swapCount, "", "width:100%") : ""}
           </div>`;
         // The home card: a Saturday spent with them instead of out on the hunt.
         // No cost, no ride needed (the truck can be in pieces and you can still

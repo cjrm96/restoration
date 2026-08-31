@@ -329,6 +329,60 @@ const pass = (msg) => console.log("✓", msg);
   if (loansOk !== true) fail("loans introduction: " + loansOk);
   pass("loans desk stays shut until the shark introduces it, and refusing still opens it");
 
+  // ── the Saturday trips. Neither the yard nor the swap was ever introduced:
+  // the Road Trip pill turned up with two others when show season opened, and
+  // the only writing explaining either place fired after the player had paid
+  // and committed. A friend mentions them now, the yard first. ──
+  const tripsOk = await page.evaluate(() => {
+    const stash = { known: JSON.parse(JSON.stringify(state.tripsKnown || {})),
+                    stage: state.onboardStage, installs: state.installsDone,
+                    trips: state.scavengeTripsTaken, view: state.view, beat: state.lifeBeatWeek };
+    const clr = () => {
+      state.pendingScene = null; state.pendingEvent = null; state.eventQueue = [];
+      state.noticeQueue = []; state.cutscene = null; state.pendingUnlock = null;
+      state.lifeBeatWeek = -1; clearTabArrival();
+    };
+    const restore = () => {
+      state.tripsKnown = stash.known; state.onboardStage = stash.stage;
+      state.installsDone = stash.installs; state.scavengeTripsTaken = stash.trips;
+      state.lifeBeatWeek = stash.beat; clr(); setView(stash.view); render("full");
+    };
+    state.tripsKnown = { yard: false, swap: false };
+    state.activeRestorations = [];
+    // Unknown means unreachable, even at show season.
+    state.onboardStage = 3;
+    if (marketTabEarned("trip")) { restore(); return "the Road Trip pill shows before anyone mentioned the yard"; }
+    clr(); commitScavengeTrip("junkyard");
+    if (state.atTrip) { restore(); return "the player drove to a yard nobody told them about"; }
+    // Too early to mean anything.
+    clr(); state.installsDone = 1;
+    if (maybeTriggerYardIntro()) { restore(); return "the yard tip landed before parts had cost anything"; }
+    // Quiet week with a few parts in: the beat lands.
+    clr(); state.installsDone = 4;
+    if (!maybeTriggerYardIntro()) { restore(); return "the yard beat never fired on a quiet week"; }
+    if (!state.pendingScene || state.pendingScene.id !== "yard_intro") { restore(); return "wrong scene queued for the yard"; }
+    if (tripKnown("swap")) { restore(); return "the yard beat gave away Pomona too"; }
+    resolvePendingScene(1);                       // decline, still learns the place
+    if (!tripKnown("yard")) { restore(); return "declining the Saturday forgot the place exists"; }
+    if (!marketTabEarned("trip") || marketTabLock("trip")) { restore(); return "the pill is earned but still locked"; }
+    // Pomona is not a destination yet.
+    clr(); commitScavengeTrip("swap");
+    if (state.atTrip) { restore(); return "the swap was reachable before its own beat"; }
+    // After a Saturday out, with the money game open.
+    clr(); state.scavengeTripsTaken = 1; state.onboardStage = 2; state.atTrip = false;
+    if (!maybeTriggerSwapIntro()) { restore(); return "the swap beat never fired"; }
+    if (!state.pendingScene || state.pendingScene.id !== "swap_intro") { restore(); return "wrong scene queued for the swap"; }
+    resolvePendingScene(0);
+    if (!tripKnown("swap")) { restore(); return "the swap beat did not open Pomona"; }
+    // Neither repeats.
+    clr();
+    if (maybeTriggerYardIntro() || maybeTriggerSwapIntro()) { restore(); return "a trip beat fired twice"; }
+    restore();
+    return true;
+  });
+  if (tripsOk !== true) fail("Saturday trips: " + tripsOk);
+  pass("the yard and the swap are each introduced by a friend before they exist");
+
   // ── the mechanic is doing the work. While the shop has the truck the player
   // cannot be the one who stripped the bolt, lost the 10mm, or fixed one thing
   // and broke two more, and the car is not under their tarp for the storm
@@ -574,13 +628,20 @@ const pass = (msg) => console.log("✓", msg);
   }));
   const pillsOk = await page.evaluate(() => {
     const stash = state.onboardStage;
+    // Road Trip is no longer on the stage ladder at all: a friend has to point
+    // the player at the yard first, which is covered by its own check below.
+    const tripStash = JSON.parse(JSON.stringify(state.tripsKnown || {}));
+    state.tripsKnown = { yard: false, swap: false };
     state.onboardStage = 2;
     if (marketTabEarned("trip") || marketTabEarned("sellcar"))
-      return "Road Trip / Sell Cars are earned before show season";
+      return "Road Trip / Sell Cars are earned before anyone opened them";
     if (!marketTabEarned("sell")) return "Sell Tools & Parts must always be open";
     state.onboardStage = 3;
-    if (!marketTabEarned("trip") || !marketTabEarned("sellcar") || !marketTabEarned("buy"))
+    if (marketTabEarned("trip"))
+      return "show season alone opened the Road Trip board";
+    if (!marketTabEarned("sellcar") || !marketTabEarned("buy"))
       return "the rest of the Marketplace did not open with show season";
+    state.tripsKnown = tripStash;
     // Empty garage keeps the lot reachable or the player is stranded.
     const cars = state.cars;
     state.cars = []; state.onboardStage = 0;
