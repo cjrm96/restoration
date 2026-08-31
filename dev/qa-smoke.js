@@ -187,6 +187,43 @@ const pass = (msg) => console.log("✓", msg);
   if (crateOk !== true) fail("bedside box: " + crateOk);
   pass("bedside box → starter tools, first DIY open");
 
+  // ── week one has to look composed, not half-loaded. The side column is
+  // three staged reveals that are all correctly empty on the first screen, so
+  // the grid must collapse rather than hold 320px+ of nothing beside the
+  // build, and it must come back the moment anything earns it. ──
+  const spacingOk = await page.evaluate(() => {
+    const grid = () => document.querySelector(".grid-main");
+    setView("workshop"); render("full");
+    const g = grid();
+    if (!g) return "no main grid rendered";
+    const side = g.children[1];
+    const sideEmpty = !side || !side.innerText.trim();
+    if (!sideEmpty) return "the side column already has content on the first screen";
+    if (!g.classList.contains("solo"))
+      return "the grid kept two columns with nothing in the second";
+    if (g.getBoundingClientRect().width > 800)
+      return "the collapsed grid did not take a centred reading width";
+    if (!document.querySelector(".topbar.topbar-sparse"))
+      return "the topbar did not report itself sparse with only a money chip";
+    // Start a job: the work-order board earns the column back.
+    const money0 = state.money;
+    state.money = 20000;
+    const car = currentCar();
+    const part = PARTS.find((p) => !car.installedParts.includes(p.id));
+    installPart(part.id, "shop", false);
+    state.noticeQueue = []; state.pendingScene = null; render("full");
+    const g2 = grid();
+    if (g2.classList.contains("solo")) return "the second column never came back";
+    if (!g2.children[1] || !g2.children[1].innerText.trim())
+      return "two columns returned but the side is still empty";
+    // put it back
+    state.activeRestorations = []; state.money = money0;
+    state.noticeQueue = []; state.pendingScene = null; render("full");
+    return true;
+  });
+  if (spacingOk !== true) fail("week one layout: " + spacingOk);
+  pass("week one collapses to one centred column, and earns the second back");
+
   // ── how long week one actually is. The four roadworthy systems set it, and
   // at the curb only one job runs at a time, so every job is a week of a
   // 22-week season spent before the player can enter anything. Pure
