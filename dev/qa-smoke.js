@@ -187,6 +187,54 @@ const pass = (msg) => console.log("✓", msg);
   if (crateOk !== true) fail("bedside box: " + crateOk);
   pass("bedside box → starter tools, first DIY open");
 
+  // ── Space & Storage is two things in one tab: a $200 tool-storage upgrade a
+  // player needs the moment the milk crate fills, and a $2,500 carport against
+  // a $5,000 bankroll that buys parallel jobs while the whole road to
+  // roadworthy is eight sequential ones under $900. The tab waits until it has
+  // something worth showing, and both ways of earning it must work or a player
+  // who buys tools gets walled off from the storage they now need. ──
+  const spaceOk = await page.evaluate(() => {
+    const strip = () => [...document.querySelectorAll(".shop-subtabs .tab")].map((t) => t.textContent);
+    const hasSpace = () => strip().some((t) => /Space/.test(t));
+    setView("workshop"); setShopSub("suggested"); render("full");
+    if (hasSpace()) return "Space & Storage is on the strip in week one";
+    if (strip().length !== 3) return "week one strip should be 3 pills, got " + strip().length;
+    // Cannot be navigated to while it is off the strip.
+    setShopSub("workspace");
+    if (state.shopSub === "workspace") return "setShopSub reached a hidden sub-tab";
+    // A save written on it must fall back rather than strand the player.
+    state.shopSub = "workspace"; render("full");
+    if (state.shopSub !== "suggested") return "a save written on the hidden tab stranded there";
+    if (/Covered Carport/.test(document.getElementById("appContent").innerText))
+      return "the carport is still reachable in week one";
+    // Path 1: the crate fills up, so the upgrade the player now needs appears.
+    const tools0 = state.ownedTools.slice();
+    const cap = toolStorageData().maxTools;
+    while (state.ownedTools.length < cap) {
+      const t = TOOLS_LIST.find((x) => !state.ownedTools.includes(x.id));
+      if (!t) break;
+      state.ownedTools.push(t.id);
+    }
+    render("full");
+    if (!hasSpace()) return "a full tool crate did not open Space & Storage";
+    setShopSub("workspace"); render("full");
+    if (!/Upgrade Storage/.test(document.getElementById("appContent").innerText))
+      return "the tool storage upgrade is not reachable once the crate is full";
+    // Path 2: roadworthy opens it whatever the tools look like.
+    state.ownedTools = tools0; state.shopSub = "suggested";
+    const car = currentCar();
+    const before = { e: car.engine, t: car.transmission, b: car.brakes, s: car.steering };
+    car.engine = 60; car.transmission = 50; car.brakes = 50; car.steering = 50;
+    render("full");
+    const rwOpens = hasSpace();
+    car.engine = before.e; car.transmission = before.t; car.brakes = before.b; car.steering = before.s;
+    state.noticeQueue = []; state.pendingUnlock = null; setShopSub("suggested"); render("full");
+    if (!rwOpens) return "a roadworthy car did not open Space & Storage";
+    return true;
+  });
+  if (spaceOk !== true) fail("Space & Storage gate: " + spaceOk);
+  pass("Space & Storage waits for a full tool crate or a running truck");
+
   // ── pre-season ramp: season 1 opens straight into the competitive
   // calendar (no pre-season), but season 2+ opens in the 4-week off-season
   // with shows locked and the side-work gig board live and paying. Drive the

@@ -10184,7 +10184,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.51.0";
+      const GAME_VERSION = "0.52.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -10865,6 +10865,24 @@
       }
       function nextToolStorage() {
         return TOOL_STORAGE_LEVELS[toolStorageIdx() + 1];
+      }
+      // Space & Storage holds two very different things. Tool Storage is a
+      // two hundred dollar upgrade a player genuinely needs the moment the
+      // milk crate fills up. Work Space Progression is a twenty-five hundred
+      // dollar carport, against a five thousand dollar bankroll, that buys
+      // two jobs at once while the whole road to roadworthy is eight jobs
+      // done one at a time for under nine hundred. Offering that in week one
+      // is the same trap the loans desk used to be, so the tab waits until it
+      // has something worth showing: a full tool crate, or a running truck.
+      function spaceTabEarned() {
+        if (onboardStageVal() >= 2) return true;
+        const car = currentCar();
+        if (car && roadworthy(car)) return true;
+        const storage = toolStorageData();
+        if (storage && (state.ownedTools || []).length >= storage.maxTools) return true;
+        // Safety valve: a save that somehow moved past the first workspace
+        // must always be able to reach its own upgrade path.
+        return workshopIdx() > 0;
       }
       // The top two boxes (Full Bank Tool Chest, Snap-it 72" Bank) are a
       // rite of passage bought new, they carry their own delivery cutscenes.
@@ -17861,6 +17879,8 @@
         requestRender("full");
       }
       function setShopSub(sub) {
+        // Never navigate to a pill that is not on the strip.
+        if (sub === "workspace" && !spaceTabEarned()) return;
         state.shopSub = sub;
         requestRender("full");
       }
@@ -21981,6 +22001,10 @@ addEventListener("DOMContentLoaded",function(){
           }${lockedToggle}`;
         }
 
+        // A save written on Space & Storage must not reload onto a pill the
+        // strip is no longer drawing. Fall back to the tab that always works
+        // and is the actual next step anyway.
+        if (state.shopSub === "workspace" && !spaceTabEarned()) state.shopSub = "suggested";
         if (state.shopSub === "workspace") {
           const storage = toolStorageData();
           const nextStorage = nextToolStorage();
@@ -22034,7 +22058,7 @@ addEventListener("DOMContentLoaded",function(){
               return `<div style="display:flex;align-items:center;gap:10px;background:rgba(143,203,126,0.1);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">✅</span><div><div class="small" style="color:var(--green-bright);font-weight:bold">Roadworthy</div><div class="tiny muted">The car can drive itself to a show. Time to compete.</div></div></div>`;
             }
             return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px">⚠️</span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " ✓"} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " ✓"} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " ✓"} · Steering ${car.steering}/${ROADWORTHY_STEERING}${steerGap ? " (need +" + steerGap + ")" : " ✓"}${onboardStageVal() <= 1 ? `<div class="tiny" style="color:var(--gold-soft);margin-top:4px">🔓 Get her running and the Marketplace opens up.</div>` : ""}</div></div></div>`;
-          })()}<div class="shop-subtabs">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts" || state.shopSub === "extras", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')")}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 Free Budget part ready, tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div onclick="installNextYardPull()" style="cursor:pointer;background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck, tap to install the next one, free.</span><span style="opacity:0.7">→</span></div>` : ""; })()}${subcontent}`,
+          })()}<div class="shop-subtabs">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts" || state.shopSub === "extras", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${spaceTabEarned() ? tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')") : ""}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 Free Budget part ready, tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div onclick="installNextYardPull()" style="cursor:pointer;background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span>📦 ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck, tap to install the next one, free.</span><span style="opacity:0.7">→</span></div>` : ""; })()}${subcontent}`,
         )}</div><div>${renderUpcomingBar()}${renderRestorationPanel(car)}${(state.installsDone || 0) > 0 || activeTasksForCar(car.id).length ? mobileFold("notes", "📋 Shop Notes", workspaceData().name, panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Build Speed", `+${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${roadworthy(car) ? "" : chalkRow("Roadworthy", "Not yet", "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}`, "", "#1d1611", "clipboard")) : ""}</div></div>`;
       }
 
