@@ -616,9 +616,37 @@ const pass = (msg) => console.log("✓", msg);
   if (unlock !== "shows") fail("Compete did not unlock after first listing (got " + unlock + ")");
   await page.keyboard.press("Enter");
   await page.waitForTimeout(300);
-  const buckIntro = await page.evaluate(() => (state.characterDMs || []).some((d) => d.id === "buck-intro"));
-  if (!buckIntro) fail("Buck's intro DM did not land when Compete unlocked");
-  pass("first listing → Compete unlock (+ Buck intro DM)");
+  // Buck used to text the moment this tab opened, which put a taunt from a
+  // stranger in the phone before the player had ever laid eyes on him. He
+  // introduces himself in person at the first Cars & Coffee now, and the DM
+  // follows the meeting.
+  const buckEarly = await page.evaluate(() => ({
+    inPhone: (state.characterDMs || []).some((d) => /Buck/i.test(d.h || "")),
+    met: !!(state.buck && state.buck.metOnce),
+  }));
+  if (buckEarly.inPhone) fail("Buck texted before the player ever met him");
+  if (buckEarly.met) fail("Buck is marked met without the in-person scene");
+  pass("first listing → Compete unlock (Buck stays out of the phone)");
+
+  // Meet him in the side lot, and only then does he turn up in the DMs.
+  const buckOk = await page.evaluate(() => {
+    state.pendingScene = null; state.pendingEvent = null; state.pendingUnlock = null;
+    clearTabArrival();
+    maybeTriggerBuckIntro();
+    if (!state.pendingScene || state.pendingScene.id !== "buck_intro")
+      return "the in-person Buck scene did not queue";
+    if ((state.characterDMs || []).some((d) => /Buck/i.test(d.h || "")))
+      return "Buck texted while the player was still talking to him";
+    resolvePendingScene(0);
+    if (!(state.buck && state.buck.metOnce)) return "the meeting did not mark him met";
+    const dm = (state.characterDMs || []).find((d) => d.id === "buck-intro");
+    if (!dm) return "no follow-up DM after the meeting";
+    if (/Heard somebody's been wrenching/.test(dm.t || ""))
+      return "the DM still reads as a cold open from a stranger";
+    return true;
+  });
+  if (buckOk !== true) fail("Buck introduction: " + buckOk);
+  pass("Buck introduces himself in person, then texts");
 
   // ── enter a show, click through the cinematic, land on results ──
   const showOk = await page.evaluate(() => {

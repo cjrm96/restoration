@@ -10184,7 +10184,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.52.0";
+      const GAME_VERSION = "0.53.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -11364,10 +11364,10 @@
             recordMoneyChange(150, `${sp.name} liked the shout-out`);
           }
         }
-        if (choice.rivalPoke && state.buck) {
+        if (choice.rivalPoke && state.buck && state.buck.metOnce) {
           pushCharacterDM({ id: "buck-radio", a: "🐎", c: "red", h: "@BuckStallion67", t: "heard your little radio hit. taillights, huh. cute. we'll see who's talking after the next one. - B" });
         }
-        if (choice.rivalRespect && state.buck) {
+        if (choice.rivalRespect && state.buck && state.buck.metOnce) {
           pushCharacterDM({ id: "buck-radio", a: "🐎", c: "red", h: "@BuckStallion67", t: "...classy thing to say on air. don't let it go to your head. won't happen again." });
         }
         if (choice.wifeDM) {
@@ -11487,6 +11487,15 @@
           state.buck.metOnce = true;
           state.buck.firstImpression = choice.buckImpression;
           if (choice.note) pushRivalNote(choice.note);
+          // He looked the truck over in the side lot, now he has your handle.
+          // This is the first time his name is allowed in the phone.
+          pushCharacterDM({
+            id: "buck-intro",
+            a: "🐎",
+            c: "red",
+            h: "@BuckStallion67",
+            t: "that truck of yours. saw it. it's rough. rough isn't nothing, plenty of guys never drag one home at all. i enter every show on the calendar, so i'll be seeing it again. bring it when it runs. - B",
+          });
         }
         if (choice.mechanicTrust) {
           if (!state.mechanic) state.mechanic = { metOnce: false, trust: 0, shopVisits: 0, milestoneSeen: false };
@@ -20503,17 +20512,10 @@ addEventListener("DOMContentLoaded",function(){
         if (next === 3 && inPreSeason()) return;
         state.onboardStage = next;
         state.pendingUnlock = ONBOARD_UNLOCKS[next];
-        // Buck introduces himself the moment show season opens, the rival
-        // arrives by DM, not by tutorial card.
-        if (next === 3) {
-          pushCharacterDM({
-            id: "buck-intro",
-            a: "🐎",
-            c: "red",
-            h: "@BuckStallion67",
-            t: "Heard somebody's been wrenching on an old Forde up the street. I enter every show on the calendar, so I'll see it for myself soon enough. Runs yet, or does it just sit pretty? - B",
-          });
-        }
+        // Buck used to text here, the moment show season opened, which put a
+        // taunt from a stranger in the player's phone before they had laid
+        // eyes on him. He meets you at your first Cars and Coffee now, and the
+        // DM follows that, the way a person you actually met would.
         playSfx("success");
         saveGame();
       }
