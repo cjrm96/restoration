@@ -500,6 +500,53 @@ const pass = (msg) => console.log("✓", msg);
   if (flyerOk !== true) fail("show flyer: " + flyerOk);
   pass("show flyer: weighted payout, status badge, no doubled ticks");
 
+  // ── the two notes on the corkboard. They were 11px of mid-tan on tan cork
+  // at 85% opacity, effectively invisible. They are paper slips now, and this
+  // holds the ink to a real contrast ratio against the stock rather than
+  // trusting that it still looks fine. ──
+  const noteOk = await page.evaluate(() => {
+    const lum = ([r, g, b]) => {
+      const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const parse = (c) => c.match(/\d+/g).slice(0, 3).map(Number);
+    // Stand the board up ourselves: show season open, no shows run yet, so
+    // Local is still locked (next-rung note) and events remain gated (lock note).
+    const stash = { stage: state.onboardStage, hist: state.history, view: state.view,
+                    money: state.money, fuel: state.fuel, act: state.activeRestorations };
+    const c = currentCar();
+    const car0 = { e: c.engine, t: c.transmission, b: c.brakes, s: c.steering };
+    state.onboardStage = 3; state.pendingUnlock = null; clearTabArrival();
+    state.noticeQueue = []; state.money = 5000; state.fuel = 50; state.activeRestorations = [];
+    c.engine = 70; c.transmission = 65; c.brakes = 65; c.steering = 65;
+    state.history = [];
+    setView("shows"); render("full");
+    const restore = () => {
+      Object.assign(c, { engine: car0.e, transmission: car0.t, brakes: car0.b, steering: car0.s });
+      Object.assign(state, { onboardStage: stash.stage, history: stash.hist, money: stash.money,
+        fuel: stash.fuel, activeRestorations: stash.act, noticeQueue: [] });
+      setView(stash.view); render("full");
+    };
+    const notes = [...document.querySelectorAll(".board-note")];
+    if (!notes.length) { restore(); return "no board notes rendered on the Compete board"; }
+    for (const n of notes) {
+      const cs = getComputedStyle(n);
+      const ink = parse(cs.color);
+      // the stock is a gradient, so measure against its darker stop
+      const paper = [227, 213, 184];
+      const L1 = lum(ink), L2 = lum(paper);
+      const r = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+      if (r < 4.5) { restore(); return `note ink is ${r.toFixed(1)}:1 against the paper, needs 4.5:1`; }
+      if (parseFloat(cs.fontSize) < 12) { restore(); return `note is ${cs.fontSize}, too small to sit on the cork`; }
+      if (parseFloat(cs.opacity) < 1) { restore(); return "a note is still faded out on top of everything else"; }
+    }
+    const count = notes.length;
+    restore();
+    return count;
+  });
+  if (typeof noteOk !== "number") fail("corkboard notes: " + noteOk);
+  pass(`corkboard notes readable: ${noteOk} slips, ink on paper rather than tan on tan`);
+
   // ── the named grid fills in over a season. Three of the four rivals run
   // Local, so an uncapped field put every face in the game plus Buck on the
   // lawn at the player's debut. ──

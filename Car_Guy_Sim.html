@@ -609,6 +609,37 @@
         margin-bottom: 14px;
         flex-wrap: wrap;
       }
+      /* Notes pinned to the cork, not text lying on it. These two lines (what
+         the next show tier needs, and how many events are still locked) were
+         11px of mid-tan on a tan corkboard at 85% opacity, which is close to
+         invisible. They are annotations about the board rather than entries on
+         it, so they read as small paper slips: dark ink on pale stock, which
+         also keeps them clearly distinct from the dark show cards. */
+      .board-note {
+        display: block;
+        width: fit-content;
+        max-width: min(92%, 620px);
+        margin: 4px auto 12px;
+        padding: 7px 14px;
+        font-size: 12.5px;
+        line-height: 1.5;
+        text-align: center;
+        color: #3f3222;
+        background: linear-gradient(180deg, #efe3ca 0%, #e3d5b8 100%);
+        border: 1px solid rgba(80, 60, 34, 0.28);
+        border-radius: 3px;
+        box-shadow:
+          0 2px 5px rgba(0, 0, 0, 0.32),
+          inset 0 1px 0 rgba(255, 255, 255, 0.55);
+      }
+      .board-note b,
+      .board-note strong {
+        color: #7a4f16;
+      }
+      .board-note .note-lock {
+        opacity: 0.75;
+        margin-right: 3px;
+      }
       /* With fuel, followers, trend, loans and Advance Week all still to be
          earned, the topbar can come down to a single money chip. Left-align
          what is left against the week plate rather than letting one chip
@@ -10466,7 +10497,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.60.1";
+      const GAME_VERSION = "0.60.2";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -22622,7 +22653,7 @@ addEventListener("DOMContentLoaded",function(){
         const openTiers = tierOrder.filter(tierReachable);
         const nextTier = tierOrder.find((t) => !tierReachable(t));
         const nextTierNote = nextTier
-          ? `<div class="tiny muted" style="text-align:center;padding:6px 10px;margin:2px 0 8px">Next rung: <span style="color:var(--gold-soft);font-weight:bold">${nextTier}</span> · ${showProgressRequirement(SHOWS_MASTER.find((s) => s.tier === nextTier)).msg || "keep climbing."}</div>`
+          ? `<div class="board-note">Next rung: <b>${nextTier}</b> · ${showProgressRequirement(SHOWS_MASTER.find((s) => s.tier === nextTier)).msg || "keep climbing."}</div>`
           : "";
         const pillRow =
           openTiers.length < 2
@@ -22646,7 +22677,7 @@ addEventListener("DOMContentLoaded",function(){
         const visibleShows = tierShows.filter((s) => !s.gate || evaluateShowGate(s).ok);
         const lockedAheadCount = tierShows.length - visibleShows.length;
         const lockedAheadHint = lockedAheadCount > 0
-          ? `<div class="tiny muted" style="text-align:center;padding:12px 10px;opacity:0.85;line-height:1.6">🔒 ${lockedAheadCount} more ${state.showSub} event${lockedAheadCount === 1 ? "" : "s"} unlock as your reputation, garage, and seasons grow.</div>`
+          ? `<div class="board-note"><span class="note-lock">🔒</span>${lockedAheadCount} more ${state.showSub} event${lockedAheadCount === 1 ? "" : "s"} unlock as your reputation, garage, and seasons grow.</div>`
           : "";
         const showPrepBoard = heroPanel(
           "Show Prep Board",
