@@ -187,6 +187,48 @@ const pass = (msg) => console.log("✓", msg);
   if (crateOk !== true) fail("bedside box: " + crateOk);
   pass("bedside box → starter tools, first DIY open");
 
+  // ── how long week one actually is. The four roadworthy systems set it, and
+  // at the curb only one job runs at a time, so every job is a week of a
+  // 22-week season spent before the player can enter anything. Pure
+  // arithmetic on a copy of the truck: this must not touch real state, or it
+  // eats the installs the onboarding checks below depend on. ──
+  const weekOneOk = await page.evaluate(() => {
+    const src = currentCar();
+    const car = JSON.parse(JSON.stringify(src));
+    const owned = new Set(state.ownedTools);
+    const done = new Set(car.installedParts);
+    let jobs = 0, weeks = 0, spent = 0, budget = 5000;
+    const met = () =>
+      car.engine >= ROADWORTHY_ENGINE && car.transmission >= ROADWORTHY_TRANSMISSION &&
+      car.brakes >= ROADWORTHY_BRAKES && car.steering >= ROADWORTHY_STEERING;
+    while (!met() && jobs < 40) {
+      const need = {
+        engine: ROADWORTHY_ENGINE - car.engine,
+        transmission: ROADWORTHY_TRANSMISSION - car.transmission,
+        brakes: ROADWORTHY_BRAKES - car.brakes,
+        steering: ROADWORTHY_STEERING - car.steering,
+      };
+      const short = Object.keys(need).filter((k) => need[k] > 0);
+      const pool = PARTS.filter((p) => !done.has(p.id) && short.includes(p.category));
+      if (!pool.length) break;
+      pool.sort((a, b) => partCost(a, "diy") - partCost(b, "diy"));
+      const p = pool[0];
+      const mode = (p.tools || []).every((t) => owned.has(t)) ? "diy" : "shop";
+      const c = partCost(p, mode);
+      if (budget < c) break;
+      budget -= c; spent += c; done.add(p.id);
+      car[p.category] = Math.min(100, car[p.category] + p.imp);
+      weeks += (TASK_WEEKS[p.tier] || 1);
+      jobs++;
+    }
+    if (!met()) return "the starting truck cannot reach roadworthy from a fresh save";
+    if (jobs > 6) return `week one is ${jobs} jobs / ${weeks} weeks, budget is 6 jobs`;
+    if (spent > 1200) return `week one costs $${spent} of a $5,000 start, budget is $1,200`;
+    return { jobs, weeks, spent };
+  });
+  if (typeof weekOneOk === "string") fail("week one length: " + weekOneOk);
+  pass(`week one: ${weekOneOk.jobs} jobs, ${weekOneOk.weeks} weeks of 22, $${weekOneOk.spent} to roadworthy`);
+
   // ── Space & Storage is two things in one tab: a $200 tool-storage upgrade a
   // player needs the moment the milk crate fills, and a $2,500 carport against
   // a $5,000 bankroll that buys parallel jobs while the whole road to

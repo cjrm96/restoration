@@ -10184,7 +10184,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.53.0";
+      const GAME_VERSION = "0.54.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -10229,8 +10229,15 @@
               cooling: 16,
               fuel: 15,
               exhaust: 14,
-              transmission: 12,
-              brakes: 14,
+              // The four roadworthy systems set the length of week one. At the
+              // old numbers the truck needed eight jobs to legally move, and
+              // with one job running at a time at the curb that is eight weeks
+              // of a twenty-two week season spent before the player can enter
+              // anything. The bar stays at 25 for every car in the game; the
+              // barn find simply turns out to be in better shape than the
+              // listing let on, which is six jobs instead of eight.
+              transmission: 18,
+              brakes: 19,
               suspension: 16,
               steering: 15,
               wheels: 20,
