@@ -2393,6 +2393,23 @@
       }
       .cs-hint-key { color: #e8b954; font-weight: bold; margin-left: 6px; }
       @keyframes csHint { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+      /* While a scene is held, the exit hint is not on screen at all. The old
+         behaviour put "ENTER" in the corner, pulsing, before the caption had
+         finished arriving, which read as an instruction to leave. It fades in
+         when the hold lifts, so its arrival is the signal that the scene is
+         yours to dismiss. */
+      #cutsceneRoot.cs-held .cs-hint {
+        opacity: 0;
+        animation: none;
+        pointer-events: none;
+      }
+      #cutsceneRoot.cs-open .cs-hint {
+        animation: csHintIn 0.45s ease both, csHint 2.4s ease-in-out 0.45s infinite;
+      }
+      @keyframes csHintIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 0.55; transform: none; } }
+      @media (prefers-reduced-motion: reduce) {
+        #cutsceneRoot.cs-open .cs-hint { animation: none; opacity: 0.8; }
+      }
       /* Finale ceremony: cold-open lines fade in one at a time over black */
       .cs-coldopen {
         position: absolute;
@@ -10167,7 +10184,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.50.0";
+      const GAME_VERSION = "0.51.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -10318,6 +10335,7 @@
           pendingUnlock: null,
           tabNew: null,
           tabsVisited: {},
+          scenesSeen: {},
           tutorialStep: 0,
           sfxMuted: false,
           settings: {
@@ -14361,8 +14379,21 @@
             parsed.state,
             "preWeek",
           );
+          const savedHasScenesSeen = Object.prototype.hasOwnProperty.call(
+            parsed.state,
+            "scenesSeen",
+          );
           Object.assign(state, makeDefaultState(), parsed.state);
           if (!savedHasTutorialField) state.tutorialComplete = true;
+          // A save written before the cut-scene hold existed belongs to
+          // somebody who has already watched these scenes. Mark the whole
+          // catalogue seen so a returning player is never held on a beat they
+          // sat through months ago. New games start with an empty map and so
+          // get the hold on every first view, which is the point of it.
+          if (!savedHasScenesSeen) {
+            state.scenesSeen = {};
+            Object.keys(CUTSCENE_ART).forEach((k) => (state.scenesSeen[k] = true));
+          }
           // Saves from before pre-season existed were mid-competition, resume
           // there rather than dropping a veteran into a fresh off-season.
           if (!savedHasPreWeek) { state.preWeek = 0; state.gigs = []; }
@@ -20472,21 +20503,133 @@ addEventListener("DOMContentLoaded",function(){
      Escape, or a click dismisses and fires the queued follow-up.
   ═══════════════════════════════════════════ */
       let lastCutsceneSig = null;
+      /* ═══════════════════════════════════════════
+     THE CUT-SCENE HOLD
+     Players were losing the story to their own keystroke. Enter starts the
+     game from the title screen, the intro scene is the very next thing on
+     screen, and a second tap 120ms later dismissed a scene whose caption
+     had not finished arriving. The whole overlay was one dismiss target,
+     live from the first frame, with a corner hint reading ENTER.
+
+     So the exit is held shut until the caption has actually landed. This
+     buys nothing from a player who reads a line and decides they are not
+     interested, and it is not meant to: it exists to stop an accident, not
+     to change a mind. Scoped hard, per the design review:
+       · the ambient load-in scene never holds (it fires every session)
+       · a scene already watched never holds
+       · only the first beat of a run holds, so a queued chain of cards does
+         not become a queue of waits
+       · Escape is always live, because Escape means "let me out", not "next"
+       · reduced motion opts out entirely, since with no animation there is
+         nothing to wait for and a dead key would just read as broken
+  ═══════════════════════════════════════════ */
+      let cutsceneHoldUntil = 0;
+      let lastCutsceneDismissAt = 0;
+      // A hold is only honest while something is visibly moving. Past this
+      // the screen looks finished, so the exit opens whatever the paint is
+      // doing. Also the backstop if a slow decode stalls the caption.
+      const CS_HOLD_CAP_MS = 1600;
+      // Two scenes closer together than this are one run, and only its first
+      // beat holds. A judgment call, not a measurement: long enough to cover
+      // a queued follow-up firing off the same click, short enough that a
+      // scene the player walked into later still gets its hold.
+      const CS_CHAIN_WINDOW_MS = 2500;
+      // The splash stays opaque over the boot cut scene while its art fades
+      // in, then fades off it. Until that is done the player is looking at the
+      // title screen, not the scene, so the hold has to span it.
+      const SPLASH_HOLD_MS = 900;
+      const SPLASH_FADE_S = 0.45;
+      const SPLASH_COVER_MS = SPLASH_HOLD_MS + SPLASH_FADE_S * 1000;
+      // A beat of visible, settled scene before the exit opens.
+      const CS_SETTLE_MS = 450;
+
+      function prefersReducedMotion() {
+        return !!(
+          window.matchMedia &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        );
+      }
+      // How long the caption actually takes to arrive, read off the element
+      // rather than guessed, so retiming the animation cannot desync the hold.
+      function captionArrivalMs() {
+        const cap = document.querySelector("#cutsceneRoot .cs-caption");
+        if (!cap) return 0;
+        const cs = getComputedStyle(cap);
+        const ms = (v) =>
+          (v || "0s").split(",")[0].trim().endsWith("ms")
+            ? parseFloat(v)
+            : parseFloat(v) * 1000;
+        const total = ms(cs.animationDelay) + ms(cs.animationDuration);
+        return Number.isFinite(total) && total > 0
+          ? Math.min(total, CS_HOLD_CAP_MS)
+          : 0;
+      }
+      function cutsceneHoldActive() {
+        return Date.now() < cutsceneHoldUntil;
+      }
+      function shouldHoldCutscene(art, opts) {
+        if (!art) return false;
+        if (opts && opts.noHold) return false;
+        if (prefersReducedMotion()) return false;
+        if ((state.scenesSeen || {})[art]) return false;
+        if (Date.now() - lastCutsceneDismissAt < CS_CHAIN_WINDOW_MS) return false;
+        return true;
+      }
       function playCutscene(opts) {
         if (!opts || !CUTSCENE_ART[opts.art]) return;
+        const hold = shouldHoldCutscene(opts.art, opts);
         state.cutscene = {
           art: opts.art,
           kicker: opts.kicker || "",
           title: opts.title || "",
           sub: opts.sub || "",
           cta: opts.cta || "Continue",
+          held: hold,
         };
+        if (!state.scenesSeen) state.scenesSeen = {};
+        state.scenesSeen[opts.art] = true;
         playSfx("swoosh");
         renderCutsceneLayer();  // opaque overlay up this frame, no UI flash
+        armCutsceneHold(0);
         requestRender("full");
       }
-      function dismissCutscene() {
+      // Start the hold clock. `coverMs` is time the scene is on screen but not
+      // yet visible to the player, which is the boot case: the intro scene is
+      // armed under the splash and the splash stays opaque over it while the
+      // art fades in. The clock has to span that, or the accidental second tap
+      // lands in the gap, which is the entire bug being fixed here.
+      function armCutsceneHold(coverMs) {
+        cutsceneHoldUntil = 0;
+        const cs = state.cutscene;
+        if (!cs || !cs.held) {
+          const rootNow = document.getElementById("cutsceneRoot");
+          if (rootNow) rootNow.classList.add("cs-open");
+          return;
+        }
+        // Two shapes of wait. A scene that opens in front of the player is
+        // held until its caption has arrived, so the whole hold is spent
+        // watching something move. A scene revealed from behind the splash has
+        // already done its animating out of sight, so piling the caption's
+        // full duration on top would leave the player staring at a finished,
+        // motionless screen with a dead key. That one gets the cover plus a
+        // short settle instead: long enough that a stray keystroke cannot
+        // carry through, short enough that nobody waits on a still image.
+        const wait = coverMs
+          ? coverMs + CS_SETTLE_MS
+          : captionArrivalMs() || CS_HOLD_CAP_MS;
+        cutsceneHoldUntil = Date.now() + wait;
+        setTimeout(() => {
+          const root = document.getElementById("cutsceneRoot");
+          if (root) root.classList.add("cs-open");
+        }, wait);
+      }
+      function dismissCutscene(force) {
         if (!state.cutscene) return;
+        // Held shut until the caption has landed. Escape passes force and
+        // always gets through.
+        if (!force && cutsceneHoldActive()) return;
+        cutsceneHoldUntil = 0;
+        lastCutsceneDismissAt = Date.now();
         const root = document.getElementById("cutsceneRoot");
         state.cutscene = null;
         lastCutsceneSig = null;
@@ -20516,10 +20659,12 @@ addEventListener("DOMContentLoaded",function(){
           root.id = "cutsceneRoot";
           document.body.appendChild(root);
         }
-        root.className = "";
+        // A held scene starts without .cs-open, which keeps the ENTER hint
+        // out of sight. Nothing tells the player to leave until leaving works.
+        root.className = cs.held ? "cs-held" : "cs-open";
         const drift = cs.art.length % 2 ? "cs-drift-b" : "cs-drift-a";
         root.innerHTML = `<div class="cs-art ${drift}" style="background-image:url('${CUTSCENE_ART[cs.art]}')"></div><div class="cs-grain"></div><div class="cs-vignette"></div><div class="cs-bar cs-bar-top"></div><div class="cs-bar cs-bar-bot"></div><div class="cs-caption">${cs.kicker ? `<div class="cs-kicker">${cs.kicker}</div>` : ""}${cs.title ? `<div class="cs-title">${cs.title}</div>` : ""}${cs.sub ? `<div class="cs-sub">${cs.sub}</div>` : ""}</div><div class="cs-hint">${cs.cta}<span class="cs-hint-key">ENTER ▸</span></div>`;
-        root.onclick = () => dismissCutscene();
+        root.onclick = () => dismissCutscene(false);
       }
 
       // ---- Workspace vibe picker (shown on upgrade for tiers with vibes) ----
@@ -20637,6 +20782,9 @@ addEventListener("DOMContentLoaded",function(){
         const car = currentCar();
         playCutscene({
           art,
+          // Every session on a continue save. Holding this one would punish
+          // the player for coming back, which is exactly backwards.
+          noHold: true,
           kicker: `Week ${state.week} · back in the garage`,
           title: car ? `${car.year} ${car.make} ${car.model}` : "The build",
           sub: pickFresh(CAR_GUY_WISDOM, "loadIn"),
@@ -24226,7 +24374,14 @@ addEventListener("DOMContentLoaded",function(){
           title: "The Barn Find",
           sub: "The listing said “ran when parked.” The tarp says otherwise. The keys are yours now, let\u2019s get her home.",
           cta: "Pull the tarp",
+          // This is the scene the whole hold exists for: the player presses
+          // Enter to leave the title screen and the second half of that
+          // keystroke used to land here. The clock starts at the splash
+          // handoff, not now, because right now the splash covers it.
+          held: shouldHoldCutscene("scene-barn-find"),
         };
+        if (!state.scenesSeen) state.scenesSeen = {};
+        state.scenesSeen["scene-barn-find"] = true;
       }
       render("full");
       // Square the sticky header's corners once it's scrolled off the top.
@@ -24525,7 +24680,8 @@ addEventListener("DOMContentLoaded",function(){
             t.isContentEditable);
         if (e.key === "Escape") {
           if (state.cutscene) {
-            dismissCutscene();
+            // Escape means "let me out of here", so it is never held.
+            dismissCutscene(true);
           } else if (cheatPromptOpen) {
             closeCheatPrompt();
           } else if (state.settingsOpen) {
@@ -24544,7 +24700,7 @@ addEventListener("DOMContentLoaded",function(){
           if (cheatPromptOpen || state.settingsOpen) return;
           if (state.cutscene) {
             e.preventDefault();
-            dismissCutscene();
+            dismissCutscene(false);
             return;
           }
           if (!state.tutorialComplete) {
@@ -25123,6 +25279,10 @@ addEventListener("DOMContentLoaded",function(){
         // the cutscene) while the element lingers purely as a visual cover.
         sp.dataset.handoff = "1";
         sp.style.pointerEvents = "none";
+        // Input is live from this instant, so the hold starts here too. It has
+        // to cover the splash sitting over the scene (SPLASH_COVER_MS below)
+        // plus the caption settling once the player can actually see it.
+        armCutsceneHold(document.getElementById("cutsceneRoot") ? SPLASH_COVER_MS : 0);
         const dropSplash = (delay, dur) => {
           setTimeout(() => {
             sp.style.transition = "opacity " + dur + "s";
@@ -25131,7 +25291,7 @@ addEventListener("DOMContentLoaded",function(){
           }, delay);
         };
         if (document.getElementById("cutsceneRoot")) {
-          dropSplash(900, 0.45); // hold the cover through the 0.9s csIn fade
+          dropSplash(SPLASH_HOLD_MS, SPLASH_FADE_S); // cover through the 0.9s csIn fade
         } else {
           dropSplash(0, 0.7);    // no cutscene (edge case): fade normally
         }

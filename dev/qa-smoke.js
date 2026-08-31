@@ -72,11 +72,87 @@ const pass = (msg) => console.log("✓", msg);
   // ── barn-find intro cut scene (new game only) ──
   const introArt = await page.evaluate(() => state.cutscene && state.cutscene.art);
   if (introArt !== "scene-barn-find") fail("intro cutscene missing (got " + introArt + ")");
+  // This is the exact bug the hold exists for: Enter leaves the title screen
+  // and the second half of that keystroke used to land here, dismissing the
+  // scene before its caption had arrived. It must survive the double tap.
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(120);
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(250);
+  if (!(await page.evaluate(() => !!state.cutscene)))
+    fail("the intro cut scene was dismissed by the splash double-tap (the hold is not working)");
+  pass("intro cut scene survives the Enter double-tap off the splash");
+  // Then it opens on its own and a normal press gets through.
+  await page.waitForFunction(() => !!document.querySelector("#cutsceneRoot.cs-open"), null, { timeout: 5000 })
+    .catch(() => fail("the intro cut scene never released its hold"));
   await page.keyboard.press("Enter");
   await page.waitForTimeout(700);
   if (await page.evaluate(() => !!state.cutscene || !!document.getElementById("cutsceneRoot")))
     fail("intro cutscene did not dismiss");
   pass("barn-find intro cut scene");
+
+  // ── the cut-scene hold. Players were losing the story to their own
+  // keystroke: Enter leaves the title screen, the intro is the next thing on
+  // screen, and the second half of that keystroke dismissed it before the
+  // caption had arrived. The hold is scoped hard (design review 004), and
+  // every one of those scopes is a way for it to become an annoyance, so all
+  // of them are checked here. ──
+  const holdOk = await page.evaluate(() => {
+    if (typeof shouldHoldCutscene !== "function") return "the hold is gone";
+    // Ambient load-in fires every session on a continue save. Never held.
+    if (shouldHoldCutscene("scene-social", { noHold: true }))
+      return "the every-session load-in would be held";
+    // A scene already watched is never held again.
+    state.scenesSeen = { "scene-social": true };
+    lastCutsceneDismissAt = 0;
+    if (shouldHoldCutscene("scene-social")) return "a re-watched scene would be held";
+    // A fresh scene is.
+    state.scenesSeen = {};
+    if (!shouldHoldCutscene("scene-social")) return "a first-view scene is not held";
+    // Only the first beat of a run: a scene opening right after one closed
+    // must not stack another wait on top.
+    lastCutsceneDismissAt = Date.now();
+    if (shouldHoldCutscene("scene-social"))
+      return "a queued follow-up beat would stack a second hold";
+    return true;
+  });
+  if (holdOk !== true) fail("cut-scene hold: " + holdOk);
+  pass("cut-scene hold is scoped: ambient, re-watch and chained beats all skip it");
+
+  // Escape means "let me out", not "next", so it is never held. Enter is.
+  const escOk = await page.evaluate(async () => {
+    state.scenesSeen = {}; lastCutsceneDismissAt = 0;
+    playCutscene({ art: "scene-social", kicker: "qa", title: "qa", sub: "qa" });
+    if (!cutsceneHoldActive()) return "a fresh scene did not arm the hold";
+    if (!document.querySelector("#cutsceneRoot.cs-held"))
+      return "a held scene is missing the held class (the ENTER hint would show)";
+    dismissCutscene(false);
+    if (!state.cutscene) return "a held scene was dismissed by a normal input";
+    dismissCutscene(true);
+    if (state.cutscene) return "Escape could not get out of a held scene";
+    return true;
+  });
+  if (escOk !== true) fail("cut-scene hold: " + escOk);
+  pass("cut-scene hold: normal input waits, Escape always gets out");
+
+  // A save written before the hold existed belongs to somebody who has
+  // watched these scenes already. Getting this backwards gates thousands of
+  // returning players on beats they sat through months ago.
+  const legacyOk = await page.evaluate(() => {
+    const total = Object.keys(CUTSCENE_ART).length;
+    const stash = state.scenesSeen;
+    // simulate the migration branch for a save with the field absent
+    state.scenesSeen = {};
+    Object.keys(CUTSCENE_ART).forEach((k) => (state.scenesSeen[k] = true));
+    const covered = Object.keys(state.scenesSeen).length;
+    const anyHeld = Object.keys(CUTSCENE_ART).some((k) => shouldHoldCutscene(k));
+    state.scenesSeen = stash;
+    if (covered !== total) return `migration covers ${covered} of ${total} scenes`;
+    if (anyHeld) return "a migrated legacy save would still be held somewhere";
+    return true;
+  });
+  if (legacyOk !== true) fail("cut-scene hold, legacy saves: " + legacyOk);
+  pass("cut-scene hold: legacy saves are never newly gated");
 
   // ── single-card tutorial: one card, then hands on the car. Rules arrive
   // on contact (first payday, Compete unlock, Buck's intro DM) instead of
