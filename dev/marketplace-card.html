@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Marketplace Listing Card — prototype</title>
+<style>
+  :root {
+    --bg: #17120f; --panel: #241d17; --panel-2: #1b1511; --panel-3: #2d241d;
+    --line: #4b4036; --text: #efe2c6; --text-dim: #8f8476; --muted: #a99b84;
+    --gold: #d19a3f; --gold-soft: #c9aa73;
+  }
+  body {
+    margin: 0; padding: 28px; background: var(--bg); color: var(--text);
+    font-family: Georgia, "Times New Roman", "Liberation Serif", serif;
+  }
+  h1 { font-size: 17px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold-soft); margin: 0 0 4px; }
+  .note { color: var(--text-dim); font-size: 12px; margin-bottom: 22px; max-width: 780px; line-height: 1.6; }
+  h2 { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted);
+       margin: 30px 0 12px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+
+  /* ── the listing card ── */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); gap: 14px; }
+  .card { cursor: pointer; }
+  .shot {
+    position: relative; width: 100%; aspect-ratio: 1/1; overflow: hidden;
+    border: 1px solid var(--line); border-radius: 6px; background: #0d0a08;
+  }
+  .shot svg { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+  .badge {
+    position: absolute; top: 7px; left: 7px; background: rgba(20,14,10,.82);
+    color: var(--text); font-size: 10px; letter-spacing: .06em; padding: 3px 7px;
+    border-radius: 3px; border: 1px solid rgba(217,162,79,.35);
+  }
+  .price { font-size: 16px; font-weight: bold; color: var(--gold); margin-top: 8px;
+           font-variant-numeric: tabular-nums; }
+  .title { font-size: 13px; color: var(--text); margin-top: 2px;
+           white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .where { font-size: 11.5px; color: var(--text-dim); margin-top: 2px; }
+
+  /* hero */
+  .hero { display: flex; gap: 26px; align-items: flex-start; }
+  .hero .shot { width: 360px; flex: 0 0 360px; }
+  .hero .price { font-size: 27px; margin-top: 0; }
+  .hero .title { font-size: 17px; white-space: normal; }
+  .hero .where { font-size: 13px; margin-top: 6px; }
+  .hero-meta { padding-top: 4px; }
+  .sub { color: var(--muted); font-size: 12.5px; line-height: 1.65; margin-top: 14px; max-width: 330px; }
+  .strip { display: flex; gap: 12px; flex-wrap: wrap; }
+  .strip .shot { width: 132px; }
+  .cap { font-size: 10.5px; color: var(--text-dim); margin-top: 5px; text-align: center; }
+</style>
+</head>
+<body>
+<h1>Marketplace listing card</h1>
+<div class="note">
+  Prototype. Every photograph below is generated: a surface plate, a part silhouette, a seeded
+  crop and a light direction. No image assets. The realism is meant to come from bad framing and
+  a cluttered surface, not from render fidelity, so these stay in the same chunky pixel idiom as
+  the cut-scene art.
+</div>
+
+<h2>One listing, full size</h2>
+<div class="hero" id="hero"></div>
+
+<h2>The same part, six different surfaces</h2>
+<div class="strip" id="surfaces"></div>
+
+<h2>A wall of them</h2>
+<div class="grid" id="grid"></div>
+
+<script>
+// ── seeded rng so a listing keeps its photograph forever ──
+function rng(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const R = (r, a, b) => a + r() * (b - a);
+const RI = (r, a, b) => Math.floor(R(r, a, b + 1));
+const pick = (r, arr) => arr[Math.floor(r() * arr.length)];
+
+// ── pixel primitives on a 64x64 frame ──
+function rect(x, y, w, h, f, o) {
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}"${o !== undefined ? ` opacity="${o}"` : ""}/>`;
+}
+// a real pixel disc: rows of rects, not a smooth circle
+function disc(cx, cy, rad, f) {
+  let out = "";
+  for (let y = Math.floor(cy - rad); y <= Math.ceil(cy + rad); y++) {
+    const dy = y + 0.5 - cy;
+    const half = Math.sqrt(Math.max(0, rad * rad - dy * dy));
+    if (half < 0.4) continue;
+    const x0 = Math.round(cx - half), w = Math.max(1, Math.round(half * 2));
+    out += rect(x0, y, w, 1, f);
+  }
+  return out;
+}
+function ring(cx, cy, rad, thick, f) {
+  let out = "";
+  for (let y = Math.floor(cy - rad); y <= Math.ceil(cy + rad); y++) {
+    const dy = y + 0.5 - cy;
+    const ho = Math.sqrt(Math.max(0, rad * rad - dy * dy));
+    const ri = rad - thick;
+    const hi = Math.sqrt(Math.max(0, ri * ri - dy * dy));
+    if (ho < 0.4) continue;
+    if (hi < 0.4) { out += rect(Math.round(cx - ho), y, Math.max(1, Math.round(ho * 2)), 1, f); continue; }
+    const w = Math.max(1, Math.round(ho - hi));
+    out += rect(Math.round(cx - ho), y, w, 1, f);
+    out += rect(Math.round(cx + hi), y, w, 1, f);
+  }
+  return out;
+}
+
+// ── the surfaces a part gets photographed on ──
+const SURFACES = {
+  concrete: { base: "#6d6a64", dark: "#565350", lite: "#807d76", name: "concrete floor",
+    speck: (r) => { let o = ""; for (let i = 0; i < 90; i++) o += rect(RI(r,0,63), RI(r,0,63), 1, 1, r() > .5 ? "#5b5854" : "#7b7871", R(r,.3,.8)); 
+      for (let i = 0; i < 3; i++) { const x=RI(r,0,50), y=RI(r,4,60); o += rect(x, y, RI(r,8,26), 1, "#4e4b47", .5); } return o; } },
+  tailgate: { base: "#3f4a55", dark: "#313b45", lite: "#4d5966", name: "tailgate",
+    speck: (r) => { let o = ""; for (let y = 4; y < 64; y += 9) o += rect(0, y, 64, 1, "#2c353e", .55);
+      for (let i = 0; i < 40; i++) o += rect(RI(r,0,63), RI(r,0,63), 1, 1, "#5a6672", R(r,.2,.5)); return o; } },
+  bench: { base: "#6b4f34", dark: "#563f29", lite: "#7d5f42", name: "workbench",
+    speck: (r) => { let o = ""; for (let i = 0; i < 14; i++) { const y = RI(r,0,63); o += rect(0, y, 64, 1, r()>.5?"#5b432c":"#7a5b3e", R(r,.35,.7)); }
+      for (let i = 0; i < 30; i++) o += rect(RI(r,0,63), RI(r,0,63), 1, 1, "#4a3625", R(r,.3,.6)); return o; } },
+  cardboard: { base: "#9a7b52", dark: "#836745", lite: "#ad8c60", name: "flattened box",
+    speck: (r) => { let o = ""; for (let x = 2; x < 64; x += 5) o += rect(x, 0, 1, 64, "#8a6d49", .45);
+      for (let i = 0; i < 26; i++) o += rect(RI(r,0,63), RI(r,0,63), 1, 1, "#755c3d", R(r,.25,.55)); return o; } },
+  blanket: { base: "#4a4256", dark: "#3b3445", lite: "#574e64", name: "moving blanket",
+    speck: (r) => { let o = ""; for (let y = 3; y < 64; y += 11) for (let x = 3; x < 64; x += 11) {
+        o += rect(x, y, 8, 1, "#3d3648", .6); o += rect(x, y, 1, 8, "#3d3648", .6); }
+      for (let i = 0; i < 34; i++) o += rect(RI(r,0,63), RI(r,0,63), 1, 1, "#5d5470", R(r,.2,.5)); return o; } },
+  pegboard: { base: "#8a7a5e", dark: "#6f6249", lite: "#9c8b6c", name: "pegboard",
+    speck: (r) => { let o = ""; for (let y = 5; y < 64; y += 8) for (let x = 5; x < 64; x += 8) o += rect(x, y, 2, 2, "#5d5340", .75);
+      for (let i = 0; i < 18; i++) o += rect(RI(r,0,63), RI(r,0,63), 1, 1, "#9e8d6e", R(r,.2,.45)); return o; } },
+};
+
+// ── part silhouettes, one per category ──
+const STEEL = "#b9bcc0", STEEL_D = "#7e8287", STEEL_L = "#d7dade";
+const RUST = "#8a5a3a", BLACK = "#2a2724", CHROME = "#cdd3d8";
+const SHAPES = {
+  brakes: () => disc(32,32,15,STEEL_D) + disc(32,32,13,STEEL) + ring(32,32,13,2,STEEL_L) + disc(32,32,5,STEEL_D) +
+    [0,1,2,3,4].map(i => { const a = i*2*Math.PI/5 - 1.2; return rect(Math.round(32+Math.cos(a)*8)-1, Math.round(32+Math.sin(a)*8)-1, 2, 2, BLACK); }).join(""),
+  wheels: () => disc(32,32,16,BLACK) + disc(32,32,11,STEEL) + ring(32,32,11,2,STEEL_L) + disc(32,32,4,STEEL_D),
+  exhaust: () => rect(14,26,36,13,STEEL_D) + rect(14,26,36,3,STEEL_L) + rect(16,39,32,2,BLACK,.4) +
+    rect(6,30,9,4,STEEL) + rect(49,30,9,4,STEEL),
+  engine: () => rect(18,22,28,20,STEEL_D) + rect(18,22,28,4,STEEL_L) + rect(22,16,8,6,STEEL) +
+    rect(34,16,8,6,STEEL) + rect(20,42,24,3,BLACK,.5),
+  fuel: () => rect(22,20,20,24,STEEL) + rect(22,20,20,3,STEEL_L) + disc(32,18,6,STEEL_D) +
+    rect(30,44,4,5,STEEL_D) + rect(18,28,4,3,BLACK),
+  cooling: () => rect(12,18,40,28,STEEL_D) + [...Array(9)].map((_,i)=>rect(15+i*4,21,2,22,STEEL_L,.75)).join("") +
+    rect(12,18,40,3,STEEL) + rect(12,43,40,3,STEEL),
+  interior: () => ring(32,32,16,3,BLACK) + ring(32,32,16,1,"#4a4440") + disc(32,32,5,STEEL_D) +
+    rect(31,17,2,12,BLACK) + rect(19,31,12,2,BLACK) + rect(33,31,12,2,BLACK),
+  suspension: () => [...Array(7)].map((_,i)=>rect(20,16+i*5,24,3,i%2?STEEL_D:STEEL)).join("") +
+    rect(28,12,8,4,STEEL_L) + rect(28,50,8,4,STEEL_L),
+  chrome: () => rect(6,28,52,7,CHROME) + rect(6,28,52,2,"#eef2f5") + rect(6,35,52,2,"#8f979d") +
+    rect(4,26,4,11,CHROME) + rect(56,26,4,11,CHROME),
+  electrical: () => disc(30,32,13,STEEL_D) + disc(30,32,10,STEEL) + rect(43,28,10,8,STEEL_D) +
+    disc(30,32,4,BLACK) + rect(16,30,4,4,RUST),
+  body: () => rect(10,20,44,24,RUST) + rect(10,20,44,3,"#a06a45") + rect(14,24,36,16,"#7a4e33",.6),
+  _: () => rect(16,20,32,24,STEEL_D) + rect(16,20,32,3,STEEL_L),
+};
+const CAT_SHAPE = { brakes:"brakes", wheels:"wheels", tires:"wheels", exhaust:"exhaust", engine:"engine",
+  transmission:"engine", differential:"engine", fuel:"fuel", cooling:"cooling", interior:"interior",
+  steering:"interior", suspension:"suspension", chrome:"chrome", electrical:"electrical",
+  body:"body", paint:"body" };
+
+// ── clutter: the junk that is always in frame in a real garage photo ──
+function clutter(r) {
+  let o = "";
+  const bits = RI(r, 2, 5);
+  for (let i = 0; i < bits; i++) {
+    const x = RI(r, -2, 60), y = RI(r, -2, 60);
+    switch (RI(r, 0, 6)) {
+      case 0: o += rect(x, y, 2, 5, "#4a453f") + rect(x - 1, y, 4, 2, "#565049"); break;   // bolt
+      case 1: o += ring(x, y, 3, 1, "#6b6560"); break;                                      // washer
+      case 2: o += rect(x, y, 5, 3, "#3a3630") + rect(x + 1, y + 1, 3, 1, "#22201c"); break;// socket
+      case 3: o += rect(x, y, RI(r,7,15), RI(r,4,8), pick(r, ["#7a4a3a","#3f4a3a","#4a4550"]), .85); break; // rag
+      case 4: o += rect(x, y, RI(r,10,22), 1, "#8f8a82", .5); break;                        // zip tie / wire
+      case 5: o += rect(x, y, 3, 3, "#5a5248"); break;                                      // nut
+      default: o += rect(x, y, RI(r,4,9), 2, "#6a4a35", .8); break;                         // offcut
+    }
+  }
+  return o;
+}
+// something big entering from an edge: a toolbox corner, a tyre, a box
+function intrusion(r) {
+  if (r() > 0.55) return "";
+  const i = RI(r, 0, 3);
+  const c = ["#7a2f26", "#2e3540", "#584a37", "#3d3d40"][i];
+  const hi = ["#9c463a", "#3e4959", "#6f5f46", "#515156"][i];
+  // a lit edge is what stops a block reading as a block
+  if (i === 0) { const y = RI(r,30,52), w = RI(r,18,30); return rect(-6, y, w, 30, c) + rect(-6, y, w, 1, hi) + rect(w-7, y, 1, 30, hi); }
+  if (i === 1) { const x = RI(r,34,52), h = RI(r,16,28); return rect(x, -6, 30, h, c) + rect(x, h-7, 30, 1, hi) + rect(x, -6, 1, h, hi); }
+  if (i === 2) { const x = RI(r,40,58), y = RI(r,34,50); return rect(x, y, 26, 26, c) + rect(x, y, 26, 1, hi) + rect(x, y, 1, 26, hi); }
+  const w = RI(r,14,24); return rect(-6, -6, w, w, c) + rect(w-7, -6, 1, w, hi) + rect(-6, w-7, w, 1, hi);
+}
+
+// ── how the photograph was lit ──
+const LIGHTS = {
+  flash:  { tint: "#fff6e2", warm: .34, amb: "#ffffff", ambA: .10, vig: .30, r: 30 },
+  fluoro: { tint: "#dff0e6", warm: .16, amb: "#c9d8d0", ambA: .07, vig: .16, r: 52 },
+  bulb:   { tint: "#ffd08a", warm: .30, amb: "#2a1c10", ambA: .16, vig: .44, r: 34 },
+  door:   { tint: "#cfe2ff", warm: .26, amb: "#101822", ambA: .20, vig: .38, r: 44 },
+  dim:    { tint: "#8a8f9a", warm: .10, amb: "#0c0b12", ambA: .32, vig: .50, r: 46 },
+};
+
+// grease, rust and shop dirt on the part itself. A spotless part reads as clip art.
+function grime(r) {
+  let o = "";
+  const n = RI(r, 6, 16);
+  for (let i = 0; i < n; i++) {
+    const x = RI(r, 12, 50), y = RI(r, 12, 50);
+    const c = pick(r, ["#5a4632", "#3b332c", "#7a4a2c", "#2c2722"]);
+    o += rect(x, y, RI(r, 1, 3), RI(r, 1, 2), c, R(r, .18, .5));
+  }
+  return o;
+}
+
+// ── compose one photograph ──
+function photo(seed, category, surfaceKey, lightKey) {
+  const r = rng(seed);
+  const SURF_BAG = ["concrete","concrete","concrete","tailgate","tailgate","bench","bench",
+                    "cardboard","blanket","blanket","pegboard"];
+  const sk = surfaceKey || pick(r, SURF_BAG);
+  const S = SURFACES[sk];
+  const L = LIGHTS[lightKey || pick(r, Object.keys(LIGHTS))];
+  const shape = SHAPES[CAT_SHAPE[category] || "_"] || SHAPES._;
+
+  // nobody frames it, holds the phone straight, or stands the right distance away
+  const rot = R(r, -22, 22);
+  const scale = R(r, 0.55, 1.55);
+  const dx = R(r, -14, 14), dy = R(r, -12, 12);
+  const lx = RI(r, 4, 60), ly = RI(r, -4, 40);
+  const uid = "p" + seed;
+
+  // the photographer's own shadow falls into the shot now and then
+  const selfShadow = r() > 0.7
+    ? rect(RI(r,-4,20), RI(r,30,48), RI(r,22,40), RI(r,16,30), "#000", R(r,.18,.32))
+    : "";
+
+  return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <defs>
+    <pattern id="dth${uid}" width="3" height="3" patternUnits="userSpaceOnUse">
+      <rect width="1" height="1" fill="#000" opacity=".05"/>
+      <rect x="2" y="1" width="1" height="1" fill="#fff" opacity=".022"/>
+    </pattern>
+    <radialGradient id="lit${uid}" gradientUnits="userSpaceOnUse" cx="${lx}" cy="${ly}" r="${L.r}">
+      <stop offset="0" stop-color="${L.tint}" stop-opacity="${L.warm}"/>
+      <stop offset=".33" stop-color="${L.tint}" stop-opacity="${(L.warm*.55).toFixed(3)}"/>
+      <stop offset=".34" stop-color="${L.tint}" stop-opacity="${(L.warm*.5).toFixed(3)}"/>
+      <stop offset=".66" stop-color="${L.tint}" stop-opacity="${(L.warm*.18).toFixed(3)}"/>
+      <stop offset=".67" stop-color="${L.tint}" stop-opacity="${(L.warm*.14).toFixed(3)}"/>
+      <stop offset="1" stop-color="${L.tint}" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="vig${uid}" gradientUnits="userSpaceOnUse" cx="32" cy="32" r="44">
+      <stop offset=".4" stop-color="#000" stop-opacity="0"/>
+      <stop offset=".72" stop-color="#000" stop-opacity="${(L.vig*.45).toFixed(3)}"/>
+      <stop offset="1" stop-color="#000" stop-opacity="${L.vig}"/>
+    </radialGradient>
+  </defs>
+  ${rect(0,0,64,64,S.base)}
+  ${S.speck(r)}
+  ${intrusion(r)}
+  ${clutter(r)}
+  ${selfShadow}
+  <g transform="translate(${dx.toFixed(1)} ${dy.toFixed(1)}) rotate(${rot.toFixed(1)} 32 32) translate(32 32) scale(${scale.toFixed(2)}) translate(-32 -32)">
+    <g opacity=".5" transform="translate(${R(r,1.5,4).toFixed(1)} ${R(r,2,4.5).toFixed(1)})">${shape().replace(/fill="#[0-9a-fA-F]{6}"/g, 'fill="#000"')}</g>
+    ${shape()}
+    ${grime(r)}
+  </g>
+  ${rect(0,0,64,64,L.amb,L.ambA)}
+  ${rect(0,0,64,64,`url(#lit${uid})`)}
+  ${rect(0,0,64,64,`url(#vig${uid})`)}
+  ${rect(0,0,64,64,`url(#dth${uid})`)}
+</svg>`;
+}
+
+// ── real parts, real numbers (resale runs about half the DIY cost) ──
+const PARTS = [
+  { name: "Drilled & Slotted Rotors", category: "brakes", diy: 260 },
+  { name: "Performance Intake Manifold", category: "engine", diy: 220 },
+  { name: "Steering Wheel Restoration", category: "interior", diy: 340 },
+  { name: "Radiator Refresh", category: "cooling", diy: 110 },
+  { name: "Carburetor Rebuild Kit", category: "fuel", diy: 80 },
+  { name: "Chrome Bumper Rechrome", category: "chrome", diy: 620 },
+  { name: "Coil Spring & Shock Set", category: "suspension", diy: 380 },
+  { name: "Alternator & Charging Fix", category: "electrical", diy: 150 },
+  { name: "Header-Back Exhaust", category: "exhaust", diy: 540 },
+  { name: "Steel Wheels & Trim Rings", category: "wheels", diy: 300 },
+  { name: "Fender Patch Panel", category: "body", diy: 260 },
+  { name: "Water Pump Service", category: "engine", diy: 95 },
+];
+const WHERE = ["Palomar Junction · 4 mi", "Palomar Junction · 11 mi", "Pick-A-Part · 18 mi",
+               "Palomar Junction · 2 mi", "The Swap Meet · 23 mi", "Ships to you"];
+
+const resale = (p) => Math.max(10, Math.round(p.diy * 0.5));
+function card(p, seed, fresh) {
+  const r = rng(seed * 7919);
+  return `<div class="card">
+    <div class="shot">${photo(seed, p.category)}${fresh ? '<div class="badge">Just listed</div>' : ""}</div>
+    <div class="price">$${resale(p)}</div>
+    <div class="title">${p.name}</div>
+    <div class="where">${pick(r, WHERE)}</div>
+  </div>`;
+}
+
+// hero
+const h = PARTS[0];
+document.getElementById("hero").innerHTML = `
+  <div class="shot">${photo(4821, h.category)}<div class="badge">Just listed</div></div>
+  <div class="hero-meta">
+    <div class="price">$${resale(h)}</div>
+    <div class="title">${h.name}</div>
+    <div class="where">Palomar Junction · 4 mi</div>
+    <div class="sub">Pulled off the truck when the discs went on. Straight, no lip, plenty of pad
+      left on them. Cash and they are yours, I am not shipping brake parts.</div>
+  </div>`;
+
+// same part, every surface
+document.getElementById("surfaces").innerHTML = Object.keys(SURFACES).map((k, i) =>
+  `<div><div class="shot">${photo(300 + i * 13, "brakes", k)}</div><div class="cap">${SURFACES[k].name}</div></div>`
+).join("");
+
+// the wall
+document.getElementById("grid").innerHTML = PARTS.map((p, i) =>
+  card(p, 1000 + i * 37, i === 3 || i === 8)
+).join("");
+</script>
+</body>
+</html>
