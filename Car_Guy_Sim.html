@@ -10497,7 +10497,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.63.0";
+      const GAME_VERSION = "0.63.1";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -10661,6 +10661,7 @@
           tripsKnown: { yard: false, swap: false },
           yardNudges: 0,
           yardNudgeWeek: null,
+          leanStreak: 0,
           tunesKnown: { setup: false, style: false },
           sharkRefused: false,
           sharkMetWeek: null,
@@ -12573,31 +12574,36 @@
         saveGame();
         return true;
       }
-      // Broke is not the same as finished. The player still has a list of
-      // real jobs, they just cannot pay for any of them this week, and the
-      // only button that still lights up is a free Cars and Coffee that eats
-      // the Saturday and pays nothing. The yard is the actual answer and it
-      // costs fifteen dollars, so somebody says so out loud.
-      function brokeWithRealWorkBlocked() {
+      // Broke is not the same as finished, and it is not the same as having
+      // nothing to click either. There is always some thirty dollar Budget
+      // part left on the list, which is exactly the problem: the player buys
+      // it, the truck moves by less than a point, and the week is gone. The
+      // season probe found the player under $400 for three weeks out of every
+      // four with a full list of work they could not touch, so the measure is
+      // the run of lean weeks, not whether one cheap thing is affordable.
+      //
+      // One lean week is a purchase. Two in a row is the shape of the season,
+      // and it is the second kind the friend turns up for.
+      const LEAN_CASH = 400;
+      const LEAN_WEEKS_BEFORE_TIP = 2;
+      function noteLeanWeek() {
+        state.leanStreak =
+          (state.money || 0) < LEAN_CASH ? (state.leanStreak || 0) + 1 : 0;
+      }
+      function scrapingByNow() {
+        if ((state.leanStreak || 0) < LEAN_WEEKS_BEFORE_TIP) return false;
         const car = currentCar();
         if (!car) return false;
-        const open = PARTS.filter(
+        // Something on the list would actually be felt. Budget parts are +7
+        // spread across a whole category and do not count as work worth
+        // driving to Pick-A-Part for.
+        return PARTS.some(
           (p) =>
             !car.installedParts.includes(p.id) &&
             !findActiveTask(car.id, p.id) &&
             car[p.category] < 100 &&
-            p.tier !== "Budget",
+            (p.imp || 0) >= 10,
         );
-        if (!open.length) return false;
-        return !open.some((p) => {
-          const toolsOk = !(p.tools || []).some(
-            (t) => !state.ownedTools.includes(t),
-          );
-          return (
-            (toolsOk && state.money >= partCost(p, "diy")) ||
-            state.money >= partCost(p, "shop")
-          );
-        });
       }
       // He mentions it twice across a season and then lets it go. Once you
       // have actually made the drive he never brings it up again, because by
@@ -12609,11 +12615,11 @@
         // broke because the player just spent five thousand dollars on a
         // truck, which is the correct thing to have done. He waits until
         // being broke has become the shape of the season.
-        if ((state.history || []).length < 2) return false;
+        if ((state.history || []).length < 3) return false;
         const told = state.yardNudges || 0;
         if (told >= 2) return false;
         if (told && state.week - (state.yardNudgeWeek || 0) < 5) return false;
-        if (!brokeWithRealWorkBlocked()) return false;
+        if (!scrapingByNow()) return false;
         // Deliberately not quietWeekForBeat(): a broke player always has some
         // cheap thing on the bench, because cheap things are all they can
         // start. That job is the reason he is standing there.
@@ -13253,7 +13259,11 @@
      him, which is its own ending.
   ═══════════════════════════════════════════ */
       const SHARK_INTRO_CASH = 1000;
-      const SHARK_INTRO_SHOWS = 2;
+      // Two shows was written before anyone had counted the calendar. A Cars
+      // and Coffee is open every single week, so two shows is week three and
+      // he was specified into the busiest part of the season. Five is the
+      // same idea, measured against the calendar the player actually has.
+      const SHARK_INTRO_SHOWS = 5;
       function loansAvailable() {
         return !!(
           state.loansUnlocked ||
@@ -13268,9 +13278,25 @@
       // open whichever way the player answered him.
       function maybeTriggerSharkIntro() {
         if (state.loansUnlocked || state.sharkMetWeek != null) return false;
-        if (modalBusy()) return false;
+        // He used to bail whenever a modal was up, which read as politeness
+        // and worked as a mute button. The week advance always has a notice
+        // queued behind it, and his own best moment is the result screen with
+        // the placing card still on the windshield, so he was blocked at
+        // every site he was called from: nought appearances in four measured
+        // seasons where the player spent ten to thirteen weeks under a
+        // thousand dollars. queueScene() already waits its turn, so he asks
+        // it to instead of walking away.
         if ((state.money || 0) >= SHARK_INTRO_CASH) return false;
         if ((state.history || []).length < SHARK_INTRO_SHOWS) return false;
+        // He does not turn up two beats behind Buck. Cash under a thousand
+        // is true in week four as well, but week four is broke because the
+        // player just bought a truck, which is the correct thing to have
+        // done, and "Good bones. Bad week." is a lie there. The show count
+        // holds him back instead of a second money test, because a second
+        // money test puts him in a race with the friend offering the yard
+        // and he has a call site at the end of every show that would let
+        // him win it.
+        if (!claimLifeBeat()) return false;
         state.sharkMetWeek = state.week;
         queueScene({
           id: "shark_intro",
@@ -16742,6 +16768,7 @@
           toast(`Week ${state.week}, ${reason}.`, "ok");
         }
 
+        noteLeanWeek();
         maybeTriggerRivalBeat();
         maybeKidWrenchBeat();
         maybeRestraintBeat();
@@ -17997,11 +18024,13 @@
         }
         if (show.tier === "Cars & Coffee" && state.buck && !state.buck.metOnce) {
           maybeTriggerBuckIntro();
-        } else {
-          // He works the row at a show, reading placing cards. Only when the
-          // truck is not already busy meeting Buck in the same lot.
-          maybeTriggerSharkIntro();
         }
+        // The shark used to get his own call here, which put him ahead of
+        // everybody in the ordered chain and let him take the one broke week
+        // the friend needed to offer the yard. He still works the row at a
+        // show, he just does it from his place in line: leaveResultScreen()
+        // runs the chain the moment the player walks out of the standings,
+        // which is the same lot, the same placing card, one screen later.
         checkMilestones();
         saveGame();
         advanceWeek("after show");

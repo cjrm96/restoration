@@ -127,6 +127,9 @@ const BUFFER = Number(process.env.SAVER || 250);
       nextShow: (() => { const u = getUpcomingSummary(); return u && u.nextShowText; })(),
       postable: postable.length, unlisted, tripsOpen,
       postShowLock: !!state.postShowWeekLocked,
+      stuck: typeof scrapingByNow === "function" ? scrapingByNow() : null,
+      lean: state.leanStreak || 0,
+      beatFree: state.lifeBeatWeek !== state.week,
       activeJobs: car ? activeTasksForCar(car.id).length : 0,
     };
   });
