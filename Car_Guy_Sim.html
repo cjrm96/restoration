@@ -6,11 +6,11 @@
     <title>Car Guy Simulator</title>
     <style>
       :root {
-        --bg: #17120f;
-        --panel: #241d17;
-        --panel-2: #1b1511;
-        --panel-3: #2d241d;
-        --line: #4b4036;
+        --bg: #17101a;
+        --panel: #241829;
+        --panel-2: #1b121e;
+        --panel-3: #2d1e33;
+        --line: #4b3446;
         --text: #efe2c6;
         --text-bright: #f2e6cf;
         --text-dim: #8f8476;
@@ -32,22 +32,22 @@
       }
       body {
         margin: 0;
-        font-family: Georgia, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", EmojiOne, serif;
+        font-family: Georgia, "Times New Roman", "Liberation Serif", serif;
         color: var(--text);
         background:
           linear-gradient(
             180deg,
-            rgba(17, 13, 10, 0.88) 0%,
-            rgba(13, 10, 8, 0.95) 100%
+            rgba(17, 12, 19, 0.88) 0%,
+            rgba(13, 9, 15, 0.95) 100%
           ),
           repeating-linear-gradient(
             90deg,
-            rgba(90, 64, 40, 0.22) 0px,
-            rgba(90, 64, 40, 0.22) 6px,
+            rgba(90, 63, 84, 0.22) 0px,
+            rgba(90, 63, 84, 0.22) 6px,
             transparent 6px,
             transparent 78px
           ),
-          linear-gradient(180deg, #56483a 0%, #302721 45%, #1f1915 100%);
+          linear-gradient(180deg, #563c50 0%, #30212d 45%, #1f1523 100%);
         min-height: 100vh;
       }
       .app {
@@ -56,8 +56,8 @@
         padding: 18px;
       }
       .shell {
-        background: linear-gradient(180deg, #2a231d 0%, #1c1713 100%);
-        border: 1px solid #51453a;
+        background: linear-gradient(180deg, #2a1d2f 0%, #1c1320 100%);
+        border: 1px solid #51384c;
         border-radius: 14px;
         box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
       }
@@ -70,7 +70,7 @@
         align-items: center;
         gap: 14px;
         flex-wrap: wrap;
-        background: linear-gradient(180deg, #312922 0%, #241d17 100%);
+        background: linear-gradient(180deg, #312236 0%, #241829 100%);
         position: sticky;
         top: 0;
         z-index: 50;
@@ -116,6 +116,11 @@
         font-size: 13px;
         color: var(--text);
         white-space: nowrap;
+        /* Cash, fuel and followers all change while the player watches.
+           Proportional digits re-measure the chip on every tick, so the
+           row twitches; tabular ones hold their column. */
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: "tnum" 1;
         transition:
           transform 0.12s ease,
           color 0.12s ease;
@@ -185,8 +190,8 @@
             rgba(255, 255, 255, 0.012) 4px,
             rgba(255, 255, 255, 0.012) 5px
           ),
-          linear-gradient(180deg, #2a1d12 0%, #1a1108 100%);
-        border-bottom: 2px solid #4a3320;
+          linear-gradient(180deg, #2a1c2f 0%, #1a121d 100%);
+        border-bottom: 2px solid #4a3445;
         box-shadow:
           inset 0 -1px 0 rgba(217, 162, 79, 0.22),
           0 2px 6px rgba(0, 0, 0, 0.4);
@@ -200,7 +205,7 @@
             rgba(255, 255, 255, 0.01) 4px,
             rgba(255, 255, 255, 0.01) 5px
           ),
-          linear-gradient(180deg, #221610 0%, #140d08 100%);
+          linear-gradient(180deg, #22152a 0%, #140c1a 100%);
       }
       .tab {
         padding: 11px 20px 11px 20px;
@@ -212,9 +217,9 @@
             rgba(255, 255, 255, 0.04) 1px,
             rgba(255, 255, 255, 0.04) 2px
           ),
-          linear-gradient(180deg, #5a4a3a 0%, #3a2e22 100%);
+          linear-gradient(180deg, #5a3f54 0%, #3a2836 100%);
         color: #d8c8a8;
-        border: 1px solid #2a1d10;
+        border: 1px solid #2a1d2f;
         border-radius: 3px;
         cursor: pointer;
         font-family: inherit;
@@ -363,10 +368,24 @@
         0%, 100% { opacity: 0.4; box-shadow: 0 0 0 0 rgba(217, 162, 79, 0); }
         50% { opacity: 1; box-shadow: 0 0 9px 2px rgba(217, 162, 79, 0.65); }
       }
+      .tab-ico {
+        width: 15px;
+        height: 15px;
+        display: inline-block;
+        vertical-align: -3px;
+        fill: currentColor;
+        shape-rendering: crispEdges;
+      }
+      .unlock-flier .tab-ico {
+        width: 34px;
+        height: 34px;
+        vertical-align: baseline;
+      }
       .unlock-flier {
         position: fixed;
         z-index: 2450;
         pointer-events: none;
+        color: var(--gold);
         font-size: 34px;
         line-height: 1;
         filter: drop-shadow(0 5px 16px rgba(0, 0, 0, 0.7));
@@ -469,7 +488,7 @@
             rgba(255, 255, 255, 0.015) 64px,
             rgba(255, 255, 255, 0.015) 65px
           ),
-          linear-gradient(180deg, #6a6256 0%, #433c33 100%);
+          linear-gradient(180deg, #6a5064 0%, #43323f 100%);
       }
       .grid-main {
         display: grid;
@@ -936,8 +955,58 @@
         cursor: pointer;
         font-size: 22px;
       }
+      /* The audio sliders used to be bare <input type="range">, which the
+         browser paints in its own accent blue, a colour that appears nowhere
+         in the shop. Track and thumb are dressed by hand instead. */
       input[type="range"] {
         width: 100%;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 12px;
+        padding: 0;
+        background: transparent;
+        cursor: pointer;
+      }
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 10px;
+        border-radius: 2px;
+        background: var(--panel-3);
+        border: 1px solid var(--line);
+        box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.45);
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 13px;
+        height: 20px;
+        margin-top: -6px;
+        border-radius: 2px;
+        background: linear-gradient(180deg, var(--gold-soft) 0%, var(--gold) 100%);
+        border: 1px solid #e8c79a;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.45),
+          0 2px 3px rgba(0, 0, 0, 0.55);
+      }
+      input[type="range"]::-moz-range-track {
+        height: 10px;
+        border-radius: 2px;
+        background: var(--panel-3);
+        border: 1px solid var(--line);
+        box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.45);
+      }
+      input[type="range"]::-moz-range-thumb {
+        width: 13px;
+        height: 20px;
+        border-radius: 2px;
+        background: linear-gradient(180deg, var(--gold-soft) 0%, var(--gold) 100%);
+        border: 1px solid #e8c79a;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.45),
+          0 2px 3px rgba(0, 0, 0, 0.55);
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid var(--gold-soft);
+        outline-offset: 3px;
       }
       .car-preview-wrap {
         position: relative;
@@ -1125,6 +1194,7 @@
         animation: shakeLite 0.32s ease;
       }
       .money-pop {
+        font-variant-numeric: tabular-nums;
         animation: moneyPop 0.35s ease;
       }
       .toast {
@@ -10497,7 +10567,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.62.0";
+      const GAME_VERSION = "0.62.1";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -18700,10 +18770,30 @@
         const toneCls = tone === "blue" ? "hero-blue" : "";
         return `<div class="hero-panel ${toneCls} ${extraClass}">${kicker ? `<div class="hero-panel-kicker">${kicker}</div>` : ""}${title ? `<div class="hero-panel-title">${title}</div>` : ""}${sub ? `<div class="hero-panel-sub">${sub}</div>` : ""}${body}</div>`;
       }
-      function tab(label, active, onclick, attrs = "", extraClass = "", suffix = "") {
+      /* The nav icons. These four tabs sit on screen the whole game, and
+         they used to be OS emoji, which means the shop's own signage was
+         drawn by whatever machine the player happened to own. These are
+         drawn on the same 16px grid as everything else in the world, in
+         currentColor so a tab lights up with its own label. */
+      const TAB_ICONS = {
+        workshop:
+          '<svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="1" width="3" height="4"/><rect x="9" y="1" width="3" height="4"/><rect x="4" y="5" width="8" height="2"/><rect x="6" y="7" width="4" height="8"/></svg>',
+        career:
+          '<svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="1" width="8" height="1"/><rect x="4" y="14" width="8" height="1"/><rect x="4" y="2" width="1" height="12"/><rect x="11" y="2" width="1" height="12"/><rect x="7" y="3" width="2" height="1"/><rect x="7" y="12" width="2" height="1"/></svg>',
+        dealership:
+          '<svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="2" height="12"/><rect x="5" y="2" width="8" height="1"/><rect x="5" y="13" width="8" height="1"/><rect x="12" y="3" width="1" height="10"/><rect x="6" y="5" width="5" height="1"/><rect x="6" y="7" width="5" height="1"/><rect x="6" y="9" width="4" height="1"/></svg>',
+        shows:
+          '<svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="1" height="12"/><rect x="4.5" y="2.5" width="9" height="7" fill="none" stroke="currentColor" stroke-width="1" opacity=".38"/><rect x="5" y="3" width="2" height="2"/><rect x="9" y="3" width="2" height="2"/><rect x="7" y="5" width="2" height="2"/><rect x="11" y="5" width="2" height="2"/><rect x="5" y="7" width="2" height="2"/><rect x="9" y="7" width="2" height="2"/></svg>',
+        locked:
+          '<svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="6" y="2" width="4" height="1"/><rect x="5" y="3" width="1" height="3"/><rect x="10" y="3" width="1" height="3"/><rect x="4" y="6" width="8" height="1"/><rect x="4" y="13" width="8" height="1"/><rect x="4" y="7" width="1" height="6"/><rect x="11" y="7" width="1" height="6"/><rect x="7" y="9" width="2" height="3"/></svg>',
+      };
+      function tab(label, active, onclick, attrs = "", extraClass = "", suffix = "", ico = null) {
+        // Sub-tabs still carry their glyph in the label and get split on the
+        // first space. The main nav passes a drawn icon instead, so the whole
+        // label stays the label.
         const spaceIdx = label.indexOf(" ");
-        const icon = spaceIdx === -1 ? label : label.slice(0, spaceIdx);
-        const text = spaceIdx === -1 ? "" : label.slice(spaceIdx + 1);
+        const icon = ico !== null ? ico : spaceIdx === -1 ? label : label.slice(0, spaceIdx);
+        const text = ico !== null ? label : spaceIdx === -1 ? "" : label.slice(spaceIdx + 1);
         return `<button class="tab ${active ? "active" : ""}${extraClass}" onclick="${onclick}"${attrs ? " " + attrs : ""}>${icon}${text ? ` <span class="tab-label-text">${text}</span>` : ""}${suffix}</button>`;
       }
       function button(
@@ -21587,7 +21677,9 @@ addEventListener("DOMContentLoaded",function(){
           const r = target.getBoundingClientRect();
           const flier = document.createElement("div");
           flier.className = "unlock-flier";
-          flier.textContent = emoji || "✨";
+          // The icon that lands in the slot is the icon that lives there.
+          if (TAB_ICONS[tabId]) flier.innerHTML = TAB_ICONS[tabId];
+          else flier.textContent = emoji || "✨";
           document.body.appendChild(flier);
           const fr = flier.getBoundingClientRect();
           const startX = window.innerWidth / 2 - fr.width / 2;
@@ -24445,16 +24537,16 @@ addEventListener("DOMContentLoaded",function(){
         // Social posts about it, Marketplace funds it (sell parts /
         // Saturday scavenge), Compete is Saturday show day at the end.
         getEl("mainTabs").innerHTML = [
-          ["workshop", "🔧 Build"],
-          ["career", "📱 Social"],
-          ["dealership", "📘 Marketplace"],
-          ["shows", "🏁 Compete"],
+          ["workshop", "Build"],
+          ["career", "Social"],
+          ["dealership", "Marketplace"],
+          ["shows", "Compete"],
         ]
           .map(([id, label]) => {
             // Not earned yet, or held back for the arrival animation: no slot.
             if (!tabEarned(id) || tabAwaitingArrival(id)) return "";
             if (!tabUnlocked(id))
-              return `<button class="tab locked" onclick="lockedTabNudge()">🔒 ${label.replace(/^[^ ]+ /, "")}</button>`;
+              return `<button class="tab locked" onclick="lockedTabNudge()">${TAB_ICONS.locked} <span class="tab-label-text">${label}</span></button>`;
             const arriving = tabArriving === id;
             const isNew = state.tabNew === id;
             return tab(
@@ -24468,6 +24560,7 @@ addEventListener("DOMContentLoaded",function(){
               `data-tab="${id}"`,
               `${arriving ? " tab-arriving" : ""}${isNew ? " tab-new" : ""}`,
               isNew && !arriving ? `<span class="tab-new-dot"></span>` : "",
+              TAB_ICONS[id] || "",
             );
           })
           .join("");
