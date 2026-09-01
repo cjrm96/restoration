@@ -66,7 +66,7 @@ const SEED = Number(process.argv[2] || 1);
           return "wrap";
         }
         if (state.showLoading && state.showStage) { advanceShowStage(); return "showStage"; }
-        if (state.result && state.view === "result") { state.result = null; state.postShowWeekLocked = false; setView("workshop"); return "result"; }
+        if (state.result && state.view === "result") { leaveResultScreen(); return "result"; }
         if (state.pendingScene) { window.__beatLog.push({ week: state.week, season: state.seasonNumber||1, t: "scene", id: state.pendingScene.id || state.pendingScene.title }); resolvePendingScene(0); return "scene"; }
         if (state.pendingUnlock) { acknowledgeUnlock(false); return "unlock"; }
         if (state.pendingEvent) { window.__beatLog.push({ week: state.week, season: state.seasonNumber||1, t: "event", id: (state.pendingEvent && state.pendingEvent.title) || "event" }); resolveEvent(state.money > 800); return "event"; }

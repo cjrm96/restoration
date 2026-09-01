@@ -10497,7 +10497,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.62.1";
+      const GAME_VERSION = "0.63.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -10659,6 +10659,8 @@
           loansUnlocked: false,
           pendingShowEntry: null,
           tripsKnown: { yard: false, swap: false },
+          yardNudges: 0,
+          yardNudgeWeek: null,
           tunesKnown: { setup: false, style: false },
           sharkRefused: false,
           sharkMetWeek: null,
@@ -12523,14 +12525,19 @@
         if (!state.tripsKnown) state.tripsKnown = { yard: false, swap: false };
         state.tripsKnown[which] = true;
       }
-      // A quiet week: nothing on the lift, no show today, nobody else talking.
-      function quietWeekForBeat() {
+      // Nobody else is talking and the truck is not at a show. The floor is
+      // clear for somebody to say something, whether or not there is a job
+      // on the bench.
+      function beatWindowOpen() {
         if (!state.tutorialComplete) return false;
         if (state.cutscene || state.pendingScene || state.pendingEvent) return false;
         if (state.view === "result" || state.showStage || state.showLoading) return false;
         if (state.seasonWrap || state.gameOver) return false;
-        if (hasActiveRestorations()) return false;
         return true;
+      }
+      // A quiet week: all of the above, and nothing on the lift either.
+      function quietWeekForBeat() {
+        return beatWindowOpen() && !hasActiveRestorations();
       }
       function maybeTriggerYardIntro() {
         if (tripKnown("yard")) return false;
@@ -12559,6 +12566,81 @@
               lore: 4,
               note:
                 "He shrugged and drank both coffees. The place is not going anywhere, and neither is he. The Road Trip is on the Marketplace tab when you want it.",
+              noteTone: "event-good",
+            },
+          ],
+        });
+        saveGame();
+        return true;
+      }
+      // Broke is not the same as finished. The player still has a list of
+      // real jobs, they just cannot pay for any of them this week, and the
+      // only button that still lights up is a free Cars and Coffee that eats
+      // the Saturday and pays nothing. The yard is the actual answer and it
+      // costs fifteen dollars, so somebody says so out loud.
+      function brokeWithRealWorkBlocked() {
+        const car = currentCar();
+        if (!car) return false;
+        const open = PARTS.filter(
+          (p) =>
+            !car.installedParts.includes(p.id) &&
+            !findActiveTask(car.id, p.id) &&
+            car[p.category] < 100 &&
+            p.tier !== "Budget",
+        );
+        if (!open.length) return false;
+        return !open.some((p) => {
+          const toolsOk = !(p.tools || []).some(
+            (t) => !state.ownedTools.includes(t),
+          );
+          return (
+            (toolsOk && state.money >= partCost(p, "diy")) ||
+            state.money >= partCost(p, "shop")
+          );
+        });
+      }
+      // He mentions it twice across a season and then lets it go. Once you
+      // have actually made the drive he never brings it up again, because by
+      // then the yard has made the argument better than he can.
+      function maybeTriggerYardNudge() {
+        if (!tripKnown("yard")) return false;
+        if ((state.scavengeTripsTaken || 0) > 0) return false;
+        // Not in the opening. Week three is broke too, but week three is
+        // broke because the player just spent five thousand dollars on a
+        // truck, which is the correct thing to have done. He waits until
+        // being broke has become the shape of the season.
+        if ((state.history || []).length < 2) return false;
+        const told = state.yardNudges || 0;
+        if (told >= 2) return false;
+        if (told && state.week - (state.yardNudgeWeek || 0) < 5) return false;
+        if (!brokeWithRealWorkBlocked()) return false;
+        // Deliberately not quietWeekForBeat(): a broke player always has some
+        // cheap thing on the bench, because cheap things are all they can
+        // start. That job is the reason he is standing there.
+        if (!beatWindowOpen()) return false;
+        if (!claimLifeBeat()) return false;
+        state.yardNudges = told + 1;
+        state.yardNudgeWeek = state.week;
+        const first = told === 0;
+        queueScene({
+          id: first ? "yard_nudge_1" : "yard_nudge_2",
+          art: "scene-yard-invite",
+          emoji: "🧤",
+          title: first ? "You Are Not Buying That" : "It Is Still Saturday",
+          text: first
+            ? "He finds you fitting the cheapest thing on the whole list, because it is the only thing on the whole list you could pay for this week. He does not say anything about that, which is worse. Then he nods at the phone face down on the bench, still open to the part you actually need. 'Fifteen dollars at the gate,' he says. 'One of those is lying in a row out at Pick-A-Part with the sun on it right now. Gloves, cash, breaker bar.' He knocks twice on the fender on his way past. 'Costs you the Saturday and almost nothing else. This is the week for it.'"
+            : "He has stopped pitching it. He reads the same shopping list off the whiteboard he read a month ago, in the same handwriting, with the same three things still on it. 'Huh,' he says, and leaves it there. Then, from the driveway, not turning around: 'Forty minutes. They let you take the parts home.' He is not annoyed about it. Somehow that is worse.",
+          choices: [
+            {
+              label: first ? "Fine. Saturday." : "All right. This weekend.",
+              lore: 6,
+              note: "Road Trip is on the Marketplace tab. A day out there runs about fifteen dollars and costs you the week, and everything on the shelves comes off at a fraction of what the parts page wants. Go on a week with nothing on the lift, which is this one.",
+              noteTone: "event-good",
+            },
+            {
+              label: "Not this weekend",
+              lore: 4,
+              note: "He let it go. The Road Trip button is on the Marketplace tab whenever the money gets tight enough to make the drive look sensible.",
               noteTone: "event-good",
             },
           ],
@@ -12628,10 +12710,17 @@
       // exactly when the setup row would appear anyway, and it doubles as his
       // introduction for a player who has done every job themselves and never
       // once been to the shop.
+      // This used to fire the first quiet week after the truck went legal,
+      // which put it in week three on top of the yard, the box, Dale and
+      // Buck, and asked a brand new player to think about setup before they
+      // had watched a single truck get judged. It waits for three shows now.
+      // That lands it in the flat middle of the season, where a player with
+      // no money has time to think and nothing else arriving.
       function maybeTriggerSetupIntro() {
         if (tuneKnown("setup")) return false;
         const car = currentCar();
         if (!car || !roadworthy(car)) return false;
+        if ((state.history || []).length < 3) return false;
         if (!quietWeekForBeat()) return false;
         if (!claimLifeBeat()) return false;
         learnTune("setup");
@@ -12643,7 +12732,7 @@
           title: "What Is She For?",
           emoji: "🔧",
           text:
-            "You run her down to Dale's to get the alignment looked at, and he puts her on the rack without being asked. Comes back out wiping his hands. 'She's legal. Congratulations.' Then he leans on the fender and looks at you properly for the first time. 'So what is she for? Because a truck set up to run is not a truck set up to be looked at, and neither one of those is a truck set up to just keep going. I can dial her any of those ways. First one's on me while she's already up there. After that it's money and a weekend.' He waits. He is genuinely asking.",
+            "You run her down to Dale's to get the alignment looked at, and he puts her on the rack without being asked. Comes back out wiping his hands, nods at the placing card curling on the dash. 'So you have been out with her.' Then he leans on the fender and looks at you properly for the first time. 'So what is she for? Because a truck set up to run is not a truck set up to be looked at, and neither one of those is a truck set up to just keep going. I can dial her any of those ways. First one's on me while she's already up there. After that it's money and a weekend.' He waits. He is genuinely asking.",
           choices: [
             {
               label: "Tell him you'll think about it",
@@ -12664,7 +12753,12 @@
       function maybeTriggerStyleIntro() {
         if (tuneKnown("style")) return false;
         if (!(state.buck && state.buck.metOnce)) return false;
-        if ((state.history || []).length < 1) return false;
+        // One show was enough, so this drifted anywhere from week five to
+        // week nineteen depending on the dice. Four pins it to the middle of
+        // the season, a step behind the setup talk, which is both later than
+        // the crowded opening and early enough that a permanent choice is
+        // still worth making.
+        if ((state.history || []).length < 4) return false;
         if (!quietWeekForBeat()) return false;
         if (!claimLifeBeat()) return false;
         learnTune("style");
@@ -15019,6 +15113,10 @@
           if (!Object.prototype.hasOwnProperty.call(parsed.state, "tripsKnown"))
             state.tripsKnown = { yard: true, swap: true };
           if (!state.tripsKnown) state.tripsKnown = { yard: false, swap: false };
+          // A save from before the reminder existed has had its whole season
+          // to work out that the yard is cheaper. Nobody nags a veteran.
+          if (!Object.prototype.hasOwnProperty.call(parsed.state, "yardNudges"))
+            state.yardNudges = 2;
           // Same for the two build decisions: a save from before anybody
           // explained them has been living with them for months.
           if (!Object.prototype.hasOwnProperty.call(parsed.state, "tunesKnown"))
@@ -15986,15 +16084,29 @@
       function atHomeEventOk(ev) {
         return !(ev && ev.atHome) || !carAtShop();
       }
+      // The scheduled introductions, in the order they are allowed to speak.
+      // None of these arrive by dice roll: each one waits for the week where
+      // it means something. Running out of money is not a coincidence, and
+      // the friend with the breaker bar gets to make his case before the man
+      // with the paper bag makes his.
+      //
+      // Kept apart from the random roll because the random roll sits out
+      // show weeks and these must not. A player who enters something every
+      // week the calendar offers one, which is every week, would otherwise
+      // never hear any of them.
+      function maybeTriggerScheduledIntro() {
+        if (state.pendingScene || state.pendingEvent) return false;
+        if (maybeTriggerYardNudge()) return true;
+        if (maybeTriggerSharkIntro()) return true;
+        if (maybeTriggerYardIntro()) return true;
+        if (maybeTriggerSwapIntro()) return true;
+        if (maybeTriggerSetupIntro()) return true;
+        if (maybeTriggerStyleIntro()) return true;
+        return false;
+      }
       function maybeRollEvent() {
         if (state.pendingScene || state.pendingEvent) return;
-        // Ahead of the random beats: running out of money is not a coincidence
-        // and he does not arrive by dice roll.
-        if (maybeTriggerSharkIntro()) return;
-        if (maybeTriggerYardIntro()) return;
-        if (maybeTriggerSwapIntro()) return;
-        if (maybeTriggerSetupIntro()) return;
-        if (maybeTriggerStyleIntro()) return;
+        if (maybeTriggerScheduledIntro()) return;
         if (maybeBreakdown()) return;
         if (maybeSpouseScenario()) return;
         if (Math.random() < 0.22) {
@@ -23086,7 +23198,7 @@ addEventListener("DOMContentLoaded",function(){
           storyBody,
           "",
           placeColor,
-        )}${renderJudgeCard(r)}${renderRivalReactions(r)}${panel(isCoffee ? "Crowd Pleasers" : "Final Standings", standingsBody, "", "#7da0c2")}</div><div><div class="result-action-bar">${panel("After the Show", `${button("Back to the Garage", "state.result=null; state.postShowWeekLocked=false; setView('garage')", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "", "#d8a24f")}</div>${renderUpcomingBar()}</div></div>`;
+        )}${renderJudgeCard(r)}${renderRivalReactions(r)}${panel(isCoffee ? "Crowd Pleasers" : "Final Standings", standingsBody, "", "#7da0c2")}</div><div><div class="result-action-bar">${panel("After the Show", `${button("Back to the Garage", "leaveResultScreen()", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "", "#d8a24f")}</div>${renderUpcomingBar()}</div></div>`;
       }
 
       // Ending the Saturday trip burns the weekend, advance one week
@@ -24261,6 +24373,20 @@ addEventListener("DOMContentLoaded",function(){
       // A show queued behind a story beat rolls in only once every card that
       // beat raised has been read. modalBusy() is already the "is the player
       // still reading something" test, so this waits on exactly that.
+      // Walking out of the result screen is the quiet moment a show week
+      // never has: the truck is back on the floor, nothing is on the lift,
+      // and the placing card is still in your hand. Any introduction that
+      // was owed to this week gets it here.
+      function leaveResultScreen() {
+        state.result = null;
+        state.postShowWeekLocked = false;
+        setView("garage");
+        if (maybeTriggerScheduledIntro()) {
+          processEventQueue();
+          saveGame();
+          requestRender("full");
+        }
+      }
       function drainPendingShowEntry() {
         if (state.pendingShowEntry == null) return;
         if (modalBusy()) return;

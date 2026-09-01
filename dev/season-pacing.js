@@ -145,7 +145,7 @@ const BUFFER = Number(process.env.SAVER || 250);
         if (state.pendingVictory) { startLegacyRun(); return "victory"; }
         if (state.seasonWrap) { window.__wrapped = true; return null; }
         if (state.showLoading && state.showStage) { advanceShowStage(); return "showStage"; }
-        if (state.result && state.view === "result") { state.result = null; state.postShowWeekLocked = false; setView("workshop"); return "result"; }
+        if (state.result && state.view === "result") { leaveResultScreen(); return "result"; }
         if (state.pendingScene) { tag("scene", state.pendingScene.id || state.pendingScene.title, true); resolvePendingScene(0); return "scene"; }
         if (state.pendingUnlock) { tag("unlock", state.pendingUnlock.tab, true); acknowledgeUnlock(false); return "unlock"; }
         if (state.pendingEvent) { tag("event", (state.pendingEvent && state.pendingEvent.title) || "event", true); resolveEvent(state.money > 800); return "event"; }
