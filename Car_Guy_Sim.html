@@ -6,11 +6,11 @@
     <title>Car Guy Simulator</title>
     <style>
       :root {
-        --bg: #17101a;
-        --panel: #241829;
-        --panel-2: #1b121e;
-        --panel-3: #2d1e33;
-        --line: #4b3446;
+        --bg: #17120f;
+        --panel: #241d17;
+        --panel-2: #1b1511;
+        --panel-3: #2d241d;
+        --line: #4b4036;
         --text: #efe2c6;
         --text-bright: #f2e6cf;
         --text-dim: #8f8476;
@@ -37,17 +37,17 @@
         background:
           linear-gradient(
             180deg,
-            rgba(17, 12, 19, 0.88) 0%,
-            rgba(13, 9, 15, 0.95) 100%
+            rgba(17, 13, 10, 0.88) 0%,
+            rgba(13, 10, 8, 0.95) 100%
           ),
           repeating-linear-gradient(
             90deg,
-            rgba(90, 63, 84, 0.22) 0px,
-            rgba(90, 63, 84, 0.22) 6px,
+            rgba(90, 64, 40, 0.22) 0px,
+            rgba(90, 64, 40, 0.22) 6px,
             transparent 6px,
             transparent 78px
           ),
-          linear-gradient(180deg, #563c50 0%, #30212d 45%, #1f1523 100%);
+          linear-gradient(180deg, #56483a 0%, #302721 45%, #1f1915 100%);
         min-height: 100vh;
       }
       .app {
@@ -56,8 +56,8 @@
         padding: 18px;
       }
       .shell {
-        background: linear-gradient(180deg, #2a1d2f 0%, #1c1320 100%);
-        border: 1px solid #51384c;
+        background: linear-gradient(180deg, #2a231d 0%, #1c1713 100%);
+        border: 1px solid #51453a;
         border-radius: 14px;
         box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
       }
@@ -70,7 +70,7 @@
         align-items: center;
         gap: 14px;
         flex-wrap: wrap;
-        background: linear-gradient(180deg, #312236 0%, #241829 100%);
+        background: linear-gradient(180deg, #312922 0%, #241d17 100%);
         position: sticky;
         top: 0;
         z-index: 50;
@@ -190,8 +190,8 @@
             rgba(255, 255, 255, 0.012) 4px,
             rgba(255, 255, 255, 0.012) 5px
           ),
-          linear-gradient(180deg, #2a1c2f 0%, #1a121d 100%);
-        border-bottom: 2px solid #4a3445;
+          linear-gradient(180deg, #2a1d12 0%, #1a1108 100%);
+        border-bottom: 2px solid #4a3320;
         box-shadow:
           inset 0 -1px 0 rgba(217, 162, 79, 0.22),
           0 2px 6px rgba(0, 0, 0, 0.4);
@@ -205,7 +205,7 @@
             rgba(255, 255, 255, 0.01) 4px,
             rgba(255, 255, 255, 0.01) 5px
           ),
-          linear-gradient(180deg, #22152a 0%, #140c1a 100%);
+          linear-gradient(180deg, #221610 0%, #140d08 100%);
       }
       .tab {
         padding: 11px 20px 11px 20px;
@@ -217,9 +217,9 @@
             rgba(255, 255, 255, 0.04) 1px,
             rgba(255, 255, 255, 0.04) 2px
           ),
-          linear-gradient(180deg, #5a3f54 0%, #3a2836 100%);
+          linear-gradient(180deg, #5a4a3a 0%, #3a2e22 100%);
         color: #d8c8a8;
-        border: 1px solid #2a1d2f;
+        border: 1px solid #2a1d10;
         border-radius: 3px;
         cursor: pointer;
         font-family: inherit;
@@ -488,7 +488,7 @@
             rgba(255, 255, 255, 0.015) 64px,
             rgba(255, 255, 255, 0.015) 65px
           ),
-          linear-gradient(180deg, #6a5064 0%, #43323f 100%);
+          linear-gradient(180deg, #6a6256 0%, #433c33 100%);
       }
       .grid-main {
         display: grid;
@@ -10567,7 +10567,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.62.1";
+      const GAME_VERSION = "0.62.2";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
