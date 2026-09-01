@@ -10497,7 +10497,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.61.0";
+      const GAME_VERSION = "0.62.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -10659,6 +10659,7 @@
           loansUnlocked: false,
           pendingShowEntry: null,
           tripsKnown: { yard: false, swap: false },
+          tunesKnown: { setup: false, style: false },
           sharkRefused: false,
           sharkMetWeek: null,
           tutorialStep: 0,
@@ -10886,6 +10887,7 @@
       }
       const RETUNE_COST = 120;
       function setCarSetup(id) {
+        if (!tuneKnown("setup")) return;
         const car = currentCar();
         if (!car) return toast("No car in the garage to tune.", "err");
         const s = SETUPS.find((x) => x.id === id);
@@ -11105,6 +11107,8 @@
       function commitBuildStyle(style) {
         const car = currentCar();
         if (!car || car.buildStyle) return;
+        // Permanent, so it cannot be reachable before somebody has said so.
+        if (!tuneKnown("style")) return;
         car.buildStyle = style;
         toast(
           style === "stock"
@@ -11133,7 +11137,9 @@
             ).join("")}</div><div class="tiny muted" style="margin-top:8px;line-height:1.6">🔒 The booth opens once the paint restoration is complete. Finish every paint service on this car, then pick your final color, wheels matched to the scheme.</div>`;
         const styleRow = car.buildStyle
           ? `<div class="tiny" style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(217,162,79,0.14);color:var(--gold-soft)">Build direction: <b style="color:var(--text-bright)">${car.buildStyle === "stock" ? "Numbers-matching stock" : "Restomod"}</b> · ${car.buildStyle === "stock" ? "Regional and National judges favor it" : "Cars & Coffee and Local crowds love it"}${sceneTasteId() !== "split" ? ` · ${SCENE_TASTES[sceneTasteId()].icon} ${(sceneTasteId() === "purist") === (car.buildStyle === "stock") ? `It's a ${SCENE_TASTES[sceneTasteId()].label.toLowerCase()}, the scene's leaning your way` : `It's a ${SCENE_TASTES[sceneTasteId()].label.toLowerCase()}, you're building against the grain this season`}` : ""}</div>`
-          : `<div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(217,162,79,0.14)"><div class="tiny" style="color:var(--gold-soft);font-weight:bold;margin-bottom:6px">Pick a build direction (one-time)</div><div class="btn-row two">${button("Keep it stock", "commitBuildStyle('stock')", false, "", "width:100%")}${button("Make it a restomod", "commitBuildStyle('restomod')", false, "", "width:100%")}</div><div class="tiny muted" style="margin-top:6px">Not a paint choice, this sets who scores it higher. Stock wins Regionals and Nationals; restomods turn heads at Cars &amp; Coffee and Local shows.</div></div>`;
+          : !tuneKnown("style")
+            ? ""
+            : `<div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(217,162,79,0.14)"><div class="tiny" style="color:var(--gold-soft);font-weight:bold;margin-bottom:6px">Pick a build direction (one-time)</div><div class="btn-row two">${button("Keep it stock", "commitBuildStyle('stock')", false, "", "width:100%")}${button("Make it a restomod", "commitBuildStyle('restomod')", false, "", "width:100%")}</div><div class="tiny muted" style="margin-top:6px">Not a paint choice, this sets who scores it higher. Stock wins Regionals and Nationals; restomods turn heads at Cars &amp; Coffee and Local shows.</div></div>`;
         const cur = setupDef(car);
         const setupButtons = SETUPS.map((s) => {
           const active = (car.setup || "balanced") === s.id;
@@ -11151,7 +11157,7 @@
         // The Setup is the finishing decision now that the polish grind is gone:
         // the build's character for the shows it will enter. Shown once she's
         // roadworthy, since it only matters at a show.
-        const setupRow = roadworthy(car)
+        const setupRow = roadworthy(car) && tuneKnown("setup")
           ? `<div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(217,162,79,0.14)"><div class="tiny" style="color:var(--gold-soft);font-weight:bold;margin-bottom:6px">Setup, the build's character</div><div class="tiny muted" style="margin-bottom:7px">Currently: <b style="color:var(--text-bright)">${cur.emoji} ${cur.label}</b> · ${cur.note}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${setupButtons}</div><div class="tiny muted" style="margin-top:6px">${costHint} It shifts how judges score her by show type; it never touches the build itself.</div></div>`
           : "";
         return panel(
@@ -12589,6 +12595,93 @@
               lore: 5,
               note:
                 "He let it go, mostly. Pomona is on the Road Trip board next to the yard whenever the mood takes you, and the tables do not care why you came.",
+              noteTone: "event-good",
+            },
+          ],
+        });
+        saveGame();
+        return true;
+      }
+
+      /* ═══════════════════════════════════════════
+     THE TWO BUILD DECISIONS, AND WHO EXPLAINS THEM
+     Both of these are real strategy and neither was ever introduced. The
+     setup is five tunes worth four points either way on a show's axis. The
+     build direction is permanent, commitBuildStyle refuses to run twice,
+     and it swings three points against whatever the scene wants this year.
+     Both were rows of buttons inside the Paint category of the parts
+     catalogue, which is a strange place for a tune and a stranger place for
+     a decision you can never take back.
+
+     So a person explains each one at the moment it starts to matter, and
+     neither picker exists until they have. A permanent choice made before
+     anybody said it was permanent is not a decision, it is a trap.
+  ═══════════════════════════════════════════ */
+      function tuneKnown(which) {
+        return !!(state.tunesKnown && state.tunesKnown[which]);
+      }
+      function learnTune(which) {
+        if (!state.tunesKnown) state.tunesKnown = { setup: false, style: false };
+        state.tunesKnown[which] = true;
+      }
+      // Dale hands the keys back the first time she is legal to drive. That is
+      // exactly when the setup row would appear anyway, and it doubles as his
+      // introduction for a player who has done every job themselves and never
+      // once been to the shop.
+      function maybeTriggerSetupIntro() {
+        if (tuneKnown("setup")) return false;
+        const car = currentCar();
+        if (!car || !roadworthy(car)) return false;
+        if (!quietWeekForBeat()) return false;
+        if (!claimLifeBeat()) return false;
+        learnTune("setup");
+        if (!state.mechanic) state.mechanic = { metOnce: false, trust: 0, shopVisits: 0, milestoneSeen: false };
+        state.mechanic.metOnce = true;
+        queueScene({
+          id: "setup_intro",
+          art: "scene-dale-brakes",
+          title: "What Is She For?",
+          emoji: "🔧",
+          text:
+            "You run her down to Dale's to get the alignment looked at, and he puts her on the rack without being asked. Comes back out wiping his hands. 'She's legal. Congratulations.' Then he leans on the fender and looks at you properly for the first time. 'So what is she for? Because a truck set up to run is not a truck set up to be looked at, and neither one of those is a truck set up to just keep going. I can dial her any of those ways. First one's on me while she's already up there. After that it's money and a weekend.' He waits. He is genuinely asking.",
+          choices: [
+            {
+              label: "Tell him you'll think about it",
+              lore: 5,
+              note:
+                "He nodded like that was the right answer. The setup lives under Paint & Build Direction on the All Builds tab, and the first one is still free whenever you decide. A tune leans her four points toward one kind of show and four away from its opposite, so it is worth knowing what you are entering before you pick.",
+              noteTone: "event-good",
+            },
+          ],
+        });
+        saveGame();
+        return true;
+      }
+      // Buck brings up the other one, because it is a question about what the
+      // scene thinks of you and that is the only subject he has. It waits for
+      // a show, so the player has watched judging happen before being asked to
+      // commit to a direction for good.
+      function maybeTriggerStyleIntro() {
+        if (tuneKnown("style")) return false;
+        if (!(state.buck && state.buck.metOnce)) return false;
+        if ((state.history || []).length < 1) return false;
+        if (!quietWeekForBeat()) return false;
+        if (!claimLifeBeat()) return false;
+        learnTune("style");
+        const taste = SCENE_TASTES[sceneTasteId()];
+        queueScene({
+          id: "style_intro",
+          art: "scene-rival-showdown",
+          title: "Which Way Are You Going?",
+          emoji: "📐",
+          text:
+            `He catches you in the lot after, one boot up on his bumper. 'Question. Are you keeping that thing honest, or are you going to put something modern under it?' He is not being friendly, he is taking a reading. 'Because the judges have a mood every year and this one is no different.' ${taste.showLine} 'Pick one and commit. Half a restomod is just a car with the wrong parts on it, and everybody can tell.'`,
+          choices: [
+            {
+              label: "Say you haven't decided",
+              lore: 6,
+              note:
+                "You have not, and now you know it is a decision. Build direction sits under Paint & Build Direction on the All Builds tab. Numbers-matching stock or restomod, worth three points either way against what the scene wants this season, and it is the one choice on the whole car you cannot take back.",
               noteTone: "event-good",
             },
           ],
@@ -14926,6 +15019,11 @@
           if (!Object.prototype.hasOwnProperty.call(parsed.state, "tripsKnown"))
             state.tripsKnown = { yard: true, swap: true };
           if (!state.tripsKnown) state.tripsKnown = { yard: false, swap: false };
+          // Same for the two build decisions: a save from before anybody
+          // explained them has been living with them for months.
+          if (!Object.prototype.hasOwnProperty.call(parsed.state, "tunesKnown"))
+            state.tunesKnown = { setup: true, style: true };
+          if (!state.tunesKnown) state.tunesKnown = { setup: false, style: false };
           if (!savedHasScenesSeen) {
             state.scenesSeen = {};
             Object.keys(CUTSCENE_ART).forEach((k) => (state.scenesSeen[k] = true));
@@ -15895,6 +15993,8 @@
         if (maybeTriggerSharkIntro()) return;
         if (maybeTriggerYardIntro()) return;
         if (maybeTriggerSwapIntro()) return;
+        if (maybeTriggerSetupIntro()) return;
+        if (maybeTriggerStyleIntro()) return;
         if (maybeBreakdown()) return;
         if (maybeSpouseScenario()) return;
         if (Math.random() < 0.22) {

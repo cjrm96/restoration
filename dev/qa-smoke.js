@@ -472,6 +472,80 @@ const pass = (msg) => console.log("✓", msg);
   if (seasonOneOk !== true) fail("season one shape: " + seasonOneOk);
   pass("season one is one truck: lot shut, and only her car can change hands");
 
+  // ── the two build decisions. The setup is worth four points either way on a
+  // show's axis; the build direction is worth three against the season's taste
+  // and commitBuildStyle refuses to run twice, so it is permanent. Neither was
+  // ever introduced and both were button rows inside the Paint category. A
+  // permanent choice reachable before anybody said it was permanent is a trap,
+  // so the pickers do not exist until their beat has run. ──
+  const tunesOk = await page.evaluate(() => {
+    const stash = { known: JSON.parse(JSON.stringify(state.tunesKnown || {})),
+                    hist: state.history, beat: state.lifeBeatWeek, view: state.view,
+                    sub: state.shopSub, cat: state.shopCat, buck: !!(state.buck && state.buck.metOnce) };
+    const car = currentCar();
+    const car0 = { e: car.engine, t: car.transmission, b: car.brakes, s: car.steering,
+                   setup: car.setup, style: car.buildStyle };
+    const clr = () => {
+      state.pendingScene = null; state.pendingEvent = null; state.eventQueue = [];
+      state.noticeQueue = []; state.cutscene = null; state.pendingUnlock = null;
+      state.lifeBeatWeek = -1; state.activeRestorations = []; clearTabArrival();
+    };
+    const restore = () => {
+      state.tunesKnown = stash.known; state.history = stash.hist; state.lifeBeatWeek = stash.beat;
+      Object.assign(car, { engine: car0.e, transmission: car0.t, brakes: car0.b,
+        steering: car0.s, setup: car0.setup, buildStyle: car0.style });
+      if (state.buck) state.buck.metOnce = stash.buck;
+      clr(); setShopSub(stash.sub); state.shopCat = stash.cat; setView(stash.view); renderMainContent(true);
+    };
+    const bail = (m) => { restore(); return m; };
+    const paint = () => {
+      setView("workshop"); setShopSub("parts"); state.shopCat = "paint"; renderMainContent(true);
+      return document.getElementById("appContent").innerText;
+    };
+    state.tunesKnown = { setup: false, style: false };
+    car.setup = null; car.buildStyle = null;
+    // Unexplained means unreachable, by the UI or by calling straight through.
+    if (/pick a build direction/i.test(paint())) return bail("the direction picker shows before anyone raised it");
+    commitBuildStyle("restomod");
+    if (car.buildStyle) return bail("a permanent choice was committed before it was explained");
+    setCarSetup("brawler");
+    if (car.setup) return bail("a tune was set before it was explained");
+    // Dale waits for a truck that actually runs.
+    clr();
+    car.engine = 10; car.transmission = 10; car.brakes = 10; car.steering = 10;
+    if (maybeTriggerSetupIntro()) return bail("Dale offered a setup on a truck that does not run");
+    clr();
+    car.engine = 60; car.transmission = 55; car.brakes = 55; car.steering = 55;
+    if (!maybeTriggerSetupIntro()) return bail("the setup beat never fired on a roadworthy truck");
+    if (!state.pendingScene || state.pendingScene.id !== "setup_intro") return bail("wrong scene for the setup");
+    resolvePendingScene(0);
+    if (!tuneKnown("setup")) return bail("the setup beat did not open the setup");
+    if (!(state.mechanic && state.mechanic.metOnce))
+      return bail("the setup beat did not introduce Dale for a DIY-only player");
+    setCarSetup("brawler");
+    if (car.setup !== "brawler") return bail("a tune still cannot be set after the beat");
+    if (/pick a build direction/i.test(paint())) return bail("the setup beat leaked the direction picker too");
+    // Buck raises the other one, and only after a show.
+    clr(); state.buck.metOnce = false; state.history = [];
+    if (maybeTriggerStyleIntro()) return bail("the direction beat fired before Buck was met");
+    clr(); state.buck.metOnce = true;
+    state.history = [{ tier: "Cars & Coffee", place: 3, show: "Coffee" }];
+    if (!maybeTriggerStyleIntro()) return bail("the direction beat never fired");
+    if (!state.pendingScene || state.pendingScene.id !== "style_intro") return bail("wrong scene for the direction");
+    resolvePendingScene(0);
+    if (!/pick a build direction/i.test(paint())) return bail("the picker never appeared");
+    commitBuildStyle("restomod");
+    if (car.buildStyle !== "restomod") return bail("the direction would not commit after the beat");
+    commitBuildStyle("stock");
+    if (car.buildStyle !== "restomod") return bail("the direction stopped being permanent");
+    clr();
+    if (maybeTriggerSetupIntro() || maybeTriggerStyleIntro()) return bail("a build-decision beat fired twice");
+    restore();
+    return true;
+  });
+  if (tunesOk !== true) fail("build decisions: " + tunesOk);
+  pass("setup and build direction are each explained before they can be chosen");
+
   // ── the mechanic is doing the work. While the shop has the truck the player
   // cannot be the one who stripped the bolt, lost the 10mm, or fixed one thing
   // and broke two more, and the car is not under their tarp for the storm
