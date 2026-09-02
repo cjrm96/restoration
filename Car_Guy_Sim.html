@@ -948,6 +948,113 @@
           grid-template-columns: 1fr;
         }
       }
+      /* A yard row is a classifieds line: thumbnail, then the words. */
+      .lst-row { display: flex; gap: 12px; align-items: flex-start; }
+      .lst-row-body { flex: 1 1 auto; min-width: 0; }
+      .lst-thumb {
+        position: relative;
+        flex: 0 0 92px;
+        width: 92px;
+        height: 92px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        overflow: hidden;
+        background: #0d0a08;
+      }
+      .lst-thumb .lst-art {
+        width: 100%;
+        height: 100%;
+        display: block;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+      @media (max-width: 560px) {
+        .lst-thumb { flex-basis: 68px; width: 68px; height: 68px; }
+        .lst-row { gap: 9px; }
+      }
+      /* ── Listing cards: a parts ad is a photograph first ── */
+      .lst-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+        gap: 12px;
+      }
+      .lst {
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .lst-shot {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        background: #0d0a08;
+        border-bottom: 1px solid var(--line);
+      }
+      .lst-shot .lst-art {
+        width: 100%;
+        height: 100%;
+        display: block;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+      .lst-tag {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        background: rgba(20, 14, 10, 0.82);
+        border: 1px solid rgba(217, 162, 79, 0.35);
+        color: var(--text);
+        font-size: 9.5px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        padding: 3px 6px;
+        border-radius: 3px;
+      }
+      .lst-body { padding: 9px 10px 10px; }
+      .lst-price {
+        font-size: 15px;
+        font-weight: bold;
+        color: var(--gold);
+        font-variant-numeric: tabular-nums;
+      }
+      .lst-title {
+        font-size: 12px;
+        color: var(--text);
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .lst-sub {
+        font-size: 10.5px;
+        color: var(--text-dim);
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .lst-acts { margin-top: 8px; }
+      /* A card is too narrow for three labels side by side, they wrapped to
+         three lines each. Stacked, they stay one line and read as a menu. */
+      .lst-acts.btn-row,
+      .lst-acts .btn-row {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .lst-acts .btn {
+        width: 100%;
+        padding: 5px 7px;
+        font-size: 10.5px;
+        white-space: nowrap;
+      }
+      @media (max-width: 560px) {
+        .lst-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+        .lst-title { font-size: 11.5px; }
+      }
       .close-x {
         background: none;
         border: none;
@@ -10567,7 +10674,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.62.3";
+      const GAME_VERSION = "0.63.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -23254,14 +23361,21 @@ addEventListener("DOMContentLoaded",function(){
               // works even when nothing in the garage can take the part, so a
               // good score is never a dead end.
               const flipBuy = Math.max(15, Math.round(part.diy * 0.3));
-              return `<div class="feed-item">
-                <div class="feed-kicker">PICK-A-PART · ${(part.tier || "").toUpperCase()}</div>
-                <div class="feed-text">${part.name}</div>
-                <div class="feed-meta">+${yardImp} ${CAT_LABELS[part.category]} (vs +${part.imp} new) · normally $${fmt(part.diy)} new</div>
+              // Out here you are reading somebody else's ad, so it gets their
+              // wording and their town. The seed is the part, so a row keeps
+              // its photograph and its wording for the whole trip.
+              const adKey = "yard" + part.id + "_" + Math.round((s.conditionMult || 1) * 100);
+              return `<div class="feed-item lst-row">
+                <div class="lst-thumb">${LISTING_ART.photo(adKey, part.name, part.category)}</div>
+                <div class="lst-row-body">
+                <div class="feed-kicker">Pick-A-Part · ${(part.tier || "").toUpperCase()}</div>
+                <div class="feed-text">${LISTING_ART.adTitle(part.name, adKey)}</div>
+                <div class="feed-meta">${LISTING_ART.adPlace(adKey)} · +${yardImp} ${CAT_LABELS[part.category]} (vs +${part.imp} new) · normally $${fmt(part.diy)} new</div>
                 ${missingNote}${noTargetNote}
                 <div class="btn-row two" style="margin-top:8px">
                 ${button(`Pull it · $${fmt(s.price)}`, `pullYardPart(${part.id})`, state.money < s.price || missing.length > 0 || noTarget, "", "width:100%;font-size:12px")}
                 ${button(state.money < flipBuy ? `Need $${fmt(flipBuy)}` : `Grab to flip · $${fmt(flipBuy)}`, `buyJunkyardFlipPart(${part.id})`, state.money < flipBuy, "", "width:100%;font-size:12px;background:#4a3c2e;border-color:#6b5840;color:var(--text)")}
+                </div>
                 </div>
               </div>`;
             })
@@ -23391,6 +23505,356 @@ addEventListener("DOMContentLoaded",function(){
         )}</div>`;
       }
 
+      /* ═══════════════════════════════════════════
+     LISTING ART, the photographs on the Marketplace.
+
+     A parts listing is a photograph first. Nobody has ever scrolled a
+     classifieds app reading names. Rather than ship a hundred drawings,
+     each listing composes one: a surface, a silhouette, a finish, a
+     camera, a light and whatever junk happened to be lying nearby.
+
+     The realism is composition, not fidelity. A part centred on a clean
+     floor reads as a catalogue no matter how well it is drawn, so these
+     are framed badly on purpose: off to one side, sometimes running off
+     the edge, lit from wherever the bulb happens to hang, with a bolt
+     and a rag in the corner and the photographer's own shadow falling
+     across the frame.
+
+     Everything is seeded off the item's id, so a listing keeps the same
+     photograph for as long as it is on the board.
+     ═══════════════════════════════════════════ */
+      const LISTING_ART = (function () {
+        const hash = (s) => { let h = 2166136261; s = String(s);
+          for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+        const rand = (seed) => { let a = seed >>> 0; return function () { a |= 0; a = (a + 0x6D2B79F5) | 0;
+          let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+        const rr = (r, a, b) => a + r() * (b - a);
+        const ri = (r, a, b) => Math.floor(rr(r, a, b + 1));
+        const one = (r, arr) => arr[Math.floor(r() * arr.length)];
+        const odds = (r, p) => r() < p;
+        const bx = (x, y, w, h, f, o) =>
+          `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}"${o !== undefined ? ` opacity="${o}"` : ""}/>`;
+        // real pixel circles: rows of rects, never a smooth arc
+        function circle(cx, cy, rad, f) { let o = "";
+          for (let y = Math.floor(cy - rad); y <= Math.ceil(cy + rad); y++) {
+            const dy = y + 0.5 - cy, h = Math.sqrt(Math.max(0, rad * rad - dy * dy));
+            if (h < 0.4) continue;
+            o += bx(Math.round(cx - h), y, Math.max(1, Math.round(h * 2)), 1, f); } return o; }
+        function annulus(cx, cy, rad, th, f) { let o = "";
+          for (let y = Math.floor(cy - rad); y <= Math.ceil(cy + rad); y++) {
+            const dy = y + 0.5 - cy, ho = Math.sqrt(Math.max(0, rad * rad - dy * dy)),
+                  rin = rad - th, hi = Math.sqrt(Math.max(0, rin * rin - dy * dy));
+            if (ho < 0.4) continue;
+            if (hi < 0.4) { o += bx(Math.round(cx - ho), y, Math.max(1, Math.round(ho * 2)), 1, f); continue; }
+            const w = Math.max(1, Math.round(ho - hi));
+            o += bx(Math.round(cx - ho), y, w, 1, f) + bx(Math.round(cx + hi), y, w, 1, f); } return o; }
+
+        const ST = "#b9bcc0", STD = "#7e8287", STL = "#d7dade", CAST = "#8e9095", CASTL = "#a4a6ab",
+              BLK = "#2a2724", RUST = "#8a5a3a", CHR = "#cdd3d8", CLOTH = "#5b5347", COP = "#a9713f";
+
+        // ── one silhouette per thing somebody would actually list ──
+        const SH = {
+          rotor: () => circle(32,32,15,STD) + circle(32,32,13,ST) + annulus(32,32,13,2,STL) + circle(32,32,5,STD) +
+            [0,1,2,3,4].map(i => { const a = i*2*Math.PI/5 - 1.2;
+              return bx(Math.round(32+Math.cos(a)*8)-1, Math.round(32+Math.sin(a)*8)-1, 2, 2, BLK); }).join(""),
+          wheel: () => circle(32,32,17,BLK) + circle(32,32,11,ST) + annulus(32,32,11,2,STL) + circle(32,32,4,STD),
+          tire: () => circle(32,32,18,"#232022") + circle(32,32,11,"#171517") + annulus(32,32,18,3,"#332f31"),
+          muffler: () => bx(14,26,36,13,STD) + bx(14,26,36,3,STL) + bx(16,39,32,2,BLK,.4) + bx(5,30,9,4,ST) + bx(50,30,9,4,ST),
+          manifold: () => bx(16,26,32,16,CAST) + bx(16,26,32,3,CASTL) + [0,1,2].map(i=>bx(20+i*10,18,7,8,CAST)).join("") + bx(18,42,28,3,BLK,.5),
+          carb: () => bx(22,24,20,18,CAST) + circle(32,22,8,STD) + circle(32,22,5,BLK) + bx(22,24,20,2,CASTL) + bx(26,42,12,4,CAST),
+          alternator: () => circle(29,32,13,CAST) + circle(29,32,10,ST) + annulus(29,32,10,1,STL) + bx(42,28,11,8,CAST) + circle(29,32,4,BLK) + bx(15,30,4,4,COP),
+          starter: () => bx(18,26,26,13,CAST) + bx(18,26,26,3,CASTL) + circle(46,32,7,STD) + bx(14,29,4,7,BLK),
+          battery: () => bx(17,22,30,22,"#2b3a48") + bx(17,22,30,3,"#3d5064") + bx(22,18,5,4,COP) + bx(37,18,5,4,"#8a8f94") + bx(19,38,26,2,"#1e2a34"),
+          radiator: () => bx(12,18,40,28,STD) + [...Array(9)].map((_,i)=>bx(15+i*4,21,2,22,STL,.75)).join("") + bx(12,18,40,3,ST) + bx(12,43,40,3,ST),
+          pump: () => circle(30,30,11,CAST) + circle(30,30,7,ST) + bx(28,41,6,7,CAST) + bx(24,26,4,3,BLK) + circle(30,30,3,STD),
+          steering: () => annulus(32,32,16,3,BLK) + annulus(32,32,16,1,"#4a4440") + circle(32,32,5,STD) + bx(31,17,2,12,BLK) + bx(19,31,12,2,BLK) + bx(33,31,12,2,BLK),
+          seat: () => bx(18,14,26,22,CLOTH) + bx(18,14,26,3,"#6d6455") + bx(14,36,34,14,CLOTH) + bx(14,36,34,2,"#6d6455") + [0,1,2].map(i=>bx(22+i*7,17,2,16,"#4a4239")).join(""),
+          bumper: () => bx(5,28,54,7,CHR) + bx(5,28,54,2,"#eef2f5") + bx(5,35,54,2,"#8f979d") + bx(3,26,4,11,CHR) + bx(57,26,4,11,CHR),
+          mirror: () => circle(38,24,10,CHR) + circle(38,24,7,"#dfe6ea") + bx(20,34,16,4,CHR) + bx(16,32,6,8,BLK),
+          spring: () => [...Array(7)].map((_,i)=>bx(20,16+i*5,24,3,i%2?STD:ST)).join("") + bx(28,12,8,4,STL) + bx(28,50,8,4,STL),
+          gauge: () => bx(14,22,36,20,BLK) + circle(24,32,7,"#1d1b19") + circle(40,32,7,"#1d1b19") + annulus(24,32,7,1,CHR) + annulus(40,32,7,1,CHR) + bx(23,27,2,5,"#c8b48a") + bx(39,27,2,5,"#c8b48a"),
+          panel: () => bx(8,18,48,28,RUST) + bx(8,18,48,3,"#a06a45") + bx(12,22,40,20,"#7a4e33",.55) + bx(8,44,48,2,"#5e3a26"),
+          shaft: () => bx(10,29,44,6,ST) + bx(10,29,44,2,STL) + bx(6,26,7,12,CAST) + bx(51,26,7,12,CAST),
+          bell: () => [...Array(9)].map((_,i)=>bx(18+i,16+i*1.2,28-i*2,3,CAST)).join("") + bx(26,28,14,18,CAST) + bx(30,46,6,6,STD) + bx(26,28,14,2,CASTL),
+          clutch: () => circle(32,32,16,STD) + circle(32,32,14,"#6b5b4a") + annulus(32,32,14,3,"#7d6b56") + circle(32,32,7,ST) + circle(32,32,3,BLK) +
+            [0,1,2,3,4,5].map(i=>{const a=i*Math.PI/3;return bx(Math.round(32+Math.cos(a)*9)-1,Math.round(32+Math.sin(a)*9)-1,3,2,STL);}).join(""),
+          converter: () => circle(32,32,16,STD) + circle(32,32,14,ST) + annulus(32,32,10,2,STD) + annulus(32,32,15,2,STL) + circle(32,32,4,BLK),
+          diff: () => circle(31,30,14,CAST) + annulus(31,30,14,2,CASTL) + circle(31,30,9,STD) +
+            [0,1,2,3,4,5,6,7].map(i=>{const a=i*Math.PI/4;return bx(Math.round(31+Math.cos(a)*11.5)-1,Math.round(30+Math.sin(a)*11.5)-1,2,2,BLK);}).join("") + bx(29,44,6,8,CAST),
+          distributor: () => circle(32,24,10,BLK) + circle(32,24,7,"#3a3532") + bx(28,32,8,16,CAST) +
+            [0,1,2,3].map(i=>bx(24+i*5,14,2,4,["#7a2f26","#2e4a6b","#5a5a2f","#3a3a3a"][i])).join(""),
+          glass: () => bx(12,20,40,24,"#8fa6ad",.55) + bx(12,20,40,2,"#cfe0e4") + bx(14,22,14,20,"#c6d8dc",.35) + bx(12,42,40,2,"#5f7278"),
+          // folded soft goods: a stack with layer edges and a corner turned back
+          softgoods: () => { let o = "";
+            // a pile of folded covers: four layers, each sitting a little proud
+            // of the one under it, with the top corner turned back
+            for (let i = 4; i >= 0; i--) {
+              const y = 14 + i * 7, w = 46 - i * 3, x = 9 + i * 2;
+              o += bx(x, y, w, 8, i % 2 ? CLOTH : "#665d4e");
+              o += bx(x, y, w, 1, "#847a68");
+              o += bx(x, y + 7, w, 1, "#3f392f");
+            }
+            return o + bx(38,14,15,10,"#6d6455") + bx(38,14,15,1,"#8f8471") + bx(38,23,15,1,"#403a31") + bx(51,14,2,10,"#4a4339"); },
+          carpetroll: () => { let o = bx(16,22,38,21,CLOTH) + bx(16,22,38,2,"#7d7362") + bx(16,41,38,2,"#3f392f");
+            // the cut end, wound in on itself
+            return o + circle(16,32,11,"#665d4e") + annulus(16,32,11,2,"#847a68") + annulus(16,32,7,2,"#4a4339")
+              + circle(16,32,3,"#332e27") + bx(30,26,20,1,"#6d6455",.7) + bx(30,36,20,1,"#403a31",.7); },
+          brakepart: () => bx(24,20,16,20,CAST) + bx(24,20,16,2,CASTL) + bx(20,26,4,4,STD) + bx(40,26,4,4,STD) + bx(29,40,6,8,ST),
+          tank: () => bx(12,22,40,22,STD) + bx(12,22,40,3,STL) + bx(20,18,8,4,BLK) + bx(16,44,32,2,"#5e6265") + bx(24,22,3,22,"#63676a"),
+          block: () => bx(16,20,32,26,CAST) + bx(16,20,32,4,CASTL) + [0,1,2,3].map(i=>bx(19+i*7,16,5,4,STD)).join("") + bx(18,46,28,3,BLK,.5),
+          can: () => bx(24,18,16,26,"#6b7a52") + bx(24,18,16,3,"#8a9b6c") + bx(28,14,8,4,STD) + bx(24,30,16,5,"#c8b48a",.8),
+          hose: () => { let o = ""; for (let i = 0; i < 5; i++) o += bx(14 + i * 7, 24 + (i % 2 ? 8 : 0), 9, 5, i % 2 ? "#2f2c2a" : "#3a3634");
+            return o + annulus(20,30,7,2,"#332f2d") + annulus(42,34,7,2,"#332f2d"); },
+          lot: () => bx(14,26,20,14,CAST) + bx(34,30,16,10,STD) + circle(24,20,6,ST) + bx(38,20,10,8,RUST) + bx(18,42,24,4,BLK,.4),
+        };
+        // the words in the name pick the object; the category is the backstop
+        const RULES = [
+          [/rotor|disc brake|\bpads\b/i,"rotor"], [/trim ring|wheels|\brim\b/i,"wheel"], [/tire/i,"tire"],
+          [/torque converter/i,"converter"], [/clutch/i,"clutch"],
+          [/posi|differential|carrier|diff\b|axle/i,"diff"],
+          [/transmission|shifter|bell/i,"bell"],
+          [/hose|line set|weatherstrip/i,"hose"],
+          [/muffler|exhaust|header|\bpipe\b|resonator|heat shield/i,"muffler"],
+          [/manifold|intake/i,"manifold"], [/carburetor|carb\b/i,"carb"],
+          [/alternator|charging/i,"alternator"], [/starter/i,"starter"], [/battery/i,"battery"],
+          [/radiator|cooling fan|coolant|fan shroud|fan clutch/i,"radiator"], [/pump/i,"pump"],
+          [/steering wheel/i,"steering"], [/seat/i,"seat"],
+          [/carpet|headliner/i,"carpetroll"], [/upholstery|cover|door panel|trim/i,"softgoods"],
+          [/bumper|chrome/i,"bumper"], [/mirror/i,"mirror"],
+          [/spring|shock|bushing|suspension|sway/i,"spring"], [/gauge|cluster|dash/i,"gauge"],
+          [/driveshaft|u-joint/i,"shaft"],
+          [/distributor|ignition|wiring|harness|painless|electrical/i,"distributor"],
+          [/glass|window/i,"glass"],
+          [/master cylinder|caliper|booster|brake line|wheel cylinder|brake hardware|brake shoe|drum/i,"brakepart"],
+          [/gas tank|fuel filter|fuel|sending unit|efi/i,"tank"],
+          [/camshaft|cylinder head|block|crank|engine|valve/i,"block"],
+          [/paint|polish|primer|clear|puller/i,"can"], [/lot|\bset\b|package|\bkit\b/i,"lot"],
+          [/panel|fender|quarter|floor pan|body|hood|door|deck lid/i,"panel"],
+        ];
+        const BY_CAT = { brakes:"brakepart", wheels:"wheel", tires:"tire", exhaust:"muffler", engine:"block",
+          transmission:"bell", differential:"diff", fuel:"tank", cooling:"radiator", interior:"softgoods",
+          steering:"steering", suspension:"spring", chrome:"bumper", electrical:"distributor",
+          body:"panel", paint:"can", tool:"lot" };
+        function shapeFor(name, cat) {
+          for (const [re, k] of RULES) if (re.test(name)) return SH[k];
+          return SH[BY_CAT[cat]] || SH.lot;
+        }
+        // things that lean against a wall rather than lie on the floor
+        const LEANERS = new Set(["wheel","tire","panel","bumper","glass","radiator","rotor"]);
+        function shapeKey(name, cat) {
+          for (const [re, k] of RULES) if (re.test(name)) return k;
+          return BY_CAT[cat] || "lot";
+        }
+
+        // nothing in a yard is all one colour
+        const FIN = [
+          { l:"#d7dade", m:"#b9bcc0", d:"#7e8287", c:"#8e9095", cl:"#a4a6ab" },
+          { l:"#a9abae", m:"#8b8d91", d:"#5f6165", c:"#6e7074", cl:"#8b8d91" },
+          { l:"#4a4744", m:"#35322f", d:"#211f1d", c:"#3a3734", cl:"#4a4744" },
+          { l:"#e08b3a", m:"#c06f26", d:"#8a4c17", c:"#b4661f", cl:"#d4802f" },
+          { l:"#4f7fb5", m:"#3a6494", d:"#26436a", c:"#345a86", cl:"#4a75a5" },
+          { l:"#a5723f", m:"#87542c", d:"#5e381c", c:"#7d4d27", cl:"#986438" },
+          { l:"#d9c98f", m:"#bda874", d:"#8a7a4c", c:"#b09c68", cl:"#cbb883" },
+          { l:"#e6ebee", m:"#c9d0d5", d:"#949ba1", c:"#b7bec4", cl:"#dae0e4" },
+        ];
+        const refinish = (svg, f) => svg
+          .replace(/#d7dade/g, f.l).replace(/#b9bcc0/g, f.m).replace(/#7e8287/g, f.d)
+          .replace(/#8e9095/g, f.c).replace(/#a4a6ab/g, f.cl);
+
+        const SURF = {
+          concrete:{ base:"#6d6a64", wall:"#4d4a46", speck:(r)=>{ let o="";
+            for(let i=0;i<90;i++) o+=bx(ri(r,0,63),ri(r,0,63),1,1,r()>.5?"#5b5854":"#7b7871",rr(r,.3,.8));
+            for(let i=0;i<3;i++) o+=bx(ri(r,0,50),ri(r,4,60),ri(r,8,26),1,"#4e4b47",.5); return o; } },
+          tailgate:{ base:"#3f4a55", wall:"#2b333c", speck:(r)=>{ let o="";
+            for(let y=4;y<64;y+=9) o+=bx(0,y,64,1,"#2c353e",.55);
+            for(let i=0;i<40;i++) o+=bx(ri(r,0,63),ri(r,0,63),1,1,"#5a6672",rr(r,.2,.5)); return o; } },
+          bench:{ base:"#6b4f34", wall:"#4a3826", speck:(r)=>{ let o="";
+            for(let i=0;i<14;i++){ const y=ri(r,0,63); o+=bx(0,y,64,1,r()>.5?"#5b432c":"#7a5b3e",rr(r,.35,.7)); }
+            for(let i=0;i<30;i++) o+=bx(ri(r,0,63),ri(r,0,63),1,1,"#4a3625",rr(r,.3,.6)); return o; } },
+          cardboard:{ base:"#9a7b52", wall:"#6f5a3c", speck:(r)=>{ let o="";
+            for(let x=2;x<64;x+=5) o+=bx(x,0,1,64,"#8a6d49",.45);
+            for(let i=0;i<26;i++) o+=bx(ri(r,0,63),ri(r,0,63),1,1,"#755c3d",rr(r,.25,.55)); return o; } },
+          blanket:{ base:"#4a4256", wall:"#342e3d", speck:(r)=>{ let o="";
+            for(let y=3;y<64;y+=11) for(let x=3;x<64;x+=11){ o+=bx(x,y,8,1,"#3d3648",.6); o+=bx(x,y,1,8,"#3d3648",.6); }
+            for(let i=0;i<34;i++) o+=bx(ri(r,0,63),ri(r,0,63),1,1,"#5d5470",rr(r,.2,.5)); return o; } },
+          pegboard:{ base:"#8a7a5e", wall:"#6f6249", speck:(r)=>{ let o="";
+            for(let y=5;y<64;y+=8) for(let x=5;x<64;x+=8) o+=bx(x,y,2,2,"#5d5340",.75);
+            for(let i=0;i<18;i++) o+=bx(ri(r,0,63),ri(r,0,63),1,1,"#9e8d6e",rr(r,.2,.45)); return o; } },
+          drive:{ base:"#4e5539", wall:"#3a4030", speck:(r)=>{ let o="";
+            for(let i=0;i<70;i++) o+=bx(ri(r,0,63),ri(r,0,63),1,ri(r,1,3),r()>.5?"#5d6544":"#414732",rr(r,.3,.7));
+            o+=bx(0,ri(r,36,54),64,ri(r,10,26),"#6d6a64",.9); return o; } },
+        };
+        const SURF_BAG = ["concrete","concrete","concrete","tailgate","tailgate","bench","bench",
+                          "cardboard","blanket","blanket","pegboard","drive"];
+        const LIGHT = {
+          flash:{ t:"#fff6e2", w:.34, a:"#ffffff", aa:.10, v:.30, r:30 },
+          fluoro:{ t:"#dff0e6", w:.16, a:"#c9d8d0", aa:.07, v:.16, r:52 },
+          bulb:{ t:"#ffd08a", w:.30, a:"#2a1c10", aa:.16, v:.44, r:34 },
+          door:{ t:"#cfe2ff", w:.26, a:"#101822", aa:.20, v:.38, r:44 },
+          dim:{ t:"#8a8f9a", w:.10, a:"#0c0b12", aa:.32, v:.50, r:46 },
+        };
+        function junk(r) { let o = ""; const n = ri(r,2,5);
+          for (let i = 0; i < n; i++) { const x = ri(r,-2,60), y = ri(r,-2,60);
+            switch (ri(r,0,6)) {
+              case 0: o += bx(x,y,2,5,"#4a453f") + bx(x-1,y,4,2,"#565049"); break;
+              case 1: o += annulus(x,y,3,1,"#6b6560"); break;
+              case 2: o += bx(x,y,5,3,"#3a3630") + bx(x+1,y+1,3,1,"#22201c"); break;
+              case 3: o += bx(x,y,ri(r,7,15),ri(r,4,8),one(r,["#7a4a3a","#3f4a3a","#4a4550"]),.85); break;
+              case 4: o += bx(x,y,ri(r,10,22),1,"#8f8a82",.5); break;
+              case 5: o += bx(x,y,3,3,"#5a5248"); break;
+              default: o += bx(x,y,ri(r,4,9),2,"#6a4a35",.8); break;
+            } } return o; }
+        function edgeOfSomething(r) {
+          if (r() > 0.55) return "";
+          const i = ri(r,0,3);
+          const c = ["#7a2f26","#2e3540","#584a37","#3d3d40"][i], hi = ["#9c463a","#3e4959","#6f5f46","#515156"][i];
+          if (i === 0) { const y = ri(r,30,52), w = ri(r,18,30); return bx(-6,y,w,30,c) + bx(-6,y,w,1,hi) + bx(w-7,y,1,30,hi); }
+          if (i === 1) { const x = ri(r,34,52), h = ri(r,16,28); return bx(x,-6,30,h,c) + bx(x,h-7,30,1,hi) + bx(x,-6,1,h,hi); }
+          if (i === 2) { const x = ri(r,40,58), y = ri(r,34,50); return bx(x,y,26,26,c) + bx(x,y,26,1,hi) + bx(x,y,1,26,hi); }
+          const w = ri(r,14,24); return bx(-6,-6,w,w,c) + bx(w-7,-6,1,w,hi) + bx(-6,w-7,w,1,hi);
+        }
+        function wear(r) { let o = ""; const n = ri(r,6,16);
+          for (let i = 0; i < n; i++) o += bx(ri(r,12,50), ri(r,12,50), ri(r,1,3), ri(r,1,2),
+            one(r,["#5a4632","#3b332c","#7a4a2c","#2c2722"]), rr(r,.18,.5));
+          return o; }
+
+        function photo(seedIn, name, category) {
+          const seed = typeof seedIn === "number" ? seedIn : hash(seedIn);
+          const r = rand(seed);
+          const sk = one(r, SURF_BAG), S = SURF[sk];
+          const L = LIGHT[one(r, Object.keys(LIGHT))];
+          const key = shapeKey(name, category);
+          const base = SH[key] || SH.lot;
+          const fin = one(r, FIN);
+          const draw = () => refinish(base(), fin);
+
+          // the camera. Most things get photographed from above because they
+          // are on the floor; some get shot from a crouch, and the tall flat
+          // things get stood against a wall the way they actually are.
+          let cam = "flat";
+          const roll = r();
+          if (LEANERS.has(key) && roll < 0.34) cam = "lean";
+          else if (roll < 0.62) cam = "angle";
+
+          const rot = cam === "lean" ? rr(r,-7,7) : rr(r,-22,22);
+          const scale = rr(r, cam === "lean" ? .72 : .55, cam === "lean" ? 1.2 : 1.55);
+          const dx = rr(r,-14,14), dy = cam === "lean" ? rr(r,-16,-2) : rr(r,-12,12);
+          const lx = ri(r,4,60), ly = ri(r,-4,40);
+          const uid = "L" + (seed % 100000);
+
+          // a wall behind, for the leaners
+          const horizon = ri(r, 26, 38);
+          const wall = cam === "lean"
+            ? bx(0,0,64,horizon,S.wall) + bx(0,0,64,horizon,"#000",.22) +
+              bx(0,horizon-1,64,2,"#00000066") + bx(0,horizon+1,64,3,"#000",.16)
+            : "";
+
+          // 3/4 view foreshortens the object and throws the shadow back
+          const camT = cam === "angle" ? ` scale(1 ${rr(r,.68,.82).toFixed(2)}) skewX(${rr(r,-11,11).toFixed(1)})`
+                     : cam === "lean" ? ` scale(1 ${rr(r,.92,1.05).toFixed(2)})` : "";
+          const shDx = cam === "angle" ? rr(r,2,6) : rr(r,1.5,4);
+          const shDy = cam === "angle" ? rr(r,4,9) : cam === "lean" ? rr(r,1,2.5) : rr(r,2,4.5);
+          const shOp = cam === "angle" ? .42 : .5;
+
+          const selfShadow = r() > 0.72
+            ? bx(ri(r,-4,20), ri(r,30,48), ri(r,22,40), ri(r,16,30), "#000", rr(r,.18,.32)) : "";
+
+          return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" class="lst-art">
+<defs>
+<pattern id="d${uid}" width="3" height="3" patternUnits="userSpaceOnUse"><rect width="1" height="1" fill="#000" opacity=".05"/><rect x="2" y="1" width="1" height="1" fill="#fff" opacity=".022"/></pattern>
+<radialGradient id="g${uid}" gradientUnits="userSpaceOnUse" cx="${lx}" cy="${ly}" r="${L.r}">
+<stop offset="0" stop-color="${L.t}" stop-opacity="${L.w}"/><stop offset=".33" stop-color="${L.t}" stop-opacity="${(L.w*.55).toFixed(3)}"/>
+<stop offset=".34" stop-color="${L.t}" stop-opacity="${(L.w*.5).toFixed(3)}"/><stop offset=".66" stop-color="${L.t}" stop-opacity="${(L.w*.18).toFixed(3)}"/>
+<stop offset=".67" stop-color="${L.t}" stop-opacity="${(L.w*.14).toFixed(3)}"/><stop offset="1" stop-color="${L.t}" stop-opacity="0"/></radialGradient>
+<radialGradient id="v${uid}" gradientUnits="userSpaceOnUse" cx="32" cy="32" r="44">
+<stop offset=".4" stop-color="#000" stop-opacity="0"/><stop offset=".72" stop-color="#000" stop-opacity="${(L.v*.45).toFixed(3)}"/>
+<stop offset="1" stop-color="#000" stop-opacity="${L.v}"/></radialGradient>
+</defs>
+${bx(0,0,64,64,S.base)}${S.speck(r)}${wall}${edgeOfSomething(r)}${junk(r)}${selfShadow}
+<g transform="translate(${dx.toFixed(1)} ${dy.toFixed(1)}) rotate(${rot.toFixed(1)} 32 32) translate(32 32) scale(${scale.toFixed(2)})${camT} translate(-32 -32)">
+<g opacity="${shOp}" transform="translate(${shDx.toFixed(1)} ${shDy.toFixed(1)})">${draw().replace(/fill="#[0-9a-fA-F]{6}"/g,'fill="#000"')}</g>
+${draw()}${wear(r)}</g>
+${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v${uid})`)}${bx(0,0,64,64,`url(#d${uid})`)}
+</svg>`;
+        }
+
+        /* ── What the thing is called once it is for sale ──
+           In the shop a job is a verb: you book a Water Pump Service. Nobody
+           buys a service, so a listing sells the pump. These strip the job off
+           the name and hand back the object. A few jobs leave nothing behind a
+           stranger could drive over and collect, and those never reach a card. */
+        const NOUN_FIX = {
+          "Complete Engine Block Rebuild":"Engine Block", "Short Block Rebuild":"Short Block",
+          "Cylinder Head Refresh":"Cylinder Heads", "Brake Shoe & Drum Service":"Brake Shoes & Drums",
+          "Brake Line Refresh":"Brake Lines", "Full Brake System Overhaul":"Brake Parts Lot",
+          "Front Disc Brake Upgrade":"Front Disc Brake Kit", "Rear Disc Brake Conversion":"Rear Disc Brake Kit",
+          "Distributor & Ignition Tune":"Distributor", "Full Interior Restore":"Interior Trim Lot",
+          "Full Chrome Package":"Chrome Trim Lot", "Bushing Refresh":"Bushing Set",
+          "Show-Grade Painless Kit":"Painless Wiring Harness", "Quality Carrier Rebuild":"Differential Carrier",
+          "Show-Grade Posi Setup":"Posi Unit", "EFI Conversion Kit":"EFI Kit",
+          "Power Steering Conversion":"Power Steering Box", "Coolant Overflow Kit":"Overflow Tank",
+          "Transmission Fluid & Filter":"Trans Filter Kit", "Rust Patch & Treatment":"Patch Panel Set",
+        };
+        const JOB_TAIL = /\s+(Replacement|Service|Refresh|Rebuild Kit|Rebuild|Restoration|Upgrade|Tune|Overhaul|Conversion|Install|Delete|Swap|Job|Work|Repair|Fix|Setup|Rechrome|Respray|Straightening|Treatment|Polish)$/i;
+        function noun(raw) {
+          if (!raw) return "Part";
+          // inventory names carry where they came from; keep that for later
+          let n = String(raw).replace(/\s+take-off from .*$/i, "")
+                             .replace(/\s*\((used|yard pull)\)\s*$/i, "").trim();
+          if (NOUN_FIX[n]) return NOUN_FIX[n];
+          n = n.replace(/^(Complete|Full|New)\s+/i, "");
+          const amp = n.split(" & ");
+          if (amp.length === 2 && JOB_TAIL.test(" " + amp[1])) n = amp[0];
+          for (let i = 0; i < 3; i++) n = n.replace(JOB_TAIL, "");
+          return n.trim() || String(raw);
+        }
+        // where it came from, read back off the inventory name
+        function provenance(raw) {
+          const m = /\s+take-off from (.+)$/i.exec(String(raw || ""));
+          if (m) return "off a " + m[1];
+          if (/\(yard pull\)/i.test(raw || "")) return "yard pull";
+          if (/\(used\)/i.test(raw || "")) return "used";
+          return "";
+        }
+        // The stance the player picked is the voice the ad is written in.
+        function sellTitle(item) {
+          const p = provenance(item.name);
+          return noun(item.name) + (p ? " " + p : "");
+        }
+        /* ── The other side of the counter ──
+           Out at the yard and the swap meet you are reading somebody else's
+           ad, so it gets their voice and their town. */
+        const TOWNS = [["Palomar Junction",1,7],["Palomar Junction",1,7],["Palomar Junction",1,7],
+          ["Sutter Flats",9,18],["Ash Creek",12,26],["Mesquite Springs",15,34],
+          ["Loma Alta",8,19],["Dry Fork",21,44],["Kettle Ridge",17,31]];
+        const TAGS = ["OBO","obo","firm","cash only","no lowballers","must go","will trade",
+          "no shipping","pickup only","as-is","works","runs good","barely used","no holds",
+          "make offer","serious buyers only","RARE","clean","good shape"];
+        const BRAGS = ["no lowballers I know what I have","I know what I have","will not separate",
+          "text only","first come first served","priced to move"];
+        const FROM = ["off a 65 F-100","off a 72 C10","outta my truck","pulled last week",
+          "off my project","from a running truck","never installed"];
+        function adTitle(name, seedKey) {
+          const r = rand(hash(seedKey));
+          let t = noun(name);
+          if (odds(r, .3)) t += " " + one(r, FROM);
+          if (odds(r, .4)) t += (odds(r, .5) ? " - " : ", ") + one(r, TAGS);
+          else if (odds(r, .12)) t += " - " + one(r, BRAGS);
+          if (odds(r, .06)) t += "!!";
+          const roll = r();
+          if (roll < .09) t = t.toUpperCase();
+          else if (roll < .2) t = t.toLowerCase();
+          return t;
+        }
+        function adPlace(seedKey) {
+          const r = rand(hash("place" + seedKey));
+          const [t, a, b] = one(r, TOWNS);
+          return t + " \u00b7 " + ri(r, a, b) + " mi";
+        }
+        return { photo, noun, sellTitle, adTitle, adPlace, provenance };
+      })();
+
       function renderDealership() {
         resolveCompletedRestorations(false);
         if (state.atTrip) return renderScavengeTrip();
@@ -23464,35 +23928,42 @@ addEventListener("DOMContentLoaded",function(){
           : "";
 
         const stashMarkup = stash.length
-          ? stashSummary + stashShown
+          ? stashSummary + `<div class="lst-grid">` + stashShown
               .map(
                 (item) => `
-      <div class="feed-item">
-        <div class="feed-kicker">PARTS STASH</div>
-        <div class="feed-text">${item.name}</div>
-        <div class="feed-meta">${item.sourcePart} · baseline value $${fmt(item.baselineValue || 0)}</div>
-        <div class="btn-row three" style="margin-top:8px">
-          ${button("Firm on Price", `listPartOnMarketplaceWithTone('${item.id}','firm')`, false, "", "width:100%;padding:6px 8px;font-size:11px")}
-          ${button("Get it Gone", `listPartOnMarketplaceWithTone('${item.id}','gone')`, false, "", "width:100%;padding:6px 8px;font-size:11px;background:#7da0c2;border-color:var(--blue-bright)")}
-          ${button("Open for Trade", `listPartOnMarketplaceWithTone('${item.id}','trade')`, false, "", "width:100%;padding:6px 8px;font-size:11px;background:#4a3c2e;color:var(--text);border-color:#6b5840")}
+      <div class="lst">
+        <div class="lst-shot">${LISTING_ART.photo(item.id, item.name, item.category)}<div class="lst-tag">In the stash</div></div>
+        <div class="lst-body">
+          <div class="lst-price">$${fmt(item.baselineValue || 0)}</div>
+          <div class="lst-title" title="${item.name}">${LISTING_ART.noun(item.name)}</div>
+          <div class="lst-sub">${LISTING_ART.provenance(item.name) || item.sourcePart}</div>
+          <div class="lst-acts btn-row three">
+            ${button("Firm on Price", `listPartOnMarketplaceWithTone('${item.id}','firm')`, false, "", "")}
+            ${button("Get it Gone", `listPartOnMarketplaceWithTone('${item.id}','gone')`, false, "", "background:#7da0c2;border-color:var(--blue-bright)")}
+            ${button("Open for Trade", `listPartOnMarketplaceWithTone('${item.id}','trade')`, false, "", "background:#4a3c2e;color:var(--text);border-color:#6b5840")}
+          </div>
         </div>
       </div>
     `,
               )
-              .join("") + stashToggle
+              .join("") + `</div>` + stashToggle
           : `<div class="small muted">No loose parts waiting right now. As you replace parts on your build, take-offs will show up here.</div>`;
 
         const listedMarkup = listed.length
-          ? listedSummary + listedShown
+          ? listedSummary + `<div class="lst-grid">` + listedShown
               .map(
                 (item) => `
-      <div class="feed-item">
-        <div class="feed-text">${item.name}</div>
-        <div class="feed-meta">$${fmt(item.askingPrice)} · ${item.listingTone === "gone" ? "GET IT GONE" : item.listingTone === "trade" ? "OPEN FOR TRADE" : "FIRM ON PRICE"} · ${item.sourcePart}</div>
+      <div class="lst">
+        <div class="lst-shot">${LISTING_ART.photo(item.id, item.name, item.category)}<div class="lst-tag">${item.listingTone === "gone" ? "Get it gone" : item.listingTone === "trade" ? "Open for trade" : "Firm on price"}</div></div>
+        <div class="lst-body">
+          <div class="lst-price">$${fmt(item.askingPrice)}</div>
+          <div class="lst-title" title="${item.name}">${LISTING_ART.sellTitle(item)}</div>
+          <div class="lst-sub">Baseline $${fmt(item.baselineValue || 0)}</div>
+        </div>
       </div>
     `,
               )
-              .join("") + listedToggle
+              .join("") + `</div>` + listedToggle
           : `<div class="small muted">No live listings right now. List a take-off part and it should appear here immediately.</div>`;
 
         const sellableCars = state.cars.filter((c) => !isCarListed(c.id));
