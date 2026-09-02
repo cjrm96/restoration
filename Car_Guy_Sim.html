@@ -4297,6 +4297,8 @@
       .mp-card .mp-conversation {
         background: #ece4d2;
         padding: 12px 14px 14px;
+        max-height: min(62vh, 520px);
+        overflow-y: auto;
       }
       .mp-card .mp-buyer-name {
         font-size: 11px;
@@ -5814,7 +5816,7 @@
    Treasure-hunt mood, a graveyard that feels like a candy store, dusty
    sunbeams.
 
-   [ scene-swap-meet ]  First Pomona swap-meet trip. 2:1.
+   [ scene-swap-meet ]  First Pamona swap-meet trip. 2:1.
    ...........................................................................
    A pixel-art scene of a massive fairground swap meet at sunrise, shot from
    slightly above head height at the entrance gates so the scale reads: an
@@ -6182,7 +6184,7 @@
    light shaft. Nobody is working. Easy, warm, faintly conspiratorial. Keep the
    lower-left quarter calm for the caption.
 
-   [ scene-swap-invite ]  The pitch for Pomona.  ** IN GAME **
+   [ scene-swap-invite ]  The pitch for Pamona.  ** IN GAME **
    Fires once, later, after a Saturday has already been spent at the yard and
    the money game is open (maybeTriggerSwapIntro). Currently borrows
    [ scene-friday-night-lot ], which is night; this is a daytime pitch about a
@@ -9966,21 +9968,65 @@
           id: "stopCallingMe",
           trigger: "accept",
           title: "He Keeps Calling",
-          text: "sorry to keep bugging you. is this the one off the long bed or the short bed. also does it come with the bolts. also what year did you say again",
-          choices: [
+          // No single question here is funny. What is funny is that there is
+          // always one more, and that the block button was sitting right there
+          // the whole time and you kept not pressing it. Answer all three and
+          // he actually turns up and tells everyone you are a stand-up guy,
+          // which is the joke landing the other way round.
+          steps: [
             {
-              label: "Block his number",
-              outcome: "saleDone",
-              lore: 9,
-              toast: "Blocked. Inner peace restored.",
+              text: "sorry to keep bugging you. is this the one off the long bed or the short bed. also does it come with the bolts. also what year did you say again",
+              choices: [
+                {
+                  label: "Block his number",
+                  outcome: "saleDone",
+                  lore: 9,
+                  toast: "Blocked on question one. Inner peace restored.",
+                },
+                {
+                  label: "Keep answering him",
+                  outcome: "next",
+                  lore: 1,
+                  reply: "short bed. bolts are in the box. it's a 65.",
+                },
+              ],
             },
             {
-              label: "Keep answering him",
-              outcome: "followers",
-              followers: -8,
-              lore: 2,
-              toast:
-                "You were polite. It cost you emotionally and spiritually.",
+              text: "ok last one i promise. can you send a pic of the numbers stamped on it, my buddy wants to see them. also is that your truck behind it. is that for sale",
+              choices: [
+                {
+                  label: "Block his number",
+                  outcome: "saleDone",
+                  lore: 11,
+                  toast: "Blocked. He got two answers, which is two more than he had coming.",
+                },
+                {
+                  label: "Answer him. Again.",
+                  outcome: "next",
+                  lore: 1,
+                  reply: "sent. and no, the truck is not for sale.",
+                },
+              ],
+            },
+            {
+              text: "sorry. me again. buddy just told me his nova is actually a chevelle. does that change anything. he says it doesnt",
+              choices: [
+                {
+                  label: "Block his number",
+                  outcome: "saleDone",
+                  lore: 14,
+                  toast: "Blocked mid-Chevelle. No jury in this county would convict you.",
+                },
+                {
+                  label: "Answer him one last time",
+                  outcome: "saleDone",
+                  followers: 25,
+                  cash: 20,
+                  lore: 6,
+                  toast:
+                    "He drove out, paid cash, rounded up, and told half the swap you're the only seller who answers his messages.",
+                },
+              ],
             },
           ],
         },
@@ -10959,7 +11005,7 @@
         PAYCHECK_AMOUNT = 1000,
         PAYCHECK_CYCLE = 4;
 
-      // Saturday Road Trip, Pick-A-Part / Pomona Swap.
+      // Saturday Road Trip, Pick-A-Part / Pamona Swap.
       // A trip is a Saturday activity, same slot a show would occupy.
       // Heading home (or leaving the Marketplace tab) advances the
       // week, so taking a trip naturally costs the time it took.
@@ -13197,23 +13243,23 @@
         queueScene({
           id: "swap_intro",
           art: "scene-swap-invite",
-          title: "Pomona, End of the Month",
+          title: "Pamona, End of the Month",
           emoji: "☕",
           text:
-            "Same friend, different pitch, and this one he has clearly been saving. 'The yard is where you go when you need a thing. Pomona is where you go to find out what a thing is worth.' A thousand tables before sunrise, coffee in a paper cup, and half the county trying to sell each other the same alternator. 'Guys out there price on a feeling. You have been staring at part numbers for months. You will see it before they do. Buy the mispriced stuff, walk it back to the Marketplace, keep the difference.'",
+            "Same friend, different pitch, and this one he has clearly been saving. 'The yard is where you go when you need a thing. Pamona is where you go to find out what a thing is worth.' A thousand tables before sunrise, coffee in a paper cup, and half the county trying to sell each other the same alternator. 'Guys out there price on a feeling. You have been staring at part numbers for months. You will see it before they do. Buy the mispriced stuff, walk it back to the Marketplace, keep the difference.'",
           choices: [
             {
               label: "Buy low, sell high",
               lore: 6,
               note:
-                "Pomona is on the Road Trip board now, next to the yard. The yard is for parts you need. The swap is for parts somebody else has not worked out the price of yet.",
+                "Pamona is on the Road Trip board now, next to the yard. The yard is for parts you need. The swap is for parts somebody else has not worked out the price of yet.",
               noteTone: "event-good",
             },
             {
               label: "I just need parts, not a side hustle",
               lore: 5,
               note:
-                "He let it go, mostly. Pomona is on the Road Trip board next to the yard whenever the mood takes you, and the tables do not care why you came.",
+                "He let it go, mostly. Pamona is on the Road Trip board next to the yard whenever the mood takes you, and the tables do not care why you came.",
               noteTone: "event-good",
             },
           ],
@@ -14788,14 +14834,38 @@
       // scene modal used (saleBonus / salePenalty / saleDone /
       // spawnListing / inventoryBonus / followers / cancel) so the
       // gameplay effects stay identical.
+      // A scenario is either one exchange or a run of them. Everything else
+      // reads the current step through here, so a single-step scenario keeps
+      // behaving exactly as it did.
+      function mpScenarioStep(offer) {
+        const sc = offer && offer.scenario;
+        if (!sc) return null;
+        if (!sc.steps || !sc.steps.length) return sc;
+        return sc.steps[Math.min(offer.scenarioStep || 0, sc.steps.length - 1)];
+      }
       function respondMarketplaceScenario(choiceIdx) {
         const offer = state.pendingMarketplaceOffer;
         if (!offer || !offer.scenarioActive || !offer.scenario) return;
         if (offer.scenarioTyping) return; // they have not finished typing
         clearBuyerTyping();
-        const choice = offer.scenario.choices[choiceIdx];
+        const step = mpScenarioStep(offer);
+        const choice = step && step.choices[choiceIdx];
         if (!choice) return;
         const scenario = offer.scenario;
+        // He asks another one. The chat stays open, his reply is typed rather
+        // than fired back, and the block button comes around again.
+        if (choice.outcome === "next") {
+          if (choice.lore) addGarageLore(choice.lore);
+          offer.scenarioSaid = (offer.scenarioSaid || []).concat(
+            choice.reply || choice.label,
+          );
+          offer.scenarioStep = (offer.scenarioStep || 0) + 1;
+          offer.scenarioTyping = true;
+          saveGame();
+          requestRender("full");
+          startBuyerTyping();
+          return;
+        }
         const item = state.partsInventory.find((i) => i.id === offer.itemId);
         let saleAmount = null;
         if (choice.outcome === "saleBonus")
@@ -14856,7 +14926,7 @@
       }
 
       /* ═══════════════════════════════════════════
-     SATURDAY ROAD TRIP, Pick-A-Part / Pomona Swap
+     SATURDAY ROAD TRIP, Pick-A-Part / Pamona Swap
   ═══════════════════════════════════════════ */
       function pickN(arr, n) {
         if (!arr.length) return [];
@@ -14939,7 +15009,7 @@
           -cost,
           location === "junkyard"
             ? "Pick-A-Part trip (gas + entry)"
-            : "Pomona Swap trip (gas + entry + parking)",
+            : "Pamona Swap trip (gas + entry + parking)",
         );
         state.scavengeChoice = location;
         state.atTrip = true;
@@ -14958,7 +15028,7 @@
           state.swapMeetCsShown = true;
           playCutscene({
             art: "scene-swap-meet",
-            kicker: "First trip · Pomona",
+            kicker: "First trip · Pamona",
             title: "The Swap Meet",
             sub: "Sunrise over a thousand tables of chrome and rust. Cash folded in your front pocket. Walk every aisle once before you buy, you won’t.",
             cta: "Hit the aisles",
@@ -14968,7 +15038,7 @@
         toast(
           location === "junkyard"
             ? "Drove out to Pick-A-Part. Boots on, nothing's clean."
-            : "Pulled into Pomona. Coffee, cash, and a long row of tables.",
+            : "Pulled into Pamona. Coffee, cash, and a long row of tables.",
           "ok",
         );
         // Took the wife's daily? You hate that it works. Rotating
@@ -15167,7 +15237,7 @@
         if (!part) return;
         if (state.money < stock.buy) return toast("Cash only at the swap.", "err");
         state.money -= stock.buy;
-        recordMoneyChange(-stock.buy, `Pomona Swap: ${part.name} (to flip)`);
+        recordMoneyChange(-stock.buy, `Pamona Swap: ${part.name} (to flip)`);
         state.partsInventory.push({
           id: `flip_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
           name: `${part.name} · swap-meet score`,
@@ -15252,7 +15322,7 @@
           return toast(`Won't fit your shop yet. Needs ${req}.`, "err");
         }
         state.money -= stock.price;
-        recordMoneyChange(-stock.price, `Pomona Swap: ${tool.name}`);
+        recordMoneyChange(-stock.price, `Pamona Swap: ${tool.name}`);
         state.ownedTools.push(tool.id);
         state.swapMeetStock.splice(stockIdx, 1);
         playSfx("click");
@@ -15282,7 +15352,7 @@
         const price = swapToolStoragePrice();
         if (state.money < price) return toast("Cash only at the swap.", "err");
         state.money -= price;
-        recordMoneyChange(-price, `Pomona Swap: ${next.name}`);
+        recordMoneyChange(-price, `Pamona Swap: ${next.name}`);
         state.toolStorageLevel = next.id;
         playSfx("click");
         toast(
@@ -22899,7 +22969,7 @@ addEventListener("DOMContentLoaded",function(){
         const scenarioActive = !!(offer && offer.scenarioActive && offer.scenario);
         const sig =
           offer && item
-            ? `${offer.buyerType || ""}:${offer.itemId || ""}:${offer.offer || ""}:${scenarioActive ? "scen" : "act"}:${offer.scenarioTyping ? "typing" : "said"}`
+            ? `${offer.buyerType || ""}:${offer.itemId || ""}:${offer.offer || ""}:${scenarioActive ? "scen" : "act"}:${offer.scenarioStep || 0}:${offer.scenarioTyping ? "typing" : "said"}`
             : "";
         if (sig === renderedMpSignature) return;
         renderedMpSignature = sig;
@@ -22943,11 +23013,29 @@ addEventListener("DOMContentLoaded",function(){
         // A reload during the pause loses the timer, so the buyer would type
         // forever. Any render that finds typing with no timer restarts it.
         if (typing && !buyerTypingTimer) startBuyerTyping();
+        // Everything he has already asked, and everything you already
+        // answered, stays on screen. The pile is the joke.
+        const priorSteps = scenarioActive && offer.scenario.steps
+          ? offer.scenario.steps
+              .slice(0, offer.scenarioStep || 0)
+              .map((st, i) => `
+    <div class="mp-buyer-name" style="margin-top:6px">${buyerName}</div>
+    <div class="mp-row">
+      <div class="mp-avatar sm">${buyerInitial}</div>
+      <div class="mp-bubble gray">${st.text}</div>
+    </div>
+    <div class="mp-row right">
+      <div class="mp-bubble sent">${(offer.scenarioSaid || [])[i] || "..."}</div>
+    </div>`)
+              .join("")
+          : "";
+        const step = scenarioActive ? mpScenarioStep(offer) : null;
         const actionRows = scenarioActive
           ? `
     <div class="mp-row right">
       <div class="mp-bubble sent">Yeah, I'll take $${fmt(offerAmount)}.</div>
     </div>
+    ${priorSteps}
     <div class="mp-buyer-name" style="margin-top:6px">${buyerName}</div>
     ${typing
       ? `<div class="mp-row">
@@ -22956,9 +23044,9 @@ addEventListener("DOMContentLoaded",function(){
     </div>`
       : `<div class="mp-row">
       <div class="mp-avatar sm">${buyerInitial}</div>
-      <div class="mp-bubble gray">${offer.scenario.text}</div>
+      <div class="mp-bubble gray">${step.text}</div>
     </div>
-    ${offer.scenario.choices
+    ${step.choices
       .map((choice, idx) => {
         const cls = idx === 0 ? "mp-bubble blue" : "mp-bubble outlined";
         return `<div class="mp-row right"><button class="${cls}" onclick="respondMarketplaceScenario(${idx})">${choice.label}</button></div>`;
@@ -23006,6 +23094,9 @@ addEventListener("DOMContentLoaded",function(){
     ${actionRows}
   </div>
 </div>`;
+        // The newest bubble is the one you have to read.
+        const convo = root.querySelector(".mp-conversation");
+        if (convo && scenarioActive) convo.scrollTop = convo.scrollHeight;
       }
 
       // Reputation the player already earns quietly nudges sale prices; this
@@ -24042,7 +24133,7 @@ addEventListener("DOMContentLoaded",function(){
           toast(
             wasAt === "junkyard"
               ? "Threw the haul in the truck and rolled out. Saturday's gone."
-              : "Walked back to the truck. Pomona ate your Saturday.",
+              : "Walked back to the truck. Pamona ate your Saturday.",
             "ok",
           );
         }
@@ -24138,7 +24229,7 @@ addEventListener("DOMContentLoaded",function(){
           const chestPrice = swapToolStoragePrice();
           const chestCard = nextStore
             ? `<div class="feed-item" style="${boxFull ? "border:1px solid rgba(217,162,79,0.6);box-shadow:0 0 0 1px rgba(217,162,79,0.25)" : ""}">
-                <div class="feed-kicker">POMONA SWAP · TOOL STORAGE</div>
+                <div class="feed-kicker">PAMONA SWAP · TOOL STORAGE</div>
                 <div class="feed-text">${nextStore.emoji} ${nextStore.name}</div>
                 <div class="feed-meta">$${fmt(chestPrice)} · normally $${fmt(nextStore.cost)} · holds ${nextStore.maxTools} tools</div>
                 <div class="tiny muted" style="margin-top:4px;line-height:1.5">${nextStore.desc}${boxFull ? ` <span style="color:var(--gold)">Your ${toolStorageData().name} is full, grab this to keep buying.</span>` : ""}</div>
@@ -24146,7 +24237,7 @@ addEventListener("DOMContentLoaded",function(){
               </div>`
             : realNext
               ? `<div class="feed-item" style="opacity:0.75">
-                <div class="feed-kicker">POMONA SWAP · TOOL STORAGE</div>
+                <div class="feed-kicker">PAMONA SWAP · TOOL STORAGE</div>
                 <div class="feed-text">${realNext.emoji} ${realNext.name}</div>
                 <div class="tiny muted" style="margin-top:4px;line-height:1.5">Nobody at the swap has a ${realNext.name} worth hauling home. A box this serious you buy new, off the store floor.</div>
               </div>`
@@ -24156,7 +24247,7 @@ addEventListener("DOMContentLoaded",function(){
             if (!part) return "";
             const margin = s.resale - s.buy;
             return `<div class="feed-item">
-                <div class="feed-kicker">POMONA SWAP · FLIP IT</div>
+                <div class="feed-kicker">PAMONA SWAP · FLIP IT</div>
                 <div class="feed-text">🔩 ${part.name}</div>
                 <div class="feed-meta">Buy $${fmt(s.buy)} · resells around $${fmt(s.resale)} (~+$${fmt(margin)} spread)</div>
                 <div class="tiny muted" style="margin-top:4px;line-height:1.5">Cheap take-off, buy low, list it on the Marketplace, pocket the difference.</div>
@@ -24184,7 +24275,7 @@ addEventListener("DOMContentLoaded",function(){
                       ? `Need $${fmt(s.price)}`
                       : `Buy · $${fmt(s.price)}`;
               return `<div class="feed-item">
-                <div class="feed-kicker">POMONA SWAP</div>
+                <div class="feed-kicker">PAMONA SWAP</div>
                 <div class="feed-text">${tool.emoji} ${tool.name}</div>
                 <div class="feed-meta">$${fmt(s.price)} · normally $${fmt(tool.cost)}</div>
                 <div class="tiny muted" style="margin-top:4px;line-height:1.5">${tool.desc}</div>
@@ -24194,7 +24285,7 @@ addEventListener("DOMContentLoaded",function(){
             .join("");
           const headHome = `<div class="info-box" style="background:rgba(217,162,79,0.07);border:1px solid rgba(217,162,79,0.4);margin-top:12px;padding:10px 12px"><div class="tiny muted" style="line-height:1.5;margin-bottom:8px">⏰ Heading home (or leaving the Marketplace tab) <strong style="color:var(--text)">advances one week</strong>, same way entering a show would. The Saturday's gone either way.</div>${button("Head home → next week", "headHomeFromTrip()", false, "", "width:100%;background:#4a3c2e;border-color:#6b5840;color:var(--text);font-size:12px")}</div>`;
           return `<div style="margin-bottom:14px">${heroPanel(
-            "Pomona Swap · Saturday Run",
+            "Pamona Swap · Saturday Run",
             "Cash only, no receipts, no warranty",
             "",
             (swapItems || `<div class="small muted">Tables are bare. Came too late.</div>`) + headHome,
@@ -24220,7 +24311,7 @@ addEventListener("DOMContentLoaded",function(){
             ${button(`Hit the Yard · $${JUNKYARD_TRIP_COST}`, "commitScavengeTrip('junkyard')", !ride.ok || busy || state.money < JUNKYARD_TRIP_COST || !yardCount, "", "width:100%;background:#7da0c2;border-color:var(--blue-bright)")}
           </div>`;
         const swapCard = `<div style="background:rgba(217,162,79,0.07);border:1px solid rgba(217,162,79,0.4);border-radius:8px;padding:12px">
-            <div class="small" style="color:var(--gold);font-weight:bold;margin-bottom:6px">🛠 Pomona Swap</div>
+            <div class="small" style="color:var(--gold);font-weight:bold;margin-bottom:6px">🛠 Pamona Swap</div>
             <div class="tiny" style="color:var(--text);margin-bottom:8px">${swapCount} tool${swapCount === 1 ? "" : "s"} on tables today</div>
             <div class="tiny muted" style="margin-bottom:8px">$${SWAP_GAS_COST} gas + $${SWAP_ENTRY_FEE} entry + $${SWAP_PARKING_COST} parking = <span style="color:var(--text)">$${SWAP_TRIP_COST}</span></div>
             ${tripKnown("swap") ? button(`Hit the Swap · $${SWAP_TRIP_COST}`, "commitScavengeTrip('swap')", !ride.ok || busy || state.money < SWAP_TRIP_COST || !swapCount, "", "width:100%") : ""}
@@ -25978,7 +26069,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
             ? state.pendingEvent.title || state.pendingEvent.type || "event"
             : "",
           state.pendingMarketplaceOffer
-            ? `${state.pendingMarketplaceOffer.buyerType || ""}:${state.pendingMarketplaceOffer.itemId || ""}:${state.pendingMarketplaceOffer.offer || ""}`
+            ? `${state.pendingMarketplaceOffer.buyerType || ""}:${state.pendingMarketplaceOffer.itemId || ""}:${state.pendingMarketplaceOffer.offer || ""}:${state.pendingMarketplaceOffer.scenarioStep || 0}`
             : "",
         ].join("|");
       }

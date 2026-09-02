@@ -172,7 +172,7 @@ Treasure-hunt mood — a graveyard that feels like a candy store, dusty
 sunbeams.
 ```
 
-### `scene-swap-meet` — First Pomona swap-meet trip · 2:1
+### `scene-swap-meet` — First Pamona swap-meet trip · 2:1
 ```
 A pixel-art scene of a massive fairground swap meet at sunrise, shot from
 slightly above head height at the entrance gates so the scale reads: an

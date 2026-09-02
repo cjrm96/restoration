@@ -41,7 +41,7 @@ single-file itch build.
 | `scene-wife-car-sale.png` | Selling the wife's car — establishing shot before the aftermath scene. |
 | `scene-wife-car-keyed.png` | The morning after — plays when the aftermath choice resolves (she keys it). |
 | `scene-pick-a-pull.png` | First Pick-A-Part scavenge trip (once). |
-| `scene-swap-meet.png` | First Pomona swap-meet scavenge trip (once). |
+| `scene-swap-meet.png` | First Pamona swap-meet scavenge trip (once). |
 | `loading-winners-circle.png` | Ambient load-in rotation — joins the pool once the player has a podium finish. |
 | `loading-haul-home.png` | Ambient load-in rotation; also the establishing shot when a project car is bought. |
 | `loading-midnight-order.png` | Ambient load-in rotation — 1 AM parts order at the kitchen table. |

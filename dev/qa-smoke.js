@@ -418,11 +418,11 @@ const pass = (msg) => console.log("✓", msg);
     clr(); state.installsDone = 4;
     if (!maybeTriggerYardIntro()) { restore(); return "the yard beat never fired on a quiet week"; }
     if (!state.pendingScene || state.pendingScene.id !== "yard_intro") { restore(); return "wrong scene queued for the yard"; }
-    if (tripKnown("swap")) { restore(); return "the yard beat gave away Pomona too"; }
+    if (tripKnown("swap")) { restore(); return "the yard beat gave away Pamona too"; }
     resolvePendingScene(1);                       // decline, still learns the place
     if (!tripKnown("yard")) { restore(); return "declining the Saturday forgot the place exists"; }
     if (!marketTabEarned("trip") || marketTabLock("trip")) { restore(); return "the pill is earned but still locked"; }
-    // Pomona is not a destination yet.
+    // Pamona is not a destination yet.
     clr(); commitScavengeTrip("swap");
     if (state.atTrip) { restore(); return "the swap was reachable before its own beat"; }
     // After a Saturday out, with the money game open.
@@ -430,7 +430,7 @@ const pass = (msg) => console.log("✓", msg);
     if (!maybeTriggerSwapIntro()) { restore(); return "the swap beat never fired"; }
     if (!state.pendingScene || state.pendingScene.id !== "swap_intro") { restore(); return "wrong scene queued for the swap"; }
     resolvePendingScene(0);
-    if (!tripKnown("swap")) { restore(); return "the swap beat did not open Pomona"; }
+    if (!tripKnown("swap")) { restore(); return "the swap beat did not open Pamona"; }
     // Neither repeats.
     clr();
     if (maybeTriggerYardIntro() || maybeTriggerSwapIntro()) { restore(); return "a trip beat fired twice"; }

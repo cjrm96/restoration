@@ -42,9 +42,9 @@ Here's the rundown.
 
 **The Spouse Scenario.** A new event that puts you in the doghouse — the lawnmower's dead, but so is the project's engine block, and you've only got the budget for one. Choose wisely. (Occasionally themed to whatever car's currently on your lift.)
 
-**Buy a bigger tool chest at the swap.** Tired of the "box full" message? You can now buy a larger tool chest right at the Pomona swap meet — 20% off the usual, because it's a swap meet. More slots, more tools.
+**Buy a bigger tool chest at the swap.** Tired of the "box full" message? You can now buy a larger tool chest right at the Pamona swap meet — 20% off the usual, because it's a swap meet. More slots, more tools.
 
-**Flip parts for profit.** The Pomona swap now stocks a few cheap parts you can buy low and resell — a light little side hustle for players who like working the margins. Look for the "Flip It" cards on your swap trips.
+**Flip parts for profit.** The Pamona swap now stocks a few cheap parts you can buy low and resell — a light little side hustle for players who like working the margins. Look for the "Flip It" cards on your swap trips.
 
 **DMs that grow with your fame.** The old "Messages" app is now **DMs**, and it fills up with fan messages that scale as your following grows. The more famous you get, the busier your inbox.
 
