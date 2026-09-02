@@ -10980,7 +10980,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.67.0";
+      const GAME_VERSION = "0.68.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -19311,7 +19311,7 @@
           return !state.wifeCarSold && !!currentCar();
         }
         if (onboardStageVal() >= 3) return true;
-        return id === "sell";
+        return id === "sell" || id === "listings";
       }
       function marketTabLock(id) {
         const preShow = onboardStageVal() < 3;
@@ -24620,7 +24620,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         // the same site now, and the site has its own rail, so listing them
         // out here again was the same four choices twice. Out here there are
         // only two places to be: at the desk, or in the truck.
-        const deskTabs = ["sell", "sellcar", "buy"].filter((id) => marketTabEarned(id));
+        const deskTabs = ["sell", "sellcar", "listings", "buy"].filter((id) => marketTabEarned(id));
         const deskTarget =
           deskTabs.find((id) => !marketTabLock(id)) || deskTabs[0] || "sell";
         const atDesk = marketTab !== "trip";
@@ -24657,9 +24657,12 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         // something, or go see what everybody else has posted.
         const PEN_ICO =
           '<svg class="crt-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="10" y="2" width="3" height="3"/><rect x="8" y="4" width="3" height="3"/><rect x="6" y="6" width="3" height="3"/><rect x="4" y="8" width="3" height="3"/><rect x="3" y="11" width="2" height="2"/><rect x="2" y="13" width="2" height="1"/><rect x="2" y="12" width="1" height="2"/></svg>';
+        const TAG_ICO =
+          '<svg class="crt-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="7" width="7" height="7"/><rect x="8" y="2" width="6" height="6"/><rect x="4" y="9" width="4" height="1"/><rect x="4" y="11" width="4" height="1"/><rect x="10" y="4" width="2" height="2"/></svg>';
         const LOT_ICO =
           '<svg class="crt-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9" width="12" height="3"/><rect x="4" y="6" width="8" height="3"/><rect x="5" y="4" width="6" height="2"/><rect x="3" y="12" width="2" height="2"/><rect x="11" y="12" width="2" height="2"/></svg>';
         const onSell = marketTab === "sell" || marketTab === "sellcar";
+        const canList = marketTabEarned("listings") && !marketTabLock("listings");
         const canSell = marketTabEarned("sell") && !marketTabLock("sell");
         const canSellCar = marketTabEarned("sellcar") && !marketTabLock("sellcar");
         const canBuy = marketTabEarned("buy") && !marketTabLock("buy");
@@ -24675,6 +24678,9 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         const sideNav =
           (canSell
             ? `<button class="${onSell ? "on" : ""}" onclick="setMarketTab('sell')">${PEN_ICO}<span>Sell</span></button>${sellSeg}`
+            : "") +
+          (canList
+            ? `<button class="${marketTab === "listings" ? "on" : ""}" onclick="setMarketTab('listings')">${TAG_ICO}<span>Your listings</span></button>`
             : "") +
           (canBuy
             ? `<button class="${marketTab === "buy" ? "on" : ""}" onclick="setMarketTab('buy')">${LOT_ICO}<span>Browse the lot</span></button>`
@@ -24725,7 +24731,6 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           // never yours to flip. The tab keeps her decision and drops the
           // listing machinery, and the headline stops calling it inventory.
           const flipSeason = seasonNum() >= 2;
-          const carsListedCount = (state.cars || []).filter((c) => isCarListed(c.id)).length;
           return pillRow + onScreen(heroPanel(
             flipSeason ? "Flip a Build" : "The Other Car in the Driveway",
             flipSeason
@@ -24743,18 +24748,35 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
     `,
             "gold",
             "marketplace",
-          ) + (flipSeason
-            ? (heroPanel(
-                "Your Cars on the Market",
-                carsListedCount
-                  ? `${carsListedCount} live on Palomar Swap`
-                  : "Nothing posted yet",
-                "",
-                `<div class="info-box">${carListedMarkup}</div>`,
-                "gold",
-                "marketplace",
-              ))
-            : ""));
+          ));
+        }
+
+        // Everything currently up for sale, parts and whole cars together,
+        // because "what have I got live" is one question and it was being
+        // answered on two different pages.
+        if (marketTab === "listings") {
+          const carsLive = (state.cars || []).filter((c) => isCarListed(c.id)).length;
+          const liveTotal = listed.length + carsLive;
+          const carsBlock =
+            seasonNum() >= 2 || carsLive
+              ? `<div class="info-box" style="margin-top:12px">
+                   <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Vehicles</div>
+                   ${carListedMarkup}
+                 </div>`
+              : "";
+          return pillRow + onScreen(heroPanel(
+            "Your Listings",
+            liveTotal
+              ? `${liveTotal} live on Gearbook`
+              : "Nothing posted yet",
+            "",
+            `<div class="info-box">
+               <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Items</div>
+               ${listedMarkup}
+             </div>${carsBlock}`,
+            "gold",
+            "marketplace",
+          ));
         }
 
         // What is on the bench is on the bench: loose take-offs, spare tools
@@ -24782,19 +24804,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           "gold",
           "marketplace",
         );
-        // The whole page is already on the screen, so this is just the second
-        // section of it. Wrapping it again put a monitor inside the monitor.
-        const board = heroPanel(
-          "Your Listings",
-          listed.length
-            ? `${listed.length} live on Palomar Swap`
-            : "Nothing posted yet",
-          "",
-          `<div class="info-box">${listedMarkup}</div>`,
-          "gold",
-          "marketplace",
-        );
-        return pillRow + onScreen(bench + board);
+        return pillRow + onScreen(bench);
       }
 
       // Settings modal hosts the Legacy Wall entry point, out-of-game
