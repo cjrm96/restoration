@@ -1051,13 +1051,13 @@
       /* A monitor is a fixed pane of glass. Letting the frame grow to the
          height of the page made it a border rather than a screen, so the
          page scrolls inside it and the rail stays put, same as the phone. */
-      /* The glass sizes to what is on it, within reason. A board with two
-         listings on it should not leave half a screen of empty desk. */
+      /* A monitor is a fixed pane of glass. Letting it size to its contents
+         meant the whole desk grew and shrank as the player moved between
+         pages, which no screen has ever done. The page scrolls inside it. */
       .crt-page {
         display: flex;
         align-items: stretch;
-        min-height: 230px;
-        max-height: 620px;
+        height: 620px;
       }
       .crt-side {
         flex: 0 0 186px;
@@ -10980,7 +10980,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.68.1";
+      const GAME_VERSION = "0.68.2";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
