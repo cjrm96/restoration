@@ -10904,7 +10904,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.64.1";
+      const GAME_VERSION = "0.64.2";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -12320,7 +12320,11 @@
             choice.toast,
             choice.followers && choice.followers < 0 ? "err" : "ok",
           );
-        else if (choice.note) toast(choice.note, choice.noteTone || "ok");
+        // The scene played over its backdrop, so the outcome does too. A beat
+        // that fades to a bare card halfway through reads like two different
+        // moments instead of the end of the one you were just in.
+        else if (choice.note)
+          toast(choice.note, choice.noteTone || "ok", scene && scene.art);
       }
 
       function resolvePendingScene(choiceIndex) {
@@ -22147,12 +22151,18 @@ addEventListener("DOMContentLoaded",function(){
           remaining > 0
             ? `<div class="notice-queue-pips">${Array.from({ length: Math.min(remaining, 5) }).map(() => `<div class="notice-queue-pip"></div>`).join("")}</div>`
             : "";
+        const btn = `<button class="notice-primary" onclick="dismissNotice()">${remaining > 0 ? `Next (${remaining} more) →` : "Got it"}</button>${queuePipsMarkup}`;
+        const csArt = notice.art && CUTSCENE_ART[notice.art];
+        if (csArt) {
+          root.innerHTML = `<div class="modal modal-cine"><div class="cs-art cs-drift-a" style="background-image:url('${csArt}')"></div><div class="cs-grain"></div><div class="cs-vignette"></div><div class="cs-bar cs-bar-top"></div><div class="cs-bar cs-bar-bot"></div><div class="cs-caption"><div class="cs-kicker">${kicker}</div><div class="cs-sub">${notice.text}</div><div class="cs-actions">${btn}</div></div></div>`;
+          return true;
+        }
         root.innerHTML = popupCard({
           tone: isBad ? "bad" : "good",
           kicker,
           emoji: notice.emoji,
           text: notice.text,
-          actions: `<button class="notice-primary" onclick="dismissNotice()">${remaining > 0 ? `Next (${remaining} more) →` : "Got it"}</button>${queuePipsMarkup}`,
+          actions: btn,
         });
         return true;
       }
@@ -25102,9 +25112,9 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
       /* ═══════════════════════════════════════════
      MAIN RENDER
   ═══════════════════════════════════════════ */
-      function toast(msg, type = "ok") {
+      function toast(msg, type = "ok", art = null) {
         if (type === "event-good" || type === "event-bad") {
-          pushNotice(msg, type === "event-bad" ? "bad" : "good");
+          pushNotice(msg, type === "event-bad" ? "bad" : "good", art);
           return;
         }
         const root = getEl("toastRoot");
@@ -25190,10 +25200,19 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         );
       }
 
-      function pushNotice(text, tone) {
+      function pushNotice(text, tone, art = null) {
         if (!state.noticeQueue) state.noticeQueue = [];
         const emoji = tone === "bad" ? "⚠️" : "🎉";
-        state.noticeQueue.push({ text, tone: tone || "good", emoji });
+        // A notice raised while a beat is on screen belongs to that beat, so
+        // it inherits the backdrop even when whatever raised it never passed
+        // one. Without this the picture drops out halfway through and the
+        // payoff reads as a different moment than the choice that earned it.
+        const beatArt =
+          art ||
+          (state.pendingScene && state.pendingScene.art) ||
+          (state.cutscene && state.cutscene.art) ||
+          null;
+        state.noticeQueue.push({ text, tone: tone || "good", emoji, art: beatArt });
         if (state.noticeQueue.length === 1) {
           playSfx(tone === "bad" ? "error" : "success");
         }
