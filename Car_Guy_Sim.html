@@ -979,8 +979,8 @@
          monitor with a browser open on it. */
       .crt-rig { max-width: 1000px; margin: 0 auto 6px; }
       .crt-frame {
-        background: linear-gradient(180deg, #2f2822 0%, #1d1813 100%);
-        border: 1px solid #443a2e;
+        background: linear-gradient(180deg, #1a1410 0%, #0d0a08 100%);
+        border: 1px solid #3a2f24;
         border-radius: 14px 14px 8px 8px;
         padding: 14px 14px 26px;
         position: relative;
@@ -1000,8 +1000,11 @@
         text-transform: uppercase;
       }
       .crt-screen {
-        background: linear-gradient(180deg, #1b1610 0%, #141009 100%);
-        border: 1px solid #0d0a07;
+        background:
+          radial-gradient(ellipse at 30% 12%, rgba(217, 162, 79, 0.12), transparent 55%),
+          radial-gradient(ellipse at 80% 88%, rgba(125, 160, 194, 0.08), transparent 55%),
+          linear-gradient(180deg, #1d1814 0%, #15110d 100%);
+        border: 1px solid #2a221a;
         border-radius: 4px;
         overflow: hidden;
         box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.6);
@@ -1023,18 +1026,19 @@
         align-items: center;
         gap: 10px;
         padding: 7px 11px;
-        background: linear-gradient(180deg, #2a231b 0%, #221c15 100%);
-        border-bottom: 1px solid #3a3025;
+        background: linear-gradient(180deg, #1d1814 0%, rgba(29, 24, 20, 0.8) 100%);
+        border-bottom: 1px solid rgba(217, 162, 79, 0.14);
       }
       .crt-dots { display: flex; gap: 5px; }
       .crt-dots span {
         width: 9px; height: 9px; border-radius: 50%;
-        background: #4a3f33; border: 1px solid #574a3c;
+        background: rgba(217, 162, 79, 0.18);
+        border: 1px solid rgba(217, 162, 79, 0.3);
       }
       .crt-url {
         flex: 1 1 auto;
-        background: #171209;
-        border: 1px solid #3a3025;
+        background: rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(217, 162, 79, 0.16);
         border-radius: 3px;
         padding: 4px 9px;
         font-size: 10.5px;
@@ -1050,9 +1054,9 @@
       .crt-page { display: flex; align-items: stretch; height: 620px; }
       .crt-side {
         flex: 0 0 186px;
-        border-right: 1px solid #3a3025;
+        border-right: 1px solid rgba(217, 162, 79, 0.14);
         padding: 14px 12px;
-        background: linear-gradient(180deg, #1f1a13 0%, #191409 100%);
+        background: rgba(0, 0, 0, 0.2);
       }
       .crt-site {
         font-size: 14px;
@@ -1063,8 +1067,8 @@
       }
       .crt-search {
         display: flex; align-items: center; gap: 6px;
-        background: #171209;
-        border: 1px solid #3a3025;
+        background: rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(217, 162, 79, 0.16);
         border-radius: 12px;
         padding: 5px 10px;
         font-size: 10.5px;
@@ -1096,7 +1100,7 @@
       .crt-block {
         margin-top: 14px;
         padding-top: 11px;
-        border-top: 1px solid #3a3025;
+        border-top: 1px solid rgba(217, 162, 79, 0.14);
       }
       .crt-block-h {
         font-size: 9.5px;
@@ -1114,22 +1118,37 @@
         overflow-x: hidden;
       }
       .crt-main::-webkit-scrollbar { width: 8px; }
-      .crt-main::-webkit-scrollbar-track { background: #171209; }
+      .crt-main {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(217, 162, 79, 0.35) transparent;
+      }
+      .crt-main::-webkit-scrollbar-track { background: transparent; }
       .crt-main::-webkit-scrollbar-thumb {
-        background: #3f362a;
+        background: rgba(217, 162, 79, 0.35);
         border-radius: 4px;
-        border: 1px solid #4d4234;
       }
       .crt-side { overflow-y: auto; }
+      /* Inside the browser the page is the page. A gold-trimmed card in
+         there is a frame inside a frame, and no website has one. */
+      .crt-main .hero-panel {
+        background: none;
+        border: none;
+        box-shadow: none;
+        border-radius: 0;
+        padding: 0;
+        margin: 0;
+      }
+      .crt-main .hero-panel-kicker { margin-bottom: 10px; }
+      .crt-main .hero-panel-title { font-size: 21px; }
       .crt-neck {
         width: 96px; height: 22px; margin: 0 auto;
-        background: linear-gradient(180deg, #241e18 0%, #191410 100%);
-        border: 1px solid #3a3025; border-top: none;
+        background: linear-gradient(180deg, #1a1410 0%, #0d0a08 100%);
+        border: 1px solid #3a2f24; border-top: none;
       }
       .crt-base {
         width: 210px; height: 10px; margin: 0 auto 16px;
-        background: linear-gradient(180deg, #2a231b 0%, #16120e 100%);
-        border: 1px solid #3a3025;
+        background: linear-gradient(180deg, #1a1410 0%, #0d0a08 100%);
+        border: 1px solid #3a2f24;
         border-radius: 0 0 10px 10px;
         box-shadow: 0 10px 22px rgba(0, 0, 0, 0.5);
       }
@@ -10878,7 +10897,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.63.1";
+      const GAME_VERSION = "0.63.2";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
