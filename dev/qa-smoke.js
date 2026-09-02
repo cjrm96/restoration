@@ -335,16 +335,22 @@ const pass = (msg) => console.log("✓", msg);
     clr(); state.money = 400; state.history = [];
     maybeTriggerSharkIntro();
     if (state.pendingScene) return "he turned up before the player had been to any shows";
-    // Two shows in but solvent: he has no reason to stop.
-    clr(); state.money = 5000;
+    // Broke two shows in is week three, which is broke because the player
+    // just bought a truck. He waits until five are in the book.
+    clr(); state.money = 400; state.lifeBeatWeek = -1;
     state.history = [{ tier: "Cars & Coffee", place: 3 }, { tier: "Cars & Coffee", place: 4 }];
     maybeTriggerSharkIntro();
+    if (state.pendingScene) return "he turned up in the opening, two shows in";
+    // Five shows in but solvent: he has no reason to stop.
+    clr(); state.money = 5000; state.lifeBeatWeek = -1;
+    state.history = [1, 2, 3, 4, 5].map((n) => ({ tier: "Local", place: n }));
+    maybeTriggerSharkIntro();
     if (state.pendingScene) return "he approached a player who was not short";
-    // Short, and seen: he works the row.
-    clr(); state.money = 900;
+    // Short, and seen around: he works the row.
+    clr(); state.money = 900; state.lifeBeatWeek = -1;
     maybeTriggerSharkIntro();
     if (!state.pendingScene || state.pendingScene.id !== "shark_intro")
-      return "the shark never approached a broke player with two shows behind them";
+      return "the shark never approached a broke player with five shows behind them";
     if ((state.pendingScene.choices || []).length !== 2)
       return "the offer is not refusable";
     if (loansAvailable()) return "the desk opened before the scene resolved";
@@ -353,6 +359,20 @@ const pass = (msg) => console.log("✓", msg);
     if (!state.loansUnlocked) return "walking away left the desk shut";
     if (!state.sharkRefused) return "the refusal was not remembered";
     if (state.sharkEverTaken) return "walking away still dirtied the moral ledger";
+    // The bug that kept him off the board for whole seasons: he bailed on
+    // modalBusy(), and the week advance always has a notice queued behind
+    // it. queueScene() defers on its own, so a busy screen must delay him,
+    // never cancel him.
+    clr(); state.loansUnlocked = false; state.sharkMetWeek = null;
+    state.sharkRefused = false; state.money = 300; state.lifeBeatWeek = -1;
+    state.noticeQueue = [{ title: "Week 9", text: "payday" }];
+    if (!modalBusy()) return "the busy-screen case did not set up";
+    maybeTriggerSharkIntro();
+    if (state.sharkMetWeek == null) return "a queued notice cancelled him instead of delaying him";
+    if (state.pendingScene) return "he opened on top of a notice instead of queueing";
+    if (!(state.eventQueue || []).some((e) => e.payload && e.payload.id === "shark_intro"))
+      return "he was neither shown nor queued";
+    state.noticeQueue = []; state.eventQueue = []; clr();
     // And he only does it once.
     clr(); state.money = 200; state.sharkMetWeek = state.sharkMetWeek || 1;
     const before = state.pendingScene;
@@ -516,6 +536,13 @@ const pass = (msg) => console.log("✓", msg);
     if (maybeTriggerSetupIntro()) return bail("Dale offered a setup on a truck that does not run");
     clr();
     car.engine = 60; car.transmission = 55; car.brakes = 55; car.steering = 55;
+    // Neither decision belongs in the crowded opening any more. Setup waits
+    // for three shows, the permanent one waits for four, so both land in the
+    // flat middle of the season instead of on top of week three.
+    state.history = [{ show: "Coffee" }, { show: "Coffee" }];
+    if (maybeTriggerSetupIntro()) return bail("the setup beat fired before three shows were in the book");
+    clr();
+    state.history = [{ show: "Coffee" }, { show: "Coffee" }, { show: "Local" }];
     if (!maybeTriggerSetupIntro()) return bail("the setup beat never fired on a roadworthy truck");
     if (!state.pendingScene || state.pendingScene.id !== "setup_intro") return bail("wrong scene for the setup");
     resolvePendingScene(0);
@@ -530,6 +557,9 @@ const pass = (msg) => console.log("✓", msg);
     if (maybeTriggerStyleIntro()) return bail("the direction beat fired before Buck was met");
     clr(); state.buck.metOnce = true;
     state.history = [{ tier: "Cars & Coffee", place: 3, show: "Coffee" }];
+    if (maybeTriggerStyleIntro()) return bail("the permanent choice was raised after a single show");
+    clr();
+    state.history = [{ show: "a" }, { show: "b" }, { show: "c" }, { show: "d" }];
     if (!maybeTriggerStyleIntro()) return bail("the direction beat never fired");
     if (!state.pendingScene || state.pendingScene.id !== "style_intro") return bail("wrong scene for the direction");
     resolvePendingScene(0);
@@ -545,6 +575,95 @@ const pass = (msg) => console.log("✓", msg);
   });
   if (tunesOk !== true) fail("build decisions: " + tunesOk);
   pass("setup and build direction are each explained before they can be chosen");
+
+  // ── the broke week. A season sim showed the player under $400 for three
+  // weeks out of every four, with the yard (fifteen dollars, forty percent
+  // off, costs a Saturday) sitting unmentioned since week two while the only
+  // lit button was a Cars & Coffee that pays nothing and eats the week. So
+  // the friend brings it up again, twice at most, and never once you have
+  // actually made the drive. ──
+  const yardOk = await page.evaluate(() => {
+    const stash = { trips: JSON.parse(JSON.stringify(state.tripsKnown || {})),
+                    taken: state.scavengeTripsTaken, nudges: state.yardNudges,
+                    nWeek: state.yardNudgeWeek, hist: state.history, money: state.money,
+                    beat: state.lifeBeatWeek, week: state.week, tools: state.ownedTools.slice(),
+                    view: state.view, lock: state.postShowWeekLocked, result: state.result,
+                    lean: state.leanStreak };
+    const car = currentCar();
+    const car0 = JSON.parse(JSON.stringify({ e: car.engine, t: car.transmission, b: car.brakes,
+                                             s: car.steering, ip: car.installedParts }));
+    const clr = () => {
+      state.pendingScene = null; state.pendingEvent = null; state.eventQueue = [];
+      state.noticeQueue = []; state.cutscene = null; state.pendingUnlock = null;
+      state.lifeBeatWeek = -1; state.activeRestorations = []; clearTabArrival();
+    };
+    const restore = () => {
+      state.tripsKnown = stash.trips; state.scavengeTripsTaken = stash.taken;
+      state.yardNudges = stash.nudges; state.yardNudgeWeek = stash.nWeek;
+      state.history = stash.hist; state.money = stash.money; state.lifeBeatWeek = stash.beat;
+      state.week = stash.week; state.ownedTools = stash.tools;
+      Object.assign(car, { engine: car0.e, transmission: car0.t, brakes: car0.b,
+                           steering: car0.s, installedParts: car0.ip });
+      state.result = stash.result; state.postShowWeekLocked = stash.lock;
+      state.leanStreak = stash.lean;
+      clr(); setView(stash.view); renderMainContent(true);
+    };
+    const bail = (m) => { restore(); return m; };
+    const setBroke = () => {
+      // A real list of real jobs, and gas money to do none of them with.
+      car.installedParts = [];
+      CATS.forEach((c) => { if (typeof car[c] === "number") car[c] = 30; });
+      state.ownedTools = TOOLS_LIST.map((t) => t.id);
+      state.money = 40;
+      state.leanStreak = 0;
+    };
+    state.tripsKnown = { yard: true, swap: false };
+    state.scavengeTripsTaken = 0; state.yardNudges = 0; state.yardNudgeWeek = null;
+    state.week = 9;
+    state.history = [{ show: "a" }, { show: "b" }, { show: "c" }];
+    setBroke(); clr();
+    if (scrapingByNow()) return bail("one lean week already counted as scraping");
+    state.leanStreak = 2;
+    if (!scrapingByNow()) return bail("a player with $40 and a full jobs list did not read as scraping");
+    if (!maybeTriggerYardNudge()) return bail("nobody mentioned the yard on a broke week");
+    if (!state.pendingScene || state.pendingScene.id !== "yard_nudge_1") return bail("wrong scene for the broke week");
+    resolvePendingScene(0);
+    // Twice at most, and not two weeks running.
+    clr(); state.week = 11; state.leanStreak = 2;
+    if (maybeTriggerYardNudge()) return bail("he brought it up again two weeks later");
+    clr(); state.week = 16; state.leanStreak = 2;
+    if (!maybeTriggerYardNudge()) return bail("he never brought it up a second time");
+    resolvePendingScene(0);
+    clr(); state.week = 22; state.leanStreak = 2;
+    if (maybeTriggerYardNudge()) return bail("he brought it up a third time");
+    // Money in hand is not a broke week.
+    clr(); state.yardNudges = 0; state.yardNudgeWeek = null; state.money = 9000;
+    noteLeanWeek();
+    if (scrapingByNow()) return bail("a player with $9,000 read as scraping");
+    if (maybeTriggerYardNudge()) return bail("he pitched the yard to a player who could pay retail");
+    // And once you have made the drive, he lets it go for good.
+    clr(); setBroke(); state.leanStreak = 2; state.scavengeTripsTaken = 1;
+    if (maybeTriggerYardNudge()) return bail("he still pitched the yard to somebody who had been");
+    // Nothing left to build is not a broke week either.
+    clr(); state.scavengeTripsTaken = 0; state.leanStreak = 2;
+    car.installedParts = PARTS.map((p) => p.id);
+    if (scrapingByNow()) return bail("a finished truck read as work worth driving for");
+    // The whole chain has to survive a show week, which is the week the
+    // random-event roll sits out and every one of these beats used to die in.
+    clr(); setBroke(); state.leanStreak = 2; state.week = 9;
+    state.yardNudges = 0; state.yardNudgeWeek = null;
+    state.view = "result"; state.result = { place: 3 };
+    if (beatWindowOpen()) return bail("the beat window opened on top of a result screen");
+    leaveResultScreen();
+    if (state.result) return bail("leaving the result screen did not clear it");
+    if (state.postShowWeekLocked) return bail("leaving the result screen did not clear the show lock");
+    if (!state.pendingScene && !(state.eventQueue || []).length)
+      return bail("a show week swallowed the beat it was owed");
+    restore();
+    return true;
+  });
+  if (yardOk !== true) fail("broke-week yard reminder: " + yardOk);
+  pass("the yard gets raised again on a broke week, twice at most, never after a trip");
 
   // ── the mechanic is doing the work. While the shop has the truck the player
   // cannot be the one who stripped the bolt, lost the 10mm, or fixed one thing
