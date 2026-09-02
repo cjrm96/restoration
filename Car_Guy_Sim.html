@@ -948,6 +948,17 @@
           grid-template-columns: 1fr;
         }
       }
+      /* One small action per row, sized to itself. A single button stretched
+         across the whole row read as a banner rather than a thing to press. */
+      .lst-row-act {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 8px;
+      }
+      .lst-row-act .btn { min-width: 150px; }
+      @media (max-width: 560px) {
+        .lst-row-act .btn { width: 100%; min-width: 0; }
+      }
       /* A yard row is a classifieds line: thumbnail, then the words. */
       .lst-row { display: flex; gap: 12px; align-items: flex-start; }
       .lst-row-body { flex: 1 1 auto; min-width: 0; }
@@ -10980,7 +10991,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.68.4";
+      const GAME_VERSION = "0.68.5";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -23916,10 +23927,10 @@ addEventListener("DOMContentLoaded",function(){
                 <div class="feed-text">${LISTING_ART.adTitle(part.name, adKey)}</div>
                 <div class="feed-meta">${LISTING_ART.adPlace(adKey)} · +${yardImp} ${CAT_LABELS[part.category]} (vs +${part.imp} new) · normally $${fmt(part.diy)} new</div>
                 ${missingNote}${noTargetNote}
-                <div class="btn-row" style="margin-top:8px">
+                <div class="lst-row-act">
                 ${noTarget
-                  ? button(state.money < s.price ? `Need $${fmt(s.price)}` : `Grab to flip · $${fmt(s.price)}`, `buyJunkyardFlipPart(${part.id})`, state.money < s.price, "", "width:100%;font-size:12px;background:#4a3c2e;color:var(--text);border-color:#6b5840")
-                  : button(`Pull it · $${fmt(s.price)}`, `pullYardPart(${part.id})`, state.money < s.price || missing.length > 0, "", "width:100%;font-size:12px")}
+                  ? button(state.money < s.price ? `Need $${fmt(s.price)}` : `Grab to flip · $${fmt(s.price)}`, `buyJunkyardFlipPart(${part.id})`, state.money < s.price, "", "font-size:12px;background:#4a3c2e;color:var(--text);border-color:#6b5840")
+                  : button(`Pull it · $${fmt(s.price)}`, `pullYardPart(${part.id})`, state.money < s.price || missing.length > 0, "", "font-size:12px")}
                 </div>
                 </div>
               </div>`;
@@ -24132,15 +24143,18 @@ addEventListener("DOMContentLoaded",function(){
           glass: () => bx(12,20,40,24,"#8fa6ad",.55) + bx(12,20,40,2,"#cfe0e4") + bx(14,22,14,20,"#c6d8dc",.35) + bx(12,42,40,2,"#5f7278"),
           // folded soft goods: a stack with layer edges and a corner turned back
           softgoods: () => { let o = "";
-            // a pile of folded covers: four layers, each sitting a little proud
-            // of the one under it, with the top corner turned back
+            // A pile of folded covers. The two cloth tones used to sit four
+            // points apart, which is a stack up close and a brown brick from
+            // across the room, so they are a light and a dark now with a
+            // two-pixel shadow under every fold to keep the layers legible
+            // when the crop pulls back.
             for (let i = 4; i >= 0; i--) {
               const y = 14 + i * 7, w = 46 - i * 3, x = 9 + i * 2;
-              o += bx(x, y, w, 8, i % 2 ? CLOTH : "#665d4e");
-              o += bx(x, y, w, 1, "#847a68");
-              o += bx(x, y + 7, w, 1, "#3f392f");
+              o += bx(x, y, w, 8, i % 2 ? "#7f7361" : "#4c453a");
+              o += bx(x, y, w, 1, i % 2 ? "#9d907a" : "#615949");
+              o += bx(x, y + 6, w, 2, "#332e26");
             }
-            return o + bx(38,14,15,10,"#6d6455") + bx(38,14,15,1,"#8f8471") + bx(38,23,15,1,"#403a31") + bx(51,14,2,10,"#4a4339"); },
+            return o + bx(38,14,15,10,"#8b7f6b") + bx(38,14,15,1,"#a89a82") + bx(38,23,15,2,"#332e26") + bx(51,14,2,10,"#403a31"); },
           carpetroll: () => { let o = bx(16,22,38,21,CLOTH) + bx(16,22,38,2,"#7d7362") + bx(16,41,38,2,"#3f392f");
             // the cut end, wound in on itself
             return o + circle(16,32,11,"#665d4e") + annulus(16,32,11,2,"#847a68") + annulus(16,32,7,2,"#4a4339")
@@ -24325,7 +24339,12 @@ addEventListener("DOMContentLoaded",function(){
           else if (roll < 0.62) cam = "angle";
 
           const rot = cam === "lean" ? rr(r,-7,7) : rr(r,-22,22);
-          const scale = rr(r, cam === "lean" ? .72 : .55, cam === "lean" ? 1.2 : 1.55);
+          // A rotor still reads at half size because it is a circle. A folded
+          // blanket, a pane of glass and a flat panel do not, so the crop is
+          // not allowed to shrink them into a coloured block.
+          const NEEDS_ROOM = new Set(["softgoods", "carpetroll", "glass", "panel", "seat"]);
+          const small = NEEDS_ROOM.has(key) ? 0.92 : 0.55;
+          const scale = rr(r, cam === "lean" ? Math.max(.72, small) : small, cam === "lean" ? 1.2 : 1.55);
           const dx = rr(r,-14,14), dy = cam === "lean" ? rr(r,-16,-2) : rr(r,-12,12);
           const lx = ri(r,4,60), ly = ri(r,-4,40);
           const uid = "L" + (seed % 100000);
