@@ -10991,7 +10991,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.68.5";
+      const GAME_VERSION = "0.68.6";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -25700,7 +25700,6 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         // On the show-result screen, hide the nav entirely, Back to Garage
         // is the only move.
         const onResult = state.view === "result";
-        getEl("mainTabs").style.display = onResult ? "none" : "";
         const carTabsApply =
           state.view === "workshop" ||
           state.view === "garage" ||
@@ -25737,7 +25736,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         // Tab order reads left-to-right like a week: Build the car,
         // Social posts about it, Marketplace funds it (sell parts /
         // Saturday scavenge), Compete is Saturday show day at the end.
-        getEl("mainTabs").innerHTML = [
+        const tabMarkup = [
           ["workshop", "Build"],
           ["career", "Social"],
           ["dealership", "Marketplace"],
@@ -25764,7 +25763,13 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
               TAB_ICONS[id] || "",
             );
           })
-          .join("");
+          .filter(Boolean);
+        // Week one has exactly one place to be, and a rail carrying a single
+        // button is a label with a strip of screen behind it. It draws once
+        // there is somewhere else to go.
+        getEl("mainTabs").style.display =
+          onResult || tabMarkup.length < 2 ? "none" : "";
+        getEl("mainTabs").innerHTML = tabMarkup.join("");
       }
 
       function getModalLayerSignature() {
