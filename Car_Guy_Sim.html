@@ -587,7 +587,83 @@
       .gauge-fill {
         height: 100%;
       }
-      /* Sponsor watch: a status board, not a price list. */
+      /* Sponsor watch. A sponsor is a sticker on the lid of your box, so the
+         panel is the lid: red steel, a brushed edge, screws in the corners,
+         and every name you have signed slapped on at a slightly wrong angle.
+         Nobody who has ever owned a toolbox reads their sponsors off a table. */
+      .sp-lid {
+        position: relative;
+        border-radius: 5px 5px 3px 3px;
+        padding: 15px 12px 16px;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 16%),
+          linear-gradient(178deg, #b8321f 0%, #9d2417 52%, #7d1c11 100%);
+        border: 1px solid #641409;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.25),
+          inset 0 -12px 22px rgba(0, 0, 0, 0.34),
+          0 3px 7px rgba(0, 0, 0, 0.4);
+      }
+      /* The lip along the top edge of the lid. */
+      .sp-lid::before {
+        content: "";
+        position: absolute;
+        inset: 4px 5px auto 5px;
+        height: 3px;
+        border-radius: 2px;
+        background: linear-gradient(180deg, #d9d5cf 0%, #8e8a84 55%, #5f5c58 100%);
+        opacity: 0.5;
+      }
+      .sp-screw {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 34% 30%, #cfcac2, #6b6862 62%, #3d3b38);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+      }
+      .sp-stickers {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 7px 8px;
+        min-height: 60px;
+      }
+      .sp-sticker {
+        font-size: 10px;
+        font-weight: bold;
+        letter-spacing: 0.4px;
+        padding: 4px 9px;
+        border-radius: 3px;
+        white-space: nowrap;
+        transform: rotate(var(--r, 0deg));
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(0, 0, 0, 0.28);
+        line-height: 1.25;
+      }
+      .sp-sticker.oval { border-radius: 999px; padding: 4px 12px; }
+      .sp-sticker.script { font-family: Georgia, serif; font-style: italic; letter-spacing: 0; }
+      .sp-sticker.banner { border-radius: 2px; text-transform: uppercase; letter-spacing: 1.1px; }
+      .sp-sticker.shield {
+        border-radius: 3px 3px 10px 10px;
+        padding: 5px 10px 7px;
+      }
+      /* The one you have not earned yet: still on its backing sheet. */
+      .sp-sticker.peel {
+        opacity: 0.5;
+        border-style: dashed;
+        box-shadow: none;
+        filter: grayscale(0.5);
+      }
+      .sp-lid-empty {
+        text-align: center;
+        font-size: 11px;
+        color: rgba(255, 236, 226, 0.62);
+        padding: 14px 6px;
+        line-height: 1.6;
+      }
+      /* Sponsor watch: the rest of the board, under the lid. */
       .sp-head {
         font-size: 10px;
         letter-spacing: 1.4px;
@@ -25688,6 +25764,35 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         return `<div class="grid-main"><div>${phone}</div><div>${renderUpcomingBar()}${renderSponsorWatch()}</div></div>`;
       }
 
+      // Every sponsor's decal: its colours, its shape, and the wording that
+      // actually fits on a sticker. Keyed by id so a sponsor's sticker never
+      // changes on you, and kept out of SPONSORS so the game data stays about
+      // what they pay rather than what they look like.
+      const SPONSOR_DECALS = {
+        1:  { bg: "#f0e3cb", ink: "#5c3a22", shape: "oval script", text: "Joe's Auto Repair" },
+        2:  { bg: "#c2261d", ink: "#fff3ef", shape: "", text: "AutoZen" },
+        3:  { bg: "#1c5fa8", ink: "#eaf3ff", shape: "oval", text: "Megwhirl's" },
+        4:  { bg: "#8b9198", ink: "#14181c", shape: "shield", text: "Carl's Gearbox" },
+        5:  { bg: "#a81f16", ink: "#ffffff", shape: "shield banner", text: "Brake Maesters" },
+        6:  { bg: "#e8bb1f", ink: "#20180a", shape: "banner", text: "Snap-it Tools" },
+        7:  { bg: "#e2701a", ink: "#1b0f04", shape: "script", text: "Summa Racing" },
+        8:  { bg: "#12274a", ink: "#e0b968", shape: "oval", text: "Hagardy" },
+        9:  { bg: "#2b2e33", ink: "#f2f0eb", shape: "banner", text: "Street Machine Media" },
+        10: { bg: "#5c2f86", ink: "#f6ecd6", shape: "oval script", text: "Goodfellas Rod Co" },
+        11: { bg: "#f4efe2", ink: "#1a1712", shape: "", text: "Hot Rodder Mag" },
+        12: { bg: "#20452f", ink: "#e8ddc6", shape: "shield", text: "Pearson Automotive Museum" },
+        13: { bg: "#141416", ink: "#d8b467", shape: "banner", text: "Mecam Auctions" },
+        14: { bg: "#1fa5b8", ink: "#04191d", shape: "", text: "SpeedNet" },
+        15: { bg: "#c8241c", ink: "#fdf3e6", shape: "oval script", text: "Holli Performance" },
+        16: { bg: "#0f0f11", ink: "#e6c476", shape: "shield banner", text: "Barrett-Johnson" },
+      };
+      function sponsorSticker(sp, peel = false) {
+        const d = SPONSOR_DECALS[sp.id] || { bg: "#d8cdb6", ink: "#221c15", shape: "", text: sp.name };
+        // Nobody applies a sticker straight. Same wobble every time for a
+        // given sponsor, so the lid does not reshuffle on every render.
+        const deg = ((sp.id * 37) % 9) - 4;
+        return `<span class="sp-sticker ${d.shape}${peel ? " peel" : ""}" style="--r:${deg}deg;background:${d.bg};color:${d.ink}" title="${sp.name}: ${sp.benefit}">${d.text}</span>`;
+      }
       // Sixteen sponsors listed as sixteen identical rows is a spreadsheet, and
       // fifteen of those rows are answering a question nobody asked (what
       // happens at nine hundred thousand followers). What the player needs is
@@ -25714,12 +25819,19 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         }
 
         // Who is paying out right now, and what they add up to.
-        const onTheTruck = signed.length
-          ? `<div class="sp-head">On the truck</div>
-             <div class="sp-chips">${signed.map((s) => `<span class="sp-chip">${s.emoji} ${s.name}</span>`).join("")}</div>
-             <div class="tiny muted sp-perks">${sponsorPerkLines().join(" · ")}</div>`
-          : `<div class="sp-head">On the truck</div>
-             <div class="tiny muted sp-perks">Nobody yet. Bare paint and your own money.</div>`;
+        const onTheTruck = `<div class="sp-head">On the lid</div>
+             <div class="sp-lid">
+               <span class="sp-screw" style="top:7px;left:7px"></span>
+               <span class="sp-screw" style="top:7px;right:7px"></span>
+               <span class="sp-screw" style="bottom:7px;left:7px"></span>
+               <span class="sp-screw" style="bottom:7px;right:7px"></span>
+               <div class="sp-stickers">${
+                 signed.length
+                   ? signed.map((sp) => sponsorSticker(sp)).join("")
+                   : `<div class="sp-lid-empty">Bare red steel. Nobody has given you a sticker worth putting on it yet.</div>`
+               }</div>
+             </div>
+             ${signed.length ? `<div class="tiny muted sp-perks">${sponsorPerkLines().join(" · ")}</div>` : ""}`;
 
         // The one that is actually in reach, with the distance to it.
         let nextUp;
@@ -25728,8 +25840,8 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           const pct = Math.max(0, Math.min(100, Math.round(((state.followers - floor) / (next.req - floor)) * 100)));
           nextUp = `<div class="sp-next">
               <div class="sp-head">Next to call</div>
-              <div class="sp-next-name">${next.emoji} ${next.name}</div>
-              <div class="tiny" style="color:var(--gold-soft);margin-bottom:8px">${next.benefit}</div>
+              <div class="sp-next-name">${sponsorSticker(next, true)}</div>
+              <div class="tiny" style="color:var(--gold-soft);margin:7px 0 8px">${next.benefit}</div>
               <div class="gauge-wrap"><div class="gauge-fill" style="width:${pct}%;background:linear-gradient(90deg,#d8a24f 0%,#d8a24fCC 100%)"></div></div>
               <div class="flex between center sp-next-foot"><span class="tiny muted">${fmtF(state.followers)} followers</span><span class="tiny warn">${fmtF(next.req - state.followers)} to go</span></div>
             </div>`;
