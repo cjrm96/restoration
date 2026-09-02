@@ -10980,7 +10980,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.68.3";
+      const GAME_VERSION = "0.68.4";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -23755,9 +23755,11 @@ addEventListener("DOMContentLoaded",function(){
         // No medals or judges at Cars & Coffee, just hangout vibes.
         // Skip the Buck-finished-Nth comparison and the JUDGING beat
         // when there's nothing being judged.
-        const buckLine = !isCoffee && r.buckPlace
-          ? `<div class="tiny" style="color:var(--red-bright);margin-top:4px">Buck's '67 Stallion finished ${placeLabel(r.buckPlace)}</div>`
-          : "";
+        // Buck was on this screen three times: named here, flagged RIVAL at his
+        // place in the standings, and again in the paddock where he actually
+        // says something. The standings carry the number, the paddock carries
+        // the meaning, and this line carried neither.
+        const buckLine = "";
         const rewardLine = r.showReward
           ? `<div class="small good" style="margin-bottom:8px">${r.showReward.label}</div><div class="tiny muted" style="margin-bottom:10px">${r.showReward.detail}</div>`
           : "";
@@ -23786,10 +23788,12 @@ addEventListener("DOMContentLoaded",function(){
               : r.place <= 5
                 ? "Showed Up"
                 : "Quiet Morning"
-          : placeLabel(r.place);
+          : ["1st", "2nd", "3rd", "4th", "5th"][r.place - 1] || `${r.place}th`;
+        // The car is named in the preview header an inch above this line, and
+        // the medal is already forty pixels tall over the words under it.
         const carLine = isCoffee
-          ? `<div class="small" style="color:var(--text);margin-bottom:2px">${r.car}</div>`
-          : `<div class="small" style="color:var(--text);margin-bottom:2px">${r.car} · Score ${r.score}</div>`;
+          ? ""
+          : `<div class="small" style="color:var(--text);margin-bottom:2px">Score ${r.score}</div>`;
         const isWin = isCoffee ? r.place === 1 : r.place === 1;
         const championRibbon = isWin
           ? `<div class="champ-ribbon">${isCoffee ? "☕ Show Stealer" : `🏆 ${r.tier} Champion`}</div>`
@@ -23816,16 +23820,15 @@ addEventListener("DOMContentLoaded",function(){
               : SCENE_TASTES[r.tasteId].resultBad
             : "";
         const narrativeBody = `<div style="margin-top:2px">${[r.arrivalLine, isCoffee ? "" : r.judgingLine, tasteLine, vibeLine].filter(Boolean).map((line) => `<div class="small" style="color:var(--text);line-height:1.6;margin-bottom:8px">${line}</div>`).join("")}</div>`;
-        const heroTitle = isCoffee
-          ? `${r.show} · Hangout`
-          : `${placeLabel(r.place)} · ${r.show}`;
+        // and the panel heading does not need to say the placing a third time
+        const heroTitle = isCoffee ? `${r.show} · Hangout` : r.show;
         const storyBody = `<div class="${isWin ? "beauty-card" : ""}">${carPreview(car).replace(workspaceBackdropFrame(), showBackdropFrame(r.tier, r.show))}${heroTop}</div>${narrativeBody}`;
         return `<div class="grid-main result-grid"><div>${panel(
           heroTitle,
           storyBody,
           "",
           placeColor,
-        )}${renderJudgeCard(r)}${renderRivalReactions(r)}${panel(isCoffee ? "Crowd Pleasers" : "Final Standings", standingsBody, "", "#7da0c2")}</div><div><div class="result-action-bar">${panel("After the Show", `${button("Back to the Garage", "leaveResultScreen()", false, "", "width:100%")}`, state.won ? "You won the National Show. The build is complete." : "", "#d8a24f")}</div>${renderUpcomingBar()}</div></div>`;
+        )}${renderJudgeCard(r)}${renderRivalReactions(r)}</div><div><div class="result-action-bar">${state.won ? panel("After the Show", `${button("Back to the Garage", "leaveResultScreen()", false, "", "width:100%")}`, "You won the National Show. The build is complete.", "#d8a24f") : `<div style="margin-bottom:14px">${button("Back to the Garage", "leaveResultScreen()", false, "", "width:100%")}</div>`}</div>${panel(isCoffee ? "Crowd Pleasers" : "Final Standings", standingsBody, "", "#7da0c2")}${renderUpcomingBar()}</div></div>`;
       }
 
       // Ending the Saturday trip burns the weekend, advance one week
