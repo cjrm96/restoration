@@ -65,7 +65,7 @@ made, and the ending reads from it.
 
 - Take the championship with clean hands, never sold her car, never pawned the
   ring, and she is on the front steps waiting up when you pull in.
-- Take it with the ring still sitting in a pawn shop downtown, and you won the
+- Take it with the ring still sitting in a pawn shop up on Main, and you won the
   whole thing and it still does not feel finished.
 - The rival you chased for years eventually asks you, himself, for one last
   run. No crowd. Just the two of you at a dead light after dark. You can race

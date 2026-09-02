@@ -727,7 +727,7 @@ light. Keep the lower-left quarter calm. 16:9.
 > The take side of the ring-pawn beat. Paired with the redemption below. Quiet
 > shame, not noir menace, this is a good man doing a bad thing for a good reason.
 ```
-Pixel art, a cramped downtown pawn shop interior under flat fluorescent light, a
+Pixel art, a cramped small-town pawn shop on Main, interior under flat fluorescent light, a
 long glass counter case crowded with other people's hard times: watches, a
 guitar, class rings, a camera. Behind the counter a heavyset pawnbroker with a
 jeweler's loupe to his eye examines a small gold wedding band, not looking up,
@@ -743,7 +743,7 @@ quarter calm. 16:9.
 ### `scene-pawn-shop-redeem` — the ring comes home · ✅ IN GAME
 > The payoff bookend to `scene-pawn-shop`. Same counter, the weight lifted.
 ```
-Pixel art, the same downtown pawn shop, warmer now with daylight through the
+Pixel art, the same pawn shop on Main, warmer now with daylight through the
 barred window. The same pawnbroker slides the small gold wedding band back across
 the glass counter with two fingers, a torn pawn ticket beside it. In the
 foreground, seen from behind and to the side, the mechanic takes the ring back,

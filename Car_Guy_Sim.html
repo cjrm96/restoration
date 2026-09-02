@@ -6376,7 +6376,7 @@
    Style note: the take side of the ring-pawn beat, paired with the redeem below.
    Quiet shame, not noir. A good man doing a bad thing for a good reason.
    ...........................................................................
-   Pixel art, a cramped downtown pawn shop under flat fluorescent light, a long glass
+   Pixel art, a cramped small-town pawn shop on Main under flat fluorescent light, a long glass
    counter crowded with other people's hard times (watches, a guitar, class rings). A
    heavyset pawnbroker with a jeweler's loupe examines a small gold wedding band, not
    looking up, counting worn bills onto the glass with his other hand. In the
@@ -8251,7 +8251,7 @@
         { id: 101, name: "Barn Find Bash", tier: "Cars & Coffee", fee: 0, fuel: 3, prizes: [150, 80, 40, 0, 0], minScore: 0, followers: [90, 60, 40, 20, 10], cadence: 3, gate: { minSeason: 2, ownStyles: 4 }, blurb: "Rust welcome. Bring the survivors and the works-in-progress." },
         { id: 102, name: "Cars & Cocoa Winter Meet", tier: "Cars & Coffee", fee: 0, fuel: 3, prizes: [200, 100, 50, 0, 0], minScore: 0, followers: [120, 80, 50, 25, 12], cadence: 4, gate: { minSeason: 3, restoredStyles: 3 }, blurb: "Off-season meet for the diehards who won't put it away." },
         // Local tier
-        { id: 110, name: "Main Street Cruise-In", tier: "Local", axis: "beauty", fee: 30, fuel: 4, prizes: [500, 250, 120, 60, 25], minScore: 0, followers: [260, 160, 90, 45, 20], cadence: 2, gate: { minFollowers: 600 }, blurb: "Downtown blocks off Main Street. Rolling and revving encouraged." },
+        { id: 110, name: "Main Street Cruise-In", tier: "Local", axis: "beauty", fee: 30, fuel: 4, prizes: [500, 250, 120, 60, 25], minScore: 0, followers: [260, 160, 90, 45, 20], cadence: 2, gate: { minFollowers: 600 }, blurb: "Sawhorses at both ends, the whole street to yourselves. Rolling and revving encouraged." },
         { id: 111, name: "Night Drag Series", tier: "Local", axis: "power", fee: 45, fuel: 5, prizes: [800, 400, 200, 90, 40], minScore: 20, followers: [300, 190, 110, 55, 24], cadence: 2, gate: { minFollowers: 1800 }, blurb: "Grudge runs under the lights. Bring launch and nerve." },
         { id: 112, name: "Drift Battles", tier: "Local", axis: "handling", fee: 50, fuel: 6, prizes: [900, 450, 220, 100, 45], minScore: 25, followers: [340, 210, 120, 60, 26], cadence: 3, gate: { minSeason: 2, minFollowers: 3000 }, blurb: "Smoke, angle, and crowd noise. Style points are everything." },
         { id: 113, name: "Weeknight Autocross", tier: "Local", axis: "handling", fee: 40, fuel: 5, prizes: [700, 350, 175, 80, 35], minScore: 20, followers: [300, 180, 100, 50, 22], cadence: 2, gate: { minFollowers: 4500 }, blurb: "Cones in a parking lot and a stopwatch that doesn't lie." },
@@ -11069,7 +11069,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.69.3";
+      const GAME_VERSION = "0.69.4";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -12448,7 +12448,7 @@
           // thing you swore you'd never do sliding across the counter.
           playCutscene({
             art: "scene-pawn-shop",
-            kicker: "The pawn shop, downtown",
+            kicker: "The pawn shop, up on Main",
             title: "Six Grand and a Ring",
             sub: "Fluorescent light on a glass case full of other people's hard times, watches, guitars, a wedding band that isn't yours yet. The broker loupes the ring, doesn't look up, and counts six thousand onto the counter in worn bills. You slide it across before you can think too hard about it. A little envelope, a little ticket, and your marriage is collateral now. It's temporary, you tell yourself.",
             cta: "Take the money",
@@ -13888,7 +13888,7 @@
               lore: 2,
               sharkOffer: "took",
               note:
-                "You put it in your shirt pocket, and you both know what that means. The desk is open now. There is a bank downtown that does the same thing with paperwork and a rate that hurts less, and there is him. Both live behind the Loans button up top.",
+                "You put it in your shirt pocket, and you both know what that means. The desk is open now. There is a bank up on Main that does the same thing with paperwork and a rate that hurts less, and there is him. Both live behind the Loans button up top.",
               noteTone: "event-bad",
             },
             {
@@ -22803,7 +22803,7 @@ addEventListener("DOMContentLoaded",function(){
             : L.cleanHands
             ? "Inside, the porch light's on, and she's not in the microwave-note business tonight. She's on the front steps with two beers and the good blanket, waiting up. She didn't say anything when you pulled in. She didn't have to."
             : L.ringOutstanding
-              ? "Inside, the porch light's on and there's a note on the microwave: \"Champion.\" You read it four times. You keep thinking about the empty ring box on the dresser and a pawn case downtown you still owe. You won the whole thing. It doesn't feel finished."
+              ? "Inside, the porch light's on and there's a note on the microwave: \"Champion.\" You read it four times. You keep thinking about the empty ring box on the dresser and a pawn case up on Main you still owe. You won the whole thing. It doesn't feel finished."
               : L.soldCar
                 ? "Inside, the porch light's on. The note on the microwave says \"Champion,\" and it's in her handwriting, and she means it. Her spot in the driveway is still empty. Both things are true tonight."
                 : "Inside, the porch light's still on. There's a plate in the microwave and a note in her handwriting: \"Told you so. Champion.\"";
@@ -23326,7 +23326,7 @@ addEventListener("DOMContentLoaded",function(){
           <div class="annual-headline">${headline}</div>
           <div class="annual-sub">The ${carName}'s season, as the scene tells it</div>
           <div class="annual-cols">
-            <div class="annual-lede"><p>${lede1}</p><p>${lede2}</p><p>It cost what a season always costs: the Saturdays, the skinned knuckles, the hours the house ran quiet without you.${(state.ringEverPawned && (state.ringPawnBalance||0) > 0) ? " It cost a ring still sitting in a pawn case downtown, too. That one's not paid yet." : state.wifeCarSold ? " It cost her car out of the driveway, and she is still catching rides. That ledger stays open." : ""} The Annual notes, for the record, that they went toward something.</p></div>
+            <div class="annual-lede"><p>${lede1}</p><p>${lede2}</p><p>It cost what a season always costs: the Saturdays, the skinned knuckles, the hours the house ran quiet without you.${(state.ringEverPawned && (state.ringPawnBalance||0) > 0) ? " It cost a ring still sitting in a pawn case up on Main, too. That one's not paid yet." : state.wifeCarSold ? " It cost her car out of the driveway, and she is still catching rides. That ledger stays open." : ""} The Annual notes, for the record, that they went toward something.</p></div>
             <div>${ledger}${buckBox}${tasteBox}</div>
           </div>
           ${milestones}
