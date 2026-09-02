@@ -587,6 +587,39 @@
       .gauge-fill {
         height: 100%;
       }
+      /* The tank reads off a real instrument now: chrome bezel, black face,
+         and a needle that has to travel. A bar told you the number; a gauge
+         makes you watch it climb. */
+      .fuel-gauge {
+        display: block;
+        width: 100%;
+        max-width: 188px;
+        margin: 0 auto;
+      }
+      .fuel-needle {
+        transform-origin: 100px 150px;
+        transition: transform 1.5s cubic-bezier(0.26, 0.86, 0.32, 1.02);
+      }
+      .fuel-gauge.no-sweep .fuel-needle {
+        transition: none;
+      }
+      /* The pump kicks off, the face lifts a little, then settles back. */
+      .fuel-gauge.pumping .fuel-glow {
+        animation: fuelGlow 1.6s ease-out;
+      }
+      @keyframes fuelGlow {
+        0% { opacity: 0; }
+        22% { opacity: 0.5; }
+        100% { opacity: 0; }
+      }
+      .fuel-readout {
+        text-align: center;
+        margin-top: 6px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .fuel-needle { transition: none; }
+        .fuel-gauge.pumping .fuel-glow { animation: none; }
+      }
       .row {
         display: flex;
         justify-content: space-between;
@@ -5521,7 +5554,6 @@
   ═══════════════════════════════════════════ */
       const TOOL_CATEGORIES = [
         { id: "automotive", label: "Automotive", emoji: "🚗" },
-        { id: "storage", label: "Tool Storage", emoji: "🧰" },
         { id: "welding", label: "Welding", emoji: "⚡" },
         { id: "power", label: "Power Tools", emoji: "🔌" },
         { id: "air", label: "Air Compressor", emoji: "💨" },
@@ -6725,12 +6757,12 @@
         },
         {
           id: "t16",
-          name: "Tool Chest",
-          cat: "storage",
-          emoji: "🧰",
+          name: "Trim & Fastener Bins",
+          cat: "hand",
+          emoji: "🔩",
           cost: 300,
           workshop: "carport",
-          desc: "A place for all your tools to actually live",
+          desc: "Labeled bins for clips, hog rings and trim screws, so a stripped interior goes back together",
         },
         {
           id: "t9",
@@ -10991,7 +11023,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.68.6";
+      const GAME_VERSION = "0.69.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -12337,6 +12369,7 @@
             10,
             (state.mechanic.trust || 0) + choice.mechanicTrust,
           );
+          settleMechanicRate();
         }
         if (choice.gloveBoxAction) {
           if (choice.gloveBoxAction.bribe) state.bribeActive = true;
@@ -16113,6 +16146,7 @@
           if (!state.mechanic) state.mechanic = { metOnce: false, trust: 0, shopVisits: 0, milestoneSeen: false };
           const rateBefore = mechanicDiscount();
           state.mechanic.shopVisits = (state.mechanic.shopVisits || 0) + 1;
+          settleMechanicRate();
           // "Oh, you're the one." Dale said it on day one and never explained.
           // Once you're a real regular, he does. Every project car has a
           // ghost, an owner who parked it and quit, so Dale remembers each
@@ -16191,6 +16225,7 @@
             });
           } else {
             state.mechanic.trust = Math.min(10, (state.mechanic.trust || 0) + 1);
+            settleMechanicRate();
             const dropSeason = state.seasonNumber || 1;
             const firstDropThisSeason =
               dropSeason >= 2 && state.daleArrivalSeason !== dropSeason;
@@ -16745,6 +16780,7 @@
           car[ev.also.cat] = clamp(car[ev.also.cat] - ev.also.amt);
         }
         if (ev.fuelLoss) {
+          noteFuelChange(state.fuel);
           state.fuel = Math.max(0, state.fuel - ev.fuelLoss);
         }
         if (ev.paycheckSlip) {
@@ -17467,6 +17503,7 @@
           return toast("Not enough cash for fuel.", "err");
         state.money -= cost;
         recordMoneyChange(-cost, `Fuel purchase (${actual} gal)`);
+        noteFuelChange(state.fuel);
         state.fuel += actual;
         saveGame();
         requestRender(state.view === "shows" ? "full" : "chrome");
@@ -17603,19 +17640,58 @@
         return d;
       }
 
-      function mechanicDiscount() {
-        // Dale takes care of regulars. Story beats build trust fast, but
-        // plain repeat business counts too, every fourth work order earns
-        // a point. The serious jobs are meant to go through his shop in
-        // the first seasons; the loyalty ladder is what makes that path
-        // affordable by seasons 2-3.
+      // Dale takes care of regulars. Story beats build trust fast, but plain
+      // repeat business counts too, every fourth work order earns a point.
+      // The serious jobs are meant to go through his shop in the first
+      // seasons; the loyalty ladder is what makes that path affordable by
+      // seasons 2-3.
+      const MECHANIC_RATES = [0, 0.06, 0.12, 0.2, 0.25];
+      const MECHANIC_RUNGS = [0, 3, 5, 8, 12];
+      function mechanicTrustRung() {
         const m = state.mechanic || {};
-        const t = ((m.trust || 0)) + Math.floor((m.shopVisits || 0) / 4);
-        if (t >= 12) return 0.25;
-        if (t >= 8) return 0.2;
-        if (t >= 5) return 0.12;
-        if (t >= 3) return 0.06;
-        return 0;
+        const t = (m.trust || 0) + Math.floor((m.shopVisits || 0) / 4);
+        let rung = 0;
+        for (let i = MECHANIC_RUNGS.length - 1; i > 0; i--) {
+          if (t >= MECHANIC_RUNGS[i]) { rung = i; break; }
+        }
+        return rung;
+      }
+      // Which week Dale is looking at. The count restarts each season and
+      // again for the off-season, so the season and the phase both ride along.
+      function mechanicWeekStamp() {
+        return `${state.seasonNumber || 1}:${inPreSeason() ? "p" + state.preWeek : state.week}`;
+      }
+      // Trust is earned as fast as you earn it. The rate is not: Dale moves
+      // one rung per week, and only when you are standing in his shop.
+      // Nothing stopped a player from booking work orders back to back on a
+      // single Saturday and walking out at the top rate before the first job
+      // was even finished, which spent the whole loyalty ladder in week one
+      // and made every shop price for the rest of the run a foregone
+      // conclusion. Trust is still banked, so none of those visits are wasted,
+      // they pay out a rung at a time on the weeks you come back. A regular is
+      // someone who keeps showing up, which is the whole idea behind the rate.
+      function settleMechanicRate() {
+        const m = state.mechanic;
+        if (!m) return 0;
+        const earned = mechanicTrustRung();
+        if (m.rateRung == null) {
+          // A save from before the throttle keeps the rate it already had, and
+          // catching up like that is not the week's rung, so it is left unspent.
+          m.rateRung = earned;
+          m.rateWeek = null;
+          return m.rateRung;
+        }
+        if (earned <= m.rateRung) return m.rateRung;
+        if (m.rateWeek === mechanicWeekStamp()) return m.rateRung;
+        m.rateRung += 1;
+        m.rateWeek = mechanicWeekStamp();
+        return m.rateRung;
+      }
+      function mechanicDiscount() {
+        const m = state.mechanic;
+        if (!m) return 0;
+        const rung = m.rateRung == null ? mechanicTrustRung() : m.rateRung;
+        return MECHANIC_RATES[Math.max(0, Math.min(MECHANIC_RATES.length - 1, rung))];
       }
 
       function partCost(p, method) {
@@ -17720,7 +17796,7 @@
         const finalCash = Math.max(1, Math.round(cash * variance));
         const finalFollowers = Math.max(1, Math.round(followers * variance));
         if (cfg.moneyCost) state.money -= cfg.moneyCost;
-        if (cfg.fuelCost) state.fuel -= cfg.fuelCost;
+        if (cfg.fuelCost) { noteFuelChange(state.fuel); state.fuel -= cfg.fuelCost; }
         state.money += finalCash;
         state.followers += finalFollowers;
         clampFollowers();
@@ -18279,6 +18355,7 @@
 
         state.money = state.money - entryFee + totalEarned;
         recordMoneyChange(totalEarned - entryFee, `${show.name} payout`);
+        noteFuelChange(state.fuel);
         state.fuel = Math.max(0, state.fuel - fuelNeed);
 
         // Off-podium finishes still meet some fans at the show. Tail
@@ -19251,6 +19328,13 @@
         state.denseDetail = state.denseDetail === id ? null : id;
         requestRender("full");
       }
+      // The shop used to shelve one tool under its own "Tool Storage" heading,
+      // which read as the storage upgrade and sold a fastener bin instead. The
+      // heading is gone; a save still parked on it lands back on All.
+      function toolCatFilter() {
+        const cat = state.toolCat || "all";
+        return TOOL_CATEGORIES.some((c) => c.id === cat) ? cat : "all";
+      }
       function setToolCat(cat) {
         state.toolCat = cat;
         requestRender("full");
@@ -19422,6 +19506,106 @@
       function gauge(label, value, max, color = "#c99842") {
         const pct = Math.max(0, Math.min(1, value / max));
         return `<div>${label ? `<div class="gauge-label"><span>${label}</span><span style="color:var(--text);font-weight:bold">${value}/${max}</span></div>` : ""}<div class="gauge-wrap"><div class="gauge-fill" style="width:${pct * 100}%;background:linear-gradient(90deg,${color} 0%,${color}CC 100%)"></div></div></div>`;
+      }
+      // A round fuel gauge off a dash: chrome bezel, black face, mint scale,
+      // orange needle. The needle is the only moving part, so everything else
+      // is built once and the sweep is a single rotation.
+      const FUEL_SWEEP = 58; // degrees either side of straight up
+      function fuelNeedleAngle(value, max) {
+        const pct = Math.max(0, Math.min(1, (value || 0) / (max || 1)));
+        return -FUEL_SWEEP + pct * FUEL_SWEEP * 2;
+      }
+      const FUEL_FACE = (() => {
+        const cx = 100, cy = 150;
+        const at = (deg, r) => {
+          const a = (deg * Math.PI) / 180;
+          return [cx + r * Math.sin(a), cy - r * Math.cos(a)];
+        };
+        const f = (n) => Math.round(n * 100) / 100;
+        let o = "";
+        // The scale arc the ticks hang off.
+        const [ax, ay] = at(-FUEL_SWEEP, 82);
+        const [bx, by] = at(FUEL_SWEEP, 82);
+        o += `<path d="M${f(ax)} ${f(ay)} A 82 82 0 0 1 ${f(bx)} ${f(by)}" fill="none" stroke="#8fd8bd" stroke-width="1.6"/>`;
+        // Thirty-two fine ticks, every eighth one long, the way a dash gauge
+        // is graduated: you read the quarters and feel the rest.
+        for (let i = 0; i <= 32; i++) {
+          const deg = -FUEL_SWEEP + (i / 32) * FUEL_SWEEP * 2;
+          const major = i % 8 === 0;
+          const [x1, y1] = at(deg, 81);
+          const [x2, y2] = at(deg, major ? 68 : 74);
+          o += `<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" stroke="#8fd8bd" stroke-width="${major ? 2.4 : 1.2}" stroke-linecap="butt"/>`;
+        }
+        // Quarters, called the way the tank is: empty to full in four.
+        ["0/4", "1/4", "1/2", "3/4", "4/4"].forEach((label, i) => {
+          const deg = -FUEL_SWEEP + (i / 4) * FUEL_SWEEP * 2;
+          const [x, y] = at(deg, 94);
+          o += `<text x="${f(x)}" y="${f(y + 4)}" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#8fd8bd">${label}</text>`;
+        });
+        return o;
+      })();
+      function fuelGauge(value, max) {
+        const deg = fuelNeedleAngle(value, max);
+        return `<svg class="fuel-gauge no-sweep" viewBox="0 0 200 200" role="img" aria-label="Fuel ${value} of ${max} gallons">
+          <defs>
+            <linearGradient id="fgChrome" x1="0" y1="0" x2="0.35" y2="1">
+              <stop offset="0" stop-color="#f4f6f7"/><stop offset="0.26" stop-color="#8d959b"/>
+              <stop offset="0.5" stop-color="#e2e7ea"/><stop offset="0.74" stop-color="#5b6268"/>
+              <stop offset="1" stop-color="#c9d0d4"/>
+            </linearGradient>
+            <radialGradient id="fgFace" cx="0.4" cy="0.3" r="0.85">
+              <stop offset="0" stop-color="#191c1a"/><stop offset="0.62" stop-color="#0b0d0c"/>
+              <stop offset="1" stop-color="#050605"/>
+            </radialGradient>
+            <radialGradient id="fgGlow" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" stop-color="#8fd8bd" stop-opacity="0.55"/>
+              <stop offset="1" stop-color="#8fd8bd" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle cx="100" cy="100" r="97" fill="url(#fgChrome)"/>
+          <circle cx="100" cy="100" r="88" fill="#2b2f32"/>
+          <circle cx="100" cy="100" r="85" fill="url(#fgFace)"/>
+          <circle class="fuel-glow" cx="100" cy="100" r="85" fill="url(#fgGlow)" opacity="0"/>
+          ${FUEL_FACE}
+          <text x="100" y="126" text-anchor="middle" font-family="Georgia, serif" font-size="19" letter-spacing="2" fill="#8fd8bd">FUEL</text>
+          <text x="100" y="170" text-anchor="middle" font-family="Georgia, serif" font-size="7.5" fill="#587a6d">Palomar Instruments</text>
+          <g class="fuel-needle" style="transform:rotate(${deg}deg)">
+            <polygon points="100,86 103.5,148 96.5,148" fill="#e8501f"/>
+            <polygon points="100,86 103.5,148 100,148" fill="#f4794b"/>
+            <rect x="97" y="148" width="6" height="16" fill="#c33f16"/>
+          </g>
+          <circle cx="100" cy="150" r="10" fill="#7d2a10"/>
+          <circle cx="100" cy="150" r="7" fill="#e8501f"/>
+          <circle cx="97.5" cy="147.5" r="2.4" fill="#f8a077"/>
+        </svg>`;
+      }
+      // A change in the tank is worth watching, so the needle starts where it
+      // used to be and travels. Set by whatever moved the fuel; spent by the
+      // next render that actually draws a gauge.
+      let fuelSweepFrom = null;
+      function noteFuelChange(previous) {
+        fuelSweepFrom = previous;
+      }
+      function sweepFuelNeedle() {
+        const el = document.querySelector(".fuel-gauge");
+        if (!el) return;
+        const from = fuelSweepFrom;
+        fuelSweepFrom = null;
+        const needle = el.querySelector(".fuel-needle");
+        if (!needle) return;
+        if (from == null || from === state.fuel) {
+          el.classList.remove("no-sweep");
+          return;
+        }
+        // Park the needle at the old level with the transition off, let the
+        // browser commit that, then hand it the new angle to travel to.
+        needle.style.transform = `rotate(${fuelNeedleAngle(from, MAX_FUEL)}deg)`;
+        void el.getBoundingClientRect();
+        el.classList.remove("no-sweep");
+        if (state.fuel > from) el.classList.add("pumping");
+        requestAnimationFrame(() => {
+          needle.style.transform = `rotate(${fuelNeedleAngle(state.fuel, MAX_FUEL)}deg)`;
+        });
       }
       function chalkRow(k, v, cls = "") {
         return `<div class="row"><span class="row-k">${k}</span><span class="row-v ${cls}">${v}</span></div>`;
@@ -21498,6 +21682,8 @@ addEventListener("DOMContentLoaded",function(){
           state.mechanic.metOnce = true;
           state.mechanic.trust = 10;
           state.mechanic.milestoneSeen = true;
+          state.mechanic.rateRung = mechanicTrustRung();
+          state.mechanic.rateWeek = mechanicWeekStamp();
           pushNotice(
             "🔧 Dale says he trusts you with anything now. Full 15% shop discount permanent.",
             "good",
@@ -23366,7 +23552,7 @@ addEventListener("DOMContentLoaded",function(){
           const wsIdxNow = getWorkspaceIndex(state.workshopLevel);
           const inCat = TOOLS_LIST.filter(
             (t) =>
-              (state.toolCat === "all" || t.cat === state.toolCat) &&
+              (toolCatFilter() === "all" || t.cat === toolCatFilter()) &&
               !state.ownedTools.includes(t.id),
           );
           const reachable = (t) =>
@@ -23380,7 +23566,7 @@ addEventListener("DOMContentLoaded",function(){
           const storageHint = state.ownedTools.length >= storage.maxTools - 1
             ? '<div class="tiny muted">Need more space or a faster shop? See the Space &amp; Storage tab.</div>'
             : "";
-          subcontent = `<div class="info-box" style="margin-bottom:12px"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:4px">Capacity: ${state.ownedTools.length} / ${storage.maxTools} tools</div>${storageHint}</div><div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">${tab("All", state.toolCat === "all", "setToolCat('all')")}${TOOL_CATEGORIES.map((cat) => tab(`${cat.emoji} ${cat.label}`, state.toolCat === cat.id, `setToolCat('${cat.id}')`)).join("")}</div>${
+          subcontent = `<div class="info-box" style="margin-bottom:12px"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:4px">Capacity: ${state.ownedTools.length} / ${storage.maxTools} tools</div>${storageHint}</div><div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">${tab("All", toolCatFilter() === "all", "setToolCat('all')")}${TOOL_CATEGORIES.map((cat) => tab(`${cat.emoji} ${cat.label}`, toolCatFilter() === cat.id, `setToolCat('${cat.id}')`)).join("")}</div>${
             availableTools.length
               ? `<div class="dense-grid">${availableTools
                   .map((t) => {
@@ -23682,7 +23868,7 @@ addEventListener("DOMContentLoaded",function(){
           }${
             familySelected
               ? ""
-              : `<div class="info-box" style="margin-top:10px"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" style="padding:6px 8px;font-size:11px" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>+5 Gal · $20</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright);padding:6px 8px;font-size:11px" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill · $${fmt(fillAmount * FUEL_PRICE)}</button></div></div>`
+              : `<div class="info-box" style="margin-top:10px"><div style="margin-bottom:10px">${fuelGauge(state.fuel, MAX_FUEL)}<div class="fuel-readout tiny muted">Tank <b style="color:var(--text)">${state.fuel}</b> / ${MAX_FUEL} gal</div></div><div class="btn-row two"><button class="btn" style="padding:6px 8px;font-size:11px" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>+5 Gal · $20</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright);padding:6px 8px;font-size:11px" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill · $${fmt(fillAmount * FUEL_PRICE)}</button></div></div>`
           }`,
           "",
           "#7da0c2",
@@ -25961,6 +26147,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           touched = renderModalLayer(false) || touched;
           renderCutsceneLayer();
           if (touched) mountBackdrops();
+          sweepFuelNeedle();
           return;
         }
         touched = renderModalLayer(false) || touched;
