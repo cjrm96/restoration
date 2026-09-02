@@ -587,6 +587,54 @@
       .gauge-fill {
         height: 100%;
       }
+      /* Sponsor watch: a status board, not a price list. */
+      .sp-head {
+        font-size: 10px;
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+        color: var(--gold-soft);
+        margin-bottom: 7px;
+      }
+      .sp-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 7px;
+      }
+      .sp-chip {
+        font-size: 11px;
+        color: var(--text);
+        background: rgba(217, 162, 79, 0.09);
+        border: 1px solid rgba(217, 162, 79, 0.3);
+        border-radius: 999px;
+        padding: 3px 9px;
+        white-space: nowrap;
+      }
+      .sp-perks { line-height: 1.6; }
+      .sp-next {
+        margin-top: 14px;
+        padding-top: 13px;
+        border-top: 1px solid var(--line);
+      }
+      .sp-next-name {
+        font-size: 15px;
+        font-weight: bold;
+        color: var(--text-bright);
+        margin-bottom: 3px;
+      }
+      .sp-next-foot { margin-top: 6px; }
+      .sp-tail {
+        margin-top: 13px;
+        padding-top: 11px;
+        border-top: 1px solid var(--line);
+        line-height: 1.6;
+      }
+      .sp-toggle {
+        width: 100%;
+        margin-top: 12px;
+        font-size: 11px;
+        padding: 7px;
+      }
       /* The tank reads off a real instrument now: chrome bezel, black face,
          and a needle that has to travel. A bar told you the number; a gauge
          makes you watch it climb. */
@@ -11069,7 +11117,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.69.4";
+      const GAME_VERSION = "0.70.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -11325,7 +11373,14 @@
   ═══════════════════════════════════════════ */
       const clamp = (v) => Math.min(100, Math.max(0, Math.round(v)));
       const fmt = (n) => n.toLocaleString();
-      const fmtF = (n) => (n >= 1000 ? `${(n / 1000).toFixed(1)}K` : String(n));
+      // The sponsor ladder runs to a million, so the counter has to as well.
+      // It used to stop at K and call the top of the board 1000.0K.
+      const fmtF = (n) =>
+        n >= 1e6
+          ? `${(n / 1e6).toFixed(n % 1e6 === 0 ? 0 : 1)}M`
+          : n >= 1000
+            ? `${(n / 1000).toFixed(1)}K`
+            : String(n);
       const scoreCol = (s) =>
         s >= 80 ? "#8fbf75" : s >= 50 ? "#c99842" : "#b85b4f";
       const tierCol = (t) =>
@@ -17697,6 +17752,32 @@
         return { ok: true };
       }
 
+      // What the signed sponsors come to, in the terms the player cares about.
+      // The discounts are read back out of getDiscount rather than re-derived,
+      // so this line can never disagree with the register.
+      function sponsorPerkLines() {
+        const sp = activeSponsors();
+        const out = [];
+        if (sp.some((s) => s.freeLocalEntry)) out.push("Local entries free");
+        const cash = sp.reduce((n, s) => n + (s.cashPerShow || 0), 0);
+        if (cash) out.push(`+$${fmt(cash)} a show`);
+        const prize = sp.reduce((n, s) => n + (s.prizePct || 0), 0);
+        if (prize) out.push(`+${Math.round(prize * 100)}% prize money`);
+        const natl = sp.reduce((n, s) => n + (s.nationalPrizePct || 0), 0);
+        if (natl) out.push(`+${Math.round(natl * 100)}% more at Nationals`);
+        const base = getDiscount({ category: "engine" });
+        if (base) out.push(`${Math.round(base * 100)}% off parts`);
+        const named = { paint: "paint", transmission: "gearboxes", brakes: "brakes" };
+        for (const cat of Object.keys(named)) {
+          const d = getDiscount({ category: cat });
+          if (d > base) out.push(`${Math.round(d * 100)}% off ${named[cat]}`);
+        }
+        const boost = sp.reduce((n, s) => Math.max(n, s.socialBoost || 0), 0);
+        if (boost) out.push(`+${Math.round(boost * 100)}% followers on posts`);
+        if (sp.some((s) => s.giftTool)) out.push("a Chrome Buffer, gifted");
+        if (sp.some((s) => s.freePart)) out.push("a free part at every show");
+        return out;
+      }
       function getDiscount(part) {
         let d = 0;
         const sp = activeSponsors();
@@ -17824,8 +17905,11 @@
         const car = currentCar();
         const overall = car ? getOverall(car) : 0;
         const qualityMult = 0.5 + overall / 100;
-        const ms = activeSponsors().find((s) => s.socialBoost);
-        const sponsorMult = ms ? 1 + ms.socialBoost : 1;
+        // Two media sponsors can both be signed, and the list runs low to
+        // high, so taking the first one meant SpeedNet's 35% never landed:
+        // Street Machine Media's 25% shadowed it forever. Best deal wins.
+        const boost = activeSponsors().reduce((n, s) => Math.max(n, s.socialBoost || 0), 0);
+        const sponsorMult = 1 + boost;
         // Snapgram is a visual platform, high paint = photogenic = more
         // engagement = more cash. 0.5x at no paint, 1.0x at 50, 1.5x at 100.
         const paintMult =
@@ -25601,15 +25685,74 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
             <div class="phone-home-bar" onclick="setPhoneApp('home')" title="Home"></div>
           </div>
         </div>`;
-        return `<div class="grid-main"><div>${phone}</div><div>${renderUpcomingBar()}${panel(
-          "Sponsor Watch",
-          `${SPONSORS.map(
+        return `<div class="grid-main"><div>${phone}</div><div>${renderUpcomingBar()}${renderSponsorWatch()}</div></div>`;
+      }
+
+      // Sixteen sponsors listed as sixteen identical rows is a spreadsheet, and
+      // fifteen of those rows are answering a question nobody asked (what
+      // happens at nine hundred thousand followers). What the player needs is
+      // who is paying out today, who is next, and how far. Everything past
+      // that is one line, with the full board a click away.
+      function renderSponsorWatch() {
+        const signed = SPONSORS.filter((s) => state.followers >= s.req);
+        const unsigned = SPONSORS.filter((s) => state.followers < s.req);
+        const next = unsigned[0];
+        const soon = unsigned.slice(1, 3);
+        const far = unsigned.slice(3);
+        const top = SPONSORS[SPONSORS.length - 1];
+
+        if (state.sponsorWatchExpanded) {
+          return panel(
+            "Sponsor Watch",
+            `${SPONSORS.map(
               (s) =>
-                `<div class="guide-step"><div><div class="small" style="color:var(--text)">${s.emoji} ${s.name}</div><div class="tiny muted" style="margin-top:3px">${s.benefit}</div></div><div style="text-align:right"><div class="tiny ${state.followers >= s.req ? "good" : "warn"}">${state.followers >= s.req ? "ACTIVE" : fmtF(s.req)}</div>${state.followers < s.req ? `<div class="tiny muted" style="margin-top:3px">${fmtF(s.req - state.followers)} away</div>` : ""}</div></div>`,
-            ).join("")}`,
-          "",
+                `<div class="guide-step"><div><div class="small" style="color:${state.followers >= s.req ? "var(--text)" : "var(--text-dim)"}">${s.emoji} ${s.name}</div><div class="tiny muted" style="margin-top:3px">${s.benefit}</div></div><div style="text-align:right"><div class="tiny ${state.followers >= s.req ? "good" : "warn"}">${state.followers >= s.req ? "SIGNED" : fmtF(s.req)}</div>${state.followers < s.req ? `<div class="tiny muted" style="margin-top:3px">${fmtF(s.req - state.followers)} to go</div>` : ""}</div></div>`,
+            ).join("")}<button class="btn btn-quiet sp-toggle" onclick="toggleSponsorWatch()">Back to the short version</button>`,
+            `all ${SPONSORS.length}`,
+            "#d8a24f",
+          );
+        }
+
+        // Who is paying out right now, and what they add up to.
+        const onTheTruck = signed.length
+          ? `<div class="sp-head">On the truck</div>
+             <div class="sp-chips">${signed.map((s) => `<span class="sp-chip">${s.emoji} ${s.name}</span>`).join("")}</div>
+             <div class="tiny muted sp-perks">${sponsorPerkLines().join(" · ")}</div>`
+          : `<div class="sp-head">On the truck</div>
+             <div class="tiny muted sp-perks">Nobody yet. Bare paint and your own money.</div>`;
+
+        // The one that is actually in reach, with the distance to it.
+        let nextUp;
+        if (next) {
+          const floor = signed.length ? signed[signed.length - 1].req : 0;
+          const pct = Math.max(0, Math.min(100, Math.round(((state.followers - floor) / (next.req - floor)) * 100)));
+          nextUp = `<div class="sp-next">
+              <div class="sp-head">Next to call</div>
+              <div class="sp-next-name">${next.emoji} ${next.name}</div>
+              <div class="tiny" style="color:var(--gold-soft);margin-bottom:8px">${next.benefit}</div>
+              <div class="gauge-wrap"><div class="gauge-fill" style="width:${pct}%;background:linear-gradient(90deg,#d8a24f 0%,#d8a24fCC 100%)"></div></div>
+              <div class="flex between center sp-next-foot"><span class="tiny muted">${fmtF(state.followers)} followers</span><span class="tiny warn">${fmtF(next.req - state.followers)} to go</span></div>
+            </div>`;
+        } else {
+          nextUp = `<div class="sp-next"><div class="sp-head">Next to call</div><div class="tiny good">Every name on the board has signed. There is nobody left to impress.</div></div>`;
+        }
+
+        // The rest of the ladder, as a sentence instead of a spreadsheet.
+        const tail = [
+          soon.length
+            ? `Then ${soon.map((s) => `${s.name} at ${fmtF(s.req)}`).join(", then ")}.`
+            : "",
+          far.length
+            ? `${far.length} more past them, up to ${top.name} at ${fmtF(top.req)}.`
+            : "",
+        ].filter(Boolean).join(" ");
+
+        return panel(
+          "Sponsor Watch",
+          `${onTheTruck}${nextUp}${tail ? `<div class="tiny muted sp-tail">${tail}</div>` : ""}<button class="btn btn-quiet sp-toggle" onclick="toggleSponsorWatch()">See the whole board</button>`,
+          `${signed.length} of ${SPONSORS.length} signed`,
           "#d8a24f",
-        )}</div></div>`;
+        );
       }
 
       function renderLegacyWall() {
