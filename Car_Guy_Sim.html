@@ -10904,7 +10904,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.64.0";
+      const GAME_VERSION = "0.64.1";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -15853,7 +15853,12 @@
         });
         if (method === "diy") state.diyTried = true;
         else if (method === "shop") state.shopTried = true;
+        // Only your own hands find the extra job. If the work went to the
+        // shop then you are not the one who opened it up, so the whole beat,
+        // the choice to do it right and the guilt of pretending you never saw
+        // it, belongs to somebody else's afternoon.
         if (
+          method === "diy" &&
           Math.random() < 0.16 &&
           (part.tier === "Quality" || part.tier === "Show Grade")
         ) {
