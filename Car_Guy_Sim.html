@@ -10980,7 +10980,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.68.2";
+      const GAME_VERSION = "0.68.3";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -22933,11 +22933,21 @@ addEventListener("DOMContentLoaded",function(){
         );
       }
       function _renderRestorationPanelInner(car, tasks) {
+        // Shop Notes used to carry "Active Jobs 1 / 1" directly under this
+        // board, which counted the cards you were already looking at. The
+        // number that matters is how many bays there are, so it says that
+        // here, where the bays are.
+        const bays = workspaceData().maxActive;
+        const bayLine = `${tasks.length} of ${bays} ${bays === 1 ? "bay" : "bays"} running`;
+        const timerHint =
+          (state.installsDone || 0) < 2
+            ? " · timers keep running even while the game is closed"
+            : "";
         if (!tasks.length)
           return panel(
             "Active Restorations",
             `<div class="small muted">No active work orders. Start one in the Auto Shop.</div>`,
-            (state.installsDone || 0) < 2 ? "Real-time timers keep running even while the game is closed." : "",
+            bayLine + timerHint,
             "#1a0f08",
             "work-order",
           );
@@ -22950,7 +22960,7 @@ addEventListener("DOMContentLoaded",function(){
               return `<div class="info-box" data-task-id="${task.id}"><div class="flex between center" style="margin-bottom:8px;gap:10px"><div><div class="small" style="color:var(--text-bright);font-weight:bold">${part?.name || "Restoration"}</div></div><div class="small good task-time" style="font-weight:bold">${remaining <= 0 ? "COMPLETE" : formatRemaining(remaining)}</div></div>${gauge("", Math.round(getRestorationProgress(task) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${remaining <= 0 ? "Wrapping up now…" : taskStatusText(task)}</div></div>`;
             })
             .join("")}`,
-          (state.installsDone || 0) < 2 ? "Real-time timers keep running even while the game is closed." : "",
+          bayLine + timerHint,
           "#1a0f08",
           "work-order",
         );
@@ -23427,7 +23437,7 @@ addEventListener("DOMContentLoaded",function(){
         // nothing in the second column, which does not read as restraint so much as
         // a page that half failed to load. When the side has nothing to say, the
         // layout stops holding space for it.
-        const sideCol = `${renderUpcomingBar()}${renderRestorationPanel(car)}${(state.installsDone || 0) > 0 || activeTasksForCar(car.id).length ? mobileFold("notes", "📋 Shop Notes", workspaceData().name, panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Active Jobs", `${activeTasksForCar(car.id).length} / ${workspaceData().maxActive}`)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${chalkRow("Build Speed", `+${Math.round(toolStorageData().speedBonus * 100)}% faster`)}${roadworthy(car) ? "" : chalkRow("Roadworthy", "Not yet", "warn")}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL}`)}`, "", "#1d1611", "clipboard")) : ""}`;
+        const sideCol = `${renderUpcomingBar()}${renderRestorationPanel(car)}${(state.installsDone || 0) > 0 || activeTasksForCar(car.id).length ? mobileFold("notes", "📋 Shop Notes", workspaceData().name, panel("Shop Notes", `${chalkRow("Work Space", workspaceData().name)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${toolStorageData().speedBonus > 0 ? chalkRow("Build Speed", `+${Math.round(toolStorageData().speedBonus * 100)}% faster`) : ""}`, "", "#1d1611", "clipboard")) : ""}`;
         return `<div class="grid-main${sideCol.trim() ? '' : ' solo'}"><div>${gigBoardMarkup()}${heroPanel(
           "Auto Shop Floor",
           onboardStageVal() >= 3 ? "" : "Every bolt, every part, one at a time",
