@@ -1104,6 +1104,40 @@
         font-weight: bold;
       }
       .crt-nav button.off { opacity: .45; cursor: not-allowed; }
+      .crt-nav button .crt-ico {
+        width: 14px;
+        height: 14px;
+        fill: currentColor;
+        shape-rendering: crispEdges;
+        flex: 0 0 14px;
+      }
+      /* Items or Vehicles, tucked under Sell the way a sub-page sits under
+         its section in a site rail. */
+      .crt-seg {
+        display: flex;
+        gap: 4px;
+        margin: 4px 0 2px 22px;
+      }
+      .crt-seg button {
+        flex: 1 1 0;
+        text-align: center;
+        justify-content: center;
+        font-size: 11px;
+        padding: 5px 6px;
+        border: 1px solid rgba(217, 162, 79, 0.22);
+        border-radius: 5px;
+        background: rgba(0, 0, 0, 0.22);
+        color: var(--muted);
+        font-family: inherit;
+        cursor: pointer;
+      }
+      .crt-seg button:hover { background: rgba(217, 162, 79, 0.1); }
+      .crt-seg button.on {
+        background: rgba(217, 162, 79, 0.18);
+        border-color: rgba(217, 162, 79, 0.45);
+        color: var(--text-bright);
+        font-weight: bold;
+      }
       .crt-block {
         margin-top: 14px;
         padding-top: 11px;
@@ -9838,7 +9872,7 @@
           id: "lateNightMeet",
           trigger: "accept",
           title: "10:30 PM Grocery Store Meetup",
-          text: "He wants to meet under the parking lot lights by the cart return. Exact cash only. This is somehow normal now.",
+          text: "can you meet at the shopping center off the highway, by the cart return? i get off at eleven so it is gonna be late. exact cash, i never have change on me.",
           choices: [
             {
               label: "Go do the deal",
@@ -9889,7 +9923,7 @@
           id: "stopCallingMe",
           trigger: "accept",
           title: "He Keeps Calling",
-          text: "The buyer paid you, then started calling every fifteen minutes asking follow-up questions you definitely answered in the listing.",
+          text: "sorry to keep bugging you. is this the one off the long bed or the short bed. also does it come with the bolts. also what year did you say again",
           choices: [
             {
               label: "Block his number",
@@ -9911,7 +9945,7 @@
           id: "tradeOfferChaos",
           trigger: "offer",
           title: "Absolute Trade Guy Behavior",
-          text: "Instead of cash, he offers a cooler full of random trim pieces, one tail light, and a story about a 68 Dart.",
+          text: "ok so i am short on cash but hear me out. i have got a cooler full of trim, some of it chrome, and a tail light off a 68 Dart my uncle had. that car was something else. straight across?",
           choices: [
             {
               label: "Decline respectfully",
@@ -9933,7 +9967,7 @@
           id: "shortOnCash",
           trigger: "accept",
           title: "He Showed Up Light",
-          text: "The buyer is standing there doing wallet math and somehow ended up short on the exact amount you agreed to.",
+          text: "hey i am here. so i counted it twice in the truck and i am short. i have got most of it on me. can you do it for what i have got",
           choices: [
             {
               label: "Take the lower cash and be done with it",
@@ -9954,7 +9988,7 @@
           id: "buddyCommentary",
           trigger: "accept",
           title: "He Brought A Buddy",
-          text: "The buyer showed up with a friend whose only job seems to be saying what he would've paid for it in 2009.",
+          text: "here now, brought my buddy, he knows parts. heads up he is gonna tell you what these went for in 2009. he does it to everybody, just let him talk.",
           choices: [
             {
               label: "Get through it and finish the deal",
@@ -10946,7 +10980,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.66.0";
+      const GAME_VERSION = "0.67.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -15120,9 +15154,15 @@
         const stock = state.junkyardStock[stockIdx];
         const part = PARTS.find((p) => p.id === partId);
         if (!part) return;
-        const buy = Math.max(15, Math.round(part.diy * 0.3));
+        // The yard charges what the yard charges. It used to quote a cheaper
+        // number to anybody who said they were flipping it, which meant one
+        // physical part on one shelf had two prices depending on what you were
+        // thinking, and the shelf has no way of knowing that.
+        const buy = stock.price;
         if (state.money < buy) return toast("Cash only at the yard.", "err");
-        const resale = Math.max(25, Math.round(part.diy * 0.5 * (stock.conditionMult || 1)));
+        // Resale prices off what you paid rather than off the part's list, so
+        // the spread survives paying the real price for it.
+        const resale = Math.max(25, Math.round(buy * 1.2));
         state.money -= buy;
         recordMoneyChange(-buy, `Pick-A-Part: ${part.name} (to flip)`);
         state.partsInventory.push({
@@ -23823,15 +23863,16 @@ addEventListener("DOMContentLoaded",function(){
               const target = pickPullTargetCar(part);
               const noTarget = !target;
               const noTargetNote = noTarget
-                ? `<div class="tiny muted" style="margin-top:4px">No car in the garage can take it right now.</div>`
+                ? `<div class="tiny muted" style="margin-top:4px">Nothing in the garage can take it. Worth money to somebody else.</div>`
                 : target.id !== state.carId
                   ? `<div class="tiny muted" style="margin-top:4px">→ Will land on your ${target.year} ${target.make} (other tab).</div>`
                   : "";
-              // A yard part is one physical piece: pull it for your build, or
-              // grab it cheap to flip on the Marketplace. The flip option
-              // works even when nothing in the garage can take the part, so a
-              // good score is never a dead end.
-              const flipBuy = Math.max(15, Math.round(part.diy * 0.3));
+              // A yard part is one physical piece and it does one job. If a car
+              // in the garage can take it, it is a part you came here for. If
+              // none can, because it is already fitted or that system is full,
+              // then it is stock to move on. Offering both at once let the
+              // player buy a part they already had, which is how you end up
+              // with two of everything and no idea why.
               // Out here you are reading somebody else's ad, so it gets their
               // wording and their town. The seed is the part, so a row keeps
               // its photograph and its wording for the whole trip.
@@ -23843,9 +23884,10 @@ addEventListener("DOMContentLoaded",function(){
                 <div class="feed-text">${LISTING_ART.adTitle(part.name, adKey)}</div>
                 <div class="feed-meta">${LISTING_ART.adPlace(adKey)} · +${yardImp} ${CAT_LABELS[part.category]} (vs +${part.imp} new) · normally $${fmt(part.diy)} new</div>
                 ${missingNote}${noTargetNote}
-                <div class="btn-row two" style="margin-top:8px">
-                ${button(`Pull it · $${fmt(s.price)}`, `pullYardPart(${part.id})`, state.money < s.price || missing.length > 0 || noTarget, "", "width:100%;font-size:12px")}
-                ${button(state.money < flipBuy ? `Need $${fmt(flipBuy)}` : `Grab to flip · $${fmt(flipBuy)}`, `buyJunkyardFlipPart(${part.id})`, state.money < flipBuy, "", "width:100%;font-size:12px;background:#4a3c2e;border-color:#6b5840;color:var(--text)")}
+                <div class="btn-row" style="margin-top:8px">
+                ${noTarget
+                  ? button(state.money < s.price ? `Need $${fmt(s.price)}` : `Grab to flip · $${fmt(s.price)}`, `buyJunkyardFlipPart(${part.id})`, state.money < s.price, "", "width:100%;font-size:12px;background:#4a3c2e;color:var(--text);border-color:#6b5840")
+                  : button(`Pull it · $${fmt(s.price)}`, `pullYardPart(${part.id})`, state.money < s.price || missing.length > 0, "", "width:100%;font-size:12px")}
                 </div>
                 </div>
               </div>`;
@@ -24574,12 +24616,18 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         // Never sit on a locked tab: fall back to the one that always works and
         // is the actual next step in week one anyway.
         if (marketTabLock(marketTab)) marketTab = "sell";
+        // Selling parts, selling builds and browsing the lot are all pages of
+        // the same site now, and the site has its own rail, so listing them
+        // out here again was the same four choices twice. Out here there are
+        // only two places to be: at the desk, or in the truck.
+        const deskTabs = ["sell", "sellcar", "buy"].filter((id) => marketTabEarned(id));
+        const deskTarget =
+          deskTabs.find((id) => !marketTabLock(id)) || deskTabs[0] || "sell";
+        const atDesk = marketTab !== "trip";
         const marketPills = [
-          ["trip", "🛻", "Road Trip"],
-          ["sell", "💰", "Sell Tools & Parts"],
-          ["sellcar", "🏷️", "Sell Cars"],
-          ["buy", "🚗", "Buy Cars"],
-        ].filter(([id]) => marketTabEarned(id));
+          ...(marketTabEarned("trip") ? [["trip", "🛻", "Road Trip"]] : []),
+          ...(deskTabs.length ? [[deskTarget, "💻", "Marketplace"]] : []),
+        ];
         // One live pill is not a row, it is a label, so the strip only draws
         // when there is an actual choice to make.
         const pillRow =
@@ -24591,7 +24639,9 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
                   const locked = !!why;
                   const cls =
                     "cat-pill" +
-                    (marketTab === id && !locked ? " active" : "") +
+                    ((id === "trip" ? marketTab === "trip" : atDesk) && !locked
+                      ? " active"
+                      : "") +
                     (locked ? " pill-locked" : "");
                   return `<button class="${cls}" title="${locked ? why.replace(/"/g, "&quot;") : label}" onclick="setMarketTab('${id}')"><span class="cat-pill-icon">${locked ? "🔒" : icon}</span>${label}</button>`;
                 })
@@ -24602,29 +24652,44 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         if (marketTab === "trip") return pillRow + renderScavengeTrip();
 
         // Everything else is a classifieds site, and a site gets looked at on
-        // the shop PC. The tabs move into the sidebar, where a browsing rail
-        // belongs.
-        // The rail moves between pages of the site. Getting to the garage
-        // bench is not a page, so that stays on the pills outside.
-        const sitePages = [
-          ["sell", "Your listings"],
-          ["buy", "Browse the lot"],
-        ].filter(([id]) => marketTabEarned(id) && !marketTabLock(id));
-        const sideNav = sitePages
-          .map(([id, label]) =>
-            `<button class="${marketTab === id ? "on" : ""}" onclick="setMarketTab('${id}')">${label}</button>`)
-          .join("");
+        // the shop PC. Selling and buying are both things you do on the site,
+        // so the whole counter lives on the screen and the rail runs it: post
+        // something, or go see what everybody else has posted.
+        const PEN_ICO =
+          '<svg class="crt-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="10" y="2" width="3" height="3"/><rect x="8" y="4" width="3" height="3"/><rect x="6" y="6" width="3" height="3"/><rect x="4" y="8" width="3" height="3"/><rect x="3" y="11" width="2" height="2"/><rect x="2" y="13" width="2" height="1"/><rect x="2" y="12" width="1" height="2"/></svg>';
+        const LOT_ICO =
+          '<svg class="crt-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9" width="12" height="3"/><rect x="4" y="6" width="8" height="3"/><rect x="5" y="4" width="6" height="2"/><rect x="3" y="12" width="2" height="2"/><rect x="11" y="12" width="2" height="2"/></svg>';
+        const onSell = marketTab === "sell" || marketTab === "sellcar";
+        const canSell = marketTabEarned("sell") && !marketTabLock("sell");
+        const canSellCar = marketTabEarned("sellcar") && !marketTabLock("sellcar");
+        const canBuy = marketTabEarned("buy") && !marketTabLock("buy");
+        // One counter, two kinds of thing to put on it. Parts and whole cars
+        // were separate tabs before, which meant selling a build lived
+        // somewhere else entirely from selling the parts you took off it.
+        const sellSeg = onSell && canSellCar
+          ? `<div class="crt-seg">
+               <button class="${marketTab === "sell" ? "on" : ""}" onclick="setMarketTab('sell')">Items</button>
+               <button class="${marketTab === "sellcar" ? "on" : ""}" onclick="setMarketTab('sellcar')">Vehicles</button>
+             </div>`
+          : "";
+        const sideNav =
+          (canSell
+            ? `<button class="${onSell ? "on" : ""}" onclick="setMarketTab('sell')">${PEN_ICO}<span>Sell</span></button>${sellSeg}`
+            : "") +
+          (canBuy
+            ? `<button class="${marketTab === "buy" ? "on" : ""}" onclick="setMarketTab('buy')">${LOT_ICO}<span>Browse the lot</span></button>`
+            : "");
         const onScreen = (body) => `<div class="crt-rig">
           <div class="crt-frame">
             <div class="crt-screen">
               <div class="crt-bar">
                 <div class="crt-dots"><span></span><span></span><span></span></div>
-                <div class="crt-url">palomarswap.net / marketplace</div>
+                <div class="crt-url">gearbook.com / marketplace</div>
               </div>
               <div class="crt-page">
                 <aside class="crt-side">
-                  <div class="crt-site">Palomar Swap</div>
-                  <div class="crt-search">Search the swap</div>
+                  <div class="crt-site">Gearbook</div>
+                  <div class="crt-search">Search Marketplace</div>
                   <div class="crt-nav">${sideNav}</div>
                   <div class="crt-block">
                     <div class="crt-block-h">Location</div>
@@ -24634,7 +24699,6 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
                 <main class="crt-main">${body}</main>
               </div>
             </div>
-            <div class="crt-badge">Palomar PC</div>
           </div>
           <div class="crt-neck"></div>
           <div class="crt-base"></div>
@@ -24662,7 +24726,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           // listing machinery, and the headline stops calling it inventory.
           const flipSeason = seasonNum() >= 2;
           const carsListedCount = (state.cars || []).filter((c) => isCarListed(c.id)).length;
-          return pillRow + heroPanel(
+          return pillRow + onScreen(heroPanel(
             flipSeason ? "Flip a Build" : "The Other Car in the Driveway",
             flipSeason
               ? "Buy low, restore, sell high, or dump a project as-is"
@@ -24680,7 +24744,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
             "gold",
             "marketplace",
           ) + (flipSeason
-            ? onScreen(heroPanel(
+            ? (heroPanel(
                 "Your Cars on the Market",
                 carsListedCount
                   ? `${carsListedCount} live on Palomar Swap`
@@ -24690,7 +24754,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
                 "gold",
                 "marketplace",
               ))
-            : "");
+            : ""));
         }
 
         // What is on the bench is on the bench: loose take-offs, spare tools
@@ -24698,7 +24762,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         // site only knows about them once you post them, so the shop floor
         // stays a shop floor and the monitor on the desk shows what is live.
         const bench = heroPanel(
-          "Sell on Marketplace",
+          "List an Item",
           onboardStageVal() >= 3 ? "" : "Move the tools and parts you're done with",
           "",
           `
@@ -24718,7 +24782,9 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           "gold",
           "marketplace",
         );
-        const board = onScreen(heroPanel(
+        // The whole page is already on the screen, so this is just the second
+        // section of it. Wrapping it again put a monitor inside the monitor.
+        const board = heroPanel(
           "Your Listings",
           listed.length
             ? `${listed.length} live on Palomar Swap`
@@ -24727,8 +24793,8 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           `<div class="info-box">${listedMarkup}</div>`,
           "gold",
           "marketplace",
-        ));
-        return pillRow + bench + board;
+        );
+        return pillRow + onScreen(bench + board);
       }
 
       // Settings modal hosts the Legacy Wall entry point, out-of-game
