@@ -13,7 +13,7 @@
  * Run: node dev/gen-cars-and-coffee.js   (prints the srcdoc to stdout)
  */
 const W = 700, H = 240;
-const GROUND = 150;   // where the buildings meet the walk
+const GROUND = 136;   // where the buildings meet the walk
 const r = (x,y,w,h,f,o) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}"${o!=null?` opacity="${o}"`:""}/>`;
 const poly = (pts,f,o) => `<polygon points="${pts}" fill="${f}"${o!=null?` opacity="${o}"`:""}/>`;
 const smooth = (s) => `<g shape-rendering="auto">${s}</g>`;
@@ -37,110 +37,110 @@ const tree = (x, base, s, dark, lit) => {
   t += smooth(`<circle cx="${x+10*s}" cy="${base-35*s}" r="${9*s}" fill="${lit}"/>`);
   return t;
 };
-o += tree(262, 112, 1.25, "#3f5c3c", "#5c7d4b");
-o += tree(330, 108, 1.0,  "#395436", "#537043");
-o += tree(388, 114, 1.15, "#43613f", "#628350");
+o += tree(272, 100, 1.35, "#3f5c3c", "#5c7d4b");
+o += tree(342, 96, 1.1,  "#395436", "#537043");
+o += tree(404, 102, 1.25, "#43613f", "#628350");
 
 /* ── the plaza carries on through the gap: same tile and stucco, far enough
       back to read as distance, with cars already parked under it ── */
-o += r(214, 108, 180, 42, "#d9cdb4");
-o += r(214, 108, 180, 3, "#eae0c9");
-o += r(210, 100, 188, 9, "#a8542f");
-o += r(210, 100, 188, 3, "#c47049");
-for (let i = 0; i < 188; i += 6) o += r(210 + i, 103, 2, 6, "#8f4527");
-for (let i = 0; i < 4; i++) o += r(226 + i * 42, 118, 26, 26, "#4a4136");
-o += r(214, 144, 180, 6, "#4e4f53");
+o += r(232, 96, 200, 40, "#d9cdb4");
+o += r(232, 96, 200, 3, "#eae0c9");
+o += r(228, 88, 208, 9, "#a8542f");
+o += r(228, 88, 208, 3, "#c47049");
+for (let i = 0; i < 208; i += 6) o += r(228 + i, 91, 2, 6, "#8f4527");
+for (let i = 0; i < 4; i++) o += r(246 + i * 46, 105, 28, 26, "#4a4136");
+o += r(232, 130, 200, 6, "#4e4f53");
 for (let i = 0; i < 4; i++) {
-  const cx = 222 + i * 44;
-  o += r(cx, 136, 22, 8, ["#7b6a5c","#56687c","#7a5a58","#5f6b58"][i]);
-  o += r(cx + 4, 131, 14, 5, ["#8d7d6e","#66788c","#8b6b68","#6f7b68"][i]);
-  o += r(cx, 143, 22, 2, "#3a3b3f");
+  const cx = 240 + i * 48;
+  o += r(cx, 122, 24, 9, ["#7b6a5c","#56687c","#7a5a58","#5f6b58"][i]);
+  o += r(cx + 4, 117, 15, 5, ["#8d7d6e","#66788c","#8b6b68","#6f7b68"][i]);
+  o += r(cx, 129, 24, 2, "#3a3b3f");
 }
 
 /* ── a mission storefront block, drawn big enough to sit on this ground ── */
 function block(x, w, top, opts) {
-  const o2 = opts || {}, roofH = 17;
+  const o2 = opts || {}, roofH = 22;
   let b = r(x, top + roofH, w, GROUND - top - roofH, "#e6dac1");
-  b += r(x, top + roofH, w, 4, "#f3ead7");
-  b += r(x, GROUND - 22, w, 22, "#d5c8ac");
-  b += r(x - 6, top, w + 12, roofH, "#a8542f");
-  b += r(x - 6, top, w + 12, 3, "#c47049");
-  for (let i = 0; i < w + 12; i += 8) b += r(x - 6 + i, top + 3, 3, roofH - 3, "#8f4527");
-  b += r(x - 6, top + roofH - 3, w + 12, 3, "#7a3a20");
-  const n = o2.arches, pad = o2.pad != null ? o2.pad : 20;
+  b += r(x, top + roofH, w, 5, "#f3ead7");
+  b += r(x, GROUND - 26, w, 26, "#d5c8ac");
+  b += r(x - 8, top, w + 16, roofH, "#a8542f");
+  b += r(x - 8, top, w + 16, 4, "#c47049");
+  for (let i = 0; i < w + 16; i += 10) b += r(x - 8 + i, top + 4, 4, roofH - 4, "#8f4527");
+  b += r(x - 8, top + roofH - 4, w + 16, 4, "#7a3a20");
+  const n = o2.arches, pad = o2.pad != null ? o2.pad : 24;
   const span = (w - pad * 2) / n;
   for (let i = 0; i < n; i++) {
     const aw = span * 0.74, ax = x + pad + i * span + (span - aw) / 2;
-    const ay = top + roofH + 20, ah = GROUND - ay - 4;
+    const ay = top + roofH + 22, ah = GROUND - ay - 4;
     b += smooth(`<path d="M${ax} ${ay + ah} L${ax} ${ay + aw/2} A ${aw/2} ${aw/2} 0 0 1 ${ax+aw} ${ay + aw/2} L${ax+aw} ${ay+ah} Z" fill="#4a4136"/>`);
     b += smooth(`<path d="M${ax+4} ${ay+ah} L${ax+4} ${ay + aw/2} A ${aw/2-4} ${aw/2-4} 0 0 1 ${ax+aw-4} ${ay+aw/2} L${ax+aw-4} ${ay+ah} Z" fill="#2f2a24"/>`);
     b += smooth(poly(`${ax+7},${ay+ah-3} ${ax+aw*0.44},${ay+ah-3} ${ax+aw*0.2},${ay+aw*0.5} ${ax+7},${ay+aw*0.78}`, "#b9cfd6", 0.28));
   }
   if (o2.shutters != null) {
-    const sx = o2.shutters, sy = top + roofH + 12;
-    b += r(sx, sy, 26, 34, "#2f2a24");
-    b += smooth(poly(`${sx+3},${sy+3} ${sx+14},${sy+3} ${sx+7},${sy+30} ${sx+3},${sy+30}`, "#c8d8d4", 0.32));
-    b += r(sx - 10, sy - 2, 9, 38, "#3f7f76");
-    b += r(sx + 27, sy - 2, 9, 38, "#3f7f76");
+    const sx = o2.shutters, sy = top + roofH + 16;
+    b += r(sx, sy, 36, 46, "#2f2a24");
+    b += smooth(poly(`${sx+4},${sy+4} ${sx+19},${sy+4} ${sx+9},${sy+41} ${sx+4},${sy+41}`, "#c8d8d4", 0.32));
+    b += r(sx - 14, sy - 3, 12, 52, "#3f7f76");
+    b += r(sx + 38, sy - 3, 12, 52, "#3f7f76");
   }
   return b;
 }
-o += block(-40, 250, 22, { arches: 2, shutters: 176 });
-o += block(410, 330, 12, { arches: 3 });
+o += block(-130, 350, -14, { arches: 2, shutters: 176 });
+o += block(438, 390, -30, { arches: 2 });
 
 /* ── clipped hedge along the base of each block ── */
 function hedge(x, w, y) {
-  let h = r(x, y, w, 18, "#33502f");
-  for (let i = 0; i < w; i += 13) h += smooth(`<circle cx="${x+i+6}" cy="${y+2}" r="8" fill="#3d6136"/>`);
-  for (let i = 0; i < w; i += 13) h += smooth(`<circle cx="${x+i+6}" cy="${y}" r="5" fill="#4e7a41"/>`);
+  let h = r(x, y, w, 26, "#33502f");
+  for (let i = 0; i < w; i += 18) h += smooth(`<circle cx="${x+i+8}" cy="${y+3}" r="11" fill="#3d6136"/>`);
+  for (let i = 0; i < w; i += 18) h += smooth(`<circle cx="${x+i+8}" cy="${y}" r="7" fill="#4e7a41"/>`);
   return h;
 }
-o += hedge(-46, 258, 134);
-o += hedge(416, 322, 134);
+o += hedge(-136, 362, 116);
+o += hedge(444, 400, 116);
 
 /* ── cast-iron lamps, painted the same teal as the shutters ── */
 function lamp(x, base, h) {
-  let l = r(x - 8, base - 7, 16, 7, "#2c5b55");
-  l += r(x - 4, base - h, 8, h, "#3f7f76");
-  l += r(x - 2, base - h, 2, h, "#5aa79c");
-  l += smooth(poly(`${x-13},${base-h-7} ${x+13},${base-h-7} ${x+9},${base-h-24} ${x-9},${base-h-24}`, "#2c5b55"));
-  l += smooth(poly(`${x-9},${base-h-9} ${x+9},${base-h-9} ${x+6},${base-h-22} ${x-6},${base-h-22}`, "#f7e6bc"));
-  l += r(x - 5, base - h - 30, 10, 6, "#2c5b55");
-  l += smooth(`<circle cx="${x}" cy="${base-h-16}" r="26" fill="#ffe9b8" opacity="0.10"/>`);
+  let l = r(x - 11, base - 9, 22, 9, "#2c5b55");
+  l += r(x - 5, base - h, 10, h, "#3f7f76");
+  l += r(x - 2, base - h, 3, h, "#5aa79c");
+  l += smooth(poly(`${x-17},${base-h-9} ${x+17},${base-h-9} ${x+12},${base-h-32} ${x-12},${base-h-32}`, "#2c5b55"));
+  l += smooth(poly(`${x-12},${base-h-12} ${x+12},${base-h-12} ${x+8},${base-h-29} ${x-8},${base-h-29}`, "#f7e6bc"));
+  l += r(x - 6, base - h - 40, 12, 8, "#2c5b55");
+  l += smooth(`<circle cx="${x}" cy="${base-h-21}" r="34" fill="#ffe9b8" opacity="0.10"/>`);
   return l;
 }
-o += lamp(236, 156, 74);
-o += lamp(612, 156, 74);
+o += lamp(228, 150, 104);
+o += lamp(650, 150, 104);
 
 /* ── umbrella and table on the walk outside the coffee place ── */
-o += r(517, 104, 3, 50, "#7a6a52");
-o += smooth(poly("477,107 497,111 518,107 539,111 559,107 518,80", "#efe2c6"));
-o += smooth(poly("518,107 539,111 559,107 518,80", "#dbcdae"));
-o += r(515, 77, 6, 5, "#7a6a52");
-o += r(504, 141, 3, 13, "#5f5344");
-o += r(529, 141, 3, 13, "#5f5344");
-o += r(499, 136, 38, 5, "#7a6c58");
+o += r(534, 74, 5, 74, "#7a6a52");
+o += smooth(poly("478,78 507,84 536,78 565,84 594,78 536,42", "#efe2c6"));
+o += smooth(poly("536,78 565,84 594,78 536,42", "#dbcdae"));
+o += r(532, 37, 9, 7, "#7a6a52");
+o += r(516, 134, 5, 20, "#5f5344");
+o += r(552, 134, 5, 20, "#5f5344");
+o += r(508, 126, 56, 8, "#7a6c58");
 
 /* ── walk, curb, lot ── */
-o += r(0, GROUND, W, 16, "#c9c2b3");
-o += r(0, GROUND, W, 3, "#ddd6c6");
-for (let x = 40; x < W; x += 88) o += r(x, GROUND + 2, 2, 14, "#b3ac9d");
-o += r(0, GROUND + 16, W, 7, "#aca596");
-o += r(0, GROUND + 22, W, 3, "#8e887b");
-o += r(0, GROUND + 24, W, H - GROUND - 24, "#45464a");
-o += smooth(r(0, GROUND + 24, W, H - GROUND - 24, "url(#poolCC)"));
+o += r(0, GROUND, W, 24, "#c9c2b3");
+o += r(0, GROUND, W, 4, "#ddd6c6");
+for (let x = 56; x < W; x += 128) o += r(x, GROUND + 3, 3, 21, "#b3ac9d");
+o += r(0, GROUND + 24, W, 10, "#aca596");
+o += r(0, GROUND + 33, W, 4, "#8e887b");
+o += r(0, GROUND + 36, W, H - GROUND - 36, "#45464a");
+o += smooth(r(0, GROUND + 36, W, H - GROUND - 36, "url(#poolCC)"));
 
 /* ── angle parking. One row, drawn at the size a row one car-length behind
       the truck actually is, so the stalls are wide and only a few fit. ── */
-const SLANT = 26;
-for (let i = -1; i < 7; i++) {
-  const x = i * 132 + 4;
-  o += smooth(`<path d="M${x} 218 L${x + SLANT} 176" stroke="#cfcabb" stroke-width="3" opacity="0.42" fill="none"/>`);
+const SLANT = 34;
+for (let i = -1; i < 6; i++) {
+  const x = i * 196 - 30;
+  o += smooth(`<path d="M${x} 228 L${x + SLANT} 174" stroke="#cfcabb" stroke-width="4" opacity="0.42" fill="none"/>`);
 }
-o += smooth(`<path d="M0 219 L700 219" stroke="#cfcabb" stroke-width="3" opacity="0.26" fill="none"/>`);
+o += smooth(`<path d="M0 229 L700 229" stroke="#cfcabb" stroke-width="4" opacity="0.24" fill="none"/>`);
 
 function showCar(x, y, s, body, roof) {
-  const w = 118 * s, h = 38 * s;
+  const w = 176 * s, h = 57 * s;
   let c = smooth(poly(`${x+7},${y+h+6*s} ${x+w+9},${y+h+6*s} ${x+w},${y+h+14*s} ${x-2},${y+h+14*s}`, "#1d1e21", 0.42));
   c += smooth(poly(`${x},${y+h} ${x+w},${y+h} ${x+w-8*s},${y+11*s} ${x+10*s},${y+11*s}`, body));
   c += smooth(poly(`${x+24*s},${y+11*s} ${x+w-28*s},${y+11*s} ${x+w-38*s},${y} ${x+34*s},${y}`, roof));
@@ -155,32 +155,38 @@ function showCar(x, y, s, body, roof) {
   }
   return `<g transform="translate(${x+w/2} ${y+h}) skewX(-11) translate(${-(x+w/2)} ${-(y+h)})">${c}</g>`;
 }
-o += showCar(-46, 168, 1.0,  "#8d2c2c", "#6f2222");
-o += showCar(72,  170, 1.02, "#c8a23a", "#a8862c");
-o += showCar(470, 170, 1.02, "#2d5c47", "#234a39");
-o += showCar(592, 168, 1.0,  "#b25a25", "#8f471d");
+o += showCar(-42, 146, 1.0,  "#c8a23a", "#a8862c");
+o += showCar(524, 146, 1.0,  "#2d5c47", "#234a39");
+o += showCar(672, 150, 0.94, "#b25a25", "#8f471d");
 
 /* ── the people, at the size a person is when they are standing at the curb
       of the row you are parked in. Each one has a coffee. ── */
-function person(x, base, s, lean) {
-  const K = "#191a1f";
-  let p = r(x - 4*s, base - 17*s, 3.4*s, 17*s, K);
-  p += r(x + 1*s, base - 17*s, 3.4*s, 17*s, K);
-  p += r(x - 5.4*s, base - 34*s, 10.8*s, 18*s, K);
+function person(x, base, s, opts) {
+  const K = "#191a1f", d = (opts && opts.turned) ? 0.72 : 1;   // turned away reads narrower
+  const lean = !(opts && opts.left);
+  let p = r(x - 4*s*d, base - 17*s, 3.4*s*d, 17*s, K);
+  p += r(x + 1*s*d, base - 17*s, 3.4*s*d, 17*s, K);
+  p += r(x - 5.4*s*d, base - 34*s, 10.8*s*d, 18*s, K);
   p += smooth(`<circle cx="${x}" cy="${base-38.5*s}" r="${4.6*s}" fill="${K}"/>`);
-  p += r(x - 5.8*s, base - 42.5*s, 11.6*s, 3*s, K);
-  p += r(x + (lean ? 2.6 : -8.4)*s, base - 43*s, 5.8*s, 2.4*s, K);
-  const ax = lean ? x + 5.4*s : x - 8.6*s;
-  p += r(ax, base - 32*s, 3.2*s, 12*s, K);
-  p += r(ax - 0.6*s, base - 22*s, 4.4*s, 5*s, "#e8ddc6");
+  p += r(x - 5.8*s*d, base - 42.5*s, 11.6*s*d, 3*s, K);
+  p += r(x + (lean ? 2.6 : -8.4)*s*d, base - 43*s, 5.8*s*d, 2.4*s, K);   // cap brim
+  // The arm comes down and across, so the cup sits in front of the chest
+  // where you can actually see it. It is half the name of the event.
+  const sx = lean ? x + 4.6*s*d : x - 4.6*s*d;
+  const cx = lean ? x + 2.2*s*d : x - 6.4*s*d;
+  p += r(sx - 1.4*s, base - 33*s, 2.8*s, 9*s, K);
+  p += r(Math.min(sx, cx) - 0.4*s, base - 25*s, Math.abs(sx - cx) + 3*s, 2.6*s, K);
+  p += r(cx, base - 27*s, 4.2*s, 6*s, "#e8ddc6");
+  p += r(cx - 0.5*s, base - 27.6*s, 5.2*s, 1.6*s, "#b9ad93");
   return p;
 }
-o += person(268, 166, 1.0, true);
-o += person(300, 166, 0.95, false);
-o += person(336, 165, 0.9, true);
-o += person(406, 166, 0.97, false);
-o += person(434, 165, 0.92, true);
-o += person(672, 166, 0.94, false);
+// Two knots of people and nobody standing alone in a line: three arguing
+// about something on the walk, two more down by the umbrella.
+o += person(258, 158, 1.44, { });
+o += person(292, 157, 1.32, { left: true });
+o += person(322, 158, 1.38, { turned: true });
+o += person(452, 158, 1.4, { left: true });
+o += person(482, 157, 1.3, { turned: true, left: true });
 
 o += smooth(r(0, 0, W, H, "url(#vigCC)"));
 
