@@ -10980,7 +10980,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.68.0";
+      const GAME_VERSION = "0.68.1";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -23636,14 +23636,33 @@ addEventListener("DOMContentLoaded",function(){
                 "show-card",
               );
             })
-            .join("")}${lockedAheadHint}${familySelected ? "" : panel("Travel & Fuel", `<div class="info-box"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" style="padding:6px 8px;font-size:11px" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>+5 Gal · $20</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright);padding:6px 8px;font-size:11px" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill · $${fmt(fillAmount * FUEL_PRICE)}</button></div></div>`, "", "#7da0c2", "show-card")}</div>`,
+            .join("")}${lockedAheadHint}</div>`,
           "gold",
           "corkboard",
         );
         const { nextShow, nextShowText } = getUpcomingSummary();
         const showNotes = panel(
-          "Show Notes",
-          `${chalkRow("Next Big Event", nextShowText, nextShow && nextShow.weeksUntil === 0 ? "good" : "warn")}${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${chalkRow("Overall", getOverall(car))}${chalkRow("Fuel", `${state.fuel}/${MAX_FUEL} gal`)}${chalkRow("Cash On Hand", `$${fmt(state.money)}`)}${chalkRow("Current Week", `${state.week}/${state.seasonLength}`)}${hasUiUnlock("buck") ? chalkRow("Buck Score", `~${getRivalBaseScore()}`, getRivalBaseScore() > getOverall(car) ? "bad" : "warn") : ""}`,
+          // Seven rows, five of which the player could already read without
+          // looking here: the week and the cash are in the top bar, so is the
+          // fuel, the overall is on the car itself, and the next event is in
+          // Upcoming an inch above this panel. What is left is the two things
+          // you actually weigh before rolling out, and one of them is only a
+          // fact next to your own number, so it is written as the comparison
+          // rather than as a lone score.
+          "Before You Roll",
+          `${chalkRow("Roadworthy", roadworthy(car) ? "Yes" : "Not yet", roadworthy(car) ? "good" : "warn")}${
+            hasUiUnlock("buck")
+              ? chalkRow(
+                  "Buck is running",
+                  `~${getRivalBaseScore()} to your ${getOverall(car)}`,
+                  getRivalBaseScore() > getOverall(car) ? "bad" : "good",
+                )
+              : ""
+          }${
+            familySelected
+              ? ""
+              : `<div class="info-box" style="margin-top:10px"><div style="margin-bottom:10px">${gauge("Fuel Tank", state.fuel, MAX_FUEL, "#7da0c2")}</div><div class="btn-row two"><button class="btn" style="padding:6px 8px;font-size:11px" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>+5 Gal · $20</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright);padding:6px 8px;font-size:11px" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill · $${fmt(fillAmount * FUEL_PRICE)}</button></div></div>`
+          }`,
           "",
           "#7da0c2",
         );
