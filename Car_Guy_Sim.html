@@ -11319,7 +11319,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.72.0";
+      const GAME_VERSION = "0.72.1";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -18394,6 +18394,7 @@
         if (state.followers < 200) return; // need at least some audience
         if (Math.random() < 0.08) {
           state.collabAvailable = true;
+          state.collabOfferedWeek = state.week;
           toast(
             "🤝 A scene creator hit you up about a collab video. Check the Social tab.",
             "event-good",
@@ -25905,22 +25906,37 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         }
       }
       function renderPhoneMessagesApp() {
-        const dms = [];
-        // Character DMs first, the people in your world, reacting to what you
-        // just did. Newest on top, freshest one highlighted as unread.
+        // Everything that can land in here carries the week it arrived, and the
+        // inbox sorts on that, newest at the top. It used to be assembled in
+        // fixed blocks instead: character DMs first (correctly newest-first
+        // among themselves), then a brand deal, then a collab, so a sponsor
+        // offer that arrived this morning rendered underneath eight weeks of
+        // older messages. On a tie the things with buttons on them win, since
+        // those are the ones that expire.
+        const inbox = [];
+        const evergreen = [];
         (state.characterDMs || []).forEach((d, i) => {
           const fresh = i < (state.dmUnread || 0);
-          dms.push(`<div class="phone-dm${fresh ? " phone-dm-fresh" : ""}">
+          inbox.push({
+            // A DM saved before this carried no week; the list was already
+            // newest-first, so walk backwards from now to keep that order.
+            week: d.week != null ? d.week : (state.week || 0) - i,
+            rank: -i,
+            html: `<div class="phone-dm${fresh ? " phone-dm-fresh" : ""}">
             <div class="phone-dm-avatar ${d.c}">${d.a}</div>
             <div class="phone-dm-body">
               <div class="phone-dm-handle">${d.h}${fresh ? ` <span class="phone-dm-new">NEW</span>` : ""}</div>
               <div class="phone-dm-text">${d.t}</div>
             </div>
-          </div>`);
+          </div>`,
+          });
         });
         const deal = state.pendingBrandDeal;
         if (deal) {
-          dms.push(`<div class="phone-dm">
+          inbox.push({
+            week: deal.offeredWeek != null ? deal.offeredWeek : state.week,
+            rank: 1,
+            html: `<div class="phone-dm">
             <div class="phone-dm-avatar purple">📦</div>
             <div class="phone-dm-body">
               <div class="phone-dm-handle">${deal.brand}</div>
@@ -25928,24 +25944,32 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
               <div class="btn-row two">${button("Accept", "acceptBrandDeal()", !!state.freePart, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright)")}${button("Decline", "declineBrandDeal()", false, "", "width:100%;background:#4a3c2e;color:var(--text);border-color:#6b5840")}</div>
               ${state.freePart ? `<div class="tiny warn" style="margin-top:6px">Claim your existing free part before accepting another.</div>` : ""}
             </div>
-          </div>`);
+          </div>`,
+          });
         }
         if (state.collabAvailable) {
           const reward = calcCollabReward();
           const collabAlready = state.collabDoneWeek === state.week;
-          dms.push(`<div class="phone-dm">
+          inbox.push({
+            week: state.collabOfferedWeek != null ? state.collabOfferedWeek : state.week,
+            rank: 1,
+            html: `<div class="phone-dm">
             <div class="phone-dm-avatar green">🤝</div>
             <div class="phone-dm-body">
               <div class="phone-dm-handle">@scene_creator</div>
               <div class="phone-dm-text">Want to do a collab build video? Big follower bump, one-time deal.</div>
               ${button(`Do a Collab · +${fmtF(reward)} followers`, "doCollab()", collabAlready, "", "width:100%;background:linear-gradient(180deg,#93c884 0%,#5d8b4f 100%);border-color:#a7d998;color:#11180d")}
             </div>
-          </div>`);
+          </div>`,
+          });
         }
+        inbox.sort((a, b) => b.week - a.week || b.rank - a.rank);
+        // The spam and the fan mail are wallpaper, not news. They sit under
+        // everything that actually happened to you.
         if (!state.fakeFollowersBought) {
           const car = currentCar();
           const fakeRoadworthy = car && roadworthy(car);
-          dms.push(`<div class="phone-dm">
+          evergreen.push(`<div class="phone-dm">
             <div class="phone-dm-avatar red">💀</div>
             <div class="phone-dm-body">
               <div class="phone-dm-handle">@FollowVendor73</div>
@@ -25963,7 +25987,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         );
         for (let i = 0; i < fanCount; i++) {
           const m = FAN_DMS[(state.week + i) % FAN_DMS.length];
-          dms.push(`<div class="phone-dm">
+          evergreen.push(`<div class="phone-dm">
             <div class="phone-dm-avatar ${m.c}">${m.a}</div>
             <div class="phone-dm-body">
               <div class="phone-dm-handle">${m.h}</div>
@@ -25971,10 +25995,11 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
             </div>
           </div>`);
         }
-        if (!dms.length) {
+        const all = inbox.map((x) => x.html).concat(evergreen);
+        if (!all.length) {
           return `<div class="phone-empty">No new DMs yet. Post more builds, the scene will slide in once you're on the radar.</div>`;
         }
-        return dms.join("");
+        return all.join("");
       }
 
       function renderPhoneAppShell(title, body) {
