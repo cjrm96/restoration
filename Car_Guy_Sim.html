@@ -10068,10 +10068,91 @@
         },
       ];
 
+      // Sixty-five more of these, because playtesters were meeting Parking Lot
+      // Pete at the same cart return every single time. Written compactly so
+      // the pool can keep growing without a thousand lines of boilerplate:
+      // an id, when it can fire, who it can land on (null = anybody), a title,
+      // what they send, and the ways out. Outcomes are the same set the
+      // resolver already handles, so nothing here needs new plumbing.
+      const mpc = (label, outcome, note, extra) =>
+        Object.assign({ label, outcome, note }, extra || {});
+      const mp = (id, trigger, buyers, weight, title, text, ...choices) => ({
+        id, trigger, buyers, weight, title, text, choices,
+      });
+
+      const MORE_MARKETPLACE_SCENARIOS = [
+        mp("meetGasStation", "accept", ["night"], 2, "The Shell On The Bypass", "can you do the shell on the bypass instead. the one by the cart return has a guy who watches people and i do not care for him", mpc("Fine, the Shell", "saleDone", "You do the deal under the canopy lights with the pumps dinging behind you. He is right about the other guy, as it turns out. You both agree the bypass is better and part as friends.", { lore: 5 }), mpc("Your driveway or nowhere", "salePenalty", "He comes to the driveway. He is visibly uncomfortable the entire time, like a cat in a carrier, and talks the price down forty dollars out of sheer nervous energy.", { penalty: 40, lore: 3 })),
+        mp("meetHalfway", "accept", null, 1, "Meet You Halfway", "any chance you can meet halfway. i am out past the reservoir. there is a gravel turnout with a mailbox and no house, you will know it", mpc("Drive out to the turnout", "saleBonus", "There is a mailbox and no house. There has never been a house. He is there before you, leaning on a truck older than yours, and he pays cash and tips you gas money for the drive.", { bonus: 30, lore: 7 }), mpc("He can come to you", "saleDone", "He comes to you. It takes him an hour and he does not complain once, which somehow makes it worse.", { lore: 3 })),
+        mp("meetLunchBreak", "accept", null, 1, "Thirty Minute Window", "i get thirty minutes for lunch at 11:45 and i work at the plant. if you can be in the lot by the guard shack i can do it today", mpc("Be at the guard shack", "saleBonus", "You are there at 11:44. He jogs out in steel toes, hands you the cash, takes the part, says thanks man, and jogs back. The whole transaction is ninety seconds. It is the most efficient thing that has happened to you all year.", { bonus: 20, lore: 6 }), mpc("After his shift or not at all", "salePenalty", "He comes after his shift, tired and grimy and haggling out of pure exhaustion. You take less to end the conversation.", { penalty: 25, lore: 2 })),
+        mp("meetChurchLot", "accept", null, 1, "After The Second Service", "i can do after the second service, so like one o clock. the lot will be emptying out. i will be the one in a tie standing next to a truck", mpc("One o clock it is", "saleDone", "He is in a tie standing next to a truck. He shakes your hand like it is a business deal and calls you sir twice. You are thirty-four.", { lore: 6 }), mpc("Sunday is your garage day", "none", "You tell him Sunday is the only day you get in the garage. He says he respects that more than you know, and buys nothing.", { lore: 4 })),
+        mp("meetKidInCar", "accept", null, 1, "He Has The Kid With Him", "heads up i will have my daughter with me, she is four and she is going to ask you about a hundred questions. sorry in advance", mpc("Bring her in the garage", "followers", "She asks a hundred questions. Ninety of them are 'why'. The last one is whether the truck has a name, and you say no, and she looks at you like you have failed a basic test of adulthood. Her dad pays full price and posts about it.", { followers: 40, lore: 10 }), mpc("Meet him at the curb", "saleDone", "You do it at the curb in four minutes. She waves at you through the back window the whole way down the street.", { lore: 5 })),
+        mp("meetWrongAddress", "accept", null, 1, "He Is At The Wrong House", "ok i am here. nobody is answering. there is a dog. is the dog yours", mpc("Ask what house number", "saleDone", "He is two streets over, at a house with a dog you have never met, standing in a stranger's driveway holding cash. You talk him in like air traffic control. He arrives shaken.", { lore: 7 }), mpc("Just go get him", "saleBonus", "You walk two streets over and collect him personally. He is so relieved he rounds up and refuses to be talked out of it.", { bonus: 25, lore: 8 })),
+        mp("meetTruckBroke", "accept", null, 1, "His Ride Broke Down", "worst timing in history. my truck will not start. it is the starter i think. that is not why i wanted your part but it is funny", mpc("Offer to drop it off", "saleBonus", "You drop it off. His truck is in pieces in his driveway and he is delighted to show you all of it. You are there ninety minutes. You leave with the money and a strong opinion about his starter.", { bonus: 35, lore: 9 }), mpc("He can come when it runs", "none", "He says he will come when it runs. That is the last you ever hear from him, and you find yourself hoping he got it sorted.", { lore: 3 })),
+        mp("meetRaining", "accept", null, 1, "It Is Absolutely Pouring", "i am still coming. i am not made of sugar", mpc("Open the garage door", "saleDone", "He arrives soaked through, refuses a towel, refuses coffee, pays exactly the agreed amount and stands in your garage dripping while telling you about a Ranchero he had in 1994. You would not have traded it.", { lore: 8 }), mpc("Tell him to come tomorrow", "salePenalty", "He comes tomorrow, dry, and somehow twenty dollars less enthusiastic about the price.", { penalty: 20, lore: 2 })),
+        mp("cashAllOnes", "accept", null, 1, "It Is All Ones", "quick question. is it ok if some of it is small bills. it is tips", mpc("Money is money", "saleBonus", "It is a shoebox. It is genuinely a shoebox. You count it on the workbench together for eleven minutes and it comes out eight dollars over and he will not take the eight back.", { bonus: 8, lore: 9 }), mpc("Ask him to hit an ATM", "salePenalty", "He hits an ATM. The ATM eats twenty of it in fees and he asks, reasonably, whether you would split that.", { penalty: 20, lore: 3 })),
+        mp("cashCheck", "accept", null, 1, "Do You Take A Check", "would you take a check. i know. i know how that sounds. i have never bounced one in my life", mpc("Take the check", "saleDone", "You take the check. It clears. He was telling the truth and you feel slightly bad for the face you made.", { lore: 6 }), mpc("Cash only, sorry", "saleDone", "He drives to the bank, comes back with cash, and hands it over with the exact expression of a man who has never bounced a check in his life.", { lore: 4 })),
+        mp("cashVenmoDown", "accept", null, 1, "The App Is Down", "the app says pending. it has said pending for six minutes. i swear i am sending it. do you want to watch my phone", mpc("Watch his phone", "saleDone", "You both stare at a phone in a driveway for six more minutes like it is a kettle. It goes through. You cheer. A neighbour looks over.", { lore: 7 }), mpc("Take what cash he has", "salePenalty", "He empties his pockets. It is short but it is real, and real beats pending.", { penalty: 30, lore: 5 })),
+        mp("cashRoundUp", "accept", null, 1, "He Rounds Up", "i only have twenties. keep the change, i am not driving back for fifteen dollars", mpc("Keep the change", "saleBonus", "You keep the change. He waves it off before you can finish the sentence.", { bonus: 15, lore: 4 }), mpc("Dig out the change", "saleDone", "You dig fifteen dollars out of the coffee can on the shelf. It takes a while. He watches the whole excavation with real interest.", { lore: 6 })),
+        mp("cashWifeCard", "accept", ["wife"], 3, "It Is Her Card", "small thing. the card is my wifes. she knows. she does not know the amount but she knows", mpc("Not your business", "saleDone", "You take the money and ask no questions, which is the correct number of questions.", { lore: 5 }), mpc("Tell him to square it first", "none", "You tell him to go square it with her first. He goes quiet, then says 'yeah, you are right,' and you never hear from him again. You suspect you did a marriage a favour.", { lore: 9 })),
+        mp("cashPayday", "accept", ["hold"], 3, "Friday, He Swears", "friday. i get paid friday. can you hold it until friday. i will send you a deposit right now to prove it", mpc("Hold it till Friday", "saleBonus", "He sends a deposit unprompted. He turns up Friday nine minutes early with the rest and thanks you three separate times for holding it.", { bonus: 25, lore: 8 }), mpc("First one here gets it", "saleDone", "You tell him first come first served. He turns up in forty minutes having clearly borrowed the money from somebody, and does not want to talk about it.", { lore: 4 })),
+        mp("cashTooMuch", "accept", null, 1, "He Overpays On Purpose", "i am giving you more than you asked. do not argue. i have been looking for this for two years and you have no idea", mpc("Take it", "saleBonus", "You take it. He tells you what it is for, which is a car his father started and never finished, and then he goes very quiet and shakes your hand and leaves.", { bonus: 60, lore: 12 }), mpc("Give the extra back", "followers", "You push the extra back across the bench. He looks at you for a second, then tells everyone he knows. That story gets around fast.", { followers: 70, lore: 14 })),
+        mp("tradeLawnmower", "offer", ["trade", "tradeonly"], 3, "A Runner, He Says", "no cash but i have a riding mower that runs. mostly runs. it runs when it wants to. straight across?", mpc("Take the mower", "inventoryBonus", "You now own a riding mower that runs when it wants to. Your wife asks what it is. You say it is an investment. Nobody in this story believes you.", { lore: 8, cash: 0 }), mpc("Cash only", "none", "He says he will find cash. He does not find cash. The mower presumably still runs when it wants to.", { lore: 3 })),
+        mp("tradeGuns", "offer", ["trade", "tradeonly"], 2, "He Leads With A Question", "before i offer you anything, quick question, are you a knife guy", mpc("Say you are not a knife guy", "none", "'Everybody is a knife guy,' he says, wounded, and leaves without buying anything.", { lore: 4 }), mpc("Ask what he has", "inventoryBonus", "It is a box of knives. There are eleven of them. Two are good. He throws in a bag of assorted trim to make up the difference and you come out of it fine, somehow.", { lore: 9 })),
+        mp("tradeWheels", "offer", ["trade", "tradeonly"], 3, "Four Wheels, Three Good", "i have a set of four wheels. three are perfect. the fourth has a story. want them", mpc("Ask about the fourth", "inventoryBonus", "The story involves a curb, a wedding, and a cousin. You take three good wheels, one story, and forty dollars to balance it out.", { lore: 10, cash: 40 }), mpc("Not without the fourth", "none", "He respects the position and takes his three and a half wheels elsewhere.", { lore: 3 })),
+        mp("tradeFishing", "offer", ["trade", "tradeonly"], 2, "Rods And Reels", "would you take fishing gear. good gear. i am downsizing and my wife has opinions about the garage", mpc("Take the gear", "inventoryBonus", "You take the gear. You have never fished. You will never fish. It goes on the shelf next to the other things you took in trade and it looks right at home.", { lore: 7 }), mpc("Politely decline", "none", "You decline. He nods like a man who expected it and is going to have to have a harder conversation at home.", { lore: 4 })),
+        mp("tradeTattoo", "offer", ["trade", "tradeonly"], 1, "An Unusual Offer", "this is going to sound strange. i tattoo. i will trade you work for the part. i am not bad", mpc("Take him up on it", "followers", "You take him up on it. It is a small wrench on your forearm and it is genuinely good work. It photographs well, which you had not thought about until the phone started going.", { followers: 120, lore: 14 }), mpc("Cash, thanks", "saleDone", "He pays cash and leaves you his card anyway. It is on the fridge. It has been on the fridge for a while now.", { lore: 6 })),
+        mp("tradeHalfCash", "offer", ["trade", "tradeonly"], 3, "Half And Half", "what if i do half cash and half a box of parts you can flip. i have been doing this a long time and the box is good", mpc("Take the split", "spawnListing", "The box is good. You put the best of it straight back on Marketplace before he is out of the driveway, which he sees in his mirror, and respects.", { lore: 9 }), mpc("All cash or nothing", "salePenalty", "All cash it is, and all cash is a smaller number than he was hoping, and he makes sure you know it.", { penalty: 30, lore: 3 })),
+        mp("askLowestTwice", "accept", ["lowest"], 3, "What Is Your Lowest", "what is your lowest", mpc("Repeat the price", "saleDone", "You repeat the price. He says 'ok' immediately and buys it. He was never going to negotiate. He just has to ask. It is a compulsion.", { lore: 7 }), mpc("Knock ten off to end it", "salePenalty", "You knock ten off. He asks what your lowest is again.", { penalty: 10, lore: 5 })),
+        mp("askIsItStillAvailable", "accept", null, 1, "Is This Still Available", "is this still available", mpc("Say yes", "saleDone", "You say yes. Three days of silence. Then, at eleven at night, he turns up and buys it without further conversation.", { lore: 6 }), mpc("Say yes and add a photo", "saleBonus", "You say yes and send another photo. The photo does the work. He pays over asking to make sure nobody beats him to it.", { bonus: 20, lore: 7 })),
+        mp("askWeirdUse", "accept", null, 1, "That Is Not What It Is For", "will this work for a boat", mpc("Ask what kind of boat", "saleBonus", "There is no boat. There was never a boat. It turns out he wanted it for a boat trailer, which is at least boat adjacent, and he pays over asking for the trouble.", { bonus: 20, lore: 9 }), mpc("Tell him it is a car part", "saleDone", "'Everything is a car part if you are brave,' he says, and buys it anyway.", { lore: 7 })),
+        mp("askMeasurement", "accept", ["bolt"], 3, "He Needs A Number", "sorry, can you measure across the flange. i have been burned before. tape measure is fine, i am not asking for calipers", mpc("Go measure it", "saleBonus", "You go and measure it. It is the number he was hoping for. He is so pleased he adds twenty dollars for the effort and tells you about the time he was burned.", { bonus: 20, lore: 8 }), mpc("Send him a photo with a ruler", "saleDone", "You lay a ruler on it and send a photo. He studies it like a document examiner and then buys it.", { lore: 6 })),
+        mp("askCasting", "accept", ["bolt", "box"], 2, "Read Me The Casting Number", "can you read me the casting number off the back. take your time. i will wait", mpc("Crawl under and read it", "saleBonus", "You crawl under, get grit in your eye, and read out a number. There is a pause. Then: 'that is the one.' He pays over asking without being asked.", { bonus: 30, lore: 10 }), mpc("Tell him to come look himself", "saleDone", "He comes and looks himself. He reads the number, nods once, and pays. He was always going to buy it.", { lore: 5 })),
+        mp("askWhyRemoved", "accept", null, 1, "Why Did You Take It Off", "not being funny but why did you take it off. was there something wrong with it", mpc("Tell him the truth", "saleBonus", "You tell him exactly why. He appreciates the honesty so much he pays over asking, and says most people would have made something up.", { bonus: 25, lore: 10 }), mpc("Say it was surplus", "salePenalty", "You keep it vague. He buys it, but he knocks the price for the vagueness, and he is right to.", { penalty: 20, lore: 2 })),
+        mp("askShipIt", "accept", null, 1, "Can You Ship", "any chance you ship. i am four hours out. i will cover it. i have been looking for one of these for a while", mpc("Ship it", "saleBonus", "You box it in a cereal carton with half a roll of tape and a genuine amount of care. He pays shipping and then some, and sends a photo of it fitted eleven days later.", { bonus: 30, lore: 10 }), mpc("Local pickup only", "none", "Local pickup only. He understands completely and is clearly gutted, and you think about it later than you expected to.", { lore: 4 })),
+        mp("askHaggleWhileHolding", "accept", null, 1, "He Is Already Holding It", "he picks it up, turns it over, holds it up to the light, and then says: would you take twenty less", mpc("Hold the price", "saleDone", "You hold. He is already holding it. He was always going to buy it. He pays the price and calls you a hard man in a tone that is mostly admiration.", { lore: 7 }), mpc("Take the twenty off", "salePenalty", "You take twenty off. He looks briefly disappointed, like the game ended early.", { penalty: 20, lore: 3 })),
+        mp("askBundle", "accept", null, 1, "What Else Have You Got", "is there anything else on the shelf. i am here anyway. i have a weakness", mpc("Walk him down the shelf", "spawnListing", "You walk him down the shelf. He leaves with two more things and you realise on the way back in that you have space you have not had in a year.", { lore: 9 }), mpc("Just the one thing", "saleDone", "Just the one. He looks at the shelf the whole time he is paying.", { lore: 4 })),
+        mp("askForBrother", "accept", ["dad"], 3, "It Is For His Brother", "it is for my brother. he does not know. he has been chasing one of these for two years and his birthday is friday", mpc("Wrap it for him", "followers", "You find a box and a bit of tissue paper that has been in the house since a Christmas nobody remembers. He sends you a photo of his brother opening it. His brother is crying, in a garage, holding a bracket.", { followers: 90, lore: 14 }), mpc("Hand it over as is", "saleDone", "You hand it over greasy and unwrapped, which is honestly the correct presentation for this particular gift.", { lore: 7 })),
+        mp("buddyExpert", "accept", null, 1, "His Friend Knows Everything", "he brings a friend. the friend has opinions. the friend has never been asked for a single one of them and is not going to let that stop him", mpc("Let the friend talk", "salePenalty", "The friend talks for eleven minutes. He is wrong about three things and right about one. The buyer apologises with his eyes and quietly knocks the price down out of embarrassment.", { penalty: 25, lore: 8 }), mpc("Ask the friend a hard question", "saleBonus", "You ask the friend one specific question. The friend does not know. The friend goes quiet. The buyer pays over asking, and you both understand exactly what happened.", { bonus: 30, lore: 12 })),
+        mp("buddyWife", "accept", null, 1, "She Waited In The Car", "his wife waits in the car with the engine running the entire time. she does not look up once.", mpc("Be quick about it", "saleDone", "You are quick about it. He is grateful in a way that suggests this has come up before.", { lore: 6 }), mpc("Invite them both in", "followers", "You invite them both in. She turns out to know more about carburetors than either of you and stays forty minutes. He is thrilled. She posts about it.", { followers: 60, lore: 12 })),
+        mp("buddyDog", "accept", null, 1, "He Brought The Dog", "hope it is ok, i have the dog. he is friendly. he is extremely friendly. that is the problem", mpc("Let the dog out", "followers", "The dog is extremely friendly. The dog gets in the truck. The dog will not get out of the truck. There is now a photo of a dog in the driver's seat of your project and the internet has decided it is the best thing it has seen all week.", { followers: 110, lore: 13 }), mpc("Do it at the tailgate", "saleDone", "You do it at the tailgate. The dog watches through the window with the specific betrayal only dogs can manage.", { lore: 6 })),
+        mp("buddySon", "accept", null, 1, "His Kid Wants To See The Truck", "my boy saw the truck in your photos. any chance he can look at it. he is fifteen and he has decided he is a car guy now", mpc("Pop the hood for him", "followers", "You pop the hood. He asks real questions. His dad stands back and lets it happen with an expression you recognise from somewhere. They stay an hour.", { followers: 80, lore: 14 }), mpc("Another time", "saleDone", "You say another time. There is not another time. You think about that one occasionally.", { lore: 2 })),
+        mp("storyFirstCar", "accept", ["story"], 3, "It Was His First Car", "same year as my first car. i sold it in 2003 to pay for a ring. married her, still married. still think about the car though", mpc("Ask if she knows", "saleBonus", "'She knows,' he says. 'She brings it up when she wants something.' He buys the part at over asking and drives off grinning about a car he sold twenty years ago.", { bonus: 25, lore: 11 }), mpc("Just do the deal", "saleDone", "You do the deal. He tells you half the story anyway, standing in the driveway, keys in his hand.", { lore: 7 })),
+        mp("storyDadsTruck", "accept", ["story"], 3, "His Father Left It To Him", "it is my dads truck. he passed in the spring. i have never done any of this before and i am learning it off videos at night", mpc("Offer to talk him through it", "donate", "You give him the part. You will not take money for it. You stand in the driveway and talk him through the whole job twice, and write the torque spec on the box in marker. He sends you a photo when it runs.", { followers: 150, lore: 20 }), mpc("Sell it and wish him luck", "saleDone", "You sell it at the agreed price and tell him to message you if he gets stuck. He does, four times, and you answer every one.", { lore: 12 })),
+        mp("storyRestartedTwice", "accept", ["story"], 2, "Third Time Lucky", "this is my third go at this car. i quit twice. i am not quitting this time, i have told too many people", mpc("Tell him the third one sticks", "saleBonus", "'The third one sticks,' you tell him, with no evidence whatsoever. He believes you completely and pays over the asking price for the encouragement.", { bonus: 20, lore: 10 }), mpc("Wish him luck", "saleDone", "You wish him luck. He says he does not need luck, he needs a part, and he has one now.", { lore: 6 })),
+        mp("storyWidow", "accept", ["story"], 2, "She Is Selling His Tools", "it is not for me. my husband collected these. i am trying to find them homes that will use them rather than sell them on", mpc("Promise it gets used", "saleDone", "You promise it goes on a truck and not on a shelf. She takes your word for it immediately, which is somehow a lot of pressure.", { lore: 14 }), mpc("Ask about him", "followers", "You ask about him. She talks for twenty minutes. He sounds like he was good company. You write down the name of the car he never finished and you look it up later.", { followers: 50, lore: 18 })),
+        mp("storyMovingAway", "accept", null, 1, "He Is Leaving Town", "buying this for a friend. i am moving thursday and i want to leave him something useful. long story", mpc("Ask about the long story", "saleBonus", "It is not that long a story. It is a good one though. He pays over asking and asks you to be around if his friend needs a hand with the install.", { bonus: 25, lore: 11 }), mpc("Wrap it up quick", "saleDone", "You keep it brief. He is clearly in the middle of a hard week and you let him get on with it.", { lore: 6 })),
+        mp("storySameTruck", "accept", ["story"], 2, "He Has The Same One", "i have the same truck as you. same colour and everything. mine is worse. i am not asking for a discount, i just wanted to say", mpc("Trade photos", "followers", "You trade photos in the driveway for twenty minutes. His is worse. His is also further along than yours in three specific ways and he tells you exactly how.", { followers: 45, lore: 12 }), mpc("Do the deal", "saleDone", "You do the deal, and you both stand there a second longer than you need to, looking at each other's trucks.", { lore: 7 })),
+        mp("rejectComeback", "reject", null, 1, "He Comes Back Up", "ok that is fair. what about this", mpc("Hear the new number", "saleDone", "The new number is the number you wanted in the first place. He had it the whole time. He was always going to get there. You both know it.", { lore: 8 }), mpc("Stand on the price", "none", "You stand on it. He goes away. He is back in eleven days at full price, having clearly looked everywhere else first.", { lore: 6 })),
+        mp("rejectPetty", "reject", null, 1, "He Takes It Personally", "no worries. i will find one cheaper. i always do", mpc("Wish him luck", "none", "You wish him luck sincerely, which annoys him far more than anything else you could have said.", { lore: 7 }), mpc("Say nothing", "none", "You say nothing at all. He sends three more messages into the silence, each one slightly less confident than the last.", { lore: 5 })),
+        mp("rejectShelfGuilt", "reject", null, 1, "It Goes Back On The Shelf", "the part goes back on the shelf. it looks at you. you look at it. it has been there a while and both of you know it", mpc("List it cheaper", "spawnListing", "You list it cheaper. It sells in an hour, which tells you something you did not want to know about your pricing.", { lore: 7 }), mpc("It stays on the shelf", "none", "It stays. It is not doing any harm up there. It is doing a little harm.", { lore: 4 })),
+        mp("rejectSomebodyElse", "reject", null, 1, "Somebody Else Wanted It", "you pass on the offer. eleven minutes later, another message: is that still available", mpc("Answer the new one", "saleDone", "The new one pays asking without a word of negotiation. Holding out worked exactly once and you will remember it forever and it will cost you money for years.", { lore: 9 }), mpc("Leave it for now", "none", "You leave it. Both of them go quiet. The part remains, patient, on the shelf.", { lore: 3 })),
+        mp("rejectWrongPartAgain", "reject", null, 1, "That Was The Wrong Shelf", "you go to put it away and realise it was never going on your build in the first place. it fits nothing you own. it never did.", mpc("Get it listed properly", "spawnListing", "You photograph it in decent light for once, write an honest description, and put it up. It is gone by morning.", { lore: 8 }), mpc("Back in the corner", "none", "It goes in the corner with the others. There is a corner. There has always been a corner.", { lore: 3 })),
+        mp("rejectRegret", "reject", null, 1, "You Think About It At Two In The Morning", "the number was fine. the number was actually fine. you are lying in the dark doing arithmetic about a bracket.", mpc("Message him in the morning", "saleDone", "You message him in the morning. He is delighted, which makes the two in the morning part feel even sillier.", { lore: 8 }), mpc("Let it go", "none", "You let it go and you sleep badly and the part is still there in the morning, which is at least consistent.", { lore: 5 })),
+        mp("goodShopTeacher", "accept", null, 1, "The Shop Teacher Again", "i teach the auto program at the high school. i am not going to pretend we have a budget. i am asking anyway", mpc("Donate it", "donate", "You donate it. It goes on a car twelve teenagers are learning on. He puts a card up on the shop wall with your name on it, which you find out about months later from somebody else.", { followers: 130, lore: 20 }), mpc("Give him a deal", "salePenalty", "You take a chunk off. He pays it out of his own pocket, which you only work out afterwards, and which sits with you.", { penalty: 40, lore: 14 })),
+        mp("goodFirstTimer", "accept", null, 1, "His First Ever Repair", "this is the first thing i have ever tried to fix myself. i do not know what i am doing. i am doing it anyway", mpc("Write the steps on the box", "saleBonus", "You write the steps on the box in marker, in order, with the one that gets everybody underlined. He pays over asking and tells you it is the underlined one that saved him.", { bonus: 20, lore: 13 }), mpc("Sell it and stay out of it", "saleDone", "You sell it and stay out of it. He works it out on his own, which is how everybody learns, including you.", { lore: 7 })),
+        mp("goodOldGuy", "accept", null, 1, "He Does Not Do The Internet", "my grandson set this up for me. i do not do the internet. if you have got the part i have got the money and i would rather just come by", mpc("Tell him to come by", "saleBonus", "He comes by. He is eighty-one. He looks at your truck for a long time and tells you the exact year without being told, and then tells you what is wrong with the stance. He is right.", { bonus: 25, lore: 16 }), mpc("Do it through the grandson", "saleDone", "You do it through the grandson, who is efficient and polite and clearly wishes his grandfather would let him handle everything.", { lore: 6 })),
+        mp("goodPayItForward", "accept", null, 1, "Somebody Did It For Him", "a guy gave me a part for free when i was starting out. i said i would pass it on. i am paying full asking, do not argue", mpc("Take the full price", "saleBonus", "You take it. He tells you the guy's name like it should mean something, and one day it might.", { bonus: 30, lore: 14 }), mpc("Pass it on instead", "donate", "You give it to him free and tell him to pass it on again. He looks like you have handed him a job rather than a bracket, which you have.", { followers: 100, lore: 18 })),
+        mp("goodBoughtItBack", "accept", null, 1, "He Sold You This", "funny thing. i think i sold you this at the swap two years ago. i have been kicking myself ever since", mpc("Sell it back at cost", "saleDone", "You sell it back for what you paid. He says you did not have to do that. You did not have to do that.", { lore: 15 }), mpc("Sell it at asking", "saleBonus", "You sell it at asking. He pays it without a murmur, because he knows exactly what he did two years ago.", { bonus: 15, lore: 8 })),
+        mp("goodRainCheck", "accept", null, 1, "He Is Broke Until The First", "i want it. i cannot do it this month. if it is still there on the first i will take it, and if it is gone i will be happy for you", mpc("Hold it for him", "saleBonus", "You hold it. He turns up on the first. He is so surprised you actually held it that he adds to the price and will not discuss it.", { bonus: 30, lore: 14 }), mpc("Sell it to the next one", "saleDone", "You sell it to the next person who asks. He sends a message saying he is happy for you, and means it, which is somehow worse.", { lore: 6 })),
+        mp("chaosScamBait", "accept", null, 1, "Something Is Off", "i will send my nephew to collect and pay you extra by transfer beforehand, please send your details", mpc("Block him", "none", "You block him. Nothing is lost except forty seconds and a small amount of faith.", { lore: 7 }), mpc("Cash on collection only", "none", "You reply cash on collection only. He does not respond. He was never going to respond.", { lore: 5 })),
+        mp("chaosWrongListing", "accept", null, 1, "He Means A Different Listing", "so about the couch", mpc("There is no couch", "saleDone", "There is no couch. There has never been a couch. He works this out slowly, apologises, and then buys the part anyway because he is already here.", { lore: 9 }), mpc("Ask which couch", "none", "You ask which couch. He sends a photo of a couch. It is a very nice couch. Neither of you buys anything.", { lore: 6 })),
+        mp("chaosVoiceMemo", "accept", null, 1, "A Four Minute Voice Memo", "he sends a voice memo. it is four minutes long. the first three are about a boat.", mpc("Listen to the whole thing", "saleBonus", "You listen to all four minutes. The boat is relevant at the very end, in a way you would never have guessed. He pays over asking because you listened.", { bonus: 25, lore: 11 }), mpc("Reply asking for the short version", "saleDone", "He sends a second voice memo explaining that the first one was already the short version.", { lore: 8 })),
+        mp("chaosThreeAM", "accept", null, 1, "Three In The Morning", "i know what time it is. i am not asking you to reply. i just needed to send it while i was thinking about it", mpc("Reply at a reasonable hour", "saleDone", "You reply at seven. He is awake. He was always awake. He buys it before you have finished your coffee.", { lore: 7 }), mpc("Reply immediately", "saleBonus", "You reply immediately, because you were also awake, and neither of you mentions it. He pays over asking out of pure three-in-the-morning solidarity.", { bonus: 20, lore: 12 })),
+        mp("chaosNegotiatesUp", "accept", null, 1, "He Argues The Wrong Way", "this is worth more than you are asking. i am not comfortable paying that little. i looked it up", mpc("Let him pay more", "saleBonus", "You let him pay more. It is the strangest negotiation of your life and you lose it in the best possible direction.", { bonus: 45, lore: 13 }), mpc("Insist on your price", "saleDone", "You insist on your price. He pays it under protest and tells you that you are bad at this. He is not wrong.", { lore: 10 })),
+        mp("chaosRecognises", "accept", null, 1, "He Knows The Truck", "hang on. is that the f100 from the show at the park. i took a photo of that truck. i have that photo", mpc("Confirm it", "followers", "He shows you the photo. It is your truck, from before, from the bad old days, and it is a genuinely good photo. He sends it to you. It goes everywhere.", { followers: 140, lore: 14 }), mpc("Play it down", "saleDone", "You play it down. He does not play it down. He tells everyone in the parking lot on his way out.", { lore: 8 })),
+        mp("chaosNeighbour", "accept", null, 1, "He Lives Four Doors Down", "wait. what street are you on. i think i can see your garage from my kitchen", mpc("Wave out the door", "saleBonus", "You both walk outside and wave at each other from four doors apart, which is objectively ridiculous. He walks down. He has lived there eight years. You have never met.", { bonus: 20, lore: 13 }), mpc("Just meet at the curb", "saleDone", "You meet at the curb like two people who did not just discover they have been neighbours for eight years.", { lore: 7 })),
+        mp("chaosAlreadyHere", "accept", ["otw"], 3, "He Is Already Outside", "i am out front", mpc("Go outside", "saleDone", "He is out front. He has been out front for some time. He did not want to knock in case it was a bad moment, and has instead been sitting in a truck in the dark, which is worse.", { lore: 9 }), mpc("Ask him to give you five", "salePenalty", "You ask for five minutes. He waits. You feel the waiting through the wall the entire time, and knock twenty off out of guilt.", { penalty: 20, lore: 5 })),
+        mp("chaosGhostReturns", "accept", ["ghost"], 3, "He Is Back", "hey! sorry, life got busy. is it still there", mpc("Say it is still there", "saleDone", "It is still there. He buys it instantly. Six weeks of silence and then ninety seconds of decisive action.", { lore: 8 }), mpc("Tell him it sold", "none", "You tell him it sold. It has not sold. It is right there on the shelf. You have no idea why you said that and you think about it for the rest of the day.", { lore: 10 })),
+        mp("chaosFullCircle", "accept", null, 1, "He Is Buying It For Your Old Car", "for my project. it is a 65 f100. blue one. bought it off a guy about a year ago, he had barely started it", mpc("Ask which blue one", "saleBonus", "You ask a couple of careful questions. It is not yours. It is very nearly yours. You sell him the part and think about the other truck all evening.", { bonus: 25, lore: 14 }), mpc("Do not ask", "saleDone", "You decide you would rather not know, which is probably the correct call and definitely the cowardly one.", { lore: 9 })),
+        mp("chaosInspects", "accept", null, 1, "He Brought A Flashlight", "he brings a flashlight in daylight. he brings a magnet. he brings, and this is true, a pair of reading glasses on a chain.", mpc("Let him do his inspection", "saleBonus", "He does the full inspection. It takes nine minutes. At the end he says 'yeah, that is honest,' pays over asking, and puts the magnet back in his pocket like a man sheathing a sword.", { bonus: 30, lore: 12 }), mpc("Rush him along", "salePenalty", "You rush him. He does not like being rushed. Neither of you enjoys the last two minutes of this transaction.", { penalty: 25, lore: 4 })),
+        mp("chaosPhotoLie", "accept", null, 1, "The Photo Was Flattering", "it looked cleaner in the picture", mpc("Own it", "saleDone", "'It was good light,' you admit. He laughs, says he does the same thing, and buys it at the agreed price.", { lore: 10 }), mpc("Knock some off", "salePenalty", "You knock some off before he asks. He was not going to ask. You will never know that.", { penalty: 30, lore: 5 })),
+      ];
       const MARKETPLACE_SCENARIOS = [
         {
           id: "lateNightMeet",
           trigger: "accept",
+          buyers: ["night"],
+          weight: 3,
           title: "10:30 PM Grocery Store Meetup",
           text: "can you meet at the shopping center off the highway, by the cart return? i get off at eleven so it is gonna be late. exact cash, i never have change on me.",
           choices: [
@@ -10102,6 +10183,8 @@
         {
           id: "wrongPartFlip",
           trigger: "reject",
+          buyers: null,
+          weight: 1,
           title: "The Wrong Part Epiphany",
           text: "You realize the part on your shelf still is not for your build. It is just taking up space and judging you.",
           choices: [
@@ -10123,6 +10206,8 @@
         {
           id: "stopCallingMe",
           trigger: "accept",
+          buyers: ["nova", "bolt", "c10"],
+          weight: 2,
           title: "He Keeps Calling",
           // No single question here is funny. What is funny is that there is
           // always one more, and that the block button was sitting right there
@@ -10189,6 +10274,8 @@
         {
           id: "tradeOfferChaos",
           trigger: "offer",
+          buyers: ["trade", "tradeonly"],
+          weight: 3,
           title: "Absolute Trade Guy Behavior",
           text: "ok so i am short on cash but hear me out. i have got a cooler full of trim, some of it chrome, and a tail light off a 68 Dart my uncle had. that car was something else. straight across?",
           choices: [
@@ -10211,6 +10298,8 @@
         {
           id: "shortOnCash",
           trigger: "accept",
+          buyers: ["shortcash"],
+          weight: 3,
           title: "He Showed Up Light",
           text: "hey i am here. so i counted it twice in the truck and i am short. i have got most of it on me. can you do it for what i have got",
           choices: [
@@ -10232,6 +10321,8 @@
         {
           id: "buddyCommentary",
           trigger: "accept",
+          buyers: null,
+          weight: 1,
           title: "He Brought A Buddy",
           text: "here now, brought my buddy, he knows parts. heads up he is gonna tell you what these went for in 2009. he does it to everybody, just let him talk.",
           choices: [
@@ -10252,6 +10343,8 @@
         {
           id: "schoolProjectDonate",
           trigger: "accept",
+          buyers: null,
+          weight: 1,
           title: "Auto Shop School Project",
           text: "Would you be willing to donate the part for a auto shop school project plz consider",
           choices: [
@@ -10279,6 +10372,7 @@
             },
           ],
         },
+              ...MORE_MARKETPLACE_SCENARIOS,
       ];
 
       const CAR_CULTURE_EVENTS = [
@@ -11225,7 +11319,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.71.0";
+      const GAME_VERSION = "0.72.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -11365,6 +11459,9 @@
           lastLoanWeek: 0,
           sharkLoanBalance: 0,
           sharkLoanPayment: 750,
+          // The last handful of Marketplace storylines, so the pool does not
+          // hand you the same one twice in a row.
+          recentScenarios: [],
           // The bank sends a letter when you come up short. He sends people.
           sharkMissedPayments: 0,
           // Weeks she is doing the driving, because you cannot work a clutch.
@@ -14940,31 +15037,15 @@
           }
           return true;
         }
+        // A trade guy always brings a trade; everybody else brings something
+        // about half the time, so a plain offer with no story still happens.
+        // 45% matches what the old ladder averaged out to across all the
+        // archetypes, so this changes what you get, not how often you get it.
+        const tradesOnly = archetype.id === "trade" || archetype.id === "tradeonly";
         let scenario = null;
-        if (archetype.id === "night")
-          scenario = MARKETPLACE_SCENARIOS.find(
-            (s) => s.id === "lateNightMeet",
-          );
-        else if (archetype.id === "trade" || archetype.id === "tradeonly")
-          scenario = MARKETPLACE_SCENARIOS.find(
-            (s) => s.id === "tradeOfferChaos",
-          );
-        else if (archetype.id === "shortcash")
-          scenario = MARKETPLACE_SCENARIOS.find(
-            (s) => s.id === "shortOnCash",
-          );
-        else if (archetype.id === "story" && Math.random() < 0.4)
-          scenario = MARKETPLACE_SCENARIOS.find(
-            (s) => s.id === "buddyCommentary",
-          );
-        else if (Math.random() < 0.12)
-          scenario = MARKETPLACE_SCENARIOS.find(
-            (s) => s.id === "schoolProjectDonate",
-          );
-        else if (Math.random() < 0.18)
-          scenario = MARKETPLACE_SCENARIOS.find(
-            (s) => s.id === "stopCallingMe",
-          );
+        if (tradesOnly) scenario = pickMarketplaceScenario("offer", archetype.id);
+        else if (Math.random() < 0.45)
+          scenario = pickMarketplaceScenario("accept", archetype.id);
         queueMarketplaceOffer({
           itemId: item.id,
           offer,
@@ -14975,6 +15056,60 @@
           scenario,
         });
         return true;
+      }
+      // The old selection was an if/else ladder that bound three archetypes to
+      // exactly one scenario each, so Parking Lot Pete did the same cart-return
+      // meet every single time he appeared and playtesters noticed inside an
+      // hour. Now every scenario that fits the moment goes into one pool:
+      // buyer-specific ones weighted heaviest, general ones behind them, and a
+      // memory of the last dozen so nothing repeats until the pool is spent.
+      const MP_SCENARIO_MEMORY = 16;
+      function pickMarketplaceScenario(trigger, buyerId) {
+        const pool = MARKETPLACE_SCENARIOS.filter(
+          (sc) =>
+            sc.trigger === trigger &&
+            (!sc.buyers || sc.buyers.includes(buyerId)),
+        );
+        if (!pool.length) return null;
+        if (!Array.isArray(state.recentScenarios)) state.recentScenarios = [];
+        const recent = state.recentScenarios;
+        const isFresh = (sc) => !recent.includes(sc.id);
+        // A buyer with storylines of his own should mostly get one of them,
+        // because that is what makes him a character rather than a name. How
+        // often depends on how many he has: a buyer with one signature beat
+        // who played it every other sale would be the same complaint again in
+        // a different costume, so one gets 18% and three or more get 45%.
+        const own = pool.filter((sc) => sc.buyers).filter(isFresh);
+        const general = pool.filter((sc) => !sc.buyers).filter(isFresh);
+        const ownChance = Math.min(0.45, 0.18 * own.length);
+        let choices;
+        if (own.length && Math.random() < ownChance) choices = own;
+        else if (general.length) choices = general;
+        else choices = pool.filter(isFresh).length ? pool.filter(isFresh) : pool;
+        const total = choices.reduce((n, sc) => n + (sc.weight || 1), 0);
+        let roll = Math.random() * total;
+        let pick = choices[choices.length - 1];
+        for (const sc of choices) {
+          roll -= sc.weight || 1;
+          if (roll <= 0) { pick = sc; break; }
+        }
+        state.recentScenarios = [pick.id, ...state.recentScenarios].slice(
+          0,
+          MP_SCENARIO_MEMORY,
+        );
+        return pick;
+      }
+      // A scenario can be one exchange or a run of them, and the plain scene
+      // card only knows how to draw one. Hand it the first step either way.
+      function scenarioAsScene(sc) {
+        const step = sc.steps && sc.steps.length ? sc.steps[0] : sc;
+        return {
+          id: sc.id,
+          title: sc.title,
+          emoji: sc.emoji || "📦",
+          text: step.text,
+          choices: step.choices,
+        };
       }
       function respondMarketplaceOffer(accept) {
         const offer = state.pendingMarketplaceOffer;
@@ -15020,16 +15155,9 @@
           } else {
             toast(`You passed on the offer for ${item.name}.`, "err");
           }
-          if (Math.random() < 0.22) {
-            const sc = MARKETPLACE_SCENARIOS.find(
-              (s) => s.id === "wrongPartFlip",
-            );
-            queueScene({
-              title: sc.title,
-              emoji: "📦",
-              text: sc.text,
-              choices: sc.choices,
-            });
+          if (Math.random() < 0.3) {
+            const sc = pickMarketplaceScenario("reject", offer.buyerType);
+            if (sc) queueScene(scenarioAsScene(sc));
           }
         }
         clearBuyerTyping();
