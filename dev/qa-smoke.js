@@ -1452,7 +1452,9 @@ const pass = (msg) => console.log("✓", msg);
   // ── character DMs: the phone texts you after events ──
   const dmOk = await page.evaluate(() => {
     const snapDMs = state.characterDMs, snapUnread = state.dmUnread;
+    const snapThread = state.wifeThread, snapWifeUnread = state.wifeUnread;
     state.characterDMs = []; state.dmUnread = 0;
+    state.wifeThread = []; state.wifeUnread = 0;
     // Wife is the corner crew now: her DM fires from the show resolve itself.
     const origRand = Math.random; Math.random = () => 0.01;
     queueShowDMs(true, 1, 3, { harlow: "ally" }, "Local");
@@ -1463,21 +1465,35 @@ const pass = (msg) => console.log("✓", msg);
     const hasRival = dms.some((d) => d.id === "rival-harlow");
     const hasWife = dms.some((d) => d.h === "The Wife");
     const unread = state.dmUnread;
+    // She is her own thread now, with her own badge, so she must not be
+    // counted a second time on the DM icon.
+    const wifeUnread = state.wifeUnread;
+    const inThread = (state.wifeThread || []).length;
     const html = renderPhoneMessagesApp();
-    // opening Messages should clear the badge
+    const banner = renderWifeBanner();
+    // opening Messages should clear the DM badge, and her thread hers
     setPhoneApp("messages");
     const cleared = state.dmUnread === 0;
+    setPhoneApp("wife");
+    const wifeCleared = state.wifeUnread === 0;
+    const bannerGone = renderWifeBanner() === "";
     state.characterDMs = snapDMs; state.dmUnread = snapUnread;
+    state.wifeThread = snapThread; state.wifeUnread = snapWifeUnread;
     if (!hasBuck) return "Buck DM missing after head-to-head";
     if (!hasRival) return "rival DM missing after ally crossing";
     if (!hasWife) return "wife DM missing after show win";
-    if (unread < 3) return "unread count wrong: " + unread;
+    if (unread < 2) return "DM unread count wrong: " + unread;
+    if (wifeUnread < 1) return "wife message did not raise her own badge";
+    if (!inThread) return "wife message never reached her thread";
+    if (!banner.includes("wife-banner")) return "no banner for an unread wife message";
     if (!html.includes("phone-dm-fresh")) return "fresh DM not highlighted";
     if (!cleared) return "opening Messages did not clear the unread badge";
+    if (!wifeCleared) return "opening her thread did not clear her badge";
+    if (!bannerGone) return "banner survived reading the message";
     return true;
   });
   if (dmOk !== true) fail("character DMs: " + dmOk);
-  pass("character DMs (phone texts you after events)");
+  pass("character DMs, and the wife on her own thread with her own badge");
 
   // ── save → reload → state intact ──
   const before = await page.evaluate(() => { state.money = 12345; saveGame(true); return { week: state.week, money: state.money, installs: state.installsDone }; });

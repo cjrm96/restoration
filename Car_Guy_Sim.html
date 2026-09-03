@@ -4821,6 +4821,96 @@
       .phone-content::-webkit-scrollbar { width: 6px; }
       .phone-content::-webkit-scrollbar-track { background: transparent; }
       .phone-content::-webkit-scrollbar-thumb { background: rgba(217,162,79,0.3); border-radius: 999px; }
+      /* The banner that slides down the top of the phone when she has texted.
+         Same shape as the one every player already knows from their own
+         pocket, because that is the whole point: it is from her, it is new,
+         and it is in the way. */
+      .wife-banner {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        text-align: left;
+        width: calc(100% - 24px);
+        margin: 4px 12px 10px;
+        padding: 10px 12px;
+        border: none;
+        border-radius: 16px;
+        cursor: pointer;
+        font-family: inherit;
+        background: rgba(52, 48, 60, 0.92);
+        box-shadow:
+          0 6px 18px rgba(0, 0, 0, 0.45),
+          inset 0 1px 0 rgba(255, 255, 255, 0.09);
+        animation: wifeBannerIn 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.05);
+      }
+      @keyframes wifeBannerIn {
+        from { transform: translateY(-16px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      .wife-banner:hover { background: rgba(64, 59, 74, 0.95); }
+      .wb-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        background: linear-gradient(180deg, #b58ae6 0%, #7d5aa8 100%);
+        flex: 0 0 auto;
+      }
+      .wb-body { min-width: 0; flex: 1 1 auto; }
+      .wb-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 10.5px;
+        color: rgba(255, 255, 255, 0.55);
+        letter-spacing: 0.3px;
+        margin-bottom: 1px;
+      }
+      .wb-name { color: #f2ecff; font-weight: bold; font-size: 12.5px; margin-bottom: 2px; }
+      .wb-text {
+        color: rgba(255, 255, 255, 0.86);
+        font-size: 12px;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      /* Her thread. Grey bubbles from her, no blue ones back, because he
+         does not text back and that is a fact about him. */
+      .imsg { padding: 4px 2px 2px; }
+      .imsg-day {
+        text-align: center;
+        font-size: 10px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.34);
+        margin: 14px 0 8px;
+      }
+      .imsg-row { display: flex; margin-bottom: 4px; }
+      .imsg-bubble {
+        max-width: 78%;
+        padding: 8px 12px;
+        border-radius: 17px;
+        font-size: 12.5px;
+        line-height: 1.45;
+        background: #3a3742;
+        color: #f0ecf6;
+        border-bottom-left-radius: 5px;
+      }
+      .imsg-foot {
+        margin: 16px 6px 4px;
+        padding: 9px 14px;
+        border-radius: 17px;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        color: rgba(255, 255, 255, 0.36);
+        font-size: 11.5px;
+        font-style: italic;
+        text-align: center;
+      }
       /* Home screen widget, fed by the live follower count + sponsor unlock */
       .phone-widget {
         background: linear-gradient(180deg, rgba(182, 138, 230, 0.18) 0%, rgba(182, 138, 230, 0.06) 100%);
@@ -11319,7 +11409,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.72.1";
+      const GAME_VERSION = "0.73.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -11462,6 +11552,10 @@
           // The last handful of Marketplace storylines, so the pool does not
           // hand you the same one twice in a row.
           recentScenarios: [],
+          // Her side of the conversation, kept rather than overwritten.
+          wifeThread: [],
+          wifeUnread: 0,
+          wifeLineWeek: 0,
           // The bank sends a letter when you come up short. He sends people.
           sharkMissedPayments: 0,
           // Weeks she is doing the driving, because you cannot work a clutch.
@@ -12546,7 +12640,7 @@
             : choice.wifeDM === "heard"
               ? "i heard the honest part. thank you for saying it out loud where i could hear it."
               : "heard you swear on air this was the last build. laughed so hard the kids asked what was funny. didn't tell them.";
-          pushCharacterDM({ id: "wife-radio", a: "💍", c: "purple", h: "The Wife", t: line });
+          pushWifeMessage(line, "wife-radio");
         }
         if (choice.onResolve === "interviewStep" && state.interview) {
           const iv = state.interview;
@@ -17646,6 +17740,20 @@
           : null;
         state.totalWeeks = (state.totalWeeks || 0) + 1;
         maybeEndWifeChauffeur();
+        if ((state.wifeChauffeur || 0) > 0)
+          pushWifeMessage(
+            pickFresh(
+              [
+                "put a blanket in the truck for saturday. the seat in that thing is a war crime.",
+                "i have been practising the clutch on the way to the store. do not look at the driveway.",
+                "found a station i like in your truck. we are keeping it.",
+              ],
+              "wife:driving",
+              2,
+            ),
+            "wife-week",
+          );
+        else maybeWifeWeeklyLine();
         // Mid-season beat: Buck calls you out at the school light on a
         // Sunday cruise. Fires once, weeks 11-16, needs a runner.
         if (
@@ -25577,6 +25685,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         state.phoneApp = app;
         // Opening Messages clears the character-DM unread badge.
         if (app === "messages") state.dmUnread = 0;
+        if (app === "wife") state.wifeUnread = 0;
         playSfx("click");
         requestRender("full");
       }
@@ -25585,6 +25694,46 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         return `<div class="phone-status-bar"><span class="ps-time">8:24 AM</span><span class="ps-icons">📶 🔋</span></div>`;
       }
 
+      // The most recent thing she said, and whether he has read it.
+      function wifeLatest() {
+        const t = state.wifeThread;
+        return Array.isArray(t) && t.length ? t[t.length - 1] : null;
+      }
+      function renderWifeBanner() {
+        if (!(state.wifeUnread > 0)) return "";
+        const msg = wifeLatest();
+        if (!msg) return "";
+        const ago =
+          msg.week === state.week
+            ? "now"
+            : `${state.week - msg.week} wk${state.week - msg.week === 1 ? "" : "s"} ago`;
+        return `<button class="wife-banner" onclick="setPhoneApp('wife')">
+          <span class="wb-avatar">💍</span>
+          <span class="wb-body">
+            <span class="wb-top"><span>MESSAGES</span><span>${ago}</span></span>
+            <span class="wb-name">The Wife</span>
+            <span class="wb-text">${msg.t}</span>
+          </span>
+        </button>`;
+      }
+      function renderWifeThread() {
+        const thread = Array.isArray(state.wifeThread) ? state.wifeThread : [];
+        if (!thread.length) {
+          return `<div class="phone-empty">Nothing from her yet. She is downstairs. You could just go and talk to her, but here we are.</div>`;
+        }
+        let lastWeek = null;
+        const rows = thread
+          .map((m) => {
+            const head =
+              m.week !== lastWeek
+                ? `<div class="imsg-day">Week ${m.week}</div>`
+                : "";
+            lastWeek = m.week;
+            return `${head}<div class="imsg-row"><div class="imsg-bubble">${m.t}</div></div>`;
+          })
+          .join("");
+        return `<div class="imsg">${rows}<div class="imsg-foot">You never text back. You go downstairs.</div></div>`;
+      }
       function renderPhoneHomeScreen() {
         const next = SPONSORS.find((s) => state.followers < s.req);
         const current = activeSponsors().slice(-1)[0];
@@ -25617,6 +25766,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           { id: "cartok", emoji: "🎬", label: "CarTok", badge: canPostThisWeek ? "" : 0 },
           { id: "motortube", emoji: "▶️", label: "MotorTube", badge: ytReady ? "" : 0 },
           { id: "messages", emoji: "💬", label: "DMs", badge: dmCount },
+          { id: "wife", emoji: "💍", label: "The Wife", badge: state.wifeUnread || 0 },
         ];
         const grid = `<div class="phone-app-grid">${apps
           .map(
@@ -25636,7 +25786,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
               <div><div class="tiny muted" style="letter-spacing:0.6px;text-transform:uppercase">Posts dropped</div><div style="color:var(--text-bright);font-weight:bold;font-size:15px">${(state.postHistory || []).length}</div></div>
             </div>
           </div>`;
-        return widget + grid + stats;
+        return renderWifeBanner() + widget + grid + stats;
       }
 
       function renderPhoneCompose(platform) {
@@ -25821,19 +25971,91 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         "ok. long day here too.",
         "there's a plate in the microwave.",
       ];
+      // She is the closest thing this game has to a second main character and
+      // everything she says used to land in a shared DM list, one line at a
+      // time, replaced by the next one and capped out by fan mail. Her side of
+      // it is kept now: an append-only thread you can scroll back through, so
+      // a player who is here for the trucks still watches a marriage happen in
+      // the corner of the screen.
+      const WIFE_THREAD_MAX = 40;
+      function pushWifeMessage(text, id) {
+        if (!text) return;
+        if (!Array.isArray(state.wifeThread)) state.wifeThread = [];
+        const last = state.wifeThread[state.wifeThread.length - 1];
+        // She does not send the same thing twice in a row.
+        if (last && last.t === text) return;
+        state.wifeThread.push({ week: state.week, t: text });
+        if (state.wifeThread.length > WIFE_THREAD_MAX)
+          state.wifeThread.splice(0, state.wifeThread.length - WIFE_THREAD_MAX);
+        state.wifeUnread = (state.wifeUnread || 0) + 1;
+        // She still shows up in the DM list, so nothing that used to be there
+        // has gone away; the thread is the addition, not the replacement.
+        pushCharacterDM({ id: id || "wife", a: "💍", c: "purple", h: "The Wife", t: text }, true);
+      }
+      // Weekly, and only sometimes, so she reads as a person with her own week
+      // rather than a notification. Which pool depends on what the week
+      // actually looked like from her side of the house.
+      const WIFE_WEEK_BROKE = [
+        "checked the account. i am not mad. i am asking, in a normal voice, what the plan is.",
+        "we are doing beans and rice week again aren't we. it is fine. i like beans and rice. i am choosing to like beans and rice.",
+        "the truck is worth more than our savings account and i have decided that is a personality trait we share now.",
+        "do not buy anything this week. i mean it. i will know.",
+      ];
+      const WIFE_WEEK_FLUSH = [
+        "money in the account and the truck still in one piece. who are you and what did you do with my husband.",
+        "saw the deposit. i am not going to ask. i am going to enjoy it quietly and not ask.",
+        "since we are apparently rich this week, i am getting the good coffee. this is not up for discussion.",
+      ];
+      const WIFE_WEEK_GRIND = [
+        "you have been out there four nights running. i am not complaining, i am documenting.",
+        "the kids drew you. you are in the garage in the drawing. i thought you should know that.",
+        "come in at a reasonable hour tonight and i will pretend to be surprised.",
+        "i put a plate in the microwave. it has been in the microwave since seven.",
+      ];
+      const WIFE_WEEK_PROUD = [
+        "walked past the garage and actually stopped. it is starting to look like the picture in your head, isn't it.",
+        "showed a photo of it to my mother. my mother, who does not care about cars, said oh. that is a win.",
+        "you are going to sell that thing one day and i am going to be weird about it. fair warning.",
+      ];
+      const WIFE_WEEK_WARM = [
+        "no reason for this message. carry on.",
+        "found a socket in the washing machine. adding it to the collection on the windowsill.",
+        "your truck smells like your grandfather's garage and i did not expect to like that as much as i do.",
+        "i told someone at work my husband restores cars and i said it like it was a fact about me too.",
+      ];
+      function maybeWifeWeeklyLine() {
+        // Not every week. She has a life.
+        const last = state.wifeLineWeek || 0;
+        if (state.week - last < 2) return;
+        if (Math.random() > 0.55) return;
+        const car = currentCar();
+        const overall = car ? getOverall(car) : 0;
+        // How many jobs he has had on the bench lately is the closest thing
+        // to "how many nights has he been out there" that the state carries.
+        const onTheBench = (state.activeRestorations || []).length;
+        let pool = WIFE_WEEK_WARM, key = "wife:warm";
+        if ((state.money || 0) < 250) { pool = WIFE_WEEK_BROKE; key = "wife:broke"; }
+        else if ((state.money || 0) > 12000) { pool = WIFE_WEEK_FLUSH; key = "wife:flush"; }
+        else if (overall >= 60) { pool = WIFE_WEEK_PROUD; key = "wife:proud"; }
+        else if (onTheBench >= 1) { pool = WIFE_WEEK_GRIND; key = "wife:grind"; }
+        state.wifeLineWeek = state.week;
+        pushWifeMessage(pickFresh(pool, key, pool.length - 1), "wife-week");
+      }
       const RIVAL_DM_WARM = [
         "not bad out there. had you pegged as all hype. i was maybe 60% wrong.",
         "alright, the build's legit. don't tell anyone i said so.",
         "you're getting hard to ignore at these things. respect.",
       ];
-      function pushCharacterDM(dm) {
+      function pushCharacterDM(dm, silent) {
         if (!dm || !dm.id) return;
         if (!Array.isArray(state.characterDMs)) state.characterDMs = [];
         // One per event id, re-firing replaces rather than stacks.
         state.characterDMs = state.characterDMs.filter((d) => d.id !== dm.id);
         state.characterDMs.unshift({ ...dm, week: state.week });
         if (state.characterDMs.length > 8) state.characterDMs.length = 8;
-        state.dmUnread = (state.dmUnread || 0) + 1;
+        // Her messages carry their own badge on their own thread, so counting
+        // them again on the DM icon just puts two red dots on one message.
+        if (!silent) state.dmUnread = (state.dmUnread || 0) + 1;
         playSfx("ding");
       }
       // Fires from the show resolve: Buck reacts to the head-to-head, and any
@@ -25897,11 +26119,11 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         const strained = familyTimeLedger().standing === "strained";
         if (place === 1) {
           if (Math.random() < (strained ? 0.5 : 0.3)) {
-            pushCharacterDM({ id: "wife-show", a: "💍", c: "purple", h: "The Wife", t: pickFresh(strained ? WIFE_DMS_WIN_COOL : WIFE_DMS_WIN, strained ? "dm:wife:win:cool" : "dm:wife:win") });
+            pushWifeMessage(pickFresh(strained ? WIFE_DMS_WIN_COOL : WIFE_DMS_WIN, strained ? "dm:wife:win:cool" : "dm:wife:win"), "wife-show");
           }
         } else if (place >= 5) {
           if (Math.random() < (strained ? 0.6 : 0.35)) {
-            pushCharacterDM({ id: "wife-show", a: "💍", c: "purple", h: "The Wife", t: pickFresh(strained ? WIFE_DMS_LOSS_COOL : WIFE_DMS_LOSS, strained ? "dm:wife:loss:cool" : "dm:wife:loss") });
+            pushWifeMessage(pickFresh(strained ? WIFE_DMS_LOSS_COOL : WIFE_DMS_LOSS, strained ? "dm:wife:loss:cool" : "dm:wife:loss"), "wife-show");
           }
         }
       }
@@ -26010,6 +26232,13 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         </div><div class="phone-content">${body}</div>`;
       }
 
+      // A thread opens at the bottom, the way every thread anybody has ever
+      // opened does.
+      function scrollWifeThreadToNewest() {
+        if ((state.phoneApp || "home") !== "wife") return;
+        const el = document.querySelector(".phone-content");
+        if (el) el.scrollTop = el.scrollHeight;
+      }
       function renderCareer() {
         const app = state.phoneApp || "home";
         let body;
@@ -26030,6 +26259,8 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           );
         } else if (app === "messages") {
           body = renderPhoneAppShell("💬 Messages", renderPhoneMessagesApp());
+        } else if (app === "wife") {
+          body = renderPhoneAppShell("💍 The Wife", renderWifeThread());
         } else {
           body = renderPhoneHomeScreen();
         }
@@ -26775,6 +27006,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           renderCutsceneLayer();
           if (touched) mountBackdrops();
           sweepFuelNeedle();
+          scrollWifeThreadToNewest();
           return;
         }
         touched = renderModalLayer(false) || touched;
