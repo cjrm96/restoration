@@ -6417,6 +6417,38 @@
    cigar smoke curling. Desperate, "this is a bad idea and you're doing it anyway"
    energy. Keep the lower-left quarter calm.
 
+   [ scene-shark-collection ]  The morning after the house call.  NOT IN GAME YET,
+   the beat plays on a plain card until the file ships. When it does, add
+   "scene-shark-collection" to ART_KEYS and put art: "scene-shark-collection" on
+   the shark_collection scene.
+   Style note: this is the funniest beat in the game and there is no violence in
+   it anywhere. The visit already happened, off screen, between two paragraphs.
+   Draw the aftermath and draw the marriage. Nobody is menacing, nobody is hurt
+   in a way you can see, and the only thing on his leg is a bag of frozen peas.
+   She is the subject of this picture, not him. Read it as devotion, not as
+   consequence. If a viewer's first thought is "she is going to drive him to the
+   show anyway," it is right. If their first thought is about what happened in
+   the garage, it is wrong. No blood, no bruises, no crutches, no cast, no
+   menace, no third party still present.
+   ...........................................................................
+   Pixel art, warm late-afternoon light through an open garage door. In the
+   middle of the garage floor, out of place on the concrete, sits a kitchen chair
+   from the house, and the mechanic is sitting in it, seen from behind and to the
+   side, one leg stuck straight out with a bag of frozen peas resting on the
+   knee, a mug of coffee on the toolbox beside him. He is fine. He is a little
+   embarrassed. His posture is a man who has been told to stay put. Standing
+   beside the chair, and clearly the subject of the picture, the wife holds the
+   truck keys up on one finger with a flat, fond, entirely unimpressed look, a
+   dish towel still over her shoulder, the calendar from the fridge in her other
+   hand with Saturday circled. Behind them the project car waits in the bay with
+   the show placard already tucked under the wiper. On the floor by the chair, a
+   toolbox drawer sits slightly open where somebody knocked it. Through the open
+   door, a plain sedan is a small clean shape already down at the end of the
+   street, leaving. Warm amber garage light, cool blue afternoon outside, the
+   palette law's dusk sky beyond the driveway. Domestic, affectionate and quietly
+   funny, "you absolute idiot, get in the truck" energy. Keep the lower-left
+   quarter calm for a caption.
+
    [ scene-loan-shark-paid ]  The debt is cleared, you get the title back.
    Style note: the payoff bookend to [ scene-loan-shark ], same room, gloom gone.
    ...........................................................................
@@ -11193,7 +11225,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.70.0";
+      const GAME_VERSION = "0.71.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -11333,6 +11365,10 @@
           lastLoanWeek: 0,
           sharkLoanBalance: 0,
           sharkLoanPayment: 750,
+          // The bank sends a letter when you come up short. He sends people.
+          sharkMissedPayments: 0,
+          // Weeks she is doing the driving, because you cannot work a clutch.
+          wifeChauffeur: 0,
           toolTruckBalance: 0,
           toolTruckPayment: 90,
           ringPawnBalance: 0,
@@ -12539,6 +12575,9 @@
             h: "@BuckStallion67",
             t: "that truck of yours. saw it. it's rough. rough isn't nothing, plenty of guys never drag one home at all. i enter every show on the calendar, so i'll be seeing it again. bring it when it runs. - B",
           });
+        }
+        if (choice.wifeDrives) {
+          state.wifeChauffeur = WIFE_CHAUFFEUR_WEEKS;
         }
         if (choice.mechanicTrust) {
           if (!state.mechanic) state.mechanic = { metOnce: false, trust: 0, shopVisits: 0, milestoneSeen: false };
@@ -14034,6 +14073,72 @@
         });
         saveGame();
         return true;
+      }
+      // He is a businessman, so the first short week is a reminder. The second
+      // one is a house call. Nothing is ever shown, the garage door goes down
+      // and comes back up, and what is on the other side of it is a man in a
+      // kitchen chair with a bag of frozen peas on his knee. She is the whole
+      // point of the beat: she has every right to say the thing and she does
+      // not say the thing, she asks what time you need to leave on Saturday.
+      const WIFE_CHAUFFEUR_WEEKS = 3;
+      function collectFromTheShark() {
+        const missed = state.sharkMissedPayments || 0;
+        if (missed === 1) {
+          pushNotice(
+            "🚬 There is a card under your wiper again. Same card, same number, and this time somebody has drawn a little smiley face on it in ballpoint. Your wife saw it before you did and has not mentioned it, which is worse.",
+            "bad",
+          );
+          return;
+        }
+        if (missed < 2) return;
+        state.sharkMissedPayments = 0;
+        queueScene({
+          id: "shark_collection",
+          emoji: "🪑",
+          title: "He Came By The House",
+          text:
+            "They pull up at four in the afternoon in a very clean sedan, which is somehow worse than a dirty one. The big one in the loud shirt admires the truck for a while. He is extremely polite. He asks a real question about the carburetor and listens to the whole answer. Then he asks about his money, and you do not have one of those, and he nods like he already knew and is disappointed on your behalf.<br><br>Somebody rolls the garage door down. Next door, the dog decides it would like to be indoors. There is a noise like a socket set going off a bench, and then another one, and then the door goes back up and the sedan is gone and you are sitting on the floor beside your own toolbox trying to work out how you got there.<br><br>Nothing is broken that a doctor would put a name to. But you are going to be sitting down for a while, and your right leg has developed strong opinions about the clutch.",
+          choices: [
+            {
+              label: "Ask her to drive Saturday",
+              lore: 6,
+              wifeDrives: true,
+              note:
+                "She was home the entire time. She comes out with a bag of frozen peas and a kitchen chair, puts the chair down in the middle of the garage, and helps you into it. She does not say the thing. She has earned the right to say the thing twice over and she does not say it. What she says is, 'What time do we leave Saturday?' You start to explain that you cannot work a clutch. 'I know you can't work a clutch,' she says, already reading the calendar on the fridge. 'I've watched you do it four hundred times. How hard can it be.'",
+              noteTone: "event-good",
+            },
+            {
+              label: "Tell her you'll manage",
+              lore: 3,
+              wifeDrives: true,
+              note:
+                "'I'll manage,' you say, from the floor, next to the toolbox. She looks at you for a long moment, goes inside, and comes back with frozen peas and a kitchen chair. She takes the keys off the hook on her way past. 'Saturday,' she says. 'I'll drive. You navigate.' You have never navigated anywhere in your life. She knows that. She takes the keys anyway.",
+              noteTone: "event-good",
+            },
+          ],
+        });
+      }
+      // She hands the keys back the week you can work a clutch again, and she
+      // is not thrilled about it.
+      function maybeEndWifeChauffeur() {
+        if (!(state.wifeChauffeur > 0)) return;
+        state.wifeChauffeur -= 1;
+        if (state.wifeChauffeur > 0) return;
+        queueScene({
+          id: "wife_chauffeur_over",
+          emoji: "🔑",
+          title: "Cleared To Drive",
+          text:
+            "You work the clutch in the driveway for a solid minute to prove it, while she watches from the porch with her arms folded.<br><br>'So I'm not driving Saturday.'<br><br>'You're not driving Saturday.'<br><br>She goes back inside. She does not slam the door, but there is intent in how she closes it. The seat is still set for somebody six inches shorter than you, every mirror is wrong, and there is a radio station in the presets that was not there before.",
+          choices: [
+            {
+              label: "Leave the station where it is",
+              lore: 7,
+              note: "You put the seat back and you leave the preset alone. It is the least you can do and, on the evidence, roughly the most you are capable of.",
+              noteTone: "event-good",
+            },
+          ],
+        });
       }
       function isEarlyGame() {
         return state.week <= 3 && state.history.length === 0;
@@ -17412,6 +17517,7 @@
             }
           : null;
         state.totalWeeks = (state.totalWeeks || 0) + 1;
+        maybeEndWifeChauffeur();
         // Mid-season beat: Buck calls you out at the school light on a
         // Sunday cruise. Fires once, weeks 11-16, needs a runner.
         if (
@@ -17522,14 +17628,24 @@
             paycheckNet -= payment;
             loanNotes.push(`$${fmt(payment)} bank payment`);
           }
+          // The bank takes what it takes and mails you about the rest. He does
+          // not take a partial payment, and he does not take an IOU, so if the
+          // money is not there the week goes down as a miss against you.
+          let sharkCameUpShort = false;
           if (state.sharkLoanBalance > 0) {
             const payment = Math.min(
               state.sharkLoanPayment,
               state.sharkLoanBalance,
             );
-            state.sharkLoanBalance -= payment;
-            paycheckNet -= payment;
-            loanNotes.push(`$${fmt(payment)} shark payment`);
+            if (state.money + paycheckNet >= payment) {
+              state.sharkLoanBalance -= payment;
+              paycheckNet -= payment;
+              state.sharkMissedPayments = 0;
+              loanNotes.push(`$${fmt(payment)} shark payment`);
+            } else {
+              state.sharkMissedPayments = (state.sharkMissedPayments || 0) + 1;
+              sharkCameUpShort = true;
+            }
           }
           state.money += paycheckNet;
           recordMoneyChange(paycheckNet, "Weekly paycheck");
@@ -17544,6 +17660,7 @@
             `Week ${state.week}. Payday hit, $${fmt(paycheckNet)} cleared${loanNote}.${firstPayNote}`,
             "ok",
           );
+          if (sharkCameUpShort) collectFromTheShark();
         } else {
           toast(`Week ${state.week}, ${reason}.`, "ok");
         }
@@ -18376,7 +18493,10 @@
         resolveCompletedRestorations(false);
         const show = getCurrentShows().find((s) => s.id === showId);
         const car = currentCar();
-        const fuelNeed = show.fuel;
+        // She keeps it at fifty-five and will not be talked out of it, so the
+        // trip costs less gas than it does when you drive it.
+        const sheDrives = (state.wifeChauffeur || 0) > 0;
+        const fuelNeed = sheDrives ? Math.max(1, Math.round(show.fuel * 0.7)) : show.fuel;
         const sponsors = activeSponsors();
 
         if (!car) return toast("Buy a car first.", "err");
@@ -18586,6 +18706,12 @@
         state.money = state.money - entryFee + totalEarned;
         recordMoneyChange(totalEarned - entryFee, `${show.name} payout`);
         noteFuelChange(state.fuel);
+        if (sheDrives) {
+          toast(
+            "She drove. Fifty-five the whole way, both hands on it, and she would not be talked out of either. You used less gas than you planned to.",
+            "event-good",
+          );
+        }
         state.fuel = Math.max(0, state.fuel - fuelNeed);
 
         // Off-podium finishes still meet some fans at the show. Tail
@@ -24119,7 +24245,7 @@ addEventListener("DOMContentLoaded",function(){
           }${
             familySelected
               ? ""
-              : `<div class="info-box" style="margin-top:10px"><div style="margin-bottom:10px">${fuelGauge(state.fuel, MAX_FUEL)}<div class="fuel-readout tiny muted">Tank <b style="color:var(--text)">${state.fuel}</b> / ${MAX_FUEL} gal</div></div><div class="btn-row two"><button class="btn" style="padding:6px 8px;font-size:11px" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>+5 Gal · $20</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright);padding:6px 8px;font-size:11px" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill · $${fmt(fillAmount * FUEL_PRICE)}</button></div></div>`
+              : `${(state.wifeChauffeur || 0) > 0 ? `<div class="info-box" style="background:rgba(143,203,126,0.07);border:1px solid rgba(143,203,126,0.4);margin-top:10px;padding:10px 12px"><div class="tiny" style="color:var(--green-bright);font-weight:bold;margin-bottom:2px">🔑 She's driving</div><div class="tiny muted" style="line-height:1.5">Your right leg is off the clutch for ${state.wifeChauffeur} more week${state.wifeChauffeur === 1 ? "" : "s"}. Shows are still on, she is taking you. She drives it easier than you do, so the trip costs less gas.</div></div>` : ""}<div class="info-box" style="margin-top:10px"><div style="margin-bottom:10px">${fuelGauge(state.fuel, MAX_FUEL)}<div class="fuel-readout tiny muted">Tank <b style="color:var(--text)">${state.fuel}</b> / ${MAX_FUEL} gal</div></div><div class="btn-row two"><button class="btn" style="padding:6px 8px;font-size:11px" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE || state.fuel >= MAX_FUEL ? "disabled" : ""}>+5 Gal · $20</button><button class="btn" style="background:#7da0c2;border-color:var(--blue-bright);padding:6px 8px;font-size:11px" onclick="buyFuel(${fillAmount})" ${fillAmount <= 0 || state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill · $${fmt(fillAmount * FUEL_PRICE)}</button></div></div>`
           }`,
           "",
           "#7da0c2",
@@ -26317,7 +26443,9 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           state.showLoading ? 1 : 0,
           state.showStage || "",
           "notice:" + ((state.noticeQueue && state.noticeQueue.length) || 0),
-          state.pendingScene ? 1 : 0,
+          // Which scene, not just whether there is one. Two scenes swapping
+          // straight over each other left the first one on screen.
+          state.pendingScene ? "scene:" + (state.pendingScene.id || state.pendingScene.title || 1) : 0,
           state.showStore ? 1 : 0,
           state.showStore ? `loan:${state.bankLoanBalance}:${state.sharkLoanBalance}:${state.toolTruckBalance || 0}:${state.ringPawnBalance || 0}` : "",
           state.pendingEvent

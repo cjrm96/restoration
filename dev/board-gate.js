@@ -52,32 +52,49 @@ function stripComments(text) {
   let out = "";
   let i = 0;
   const n = text.length;
-  let mode = "code"; // code | line | block | sq | dq | tpl
+  // A stack, not a single mode, because a ${ } inside a template literal is
+  // real code again and its closing } goes back to the string. Without that,
+  // an apostrophe inside a nested template ("She's driving" in a ${...} arm)
+  // was read as the start of a code string, and everything after it desynced:
+  // later comments stopped being stripped and the jargon check started firing
+  // on renderer notes it is explicitly meant to ignore.
+  const stack = [{ mode: "code", braces: 0 }];
+  const top = () => stack[stack.length - 1];
   while (i < n) {
     const c = text[i];
     const c2 = text[i + 1];
+    const mode = top().mode;
     if (mode === "code") {
-      if (c === "/" && c2 === "/") { out += "  "; i += 2; mode = "line"; continue; }
-      if (c === "/" && c2 === "*") { out += "  "; i += 2; mode = "block"; continue; }
-      if (c === "'") { out += c; i++; mode = "sq"; continue; }
-      if (c === '"') { out += c; i++; mode = "dq"; continue; }
-      if (c === "`") { out += c; i++; mode = "tpl"; continue; }
+      if (c === "/" && c2 === "/") { out += "  "; i += 2; stack.push({ mode: "line" }); continue; }
+      if (c === "/" && c2 === "*") { out += "  "; i += 2; stack.push({ mode: "block" }); continue; }
+      if (c === "'") { out += c; i++; stack.push({ mode: "sq" }); continue; }
+      if (c === '"') { out += c; i++; stack.push({ mode: "dq" }); continue; }
+      if (c === "`") { out += c; i++; stack.push({ mode: "tpl" }); continue; }
+      if (c === "{") { top().braces++; out += c; i++; continue; }
+      if (c === "}") {
+        if (top().braces > 0) top().braces--;
+        else if (stack.length > 1 && stack[stack.length - 2].mode === "tpl") stack.pop();
+        out += c; i++; continue;
+      }
       out += c; i++; continue;
     }
     if (mode === "line") {
-      if (c === "\n") { out += c; i++; mode = "code"; continue; }
+      if (c === "\n") { out += c; i++; stack.pop(); continue; }
       out += c === "\t" ? "\t" : " "; i++; continue;
     }
     if (mode === "block") {
-      if (c === "*" && c2 === "/") { out += "  "; i += 2; mode = "code"; continue; }
+      if (c === "*" && c2 === "/") { out += "  "; i += 2; stack.pop(); continue; }
       out += c === "\n" ? "\n" : c === "\t" ? "\t" : " "; i++; continue;
     }
     // inside a string: copy verbatim, honour escapes, watch for the closer
     if (c === "\\") { out += c + (c2 || ""); i += 2; continue; }
+    if (mode === "tpl" && c === "$" && c2 === "{") {
+      out += "${"; i += 2; stack.push({ mode: "code", braces: 0 }); continue;
+    }
     out += c; i++;
-    if (mode === "sq" && c === "'") mode = "code";
-    else if (mode === "dq" && c === '"') mode = "code";
-    else if (mode === "tpl" && c === "`") mode = "code";
+    if (mode === "sq" && c === "'") stack.pop();
+    else if (mode === "dq" && c === '"') stack.pop();
+    else if (mode === "tpl" && c === "`") stack.pop();
   }
   return out;
 }
