@@ -6507,9 +6507,9 @@
    cigar smoke curling. Desperate, "this is a bad idea and you're doing it anyway"
    energy. Keep the lower-left quarter calm.
 
-   THE HOUSE CALL, a three-card run. NOT IN GAME YET: all three beats play on
-   plain cards until the files ship. When they do, add the three keys to
-   ART_KEYS and nothing else changes, the scenes already name them.
+   THE HOUSE CALL, a three-card run. SHIPPED: all three files are in
+   assets/art and all three keys are in ART_KEYS, so the beats play with art
+   behind them. Sources kept in art/ under the same names.
    ...........................................................................
    Read these three as one shot list, not three pictures. Same driveway, same
    camera position, same time of day, same light, three moments. The camera
@@ -6883,6 +6883,9 @@
         "scene-yard-invite",
         "scene-swap-invite",
         "scene-shark-lot",
+        "scene-shark-driveway",
+        "scene-shark-door-down",
+        "scene-shark-aftermath",
         "scene-season-end",
         "scene-season-start",
         "scene-friday-night-lot",
@@ -11502,7 +11505,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.73.3";
+      const GAME_VERSION = "0.74.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
