@@ -709,41 +709,92 @@ const pass = (msg) => console.log("✓", msg);
   if (typeof shopEventsOk === "string") fail("shop-week events: " + shopEventsOk);
   pass(`shop weeks: ${shopEventsOk.blocked} hands-on beats sit out, ${shopEventsOk.kept} scene beats carry on`);
 
-  // ── the show flyer. A cleared check must not print its tick twice, and the
-  // payout has to put the win first instead of five identical chips. ──
+  // ── the bill. The show card used to be a form: nine bordered objects all
+  // shouting at one volume, a five place payout table, a three tick checklist
+  // and a red validation bar, behind a four button tier filter. It is a
+  // printed bill now, and every tier pins up on the same board. ──
   const flyerOk = await page.evaluate(() => {
     const stash = { stage: state.onboardStage, view: state.view, hist: state.history,
-                    money: state.money, fuel: state.fuel, act: state.activeRestorations };
+                    money: state.money, fuel: state.fuel, act: state.activeRestorations,
+                    season: state.seasonNumber };
     state.onboardStage = 3; state.pendingUnlock = null; clearTabArrival();
-    state.noticeQueue = []; state.money = 5000; state.fuel = 50; state.activeRestorations = [];
+    state.noticeQueue = []; state.money = 90000; state.fuel = 60; state.activeRestorations = [];
     const c = currentCar();
     const car0 = { e: c.engine, t: c.transmission, b: c.brakes, s: c.steering };
     c.engine = 70; c.transmission = 65; c.brakes = 65; c.steering = 65;
-    state.history = [{ tier: "Cars & Coffee", place: 2, show: "Coffee" }];
-    setView("shows"); render("full");
-    const card = document.querySelector(".panel.show-card");
     const restore = () => {
       Object.assign(c, { engine: car0.e, transmission: car0.t, brakes: car0.b, steering: car0.s });
       Object.assign(state, { onboardStage: stash.stage, history: stash.hist, money: stash.money,
-        fuel: stash.fuel, activeRestorations: stash.act, noticeQueue: [] });
+        fuel: stash.fuel, activeRestorations: stash.act, seasonNumber: stash.season,
+        noticeQueue: [] });
       setView(stash.view); render("full");
     };
-    if (!card) { restore(); return "no show card rendered"; }
-    const txt = card.innerText;
+    // A ladder deep enough that every tier is reachable at once.
+    const ladder = [];
+    for (let i = 0; i < 6; i++) ladder.push({ tier: "Cars & Coffee", place: 1, show: 0 });
+    for (let i = 0; i < 8; i++) ladder.push({ tier: "Local", place: 1, show: 1 });
+    for (let i = 0; i < 6; i++) ladder.push({ tier: "Regional", place: 1, show: 2 });
+    state.history = ladder;
+    state.seasonNumber = 1;
+    setView("shows"); render("full");
+    const bills = [...document.querySelectorAll(".bill")];
     const res = (() => {
-      if (/✓[^\n]*✓/.test(txt)) return "a cleared check is printing its tick twice";
-      if (!card.querySelector(".show-status")) return "the flyer has no status badge";
-      const places = card.querySelectorAll(".payout-place");
-      if (places.length && !card.querySelector(".payout-place.win"))
-        return "the payout does not weight first place";
-      if (card.querySelector(".show-prize")) return "the old flat prize chips are still rendering";
+      if (!bills.length) return "no bill rendered";
+      if (document.querySelector(".panel.show-card"))
+        return "the old show card is still rendering";
+      // Every tier on one board, so the filter that paged between them is gone.
+      // Measured: five bills a week, never more, so four buttons was navigation
+      // for a list that fits on the screen.
+      if (document.querySelector("#appContent .cat-pill-row"))
+        return "the tier filter is back on the show board";
+      const tiers = new Set(bills.map((b) =>
+        b.className.includes("loud") ? "loud" : "quiet"));
+      if (tiers.size < 2) return "both paper weights should be on the board at once";
+      // One headline per bill, not nine boxes at one volume.
+      const boxes = (el) => [...el.querySelectorAll("*")].filter((e) => {
+        const cs = getComputedStyle(e);
+        const bordered = parseFloat(cs.borderTopWidth) > 0 || parseFloat(cs.borderLeftWidth) > 0;
+        const filled = cs.backgroundImage !== "none" ||
+          (cs.backgroundColor !== "rgba(0, 0, 0, 0)" && cs.backgroundColor !== "transparent");
+        const r = e.getBoundingClientRect();
+        return (bordered || filled) && r.height > 10 && r.width > 20;
+      }).length;
+      const worst = Math.max(...bills.map(boxes));
+      if (worst > 5) return "a bill is back to " + worst + " bordered objects";
+      // Nobody prints a checklist or a validation bar on a poster.
+      if (document.querySelector(".show-prep, .prep-block, .prep-clear, .show-payout"))
+        return "the checklist or the payout table survived onto the bill";
+      // Each show carries its own count. Six Local shows all claiming to be
+      // the same annual would be a spreadsheet wearing a costume.
+      const annuals = bills
+        .map((b) => (b.querySelector(".bill-annual") || {}).textContent || "")
+        .filter((t) => /Annual/.test(t));
+      if (annuals.length < 2) return "no bill is dated";
+      if (new Set(annuals).size !== annuals.length)
+        return "two shows claim the same annual: " + annuals.join(" | ");
+      // A weekly coffee meet has no such thing as an annual.
+      const coffee = bills.find((b) =>
+        /Coffee/.test((b.querySelector(".bill-name") || {}).textContent || ""));
+      if (coffee && /Annual/.test((coffee.querySelector(".bill-annual") || {}).textContent || ""))
+        return "a weekly coffee meet is claiming an annual";
+      // And it climbs with the seasons, without the game ever saying so.
+      const firstName = (bills.find((b) => /Annual/.test(
+        (b.querySelector(".bill-annual") || {}).textContent || "")) || {});
+      const s1 = (firstName.querySelector(".bill-annual") || {}).textContent;
+      state.seasonNumber = 3; render("full");
+      const s3 = (() => {
+        const b = [...document.querySelectorAll(".bill")].find((x) =>
+          /Annual/.test((x.querySelector(".bill-annual") || {}).textContent || ""));
+        return b ? b.querySelector(".bill-annual").textContent : "";
+      })();
+      if (s1 === s3) return "the annual count does not move with the season";
       return true;
     })();
     restore();
     return res;
   });
-  if (flyerOk !== true) fail("show flyer: " + flyerOk);
-  pass("show flyer: weighted payout, status badge, no doubled ticks");
+  if (flyerOk !== true) fail("the bill: " + flyerOk);
+  pass("the bill: one board, both paper weights, its own date, no checklist");
 
   // ── the two notes on the corkboard. They were 11px of mid-tan on tan cork
   // at 85% opacity, effectively invisible. They are paper slips now, and this

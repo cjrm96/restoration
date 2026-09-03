@@ -438,6 +438,27 @@
         gap: 6px;
         margin-bottom: 12px;
       }
+      .cat-groups {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px 16px;
+        margin-bottom: 11px;
+      }
+      .cat-group { min-width: 0; }
+      .cat-group-h {
+        font-size: 8.5px;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: #857a6c;
+        margin-bottom: 3px;
+      }
+      .cat-group-row { display: flex; flex-wrap: wrap; gap: 4px; }
+      /* The strip is browsing, not the main road: Next Jobs is the default
+         screen. So the pills sit a shade smaller here than a nav pill does. */
+      .cat-groups .cat-pill { padding: 5px 11px; font-size: 11.5px; }
+      @media (max-width: 640px) {
+        .cat-groups { gap: 6px 11px; }
+      }
       .cat-pill {
         appearance: none;
         background: linear-gradient(180deg, #2a221c 0%, #1a1410 100%);
@@ -947,6 +968,150 @@
         font-size: 11.5px;
         line-height: 1.5;
         color: #b4a794;
+      }
+
+      /* ── The bill ────────────────────────────────────────────────────
+         A show is an invitation, and the card was rendering an eligibility
+         determination: a status badge, a five place payout table, two perk
+         chips, a three tick checklist and a red validation box, every one of
+         them a bordered object shouting at the same volume. Nothing was the
+         headline, which is exactly what a form is.
+
+         So it is a printed bill now, the way the CSS above always claimed it
+         was: a coloured border, the years it has been running and where it
+         happens, the name in big display type, the day, the money, and the
+         truck you would be taking. Everything that qualifies you moved to one
+         line at the bottom, because no poster has ever printed your credit
+         score on the front.
+
+         Two weights. The weekly meets are a photocopy somebody pinned up at
+         the coffee place. The two you build toward are the real thing. */
+      .bill {
+        position: relative;
+        margin-top: 20px;
+        padding: 3px;
+        border-radius: 5px;
+        background: linear-gradient(160deg, var(--bill-edge, #6d5b45) 0%, var(--bill-edge2, #40352a) 100%);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+      }
+      .bill-inner {
+        position: relative;
+        padding: 15px 17px 14px;
+        border-radius: 3px;
+        background:
+          linear-gradient(180deg, rgba(255, 250, 240, 0.045) 0%, transparent 30%),
+          linear-gradient(178deg, var(--bill-paper, #191410) 0%, var(--bill-paper2, #120e0a) 100%);
+        border: 1px solid rgba(0, 0, 0, 0.45);
+        overflow: hidden;
+      }
+      /* The pin, kept from the old card. It is still a corkboard. */
+      .bill::before {
+        content: "";
+        position: absolute;
+        top: -9px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #f08070 0%, #c4453a 50%, #7a1f15 100%);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.55), inset 0 -2px 3px rgba(0, 0, 0, 0.35);
+        z-index: 3;
+      }
+      .bill-annual {
+        font-size: 9.5px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--bill-ink-soft, #9a8b76);
+        margin-bottom: 3px;
+      }
+      .bill-name {
+        font-family: Georgia, "Times New Roman", serif;
+        font-weight: bold;
+        font-size: 27px;
+        line-height: 1.02;
+        letter-spacing: -0.012em;
+        color: var(--bill-ink, #f0e2c4);
+        margin-bottom: 5px;
+      }
+      /* The big shows get the chrome lettering off the real posters. The
+         weekly ones deliberately do not: that is the whole ladder. */
+      .bill.loud .bill-name {
+        font-size: 33px;
+        color: #fbf1d8;
+        text-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.5),
+          0 2px 0 var(--bill-edge, #7a5a2e),
+          0 3px 0 rgba(0, 0, 0, 0.4),
+          0 5px 12px rgba(0, 0, 0, 0.6);
+      }
+      .bill-when {
+        font-size: 10.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-weight: bold;
+        color: var(--bill-when, #d8bd8a);
+      }
+      .bill-when.now { color: #9fd18e; }
+      .bill-when.shut { color: #9b9083; font-weight: normal; }
+      .bill-rule {
+        height: 1px;
+        margin: 11px 0;
+        background: linear-gradient(90deg, transparent, var(--bill-edge, #7a5a2e) 12%, var(--bill-edge, #7a5a2e) 88%, transparent);
+        opacity: 0.55;
+      }
+      /* Money and truck sit on one line: what you could win, and what you
+         would be taking. The rest of the ladder is a footnote, not a table. */
+      .bill-body { display: flex; align-items: center; gap: 14px; }
+      .bill-money { flex: 0 0 auto; }
+      .bill-first {
+        font-family: Georgia, serif;
+        font-weight: bold;
+        font-size: 30px;
+        line-height: 1;
+        color: #f5dda6;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+      }
+      .bill.loud .bill-first { font-size: 36px; }
+      .bill-first-sub {
+        font-size: 9.5px;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+        color: #8d8172;
+        margin-top: 3px;
+      }
+      .bill-note {
+        font-size: 11px;
+        line-height: 1.5;
+        color: #b0a493;
+        margin-top: 10px;
+      }
+      .bill-foot {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 4px 12px;
+        margin-top: 11px;
+        padding-top: 9px;
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
+        font-size: 10.5px;
+        color: #8d8172;
+      }
+      .bill-foot b { color: #c3b49c; font-weight: bold; }
+      .bill-foot .sponsor { color: #9fd18e; }
+      /* Whatever is stopping you, in one line, at the bottom, where a real
+         flyer puts the small print. Not a red box across the middle. */
+      .bill-stop { color: #d09a90; }
+      .bill-go { color: #9fd18e; }
+      .bill .btn { margin-top: 11px; }
+      @media (max-width: 640px) {
+        .bill-inner { padding: 13px 13px 12px; }
+        .bill-annual { font-size: 8.5px; letter-spacing: 0.09em; }
+        .bill-name { font-size: 23px; }
+        .bill.loud .bill-name { font-size: 26px; }
+        .bill-body { gap: 10px; }
+        .bill-first { font-size: 26px; }
+        .bill.loud .bill-first { font-size: 30px; }
       }
 
       /* Perks: a sponsor covering your fee is good news and should look it,
@@ -11540,7 +11705,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.76.0";
+      const GAME_VERSION = "0.77.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -11615,7 +11780,6 @@
           shopSub: "suggested",
           toolCat: "all",
           marketTab: "sell",
-          showSub: null,
           history: [],
           result: null,
           won: false,
@@ -16588,7 +16752,6 @@
           // suddenly re-announce a rank they earned long ago, or replay the
           // first-brand-deal intro after they've already run deals.
           if (typeof state.repTierSeen !== "string") state.repTierSeen = reputationTitleOf();
-          if (state.showSub === "Family") state.showSub = "Cars & Coffee";
           if (typeof state.familyCruises !== "number")
             state.familyCruises = state.familySaturdaysTaken || 0;
           if (typeof state.ringEverPawned !== "boolean")
@@ -20215,13 +20378,38 @@
       // at the same level as the whole build. It belongs with the systems it
       // sits alongside, so it is the last pill in this row: every judged
       // category first, then the comforts that are not judged at all.
+      // Seventeen chips in one flat wall, three rows deep, and the eye bounces
+      // off it. A playtester asked for manila folders; what he was actually
+      // reading was seventeen of anything with no order to it. They group the
+      // way a shop groups them: what you reach through the hood, what you
+      // reach on a lift, and what you can see without opening anything. Same
+      // pills, same clicks, three headings.
+      const CAT_GROUPS = [
+        ["Under the hood", ["engine", "cooling", "fuel", "exhaust", "electrical"]],
+        ["Underneath", ["transmission", "differential", "brakes", "suspension", "steering", "wheels", "tires"]],
+        ["Body and inside", ["body", "paint", "interior", "chrome"]],
+      ];
       function buildCatPillRow() {
-        const cats = CATS.map(
-          (cat) =>
-            `<button class="cat-pill ${state.shopSub === "parts" && state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')"><span class="cat-pill-icon">${CAT_ICONS[cat]}</span>${CAT_LABELS[cat]}</button>`,
-        ).join("");
+        const grouped = CAT_GROUPS.flatMap(([, ids]) => ids);
+        // Anything new in CATS that nobody has filed yet still gets a pill.
+        const orphans = CATS.filter((c) => !grouped.includes(c));
+        const pill = (cat) =>
+          `<button class="cat-pill ${state.shopSub === "parts" && state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')"><span class="cat-pill-icon">${CAT_ICONS[cat]}</span>${CAT_LABELS[cat]}</button>`;
+        // Each group keeps its own block. Inline dividers packed tighter but
+        // let a group straddle a wrap, so Wheels and Tires ended up sitting
+        // under the next heading, and a strip that files a part in the wrong
+        // place is worse than one that files nothing.
+        const cats = CAT_GROUPS.map(
+          ([label, ids]) =>
+            `<div class="cat-group"><div class="cat-group-h">${label}</div><div class="cat-group-row">${ids
+              .filter((c) => CATS.includes(c))
+              .map(pill)
+              .join("")}</div></div>`,
+        ).join("") + (orphans.length ? `<div class="cat-group"><div class="cat-group-row">${orphans.map(pill).join("")}</div></div>` : "");
         const extras = `<button class="cat-pill ${state.shopSub === "extras" ? "active" : ""}" title="Creature comforts and finishing touches. Not judged, but they win over the scene and add real resale." onclick="setShopSub('extras')"><span class="cat-pill-icon">✨</span>Extras</button>`;
-        return `<div class="cat-pill-row">${cats}${extras}</div>`;
+        // Extras is not a judged system, so it sits under its own heading
+        // rather than trailing off the end of the trim row pretending to be one.
+        return `<div class="cat-groups">${cats}<div class="cat-group"><div class="cat-group-h">Not judged</div><div class="cat-group-row">${extras}</div></div></div>`;
       }
       function sellCarTabLocked() {
         const wifeCarAvailable = !state.wifeCarSold && !!currentCar();
@@ -20314,12 +20502,6 @@
           "err",
         );
       }
-      function setShowSub(tier) {
-        state.showSub = tier;
-        playSfx("click");
-        requestRender("full");
-      }
-
       /* ═══════════════════════════════════════════
      UI BUILDING BLOCKS
   ═══════════════════════════════════════════ */
@@ -24540,13 +24722,52 @@ addEventListener("DOMContentLoaded",function(){
         )}</div><div>${sideCol}</div></div>`;
       }
 
-      const SHOW_TIER_ICONS = {
-        "Cars & Coffee": "☕",
-        Local: "🏘️",
-        Regional: "🌎",
-        National: "🏆",
+      // How many years each show has been running, and where it happens. A
+      // real flyer leads with both, and the number is the cheapest history
+      // there is: the town was here before the player was.
+      //
+      // Every show carries its own count, because six Local shows all
+      // claiming to be the fourteenth annual is a spreadsheet wearing a
+      // costume. The weekly coffee meets get no number at all, since there is
+      // no such thing as the fourteenth annual Saturday morning.
+      const SHOW_BILL = {
+        1:   { annual: 42, place: "Palomar Junction" },
+        110: { annual: 58, place: "Main Street, Palomar Junction" },
+        111: { annual: 12, place: "The Strip, Palomar Junction" },
+        112: { annual: 6,  place: "The Old Cannery Lot" },
+        113: { annual: 19, place: "Palomar Junction" },
+        114: { annual: 9,  place: "Palomar Junction" },
+        101: { annual: 15, place: "Palomar Junction" },
+        102: { annual: 7,  place: "Palomar Junction" },
+        2:   { annual: 47, place: "The County Fairground" },
+        120: { annual: 21, place: "The County Fairground" },
+        121: { annual: 34, place: "The Valley Road" },
+        122: { annual: 29, place: "Palomar Grade" },
+        123: { annual: 16, place: "The County Fairground" },
+        3:   { annual: 61, place: "" },
+        130: { annual: 74, place: "" },
+        131: { annual: 23, place: "" },
+        132: { annual: 88, place: "" },
+        // 0 and 100 are the weekly coffee meets. No annual, on purpose.
+        0:   { place: "The lot behind the coffee place" },
+        100: { place: "The lot behind the coffee place" },
       };
-
+      function ordinal(n) {
+        const t = n % 100;
+        if (t >= 11 && t <= 13) return n + "th";
+        return n + (["th", "st", "nd", "rd"][n % 10] || "th");
+      }
+      // The count climbs with the seasons, so a player on their fourth run
+      // reads a different flyer than the one they saw in week one. Nothing in
+      // the game ever mentions that it moves.
+      function showBillLine(show) {
+        const bill = SHOW_BILL[show.id] || {};
+        const bits = [];
+        if (bill.annual)
+          bits.push(ordinal(bill.annual + ((state.seasonNumber || 1) - 1)) + " Annual");
+        if (bill.place) bits.push(bill.place);
+        return bits.join(" · ");
+      }
       function renderShows() {
         const car = currentCar();
         if (!car) return renderNoCar();
@@ -24555,34 +24776,11 @@ addEventListener("DOMContentLoaded",function(){
         const tierOrder = ["Cars & Coffee", "Local", "Regional", "National"];
         const tierReachable = (t) =>
           showProgressRequirement(SHOWS_MASTER.find((s) => s.tier === t)).ok;
-        if (
-          state.showSub !== "Family" &&
-          (!state.showSub ||
-            !tierOrder.includes(state.showSub) ||
-            !tierReachable(state.showSub))
-        ) {
-          const open = tierOrder.filter(tierReachable);
-          state.showSub = open[open.length - 1] || "Cars & Coffee";
-        }
         const familySelected = false;
-        // The ladder is motivating, three dead buttons are not. Only the tiers
-        // the player can actually enter get a pill; the next rung up gets one
-        // quiet line naming what it takes, which is the same information the
-        // locked buttons carried and a quarter of the furniture.
-        const openTiers = tierOrder.filter(tierReachable);
         const nextTier = tierOrder.find((t) => !tierReachable(t));
         const nextTierNote = nextTier
           ? `<div class="board-note">Next rung: <b>${nextTier}</b> · ${showProgressRequirement(SHOWS_MASTER.find((s) => s.tier === nextTier)).msg || "keep climbing."}</div>`
           : "";
-        const pillRow =
-          openTiers.length < 2
-            ? ""
-            : `<div class="cat-pill-row">${openTiers
-                .map(
-                  (t) =>
-                    `<button class="cat-pill ${state.showSub === t ? "active" : ""}" onclick="setShowSub('${t}')"><span class="cat-pill-icon">${SHOW_TIER_ICONS[t]}</span>${t}</button>`,
-                )
-                .join("")}</div>`;
         // The season's scene taste, shown from the prep board so the player
         // can read the room before committing a build direction. A "split"
         // season has no lean, so the banner would just take up space telling
@@ -24590,19 +24788,21 @@ addEventListener("DOMContentLoaded",function(){
         const tasteBanner = familySelected || sceneTasteId() === "split"
           ? ""
           : `<div class="tiny" style="text-align:center;padding:7px 10px;margin:2px 0 8px;color:var(--gold-soft);background:rgba(217,162,79,0.06);border:1px solid rgba(217,162,79,0.22);border-radius:8px;line-height:1.5">${SCENE_TASTES[sceneTasteId()].showLine}</div>`;
-        const tierShows = shows.filter((s) => s.tier === state.showSub);
+        const tierShows = shows
+          .filter((s) => tierOrder.includes(s.tier) && tierReachable(s.tier))
+          .sort((a, b) => tierOrder.indexOf(a.tier) - tierOrder.indexOf(b.tier));
         // Hide fully-gated shows until their unlock conditions are met, so the
         // early/mid game stays lean. A hint tells the player more exist.
         const visibleShows = tierShows.filter((s) => !s.gate || evaluateShowGate(s).ok);
         const lockedAheadCount = tierShows.length - visibleShows.length;
         const lockedAheadHint = lockedAheadCount > 0
-          ? `<div class="board-note"><span class="note-lock">🔒</span>${lockedAheadCount} more ${state.showSub} event${lockedAheadCount === 1 ? "" : "s"} unlock as your reputation, garage, and seasons grow.</div>`
+          ? `<div class="board-note"><span class="note-lock">🔒</span>${lockedAheadCount} more event${lockedAheadCount === 1 ? "" : "s"} unlock as your reputation, garage, and seasons grow.</div>`
           : "";
         const showPrepBoard = heroPanel(
           "Show Prep Board",
           onboardStageVal() >= 3 ? "" : "Load the truck, check the fuel, roll it out",
           onboardStageVal() >= 3 ? "" : "Every show the car runs is one more story on the build.",
-          `${carPreview(car)}${pillRow}${nextTierNote}${tasteBanner}<div class="cards">${visibleShows
+          `${carPreview(car)}${nextTierNote}${tasteBanner}<div class="cards">${visibleShows
             .map((show) => {
               const progressReq = showProgressRequirement(show);
               const locked = getOverall(car) < show.minScore || !progressReq.ok;
@@ -24635,7 +24835,7 @@ addEventListener("DOMContentLoaded",function(){
               });
               const rivalLine =
                 show.tier === "Regional" || show.tier === "National"
-                  ? `<div class="tiny" style="color:var(--red-bright);margin-bottom:8px">🏎 Buck's '67 Stallion will be there · current score ~${getRivalBaseScore()}</div>`
+                  ? `<div class="bill-note" style="color:#d09a90">🏎 Buck is entered, scoring ~${getRivalBaseScore()}.</div>`
                   : "";
               // Show-prep checklist, every requirement gets a ✓ or ✗
               // so the player sees at a glance what's blocking entry.
@@ -24688,43 +24888,91 @@ addEventListener("DOMContentLoaded",function(){
                   ? blocking.map((c) => `<div class="prep-block"><span class="prep-block-icon">⚠️</span><span>${c.fail}</span></div>`).join("")
                   : `<div class="prep-ready">🏁 <span>She is loaded and ready to roll.</span></div>`
               }</div>`;
-              return panel(
-                show.name,
-                `${show.blurb ? `<div class="tiny muted" style="margin-bottom:10px;line-height:1.5;font-style:italic">${show.blurb}</div>` : ""}${show.axis && JUDGING_AXES[show.axis] ? `<div class="tiny" style="margin-bottom:8px;color:var(--gold-soft)">${JUDGING_AXES[show.axis].icon} Judged on ${JUDGING_AXES[show.axis].label} · your build scores ~${judgedShowScore(car, show)} here (${getOverall(car)} overall)</div>` : ""}${show.axis && JUDGING_AXES[show.axis] && setupAxisBias(car, show.axis) !== 0 ? `<div class="tiny" style="margin-bottom:8px;color:${setupAxisBias(car, show.axis) > 0 ? "var(--green-bright)" : "var(--red-bright)"}">${setupMatchupLine(car, show)}</div>` : ""}<div class="show-payout">${show.tier === "Cars & Coffee" ? `<div class="payout-none">No judges and no places. Free part raffle for anyone who turns up.</div>` : show.prizes.map((p, i) => `<div class="payout-place ${i === 0 ? "win" : i >= 3 ? "minor" : ""}"><span class="payout-rank">${["1st", "2nd", "3rd", "4th", "5th"][i]}</span><span class="payout-cash">${p > 0 ? "$" + fmt(p) : "&mdash;"}</span></div>`).join("")}</div>${(() => {
-                  // When the day is, said once, where the eye lands first.
-                  const st = show.enteredThisWeek
-                    ? ["shut", "Already entered"]
-                    : show.seasonClosed
-                      ? ["shut", "Closed until spring"]
-                      : show.weeksUntil === 0
-                        ? ["now", show.seasonWindow ? `Open now, closes after week ${show.seasonWindow.end}` : "Happening this week"]
-                        : ["soon", show.seasonWindow ? `Opens week ${show.seasonWindow.start}` : `${show.weeksUntil} week${show.weeksUntil === 1 ? "" : "s"} out`];
-                  return `<div style="margin-bottom:10px"><span class="show-status ${st[0]}">${st[1]}</span></div>`;
-                })()}${rivalLine}${(() => {
-                  // Perks are good news, but they are a footnote beside the
-                  // payout, not another headline in the same green.
-                  const perks = [];
-                  if (localSponsor) perks.push(`<span class="show-perk">🤝 ${localSponsor.name} covers the entry fee</span>`);
-                  if (bonus > 0 && show.tier !== "Cars & Coffee") perks.push(`<span class="show-perk">💵 Sponsor bonus +$${fmt(bonus)}</span>`);
-                  return perks.length ? `<div class="show-perks">${perks.join("")}</div>` : "";
-                })()}${checklistMarkup}${button(
-                    show.enteredThisWeek
-                      ? "Already entered this week"
-                      : show.seasonClosed
-                        ? "Closed until spring"
-                        : show.weeksUntil > 0
-                          ? (show.seasonWindow ? `Opens week ${show.seasonWindow.start}` : `Starts in ${show.weeksUntil} week${show.weeksUntil === 1 ? "" : "s"}`)
-                          : blocking.length
-                            ? blocking.length === 1 && !roadworthy(car) ? "Not roadworthy yet"
-                              : blocking.length === 1 && state.fuel < fuelNeed ? "Tank is too low"
-                              : blocking.length === 1 && hasActiveRestorations(car.id) ? "Still on the lift"
-                              : "Not ready to roll"
-                            : show.tier === "Cars & Coffee" ? "Roll Up And Hang Out" : `Roll In And Compete · ${entryFee > 0 ? "$" + fmt(entryFee) : "Free"}`,
-                    `beginShowEntry(${show.id})`, off, "", "width:100%")}`,
-                `${show.tier} · ${show.tier === "Cars & Coffee" ? "casual meetup" : `base entry $${fmt(show.fee)}`} · fuel ${fuelNeed} gal`,
-                tc,
-                "show-card",
+              // The bill. Everything above this decided what is true; this
+              // decides what is loud. The name and the money are the poster,
+              // the truck is the illustration, and everything that qualifies
+              // you is one line of small print at the bottom.
+              const loud = show.tier === "Regional" || show.tier === "National";
+              const billVars =
+                show.tier === "National"
+                  ? "--bill-edge:#b98a35;--bill-edge2:#6d4d18;--bill-paper:#1d1509;--bill-paper2:#130d05;--bill-ink:#fbeecd;--bill-ink-soft:#b09a68"
+                  : show.tier === "Regional"
+                    ? "--bill-edge:#5f7f9e;--bill-edge2:#2f4257;--bill-paper:#101821;--bill-paper2:#0b1118;--bill-ink:#e4eef7;--bill-ink-soft:#8ea3b6"
+                    : show.tier === "Cars & Coffee"
+                      ? "--bill-edge:#7a5a3c;--bill-edge2:#42301f;--bill-paper:#181209;--bill-paper2:#110c06;--bill-ink:#ecd9b6;--bill-ink-soft:#9a8b70"
+                      : "--bill-edge:#6d6455;--bill-edge2:#3b352c;--bill-paper:#161410;--bill-paper2:#100e0b;--bill-ink:#e8dfcd;--bill-ink-soft:#968d7c";
+              // When it is, said once, in the place a flyer says it.
+              const when = show.enteredThisWeek
+                ? ["shut", "You already went this week"]
+                : show.seasonClosed
+                  ? ["shut", "Closed until spring"]
+                  : show.weeksUntil === 0
+                    ? ["now", show.seasonWindow ? `This Saturday, and it shuts after week ${show.seasonWindow.end}` : "This Saturday"]
+                    : ["", show.seasonWindow ? `Opens week ${show.seasonWindow.start}` : `${show.weeksUntil} Saturday${show.weeksUntil === 1 ? "" : "s"} from now`];
+              const annualLine = showBillLine(show);
+              // The truck was going to be the illustration here, one per bill,
+              // in whatever state the build is actually in. It is not, and the
+              // measurements are why: the prep board renders the same truck at
+              // full size directly above these, and five bills all carrying it
+              // would be six copies of one picture on one screen, identical to
+              // each other. What actually separates one real flyer from the
+              // next is the name set big, the years, the place and the money.
+              // So that is the bill.
+              // A coffee meet has no purse, so it gets no money block. Saying
+              // so in the same slot at the same size was three lines of prose
+              // where a number goes, which made the quietest bill the tallest.
+              const money =
+                show.tier === "Cars & Coffee"
+                  ? ""
+                  : `<div class="bill-body"><div class="bill-money"><div class="bill-first">$${fmt(show.prizes[0])}</div><div class="bill-first-sub">to win · 5 places paid</div></div></div>`;
+              // The small print. Entry, fuel, what a sponsor is covering, and
+              // whatever is stopping you, in that order, in one strip.
+              const foot = [];
+              foot.push(
+                entryFee > 0
+                  ? `Entry <b>$${fmt(entryFee)}</b>`
+                  : localSponsor
+                    ? `<span class="sponsor">${localSponsor.name} covers the entry</span>`
+                    : `Entry <b>free</b>`,
               );
+              foot.push(`Fuel <b>${fuelNeed} gal</b>`);
+              if (show.tier === "Cars & Coffee")
+                foot.push("No judges. Free part raffle for whoever turns up.");
+              if (bonus > 0 && show.tier !== "Cars & Coffee")
+                foot.push(`<span class="sponsor">Sponsor pays <b>+$${fmt(bonus)}</b></span>`);
+              if (show.axis && JUDGING_AXES[show.axis])
+                foot.push(`Judged on <b>${JUDGING_AXES[show.axis].label}</b>, you score <b>~${judgedShowScore(car, show)}</b>`);
+              // One line, and it wants something. It used to be a red bar
+              // across the middle of the card reading like a form validator.
+              const stopLine = blocking.length
+                ? `<div class="bill-note bill-stop">${blocking[0].fail}</div>`
+                : when[0] === "now"
+                  ? `<div class="bill-note bill-go">She is loaded and ready to roll.</div>`
+                  : "";
+              return `<div class="bill${loud ? " loud" : ""}" style="${billVars}"><div class="bill-inner">
+                ${annualLine ? `<div class="bill-annual">${annualLine}</div>` : ""}
+                <div class="bill-name">${show.name}</div>
+                <div class="bill-when ${when[0]}">${when[1]}</div>
+                <div class="bill-rule"></div>
+                ${money}
+                <div class="bill-foot">${foot.map((f) => `<span>${f}</span>`).join("")}</div>
+                ${stopLine}
+                ${rivalLine}
+                ${button(
+                  show.enteredThisWeek
+                    ? "Already entered this week"
+                    : show.seasonClosed
+                      ? "Closed until spring"
+                      : show.weeksUntil > 0
+                        ? (show.seasonWindow ? `Opens week ${show.seasonWindow.start}` : `Starts in ${show.weeksUntil} week${show.weeksUntil === 1 ? "" : "s"}`)
+                        : blocking.length
+                          ? blocking.length === 1 && !roadworthy(car) ? "Not roadworthy yet"
+                            : blocking.length === 1 && state.fuel < fuelNeed ? "Tank is too low"
+                            : blocking.length === 1 && hasActiveRestorations(car.id) ? "Still on the lift"
+                            : "Not ready to roll"
+                          : show.tier === "Cars & Coffee" ? "Roll Up And Hang Out" : `Roll In And Compete · ${entryFee > 0 ? "$" + fmt(entryFee) : "Free"}`,
+                  `beginShowEntry(${show.id})`, off, "", "width:100%")}
+              </div></div>`;
             })
             .join("")}${lockedAheadHint}</div>`,
           "gold",
@@ -27173,7 +27421,6 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           state.wifeCarSold ? 1 : 0,
           tripKnown("yard") ? 1 : 0,
           tripKnown("swap") ? 1 : 0,
-          state.showSub,
           state.marketplaceStashExpanded ? 1 : 0,
           state.marketplaceListedExpanded ? 1 : 0,
           state.lotExpanded ? 1 : 0,
