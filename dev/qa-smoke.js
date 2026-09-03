@@ -1449,6 +1449,137 @@ const pass = (msg) => console.log("✓", msg);
   if (tickerOk !== true) fail("reactive ticker: " + tickerOk);
   pass("world-talks-back ticker composes from live state");
 
+  // ── every way out of a Marketplace chat says something ──
+  // A playtester reported the knife-guy trade "didn't do anything". It did
+  // not: the resolver only ever read `choice.toast`, and 130 of the 150
+  // choices carry their payoff in `choice.note`, so the chat closed in
+  // silence. Trades were worse, they never completed at all, so the part
+  // stayed listed and the goods were free. Both are cheap to re-break.
+  const mpOk = await page.evaluate(() => {
+    const flat = [];
+    MARKETPLACE_SCENARIOS.forEach((sc) => {
+      const steps = sc.steps && sc.steps.length ? sc.steps : [sc];
+      steps.forEach((st) =>
+        (st.choices || []).forEach((c) => flat.push({ sc, c })),
+      );
+    });
+    if (flat.length < 140) return "scenario pool shrank: " + flat.length;
+    // "next" continues the chain and correctly shows nothing yet.
+    const mute = flat.filter(
+      ({ c }) => c.outcome !== "next" && !c.note && !c.toast,
+    );
+    if (mute.length)
+      return (
+        mute.length + " choices resolve silently, first: " + mute[0].c.label
+      );
+
+    // Now drive a real trade end to end and check the part actually leaves.
+    const snap = JSON.stringify({
+      inv: state.partsInventory, money: state.money,
+      offer: state.pendingMarketplaceOffer, listings: state.marketplaceListings,
+      notices: state.noticeQueue,
+    });
+    const trade = MARKETPLACE_SCENARIOS.find((x) => x.id === "tradeGuns");
+    if (!trade) return "tradeGuns scenario is gone";
+    state.noticeQueue = [];
+    state.partsInventory = [{
+      id: "qa_trade", name: "QA Alternator", sourcePart: "QA", category: "electrical",
+      askingPrice: 200, baselineValue: 150, listed: true, sold: false,
+    }];
+    state.marketplaceListings = ["qa_trade"];
+    const cashBefore = state.money;
+    state.pendingMarketplaceOffer = {
+      itemId: "qa_trade", offer: 200, buyer: "QA Buyer", scenario: trade,
+      scenarioActive: true, scenarioStep: 0, scenarioTyping: false, scenarioSaid: [],
+    };
+    const take = trade.choices.findIndex((c) => c.outcome === "inventoryBonus");
+    respondMarketplaceScenario(take);
+    const item = state.partsInventory.find((i) => i.id === "qa_trade");
+    const gotGoods = state.partsInventory.some(
+      (i) => i.id !== "qa_trade" && !i.sold,
+    );
+    const toldTheStory = (state.noticeQueue || []).some((n) =>
+      (n.text || "").includes("box of knives"),
+    );
+    const stillListed = (state.marketplaceListings || []).includes("qa_trade");
+    const paidTwice = state.money !== cashBefore + (trade.choices[take].cash || 0);
+    const restore = JSON.parse(snap);
+    state.partsInventory = restore.inv; state.money = restore.money;
+    state.pendingMarketplaceOffer = restore.offer;
+    state.marketplaceListings = restore.listings; state.noticeQueue = restore.notices;
+    if (!item || !item.sold) return "a trade left the part in your inventory";
+    if (stillListed) return "a trade left the listing live";
+    if (!gotGoods) return "a trade paid out nothing";
+    if (!toldTheStory) return "the trade resolved without showing its story";
+    if (paidTwice) return "trade cash was paid twice";
+    return true;
+  });
+  if (mpOk !== true) fail("marketplace dead ends: " + mpOk);
+  pass("no Marketplace choice resolves in silence, and a trade closes the sale");
+
+  // ── the bank has its own door, the shark still has to find you ──
+  // Everything behind the Loans button used to wait on the loan shark, who
+  // needs five shows, which needs a truck that runs, which needs money. A
+  // player who ran dry in week five had nowhere to go at all.
+  const bankDoorOk = await page.evaluate(() => {
+    const keys = ["loansUnlocked", "bankMentioned", "leanStreak", "week",
+      "sharkMetWeek", "sharkEverTaken", "sharkLoanBalance", "history",
+      "pendingScene", "pendingEvent", "money", "lifeBeatWeek", "cutscene",
+      "view", "showStage", "showLoading", "seasonWrap", "gameOver",
+      "tutorialComplete"];
+    const snap = {}; keys.forEach((k) => (snap[k] = state[k]));
+    state.loansUnlocked = false; state.bankMentioned = false;
+    state.sharkMetWeek = null; state.sharkEverTaken = false;
+    state.sharkLoanBalance = 0; state.history = [];
+    state.pendingScene = null; state.pendingEvent = null; state.cutscene = null;
+    state.view = "workshop"; state.showStage = null; state.showLoading = false;
+    state.seasonWrap = null; state.gameOver = false; state.tutorialComplete = true;
+    state.money = 142; state.week = 5; state.leanStreak = 3;
+    state.lifeBeatWeek = null;
+    // queueScene routes to the event queue whenever a modal is up, so look
+    // in both places rather than assuming which one it landed in.
+    state.eventQueue = []; state.noticeQueue = [];
+    const why = !beatWindowOpen() ? "beat window shut" : "";
+    const fired = maybeTriggerBankIntro();
+    const queued = (state.eventQueue || []).find(
+      (e) => e && e.payload && e.payload.id === "bank_intro",
+    );
+    const scene =
+      state.pendingScene && state.pendingScene.id === "bank_intro"
+        ? state.pendingScene
+        : queued && queued.payload;
+    const openedByBank =
+      !!scene && scene.id === "bank_intro" && (scene.choices || []).length === 2;
+    // Either answer opens the desk: saying no to a loan is not the same as
+    // not knowing the bank exists.
+    let bothOpen = true;
+    for (let i = 0; i < 2; i++) {
+      state.loansUnlocked = false;
+      state.pendingScene = JSON.parse(JSON.stringify(scene || {}));
+      resolvePendingScene(i);
+      if (!state.loansUnlocked) bothOpen = false;
+    }
+    const deskOpen = loansAvailable();
+    const sharkHidden = !sharkAtTheDesk();
+    state.sharkMetWeek = 7;
+    const sharkBack = sharkAtTheDesk();
+    keys.forEach((k) => (state[k] = snap[k]));
+    state.eventQueue = []; state.noticeQueue = [];
+    if (!fired) return "a broke week five never raised the bank" + (why ? " (" + why + ")" : "");
+    if (!openedByBank)
+      return (
+        "the beat that fired was not the bank: " +
+        JSON.stringify((state.pendingScene || {}).id || null)
+      );
+    if (!bothOpen) return "refusing the loan closed the desk";
+    if (!deskOpen) return "the Loans desk stayed shut after the bank beat";
+    if (!sharkHidden) return "the shark was at the desk before he had met you";
+    if (!sharkBack) return "the shark never came back after meeting you";
+    return true;
+  });
+  if (bankDoorOk !== true) fail("loans desk: " + bankDoorOk);
+  pass("the bank opens on a broke week, the shark still has to find you");
+
   // ── character DMs: the phone texts you after events ──
   const dmOk = await page.evaluate(() => {
     const snapDMs = state.characterDMs, snapUnread = state.dmUnread;
@@ -1481,7 +1612,9 @@ const pass = (msg) => console.log("✓", msg);
     state.wifeThread = snapThread; state.wifeUnread = snapWifeUnread;
     if (!hasBuck) return "Buck DM missing after head-to-head";
     if (!hasRival) return "rival DM missing after ally crossing";
-    if (!hasWife) return "wife DM missing after show win";
+    // A wife does not slide into her husband's DMs. She lives in her own app
+    // and nowhere else, so finding her in the shared list is the failure now.
+    if (hasWife) return "the wife turned up in the shared DM list";
     if (unread < 2) return "DM unread count wrong: " + unread;
     if (wifeUnread < 1) return "wife message did not raise her own badge";
     if (!inThread) return "wife message never reached her thread";
@@ -1493,7 +1626,7 @@ const pass = (msg) => console.log("✓", msg);
     return true;
   });
   if (dmOk !== true) fail("character DMs: " + dmOk);
-  pass("character DMs, and the wife on her own thread with her own badge");
+  pass("character DMs, and the wife only in her own app");
 
   // ── save → reload → state intact ──
   const before = await page.evaluate(() => { state.money = 12345; saveGame(true); return { week: state.week, money: state.money, installs: state.installsDone }; });
