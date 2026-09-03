@@ -117,6 +117,25 @@ function locate(re, cap = 12, arr = lines) {
   return { count: hits.length, shown, extra };
 }
 
+// ── Check 0: the file is still an HTML document ───────────────────────────
+// A patch script once prepended a block of the art bible above <!doctype html>
+// and nothing caught it: browsers just drop into quirks mode and the game runs,
+// so the gate passed, the smoke suite passed, and it shipped. The first line is
+// cheap to assert and this is exactly the class of damage that hides.
+{
+  const first = lines[0].trim();
+  if (/^<!doctype html>$/i.test(first)) {
+    ok("the game file still starts with <!doctype html>");
+  } else {
+    err(
+      "the game file does not start with <!doctype html>",
+      `      Car_Guy_Sim.html:1  ${first.slice(0, 80)}\n` +
+        "      Something has been written above the document. Browsers tolerate\n" +
+        "      it in quirks mode, which is why nothing else notices.",
+    );
+  }
+}
+
 // ── Check 1: em-dashes ────────────────────────────────────────────────────
 // Rule: "No em-dashes (—) anywhere in the game." (CLAUDE.md). Whole-file scan
 // of the shipped source. En-dash and horizontal bar are flagged too — they
