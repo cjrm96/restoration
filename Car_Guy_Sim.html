@@ -1240,15 +1240,47 @@
         letter-spacing: .4px;
         margin-bottom: 10px;
       }
-      .crt-search {
-        display: flex; align-items: center; gap: 6px;
-        background: rgba(0, 0, 0, 0.28);
-        border: 1px solid rgba(217, 162, 79, 0.16);
-        border-radius: 12px;
-        padding: 5px 10px;
-        font-size: 10.5px;
-        color: #6d6152;
-        margin-bottom: 12px;
+      /* Nothing in the sidebar when there is only one place to go, so the
+         page takes the whole screen instead of sitting next to an empty rail. */
+      .crt-page-wide .crt-main { width: 100%; }
+      /* The truck keys, on the desk in front of the monitor. Deliberately not
+         a pill and not a tab: it is an object you pick up, and picking it up
+         costs the week. */
+      .desk-keys {
+        max-width: 1000px;
+        margin: -2px auto 14px;
+        display: flex;
+        justify-content: flex-end;
+        padding: 0 10px;
+      }
+      .dk-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-align: left;
+        padding: 8px 14px 8px 10px;
+        cursor: pointer;
+        font-family: inherit;
+        color: var(--text);
+        background: linear-gradient(180deg, #4a3a28 0%, #35281b 100%);
+        border: 1px solid #5f4a33;
+        border-top-color: #7a6045;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+        transition: transform 0.12s ease, background 0.12s ease;
+      }
+      .dk-btn:hover {
+        background: linear-gradient(180deg, #56442f 0%, #3d2f20 100%);
+        transform: translateY(-1px);
+      }
+      .dk-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+      .dk-ico { width: 26px; height: 26px; fill: #d8b25f; flex: 0 0 auto; }
+      .dk-txt { display: flex; flex-direction: column; line-height: 1.3; }
+      .dk-txt b { font-size: 12.5px; color: var(--text-bright); font-weight: bold; }
+      .dk-txt small { font-size: 10.5px; color: var(--gold-soft); }
+      @media (max-width: 640px) {
+        .desk-keys { justify-content: stretch; }
+        .dk-btn { width: 100%; }
       }
       .crt-nav { display: flex; flex-direction: column; gap: 3px; }
       .crt-nav button {
@@ -1278,33 +1310,6 @@
         fill: currentColor;
         shape-rendering: crispEdges;
         flex: 0 0 14px;
-      }
-      /* Items or Vehicles, tucked under Sell the way a sub-page sits under
-         its section in a site rail. */
-      .crt-seg {
-        display: flex;
-        gap: 4px;
-        margin: 4px 0 2px 22px;
-      }
-      .crt-seg button {
-        flex: 1 1 0;
-        text-align: center;
-        justify-content: center;
-        font-size: 11px;
-        padding: 5px 6px;
-        border: 1px solid rgba(217, 162, 79, 0.22);
-        border-radius: 5px;
-        background: rgba(0, 0, 0, 0.22);
-        color: var(--muted);
-        font-family: inherit;
-        cursor: pointer;
-      }
-      .crt-seg button:hover { background: rgba(217, 162, 79, 0.1); }
-      .crt-seg button.on {
-        background: rgba(217, 162, 79, 0.18);
-        border-color: rgba(217, 162, 79, 0.45);
-        color: var(--text-bright);
-        font-weight: bold;
       }
       .crt-block {
         margin-top: 14px;
@@ -11505,7 +11510,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.74.0";
+      const GAME_VERSION = "0.75.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -13593,14 +13598,14 @@
               label: "Saturday it is",
               lore: 6,
               note:
-                "You wrote it on the calendar in the kitchen, which makes it real. The Road Trip is on the Marketplace tab whenever you can spare the day. A Saturday out there costs you the week, so pick one where nothing is on the lift.",
+                "You wrote it on the calendar in the kitchen, which makes it real. Your truck keys are on the desk on the Marketplace tab, next to the monitor. Pick them up whenever you can spare the day. A Saturday out there costs you the week, so pick one where nothing is on the lift.",
               noteTone: "event-good",
             },
             {
               label: "Some other Saturday",
               lore: 4,
               note:
-                "He shrugged and drank both coffees. The place is not going anywhere, and neither is he. The Road Trip is on the Marketplace tab when you want it.",
+                "He shrugged and drank both coffees. The place is not going anywhere, and neither is he. The keys are on the desk on the Marketplace tab, next to the monitor, when you want them.",
               noteTone: "event-good",
             },
           ],
@@ -13674,13 +13679,13 @@
             {
               label: first ? "Fine. Saturday." : "All right. This weekend.",
               lore: 6,
-              note: "Road Trip is on the Marketplace tab. A day out there runs about fifteen dollars and costs you the week, and everything on the shelves comes off at a fraction of what the parts page wants. Go on a week with nothing on the lift, which is this one.",
+              note: "Your keys are on the desk on the Marketplace tab, beside the monitor. A day out there runs about fifteen dollars and costs you the week, and everything on the shelves comes off at a fraction of what the parts page wants. Go on a week with nothing on the lift, which is this one.",
               noteTone: "event-good",
             },
             {
               label: "Not this weekend",
               lore: 4,
-              note: "He let it go. The Road Trip button is on the Marketplace tab whenever the money gets tight enough to make the drive look sensible.",
+              note: "He let it go. The keys are on the desk on the Marketplace tab, beside the monitor, whenever the money gets tight enough to make the drive look sensible.",
               noteTone: "event-good",
             },
           ],
@@ -24983,7 +24988,11 @@ addEventListener("DOMContentLoaded",function(){
             <div class="tiny muted" style="margin-bottom:8px">The Saturday's yours. Spend it with them instead of on the truck.</div>
             ${button("Spend it home", "takeWeekendHome()", busy, "", "width:100%;background:#6f9a5a;border-color:var(--green-bright)")}
           </div>`;
-        return `<div style="margin-bottom:14px">${heroPanel(
+        // The pill row used to be the way back off this screen. It is gone, so
+        // the screen carries its own door: you have not left yet, and putting
+        // the keys back down must not cost anything.
+        const backToDesk = `<div style="margin-bottom:10px">${button("← Put the keys back, stay at the desk", "setMarketTab('sell')", false, "", "background:#4a3c2e;border-color:#6b5840;color:var(--text);font-size:12px;padding:7px 14px")}</div>`;
+        return `<div style="margin-bottom:14px">${backToDesk}${heroPanel(
           "Saturday Road Trip",
           "The yard, the swap, or home",
           (state.scavengeTripsTaken || 0) < 2
@@ -25600,40 +25609,17 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         // Never sit on a locked tab: fall back to the one that always works and
         // is the actual next step in week one anyway.
         if (marketTabLock(marketTab)) marketTab = "sell";
-        // Selling parts, selling builds and browsing the lot are all pages of
-        // the same site now, and the site has its own rail, so listing them
-        // out here again was the same four choices twice. Out here there are
-        // only two places to be: at the desk, or in the truck.
-        const deskTabs = ["sell", "sellcar", "listings", "buy"].filter((id) => marketTabEarned(id));
-        const deskTarget =
-          deskTabs.find((id) => !marketTabLock(id)) || deskTabs[0] || "sell";
-        const atDesk = marketTab !== "trip";
-        const marketPills = [
-          ...(marketTabEarned("trip") ? [["trip", "🛻", "Road Trip"]] : []),
-          ...(deskTabs.length ? [[deskTarget, "💻", "Marketplace"]] : []),
-        ];
-        // One live pill is not a row, it is a label, so the strip only draws
-        // when there is an actual choice to make.
-        const pillRow =
-          marketPills.length < 2
-            ? ""
-            : `<div class="cat-pill-row">${marketPills
-                .map(([id, icon, label]) => {
-                  const why = marketTabLock(id);
-                  const locked = !!why;
-                  const cls =
-                    "cat-pill" +
-                    ((id === "trip" ? marketTab === "trip" : atDesk) && !locked
-                      ? " active"
-                      : "") +
-                    (locked ? " pill-locked" : "");
-                  return `<button class="${cls}" title="${locked ? why.replace(/"/g, "&quot;") : label}" onclick="setMarketTab('${id}')"><span class="cat-pill-icon">${locked ? "🔒" : icon}</span>${label}</button>`;
-                })
-                .join("")}</div>`;
-
-        // The Saturday run is a place you drive to, not a page you load, so
-        // it keeps the pills and stays off the screen entirely.
-        if (marketTab === "trip") return pillRow + renderScavengeTrip();
+        // This tab is a desk with a computer on it. Selling parts, selling
+        // builds and browsing the lot are all pages of the same site, and the
+        // site has its own rail, so the pill row that used to sit out here was
+        // the same choices twice: one of its two pills read "Marketplace"
+        // while the player was already standing on the Marketplace tab. It
+        // only existed because the Road Trip needed somewhere to live, and the
+        // Road Trip is not a peer of a listings page. It is a Saturday you
+        // drive to, it costs the whole week, and it cannot be undone. It is an
+        // object on the desk now, next to the monitor, and the row is gone.
+        // Driving out is a place, not a page, so it takes the screen with it.
+        if (marketTab === "trip") return renderScavengeTrip();
 
         // Everything else is a classifieds site, and a site gets looked at on
         // the shop PC. Selling and buying are both things you do on the site,
@@ -25643,59 +25629,80 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           '<svg class="crt-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="10" y="2" width="3" height="3"/><rect x="8" y="4" width="3" height="3"/><rect x="6" y="6" width="3" height="3"/><rect x="4" y="8" width="3" height="3"/><rect x="3" y="11" width="2" height="2"/><rect x="2" y="13" width="2" height="1"/><rect x="2" y="12" width="1" height="2"/></svg>';
         const TAG_ICO =
           '<svg class="crt-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="7" width="7" height="7"/><rect x="8" y="2" width="6" height="6"/><rect x="4" y="9" width="4" height="1"/><rect x="4" y="11" width="4" height="1"/><rect x="10" y="4" width="2" height="2"/></svg>';
+        const CAR_ICO =
+          '<svg class="crt-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="8" width="12" height="4"/><rect x="4" y="5" width="8" height="3"/><rect x="5" y="6" width="2" height="2" fill="#2a1c10"/><rect x="9" y="6" width="2" height="2" fill="#2a1c10"/><rect x="3" y="12" width="3" height="2"/><rect x="10" y="12" width="3" height="2"/></svg>';
         const LOT_ICO =
           '<svg class="crt-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="9" width="12" height="3"/><rect x="4" y="6" width="8" height="3"/><rect x="5" y="4" width="6" height="2"/><rect x="3" y="12" width="2" height="2"/><rect x="11" y="12" width="2" height="2"/></svg>';
-        const onSell = marketTab === "sell" || marketTab === "sellcar";
         const canList = marketTabEarned("listings") && !marketTabLock("listings");
         const canSell = marketTabEarned("sell") && !marketTabLock("sell");
         const canSellCar = marketTabEarned("sellcar") && !marketTabLock("sellcar");
         const canBuy = marketTabEarned("buy") && !marketTabLock("buy");
-        // One counter, two kinds of thing to put on it. Parts and whole cars
-        // were separate tabs before, which meant selling a build lived
-        // somewhere else entirely from selling the parts you took off it.
-        const sellSeg = onSell && canSellCar
-          ? `<div class="crt-seg">
-               <button class="${marketTab === "sell" ? "on" : ""}" onclick="setMarketTab('sell')">Items</button>
-               <button class="${marketTab === "sellcar" ? "on" : ""}" onclick="setMarketTab('sellcar')">Vehicles</button>
-             </div>`
+        // Four flat destinations, no tree. Parts and vehicles used to be a
+        // segmented control nested under Sell, which said they were the same
+        // job; selling a whole build and flipping a bracket are not the same
+        // job and each one names itself now.
+        const deskNav = [
+          canSell ? ["sell", PEN_ICO, "Sell Parts"] : null,
+          canSellCar ? ["sellcar", CAR_ICO, "Sell a Vehicle"] : null,
+          canList ? ["listings", TAG_ICO, "Your Listings"] : null,
+          canBuy ? ["buy", LOT_ICO, "Browse the Lot"] : null,
+        ].filter(Boolean);
+        const sideNav = deskNav
+          .map(
+            ([id, ico, label]) =>
+              `<button class="${marketTab === id ? "on" : ""}" onclick="setMarketTab('${id}')">${ico}<span>${label}</span></button>`,
+          )
+          .join("");
+        // The same rule the game's own tab rail follows: a rail with one thing
+        // on it is a label, not a rail. Early on there is only somewhere to
+        // sell parts, so the page is just the page and the room furnishes
+        // itself as the player earns it.
+        const showSide = deskNav.length >= 2;
+        // The URL bar was decoration saying the same word the sidebar said.
+        // It carries the page instead, which costs no height.
+        const urlSlug =
+          marketTab === "listings" ? "your-listings"
+          : marketTab === "buy" ? "the-lot"
+          : marketTab === "sellcar" ? "sell-vehicle"
+          : "sell";
+        // You do not click a tab to drive somewhere. You pick up your keys.
+        // They sit on the desk in front of the monitor, and they are drawn as
+        // an object rather than a button so that the one irreversible decision
+        // on this tab stops looking like a page switch.
+        const KEY_ICO =
+          '<svg class="dk-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="11" y="1" width="2" height="4"/><rect x="9" y="3" width="6" height="2"/><rect x="9" y="5" width="2" height="2"/><rect x="13" y="5" width="2" height="2"/><rect x="7" y="8" width="4" height="4"/><rect x="8" y="9" width="2" height="2" fill="#2a1c10"/><rect x="8" y="12" width="2" height="9"/><rect x="10" y="15" width="3" height="2"/><rect x="10" y="19" width="3" height="2"/><rect x="13" y="8" width="4" height="4"/><rect x="14" y="9" width="2" height="2" fill="#2a1c10"/><rect x="14" y="12" width="2" height="7"/><rect x="16" y="15" width="3" height="2"/></svg>';
+        const deskKeys = marketTabEarned("trip")
+          ? `<div class="desk-keys"><button class="dk-btn" onclick="setMarketTab('trip')">
+               ${KEY_ICO}
+               <span class="dk-txt"><b>Truck keys</b><small>A Saturday out. Costs you the week.</small></span>
+             </button></div>`
           : "";
-        const sideNav =
-          (canSell
-            ? `<button class="${onSell ? "on" : ""}" onclick="setMarketTab('sell')">${PEN_ICO}<span>Sell</span></button>${sellSeg}`
-            : "") +
-          (canList
-            ? `<button class="${marketTab === "listings" ? "on" : ""}" onclick="setMarketTab('listings')">${TAG_ICO}<span>Your listings</span></button>`
-            : "") +
-          (canBuy
-            ? `<button class="${marketTab === "buy" ? "on" : ""}" onclick="setMarketTab('buy')">${LOT_ICO}<span>Browse the lot</span></button>`
-            : "");
         const onScreen = (body) => `<div class="crt-rig">
           <div class="crt-frame">
             <div class="crt-screen">
               <div class="crt-bar">
                 <div class="crt-dots"><span></span><span></span><span></span></div>
-                <div class="crt-url">gearbook.com / marketplace</div>
+                <div class="crt-url">gearbook.com / ${urlSlug}</div>
               </div>
-              <div class="crt-page">
-                <aside class="crt-side">
+              <div class="crt-page${showSide ? "" : " crt-page-wide"}">
+                ${showSide ? `<aside class="crt-side">
                   <div class="crt-site">Gearbook</div>
-                  <div class="crt-search">Search Marketplace</div>
                   <div class="crt-nav">${sideNav}</div>
                   <div class="crt-block">
                     <div class="crt-block-h">Location</div>
                     <div class="crt-block-v">Palomar Junction<br>within 25 miles</div>
                   </div>
-                </aside>
+                </aside>` : ""}
                 <main class="crt-main">${body}</main>
               </div>
             </div>
           </div>
           <div class="crt-neck"></div>
           <div class="crt-base"></div>
-        </div>`;
+        </div>${deskKeys}`;
 
         if (marketTab === "buy") {
-          return pillRow + onScreen(heroPanel(
+          return onScreen(heroPanel(
             "On the Lot",
             "Someone else's project, yours for the right price",
             "Most great builds start as someone else's bad decision.",
@@ -25715,7 +25722,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           // never yours to flip. The tab keeps her decision and drops the
           // listing machinery, and the headline stops calling it inventory.
           const flipSeason = seasonNum() >= 2;
-          return pillRow + onScreen(heroPanel(
+          return onScreen(heroPanel(
             flipSeason ? "Flip a Build" : "The Other Car in the Driveway",
             flipSeason
               ? "Buy low, restore, sell high, or dump a project as-is"
@@ -25748,7 +25755,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
                    ${carListedMarkup}
                  </div>`
               : "";
-          return pillRow + onScreen(heroPanel(
+          return onScreen(heroPanel(
             "Your Listings",
             liveTotal
               ? `${liveTotal} live on Gearbook`
@@ -25788,7 +25795,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           "gold",
           "marketplace",
         );
-        return pillRow + onScreen(bench);
+        return onScreen(bench);
       }
 
       // Settings modal hosts the Legacy Wall entry point, out-of-game
