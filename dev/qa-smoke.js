@@ -444,6 +444,28 @@ const pass = (msg) => console.log("✓", msg);
     advancePreSeasonWeek("smoke"); clr();
     if (!claimLifeBeat()) return "no life beat could fire on the next pre-season week";
 
+    // The day job does not stop for the off-season, and because the bank and
+    // the shark both collect out of the paycheck, neither used to take a
+    // payment across those four weeks either.
+    state.preWeek = 0; state.week = 1;
+    state.paycheckProgress = 0; state.firstPaydaySeen = true;
+    state.bankLoanBalance = 0; state.sharkLoanBalance = 0;
+    state.toolTruckBalance = 0; state.ringPawnBalance = 0;
+    enterPreSeason(); clr();
+    const wageStart = state.money;
+    for (let i = 0; i < 4; i++) { advancePreSeasonWeek("smoke"); clr(); }
+    if (state.money - wageStart !== PAYCHECK_AMOUNT)
+      return `the off-season paid ${state.money - wageStart} in wages over four weeks, wanted ${PAYCHECK_AMOUNT}`;
+    // And a loan taken in the off-season actually gets collected there.
+    state.preWeek = 0; state.week = 1;
+    enterPreSeason(); clr();
+    state.paycheckProgress = PAYCHECK_CYCLE - 1;
+    state.bankLoanBalance = 4000;
+    advancePreSeasonWeek("smoke"); clr();
+    if (state.bankLoanBalance !== 4000 - state.bankLoanPayment)
+      return "the bank took nothing on an off-season payday";
+    state.bankLoanBalance = 0;
+
     // Legacy saves carry a plain number here and must arrive with an open desk.
     state.lastLoanWeek = 1; state.preWeek = 0; state.week = 1;
     if (loanTakenThisWeek()) return "a legacy save arrived with the desk locked";
@@ -453,6 +475,70 @@ const pass = (msg) => console.log("✓", msg);
   });
   if (preSeasonWeekOk !== true) fail("pre-season week rollover: " + preSeasonWeekOk);
   pass("the pre-season counts as weeks: the loan desk, the life beat and the weekly tabs all roll over");
+
+  // ── you own exactly one of every tool: ownedTools is deduplicated at every
+  // site that writes it, so "spare" is a category that cannot exist. The sell
+  // shelf used to ask only whether the car currently in the garage still had a
+  // job outstanding, which goes false as soon as that one car's paint and
+  // tyres are done, and then offered up the only air compressor you own. ──
+  const toolSaleOk = await page.evaluate(() => {
+    const stash = JSON.parse(JSON.stringify({
+      tools: state.ownedTools, inv: state.partsInventory,
+      installed: state.cars[0].installedParts, paint: state.cars[0].paint,
+      tires: state.cars[0].tires, money: state.money,
+    }));
+    const clr = () => { state.cutscene = null; state.pendingScene = null;
+                        state.noticeQueue = []; state.eventQueue = []; };
+
+    // Nothing you can own twice.
+    const dupes = state.ownedTools.filter((id, i) => state.ownedTools.indexOf(id) !== i);
+    if (dupes.length) return "ownedTools already holds a duplicate: " + dupes.join(",");
+
+    // The reported case: the compressor, with every job it opens finished.
+    state.ownedTools = ["t1", "t14", "t9"];
+    const car = state.cars[0];
+    car.installedParts = PARTS.filter((x) => (x.tools || []).includes("t9")).map((x) => x.id);
+    car.paint = 100; car.tires = 100;
+    if (toolIsSurplus("t9"))
+      return "the only air compressor you own was still offered for sale";
+    listToolForSale("t9"); clr();
+    if (!state.ownedTools.includes("t9"))
+      return "listing it anyway took the compressor off the shelf";
+
+    // Every tool that opens a job is kit, not stock.
+    const gating = TOOLS_LIST.filter((t) => toolGatesWork(t.id));
+    state.ownedTools = TOOLS_LIST.map((t) => t.id);
+    const wrong = gating.filter((t) => toolIsSurplus(t.id));
+    if (wrong.length)
+      return "these open jobs but were listed as surplus: " + wrong.map((t) => t.id).join(",");
+
+    // What can honestly go: the things bought to be looked at.
+    const vanity = TOOLS_LIST.filter((t) => !toolGatesWork(t.id)).map((t) => t.id);
+    if (!vanity.includes("t_gold") || !vanity.includes("t_lift"))
+      return "expected the gold ratchet and the lift to gate no work";
+    for (const id of vanity) {
+      if (!toolIsSurplus(id)) return id + " gates no work but could not be sold";
+    }
+    const invBefore = state.partsInventory.length;
+    state.money = 0;
+    listToolForSale("t_gold"); clr();
+    if (state.ownedTools.includes("t_gold")) return "the gold ratchet would not sell";
+    if (state.partsInventory.length !== invBefore + 1)
+      return "selling the ratchet did not put anything on the market";
+
+    // The starter kit is never for sale, whatever else is true.
+    for (const id of STARTER_TOOLS) {
+      listToolForSale(id); clr();
+      if (!state.ownedTools.includes(id)) return "the starter kit sold: " + id;
+    }
+    Object.assign(state, { ownedTools: stash.tools, partsInventory: stash.inv, money: stash.money });
+    state.cars[0].installedParts = stash.installed;
+    state.cars[0].paint = stash.paint; state.cars[0].tires = stash.tires;
+    clr();
+    return true;
+  });
+  if (toolSaleOk !== true) fail("tool sale shelf: " + toolSaleOk);
+  pass("you own one of every tool, so anything that opens a job stays in the box");
 
   // ── the Saturday trips. Neither the yard nor the swap was ever introduced:
   // the Road Trip pill turned up with two others when show season opened, and

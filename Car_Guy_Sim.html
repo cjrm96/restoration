@@ -11638,7 +11638,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.79.2";
+      const GAME_VERSION = "0.80.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -15047,19 +15047,26 @@
       // selling one converts it into a normal Marketplace listing in a single
       // click and routes it through the same buyer-offer flow as any part.
       // Only genuine surplus goes on the market, never the last of something you
-      // still need. A tool is surplus once no unfinished job in the garage calls
-      // for it; a yard pull is surplus once it can't be usefully installed (its
-      // car is gone, it's already on the car, or that system is maxed). This
-      // stops players from accidentally selling working tools and parts.
+      // still need. A yard pull is surplus once it can't be usefully installed
+      // (its car is gone, it's already on the car, or that system is maxed).
+      //
+      // Tools are a different question, and the old test got it wrong. It asked
+      // whether the car currently in the garage still had an unfinished job
+      // calling for the tool, which goes false the moment that one car's paint
+      // and tyres are done, and then put the only air compressor you own on the
+      // market. ownedTools is deduplicated everywhere, so you can never hold two
+      // of anything: there is no such thing as a spare tool, and next season's
+      // build needs the compressor exactly as much as this one did.
+      //
+      // What can honestly go is a tool that gates no work at all. The gold
+      // ratchet and the four-post lift are bought to be looked at, no part in
+      // the game requires either, and a man who needs money can sell the gold
+      // ratchet. Everything that opens a job stays in the box.
+      function toolGatesWork(toolId) {
+        return PARTS.some((p) => (p.tools || []).includes(toolId));
+      }
       function toolIsSurplus(toolId) {
-        return !(state.cars || []).some((car) =>
-          PARTS.some(
-            (p) =>
-              (p.tools || []).includes(toolId) &&
-              !(car.installedParts || []).includes(p.id) &&
-              (car[p.category] || 0) < 100,
-          ),
-        );
+        return !toolGatesWork(toolId);
       }
       function pullIsSurplus(pull) {
         const car = getCarById(pull.carId);
@@ -15075,7 +15082,7 @@
         if (STARTER_TOOLS.includes(toolId))
           return toast("Your starter kit stays in the box.", "err");
         if (!toolIsSurplus(toolId))
-          return toast("You still need that tool for work in the garage. Only spares can go.", "err");
+          return toast("That one opens jobs you still have to do, and it's the only one you own. It stays in the box.", "err");
         const tool = TOOLS_LIST.find((t) => t.id === toolId);
         if (!tool) return;
         // Used tools move for a little over half of new, cash from the scene.
@@ -17358,6 +17365,63 @@
           recordMoneyChange(-ringPay, "Pawn shop weekly");
         }
       }
+      // The day job. It pays every fourth week and it does not care what the
+      // show calendar is doing, so the clock runs through the pre-season too:
+      // the off-season used to be four weeks in which no wage arrived and,
+      // because the bank and the shark both collect out of the paycheck,
+      // neither loan took a payment either. Returns true if this was a payday.
+      function runPaydayCycle() {
+        state.paycheckProgress = (state.paycheckProgress || 0) + 1;
+        if (state.paycheckProgress < PAYCHECK_CYCLE) return false;
+        state.paycheckProgress = 0;
+        let paycheckNet = PAYCHECK_AMOUNT;
+        let loanNotes = [];
+        if (state.bankLoanBalance > 0) {
+          const payment = Math.min(
+            state.bankLoanPayment,
+            state.bankLoanBalance,
+          );
+          state.bankLoanBalance -= payment;
+          paycheckNet -= payment;
+          loanNotes.push(`$${fmt(payment)} bank payment`);
+        }
+        // The bank takes what it takes and mails you about the rest. He does
+        // not take a partial payment, and he does not take an IOU, so if the
+        // money is not there the week goes down as a miss against you.
+        let sharkCameUpShort = false;
+        if (state.sharkLoanBalance > 0) {
+          const payment = Math.min(
+            state.sharkLoanPayment,
+            state.sharkLoanBalance,
+          );
+          if (state.money + paycheckNet >= payment) {
+            state.sharkLoanBalance -= payment;
+            paycheckNet -= payment;
+            state.sharkMissedPayments = 0;
+            loanNotes.push(`$${fmt(payment)} shark payment`);
+          } else {
+            state.sharkMissedPayments = (state.sharkMissedPayments || 0) + 1;
+            sharkCameUpShort = true;
+          }
+        }
+        state.money += paycheckNet;
+        recordMoneyChange(paycheckNet, "Weekly paycheck");
+        const loanNote = loanNotes.length
+          ? ` after ${loanNotes.join(" + ")}`
+          : "";
+        // The first payday teaches the cadence, nobody reads it in a
+        // tutorial card, everybody reads it on their own money.
+        const firstPayNote = state.firstPaydaySeen ? "" : " The day job pays every four weeks, budget the stretch between.";
+        state.firstPaydaySeen = true;
+        // No week number to quote in the off-season, the counter is frozen.
+        const when = inPreSeason() ? "Off-season" : `Week ${state.week}`;
+        toast(
+          `${when}. Payday hit, $${fmt(paycheckNet)} cleared${loanNote}.${firstPayNote}`,
+          "ok",
+        );
+        if (sharkCameUpShort) collectFromTheShark();
+        return true;
+      }
       const LOAN_COOLDOWN_MSG =
         "One loan a week. Word travels, and your credit's thin enough already. Come back next week.";
       function takeToolTruckLoan() {
@@ -17913,8 +17977,11 @@
       function advancePreSeasonWeek(reason = "time") {
         resolveCompletedRestorations(false);
         state.preWeek = (state.preWeek || 1) + 1;
-        // The off-season is quieter, not free. What bills weekly still bills.
+        // The off-season is quieter, not free. What bills weekly still bills,
+        // and the day job pays on its own four-week clock regardless of
+        // whether there is a show to go to.
         chargeWeeklyTabs();
+        runPaydayCycle();
         // Fresh board and a fresh chance to post every pre-season week.
         state.creatorPostedWeek = null;
         state.collabDoneWeek = null;
@@ -18201,56 +18268,7 @@
 
         chargeWeeklyTabs();
 
-        state.paycheckProgress += 1;
-        if (state.paycheckProgress >= PAYCHECK_CYCLE) {
-          state.paycheckProgress = 0;
-          let paycheckNet = PAYCHECK_AMOUNT;
-          let loanNotes = [];
-          if (state.bankLoanBalance > 0) {
-            const payment = Math.min(
-              state.bankLoanPayment,
-              state.bankLoanBalance,
-            );
-            state.bankLoanBalance -= payment;
-            paycheckNet -= payment;
-            loanNotes.push(`$${fmt(payment)} bank payment`);
-          }
-          // The bank takes what it takes and mails you about the rest. He does
-          // not take a partial payment, and he does not take an IOU, so if the
-          // money is not there the week goes down as a miss against you.
-          let sharkCameUpShort = false;
-          if (state.sharkLoanBalance > 0) {
-            const payment = Math.min(
-              state.sharkLoanPayment,
-              state.sharkLoanBalance,
-            );
-            if (state.money + paycheckNet >= payment) {
-              state.sharkLoanBalance -= payment;
-              paycheckNet -= payment;
-              state.sharkMissedPayments = 0;
-              loanNotes.push(`$${fmt(payment)} shark payment`);
-            } else {
-              state.sharkMissedPayments = (state.sharkMissedPayments || 0) + 1;
-              sharkCameUpShort = true;
-            }
-          }
-          state.money += paycheckNet;
-          recordMoneyChange(paycheckNet, "Weekly paycheck");
-          const loanNote = loanNotes.length
-            ? ` after ${loanNotes.join(" + ")}`
-            : "";
-          // The first payday teaches the cadence, nobody reads it in a
-          // tutorial card, everybody reads it on their own money.
-          const firstPayNote = state.firstPaydaySeen ? "" : " The day job pays every four weeks, budget the stretch between.";
-          state.firstPaydaySeen = true;
-          toast(
-            `Week ${state.week}. Payday hit, $${fmt(paycheckNet)} cleared${loanNote}.${firstPayNote}`,
-            "ok",
-          );
-          if (sharkCameUpShort) collectFromTheShark();
-        } else {
-          toast(`Week ${state.week}, ${reason}.`, "ok");
-        }
+        if (!runPaydayCycle()) toast(`Week ${state.week}, ${reason}.`, "ok");
 
         noteLeanWeek();
         maybeTriggerRivalBeat();
@@ -25729,9 +25747,9 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         const stash = state.partsInventory.filter((i) => !i.listed && !i.sold);
         const listed = state.partsInventory.filter((i) => i.listed && !i.sold);
 
-        // Only true surplus is listable: a tool no job still needs, or a pull
-        // that can't be usefully installed. Never the last of something you're
-        // still using, so players can't accidentally sell working kit.
+        // Only true surplus is listable: a tool that opens no job at all, or a
+        // pull that can't be usefully installed. Never working kit, and every
+        // tool you own is the only one of itself.
         const sellableTools = (state.ownedTools || [])
           .filter((id) => !STARTER_TOOLS.includes(id) && toolIsSurplus(id))
           .map((id) => TOOLS_LIST.find((t) => t.id === id))
@@ -25756,7 +25774,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         </div>
       </div>`)
               .join("") + `</div>`
-          : `<div class="small muted">No spare tools to move. Only tools no unfinished job still needs show up here, so you can't sell the last of something you're using.</div>`;
+          : `<div class="small muted">Nothing here to move. You only own one of every tool, and anything that opens a job is worth more in the box than it is on the market.</div>`;
         const pullsSellMarkup = sellablePulls.length
           ? `<div class="lst-grid">` + sellablePulls
               .map((pull) => {
