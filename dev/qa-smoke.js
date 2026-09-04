@@ -1106,7 +1106,13 @@ const pass = (msg) => console.log("✓", msg);
     if (!p) { const any = PARTS.find((x) => (x.tools || []).some((t) => !state.ownedTools.includes(t))); if (!any) return true; state.shopCat = any.category; }
     render("full");
     const txt = document.getElementById("appContent").innerText;
-    if (!/🔒 Needs /.test(txt)) return "no blocked DIY button names its missing tool";
+    // The lock is a drawn icon now, not an OS emoji, so match the words and
+    // assert the icon rode along beside them.
+    if (!/Needs /.test(txt)) return "no blocked DIY button names its missing tool";
+    const lockIco = [...document.querySelectorAll("button")].some(
+      (b) => /Needs /.test(b.textContent) && b.querySelector("svg.ui-ico"),
+    );
+    if (!lockIco) return "the blocked DIY button lost its lock icon";
     return true;
   });
   if (diyOk !== true) fail("diy reason: " + diyOk);
@@ -1172,8 +1178,12 @@ const pass = (msg) => console.log("✓", msg);
   // must weigh them, and a pre-split car must get them seeded on migration. ──
   const simOk = await page.evaluate(() => {
     const need = ["cooling", "fuel", "exhaust", "steering"];
-    if (!need.every((c) => CATS.includes(c) && CAT_LABELS[c] && CAT_ICONS[c]))
-      return "a new cat is missing from CATS/labels/icons";
+    // CAT_ICONS is gone: the pills carry their name and sit under a shop
+    // heading, so a per-category glyph was decoration with a lookup table.
+    if (!need.every((c) => CATS.includes(c) && CAT_LABELS[c]))
+      return "a new cat is missing from CATS or its labels";
+    if (typeof CAT_ICONS !== "undefined")
+      return "CAT_ICONS came back";
     if (CATS.length !== 16) return "CATS length is " + CATS.length + ", expected 16";
     for (const c of need) {
       const sum = PARTS.filter((x) => x.category === c).reduce((a, x) => a + x.imp, 0);
