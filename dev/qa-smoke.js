@@ -709,6 +709,56 @@ const pass = (msg) => console.log("✓", msg);
   if (typeof shopEventsOk === "string") fail("shop-week events: " + shopEventsOk);
   pass(`shop weeks: ${shopEventsOk.blocked} hands-on beats sit out, ${shopEventsOk.kept} scene beats carry on`);
 
+  // ── nothing on screen ever says "undefined" ──
+  // The emoji pass deleted the `a:` avatar fields from character DMs and two
+  // render sites still interpolated them, so some DMs printed the literal
+  // word over the profile disc. Deleting a data field is exactly the change
+  // that leaves this behind, and it is invisible to every other check here.
+  const noUndefOk = await page.evaluate(() => {
+    const snap = {
+      dms: state.characterDMs, thread: state.wifeThread, deal: state.pendingBrandDeal,
+      collab: state.collabAvailable, app: state.phoneApp, view: state.view,
+    };
+    state.characterDMs = []; state.wifeThread = [];
+    pushCharacterDM({ id: "qa-buck", h: "@BuckStallion67", c: "red", t: "qa line" });
+    pushCharacterDM({ id: "qa-rival", h: "@Harlow", c: "gold", t: "qa line" });
+    pushWifeMessage("qa line from her", "wife-week");
+    state.pendingBrandDeal = {
+      brand: "Snap-It Tools", offeredWeek: state.week,
+      followerBonus: Math.max(10, Math.round((state.followers || 1000) * 0.015)),
+    };
+    state.collabAvailable = true;
+    const bad = [];
+    const scan = (where) => {
+      const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+        acceptNode(n) {
+          for (let e = n.parentElement; e; e = e.parentElement) {
+            const t = e.tagName;
+            if (t === "SCRIPT" || t === "STYLE" || t === "TEMPLATE")
+              return NodeFilter.FILTER_REJECT;
+          }
+          return NodeFilter.FILTER_ACCEPT;
+        },
+      });
+      let n;
+      while ((n = w.nextNode()))
+        if (/\bundefined\b|\bNaN\b|\[object Object\]/.test(n.nodeValue))
+          bad.push(where + ": " + n.nodeValue.trim().slice(0, 60));
+    };
+    ["workshop", "career", "dealership", "shows"].forEach((v) => {
+      setView(v); render("full"); scan(v);
+    });
+    ["home", "messages", "wife"].forEach((a) => {
+      setView("career"); setPhoneApp(a); render("full"); scan("phone:" + a);
+    });
+    state.characterDMs = snap.dms; state.wifeThread = snap.thread;
+    state.pendingBrandDeal = snap.deal; state.collabAvailable = snap.collab;
+    setPhoneApp(snap.app || "home"); setView(snap.view); render("full");
+    return bad.length ? bad.slice(0, 3).join(" | ") : true;
+  });
+  if (noUndefOk !== true) fail("stray placeholder on screen: " + noUndefOk);
+  pass("no screen prints undefined, NaN or [object Object]");
+
   // ── follower counts read like a counter, not like a float ──
   // This has been wrong twice: the sponsor ladder top printed "1000.0K", and
   // after that was patched a player chasing four hundred and thirty thousand

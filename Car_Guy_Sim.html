@@ -11638,7 +11638,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.79.0";
+      const GAME_VERSION = "0.79.1";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -26577,7 +26577,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
             week: d.week != null ? d.week : (state.week || 0) - i,
             rank: -i,
             html: `<div class="phone-dm${fresh ? " phone-dm-fresh" : ""}">
-            <div class="phone-dm-avatar ${d.c}">${d.a}</div>
+            <div class="phone-dm-avatar ${d.c}"></div>
             <div class="phone-dm-body">
               <div class="phone-dm-handle">${d.h}${fresh ? ` <span class="phone-dm-new">NEW</span>` : ""}</div>
               <div class="phone-dm-text">${d.t}</div>
@@ -26642,7 +26642,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         for (let i = 0; i < fanCount; i++) {
           const m = FAN_DMS[(state.week + i) % FAN_DMS.length];
           evergreen.push(`<div class="phone-dm">
-            <div class="phone-dm-avatar ${m.c}">${m.a}</div>
+            <div class="phone-dm-avatar ${m.c}"></div>
             <div class="phone-dm-body">
               <div class="phone-dm-handle">${m.h}</div>
               <div class="phone-dm-text">${m.t}</div>
