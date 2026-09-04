@@ -386,6 +386,74 @@ const pass = (msg) => console.log("✓", msg);
   if (loansOk !== true) fail("loans introduction: " + loansOk);
   pass("loans desk stays shut until the shark introduces it, and refusing still opens it");
 
+  // ── the pre-season freezes state.week at 1 for four weeks and then season
+  // one opens on 1 again. Anything rate-limited by "is it still the same
+  // week" therefore could not tell those five weeks apart: one loan a week
+  // became one loan per five weeks, with the desk still promising it reopened
+  // next week, and the same for the once-a-week life beat. Both key off the
+  // stamp now, and what bills weekly bills through the off-season too. ──
+  const preSeasonWeekOk = await page.evaluate(() => {
+    const stash = JSON.parse(JSON.stringify({
+      preWeek: state.preWeek, week: state.week, gigs: state.gigs,
+      money: state.money, unlocked: state.loansUnlocked,
+      lastLoanWeek: state.lastLoanWeek, truck: state.toolTruckBalance,
+      ring: state.ringPawnBalance, beat: state.lifeBeatWeek,
+      season: state.seasonNumber,
+    }));
+    const clr = () => { state.cutscene = null; state.pendingScene = null;
+                        state.noticeQueue = []; state.pendingUnlock = null; };
+    state.loansUnlocked = true;
+    state.toolTruckBalance = 0; state.ringPawnBalance = 0;
+    state.bankLoanBalance = 0; state.lastLoanWeek = null;
+    enterPreSeason(); clr();
+    if (!inPreSeason()) return "enterPreSeason did not open the pre-season";
+    if (loanTakenThisWeek()) return "the desk opened locked";
+
+    takeBankLoan(); clr();
+    if (!loanTakenThisWeek()) return "one loan a week stopped holding inside a week";
+    takeToolTruckLoan(); clr();
+    if (state.toolTruckBalance !== 0)
+      return "a second loan went through in the same pre-season week";
+
+    // The week the desk promised.
+    advancePreSeasonWeek("smoke"); clr();
+    if (loanTakenThisWeek())
+      return "the desk stayed locked into the next pre-season week";
+    takeToolTruckLoan(); clr();
+    if (state.toolTruckBalance !== 3600)
+      return "the tool truck tab would not open a week later";
+
+    // A weekly tab has to tick on a pre-season week, the terms said weekly.
+    const before = state.toolTruckBalance;
+    advancePreSeasonWeek("smoke"); clr();
+    if (state.toolTruckBalance !== before - 90)
+      return `the tool truck did not bill on a pre-season week (${before} -> ${state.toolTruckBalance})`;
+
+    // Rolling into the competitive season must not arrive pre-locked.
+    state.lastLoanWeek = weekStamp();
+    while (inPreSeason()) { advancePreSeasonWeek("smoke"); clr(); }
+    if (state.week !== 1) return "the competitive season did not open on week 1";
+    if (loanTakenThisWeek())
+      return "season week one opened with the desk locked by an off-season loan";
+
+    // One beat a week, and the pre-season weeks are different weeks.
+    state.lifeBeatWeek = null;
+    enterPreSeason(); clr();
+    if (!claimLifeBeat()) return "the first life beat of the pre-season was refused";
+    if (claimLifeBeat()) return "two life beats landed in one pre-season week";
+    advancePreSeasonWeek("smoke"); clr();
+    if (!claimLifeBeat()) return "no life beat could fire on the next pre-season week";
+
+    // Legacy saves carry a plain number here and must arrive with an open desk.
+    state.lastLoanWeek = 1; state.preWeek = 0; state.week = 1;
+    if (loanTakenThisWeek()) return "a legacy save arrived with the desk locked";
+
+    Object.assign(state, stash); clr();
+    return true;
+  });
+  if (preSeasonWeekOk !== true) fail("pre-season week rollover: " + preSeasonWeekOk);
+  pass("the pre-season counts as weeks: the loan desk, the life beat and the weekly tabs all roll over");
+
   // ── the Saturday trips. Neither the yard nor the swap was ever introduced:
   // the Road Trip pill turned up with two others when show season opened, and
   // the only writing explaining either place fired after the player had paid
