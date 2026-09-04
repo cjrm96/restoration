@@ -11705,7 +11705,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.77.0";
+      const GAME_VERSION = "0.77.1";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -11974,12 +11974,24 @@
       const fmt = (n) => n.toLocaleString();
       // The sponsor ladder runs to a million, so the counter has to as well.
       // It used to stop at K and call the top of the board 1000.0K.
-      const fmtF = (n) =>
-        n >= 1e6
-          ? `${(n / 1e6).toFixed(n % 1e6 === 0 ? 0 : 1)}M`
-          : n >= 1000
-            ? `${(n / 1000).toFixed(1)}K`
-            : String(n);
+      // Follower counts, the way a counter actually reads them. Two rules:
+      // a round number gets no decimal point, and nothing is ever shown in
+      // thousands once it has rounded past a thousand of them. The old one
+      // broke both, so 430,000 read as "430.0K" and 999,999 as "1000.0K".
+      //
+      // The rounding has to happen before the decision, not after. Checking
+      // the raw number instead is what let 99,999 through as "100.0K": it is
+      // not a round number, but the thing on screen is.
+      const fmtF = (n) => {
+        if (!(n >= 1000)) return String(n);
+        const show = (v) => {
+          const r = Math.round(v * 10) / 10;
+          return Number.isInteger(r) ? String(r) : r.toFixed(1);
+        };
+        // Rounded to the tenth, is this still under a thousand thousands?
+        const asK = Math.round((n / 1000) * 10) / 10;
+        return n >= 1e6 || asK >= 1000 ? `${show(n / 1e6)}M` : `${show(n / 1000)}K`;
+      };
       const scoreCol = (s) =>
         s >= 80 ? "#8fbf75" : s >= 50 ? "#c99842" : "#b85b4f";
       const tierCol = (t) =>

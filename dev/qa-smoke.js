@@ -709,6 +709,35 @@ const pass = (msg) => console.log("✓", msg);
   if (typeof shopEventsOk === "string") fail("shop-week events: " + shopEventsOk);
   pass(`shop weeks: ${shopEventsOk.blocked} hands-on beats sit out, ${shopEventsOk.kept} scene beats carry on`);
 
+  // ── follower counts read like a counter, not like a float ──
+  // This has been wrong twice: the sponsor ladder top printed "1000.0K", and
+  // after that was patched a player chasing four hundred and thirty thousand
+  // followers still watched "430.0K". Two rules, and the rounding has to
+  // happen before the decision or 99,999 slips through as "100.0K".
+  const fmtFOk = await page.evaluate(() => {
+    const cases = [0, 1, 999, 1000, 1050, 1500, 9999, 10000, 12300, 99900,
+                   99999, 100000, 430000, 999499, 999999, 1000000, 1049999,
+                   1234567, 2000000, 1e7, 12500000];
+    const out = cases.map((n) => [n, fmtF(n)]);
+    const trailing = out.filter(([, t]) => /\.0(K|M)?$/.test(t));
+    if (trailing.length)
+      return "a round number kept its decimal: " + trailing.map((x) => x.join(" -> ")).join(", ");
+    // Nothing stays in thousands once it has rounded past a thousand of them.
+    const fourDigitK = out.filter(([, t]) => /^\d{4,}(\.\d)?K$/.test(t));
+    if (fourDigitK.length)
+      return "should have rolled over to millions: " + fourDigitK.map((x) => x.join(" -> ")).join(", ");
+    const want = { 999: "999", 1000: "1K", 12300: "12.3K", 99999: "100K",
+                   430000: "430K", 999999: "1M", 1000000: "1M", 1234567: "1.2M",
+                   2000000: "2M" };
+    for (const [n, t] of Object.entries(want)) {
+      const got = fmtF(Number(n));
+      if (got !== t) return `fmtF(${n}) is "${got}", expected "${t}"`;
+    }
+    return true;
+  });
+  if (fmtFOk !== true) fail("follower counter: " + fmtFOk);
+  pass("follower counts round like a counter, no 430.0K");
+
   // ── the bill. The show card used to be a form: nine bordered objects all
   // shouting at one volume, a five place payout table, a three tick checklist
   // and a red validation bar, behind a four button tier filter. It is a
