@@ -11720,7 +11720,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.84.0";
+      const GAME_VERSION = "0.85.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -11889,7 +11889,7 @@
           ringPawnBalance: 0,
           ringPawnPayment: 50,
           weddingRingPawned: false,
-          ringOfferSeason: 0,
+          ringOfferMade: false,
           birthdayReceived: false,
           fakeFollowersBought: false,
           weekStartMoney: 5000,
@@ -12820,9 +12820,7 @@
       // the shop. Anything else is a wish, not a next move.
       function moveIsActionable(part) {
         const requiredTools = part.tools || [];
-        const hasAllTools = requiredTools.every((tid) =>
-          state.ownedTools.includes(tid),
-        );
+        const hasAllTools = requiredTools.every((tid) => hasToolFor(tid));
         const canDiy = hasAllTools && state.money >= partCost(part, "diy");
         const canShop = state.money >= partCost(part, "shop");
         return canDiy || canShop;
@@ -12853,9 +12851,7 @@
             (part.tier !== "Show Grade" || showTierUnlocked(car, part.category)),
         ).map((part) => {
           const requiredTools = part.tools || [];
-          const hasAllTools = requiredTools.every((tid) =>
-            state.ownedTools.includes(tid),
-          );
+          const hasAllTools = requiredTools.every((tid) => hasToolFor(tid));
           const recommendedMethod = hasAllTools ? "diy" : "shop";
           const recommendedCost = partCost(part, recommendedMethod);
           const roi = part.imp / Math.max(1, recommendedCost);
@@ -15213,6 +15209,30 @@
       }
       // The starter kit (hand tools + headlamp) came free from the bedside
       // box and isn't for sale, everything else you picked up is fair game.
+      // A better tool in the same trade does the lesser one's work.
+      //
+      // Parts name a specific tool id, so a man who had bought the shop
+      // compressor still could not shoot a single stage respray, because the
+      // part asks for the small one by name. That is not how a garage works,
+      // and it made the expensive tool worth less than the cheap one it was
+      // supposed to replace.
+      //
+      // Only genuine upgrades are in here. A bigger compressor does everything
+      // a small one does. A master socket set contains a service set. A TIG
+      // will lay a panel weld a MIG would have. A paint booth is not a paint
+      // gun, an engine hoist is not a floor jack, and a shop light will not
+      // get you under a dash the way a headlamp does, so none of those are
+      // here: they are different tools that happen to share a shelf.
+      const TOOL_SUPERSEDES = {
+        t9: ["t10"],
+        t2: ["t20"],
+        t5: ["t6"],
+      };
+      function hasToolFor(tid) {
+        const owned = state.ownedTools || [];
+        if (owned.includes(tid)) return true;
+        return (TOOL_SUPERSEDES[tid] || []).some((better) => owned.includes(better));
+      }
       const STARTER_TOOLS = ["t1", "t14"];
       // Tools and yard pulls don't auto-stash the way take-off parts do, so
       // selling one converts it into a normal Marketplace listing in a single
@@ -15237,7 +15257,13 @@
         return PARTS.some((p) => (p.tools || []).includes(toolId));
       }
       function toolIsSurplus(toolId) {
-        return !toolGatesWork(toolId);
+        if (!toolGatesWork(toolId)) return true;
+        // And now a real spare can exist, which it could not before. If
+        // something in the box does everything this does, this one is a shelf
+        // being cleared rather than kit being sold.
+        return (TOOL_SUPERSEDES[toolId] || []).some((better) =>
+          (state.ownedTools || []).includes(better),
+        );
       }
       function pullIsSurplus(pull) {
         const car = getCarById(pull.carId);
@@ -16091,9 +16117,7 @@
         if (!part) return;
         if (!state.cars || !state.cars.length)
           return toast("No car to drop it onto.", "err");
-        const missing = (part.tools || []).filter(
-          (tid) => !state.ownedTools.includes(tid),
-        );
+        const missing = (part.tools || []).filter((tid) => !hasToolFor(tid));
         if (missing.length) {
           const names = missing
             .map((id) => TOOLS_LIST.find((t) => t.id === id)?.name)
@@ -16149,7 +16173,7 @@
           if (car.installedParts.includes(part.id)) return false;
           if (findActiveTask(car.id, part.id)) return false;
           if (car[part.category] >= 100) return false;
-          if ((part.tools || []).some((t) => !state.ownedTools.includes(t))) return false;
+          if ((part.tools || []).some((t) => !hasToolFor(t))) return false;
           if (activeTasksForCar(car.id).length >= workspaceData().maxActive) return false;
           if (activeTasksByMethod(car.id, "shop").length) return false;
           return true;
@@ -16184,9 +16208,7 @@
         if (findActiveTask(car.id, part.id))
           return toast("That job is already on the bench.", "err");
         if (car[part.category] >= 100) return toast("Already maxed out.", "err");
-        const missing = (part.tools || []).filter(
-          (tid) => !state.ownedTools.includes(tid),
-        );
+        const missing = (part.tools || []).filter((tid) => !hasToolFor(tid));
         if (missing.length) {
           const names = missing
             .map((id) => TOOLS_LIST.find((t) => t.id === id)?.name)
@@ -16852,6 +16874,12 @@
           // one of those has no caller on it, so it is re-rolled into calls
           // rather than rendered against a regular it never had.
           if (!state.regulars || typeof state.regulars !== "object") state.regulars = {};
+          // The offer used to be capped per season. A save that has already
+          // been asked, or has already pawned the ring, has had its once.
+          if (state.ringOfferMade == null) {
+            state.ringOfferMade =
+              !!state.ringOfferSeason || !!state.weddingRingPawned || !!state.ringEverPawned;
+          }
           if (Array.isArray(state.gigs) && state.gigs.some((g) => g && !g.who)) {
             state.gigs = [];
           }
@@ -17201,9 +17229,7 @@
         if (!isFree && state.money < cost)
           return toast("Not enough cash.", "err");
         if (method === "diy") {
-          const missing = (part.tools || []).filter(
-            (tid) => !state.ownedTools.includes(tid),
-          );
+          const missing = (part.tools || []).filter((tid) => !hasToolFor(tid));
           if (missing.length > 0) {
             const names = missing
               .map((id) => TOOLS_LIST.find((t) => t.id === id)?.name)
@@ -18209,6 +18235,12 @@
           "sounds electrical to me",
           "had the exact same thing. was a ground.",
           "clean your grounds first before anybody charges you anything",
+          "everyone always jumps straight to the expensive part. check the simple stuff",
+          "is the battery original? there you go then",
+          "not to be that guy but that is a classic ground issue",
+          "i would look at the wiring before i paid anybody a dime",
+          "my brother in law had this exact thing. grounds.",
+          "you can test that yourself in about ten minutes with a multimeter",
         ],
       };
       // What a man says under somebody else's post once you have done work for
@@ -18217,20 +18249,44 @@
       // need a line of its own explaining itself.
       const GROUP_VOUCH = {
         dell: [
+          { kind: "cash", t: "Wipers quit in the middle of that storm last week and I do not trust them now. Not urgent. Can pay. Dell", lo: 230, hi: 300 },
+          { kind: "cash", t: "There is a noise underneath when I turn left. My wife says she does not hear it. She hears it. Dell", lo: 250, hi: 340 },
+          { kind: "favour", t: "My sisters boy left his car here and it will not turn over. He is 19 and he has nothing. I would owe you." },
+          { kind: "tool", t: "Cleaning out the shed this weekend. There is a whole bench of my fathers things in there and I would rather it went to somebody who will use it. Dell" },
           "I would call the young fella on Mesa. Did my starter. Charged me what he said he would.",
           "Ask the kid who did my truck. He does not talk your ear off and the work is right.",
+          "There is a young man on Mesa does good work. Did not try to sell me anything I did not need.",
+          "Call the one on Mesa. He came out in the rain for me and would not take extra for it.",
         ],
         trey: [
+          { kind: "cash", t: "brakes feel weird. like they work but they feel weird. does that make sense", lo: 130, hi: 200 },
+          { kind: "cash", t: "ok so i tried to change my own oil and now theres oil everywhere. everywhere. please", lo: 120, hi: 175 },
+          { kind: "part", t: "traded my buddy for a box of stuff off his civic and idk what half of it is. take what you want", tier: "Budget" },
+          { kind: "favour", t: "car wont start and i have work at 6. i literally have no money till friday im not gonna lie to you" },
           "yo the dude that did my exhaust is legit fr. does not talk down to you either",
           "get the guy who did mine. actually explained it instead of just taking my money",
+          "the guy on mesa. he let me watch the whole thing and answered like 40 questions",
+          "whoever did my car is the only one around here who does not treat me like an idiot",
         ],
         hollis: [
+          { kind: "cash", t: "Alternator, I think. Dash lit up like a slot machine on the freeway. Friday would be amazing but I will take whenever.", lo: 260, hi: 355 },
+          { kind: "cash", t: "Need it looked at before we drive to my in-laws. Long drive. Bad relationship. Do not make me break down out there.", lo: 285, hi: 380 },
+          { kind: "part", t: "Doing the interior myself for once. Come pull whatever you want off the parts car while I have it open.", tier: "Budget" },
+          { kind: "tool", t: "Wife says the garage has to be empty before the baby comes. Come take something before it goes to the curb." },
           "My guy. Has bailed me out twice on a Thursday night. Say I sent you.",
           "Whoever is reading this, the one on Mesa is the real deal. Ask me how many times he has saved me.",
+          "Use the guy on Mesa. He has never once made me feel stupid for asking.",
+          "I have sent four people to him now and not one of them has come back to me unhappy.",
         ],
         vic: [
+          { kind: "cash", t: "One vehicle down with a cooling issue. It is costing me a driver every day it sits. I would consider this a priority.", lo: 400, hi: 530 },
+          { kind: "cash", t: "Brakes on the crew truck. I am not going to put my guys in it until somebody I trust has looked at it.", lo: 380, hi: 500 },
+          { kind: "tool", t: "Closing out the old shop unit. There is equipment in there I have no use for. Consider it against what I owe." },
+          { kind: "favour", t: "This one is personal, not fleet. My mothers car. I would take it as a considerable favour." },
           "I use him for the fleet. Straight work, no surprises on the invoice.",
           "Reliable. I would not put my trucks with him otherwise.",
+          "He has had my vehicles for two years. I have never had to check his work.",
+          "Quotes it, then charges that. You would be surprised how rare that is.",
         ],
       };
       function regularDef(id) {
@@ -19364,12 +19420,13 @@
       // Both roads to the pawn shop end at the same glass case and the same
       // two choices. Only the reason you're standing there changes.
       function queueRingPawnOffer(text) {
-        // Asked once a season at most. Walking away deliberately sets none of
-        // the pawned flags, because refusing is not the same as doing it and
-        // must not cost the player Clean Hands, which meant the offer had
-        // nothing at all stopping it coming back the following week. It was
-        // only ever rare because a bug was eating it.
-        state.ringOfferSeason = state.seasonNumber || 1;
+        // Asked once in a run. Walking away deliberately sets none of the
+        // pawned flags, because refusing is not the same as doing it and must
+        // not cost the player Clean Hands, which left nothing at all stopping
+        // the offer coming back the following week; it was only ever rare
+        // because a bug was eating it. A man decides this about his wedding
+        // ring once, and being asked again cheapens the first time he said no.
+        state.ringOfferMade = true;
         queueScene({
           id: "ring_pawn_offer",
           title: "The pawn shop is open late",
@@ -19401,7 +19458,7 @@
         if (state.bankLoanBalance <= 0) return;
         if (state.sharkLoanBalance <= 0) return;
         if (state.toolTruckBalance <= 0) return;
-        if ((state.ringOfferSeason || 0) === (state.seasonNumber || 1)) return;
+        if (state.ringOfferMade) return;
         // No modalBusy() check. This is the same bug that kept the loan shark
         // off the board for whole seasons: the week advance almost always has
         // a notice queued behind it, so a busy screen was cancelling the roll
@@ -19423,7 +19480,7 @@
       function maybeOfferRingPawnStretch() {
         if (state.weddingRingPawned || state.ringEverPawned) return;
         if (state.wifeCarSold) return; // the reckless path owns that case
-        if ((state.ringOfferSeason || 0) === (state.seasonNumber || 1)) return;
+        if (state.ringOfferMade) return;
         // Same cancel-instead-of-defer bug as the road above. queueScene()
         // holds it until the screen is clear.
         const car = currentCar();
@@ -23673,6 +23730,17 @@ addEventListener("DOMContentLoaded",function(){
       }
       function playCutscene(opts) {
         if (!opts || !CUTSCENE_ART[opts.art]) return;
+        // A cut scene owns the whole screen, so the menu the player opened to
+        // get here does not belong underneath it. Taking a loan played the
+        // scene over the still-open Loans Desk, so the scene ended by putting
+        // the player back in the menu they started from, and the next option
+        // they clicked in it opened another scene on top of that: screen, then
+        // menu, then screen again, for what was one decision.
+        //
+        // The flag is cleared directly rather than through closeStore(), which
+        // drains the event queue and the week-advance queue and would run both
+        // of those underneath a scene that is just going up.
+        if (state.showStore) state.showStore = false;
         const hold = shouldHoldCutscene(opts.art, opts);
         state.cutscene = {
           art: opts.art,
@@ -24683,7 +24751,9 @@ addEventListener("DOMContentLoaded",function(){
             `<div class="small muted">No active work orders. Start one in the Auto Shop.</div>`,
             bayLine + timerHint,
             "#1a0f08",
-            "work-order",
+            // The empty board is the one a player often meets first, the job
+            // having just finished, so it gets written on too.
+            "work-order" + inkOnce("resto"),
           );
         return panel(
           "Active Restorations",
@@ -24996,7 +25066,7 @@ addEventListener("DOMContentLoaded",function(){
                       const diyCost = starterFree ? 0 : partCost(p, "diy");
                       const shopCost = starterFree ? 0 : partCost(p, "shop");
                       const missing = (p.tools || [])
-                        .filter((tid) => !state.ownedTools.includes(tid))
+                        .filter((tid) => !hasToolFor(tid))
                         .map(
                           (tid) => TOOLS_LIST.find((t) => t.id === tid)?.name,
                         )
@@ -25070,7 +25140,7 @@ addEventListener("DOMContentLoaded",function(){
           subcontent = `${buildCatPillRow()}<div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div>${state.diyTried && state.shopTried ? "" : `<div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>`}${showLockHint}${state.shopCat === "paint" ? paintBoothPanel(car) : ""}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}<div class="dense-grid">${avail
             .map((p) => {
               const rq = p.tools || [];
-              const miss = rq.filter((tid) => !state.ownedTools.includes(tid));
+              const miss = rq.filter((tid) => !hasToolFor(tid));
               const activeTask = findActiveTask(car.id, p.id);
               const hasAll = miss.length === 0;
               const dc = partCost(p, "diy");
@@ -25104,7 +25174,7 @@ addEventListener("DOMContentLoaded",function(){
                         : `DIY $${fmt(starterFree ? 0 : dc)}`;
                       return button(diyLabel, `event.stopPropagation();installPart(${p.id},'diy',false)`, !hasAll || state.money < (starterFree ? 0 : dc) || activeTasksByMethod(car.id, "shop").length, "", "padding:5px 10px;font-size:11px;white-space:nowrap");
                     })()}${button(`Shop $${fmt(starterFree ? 0 : sc)}`, `event.stopPropagation();installPart(${p.id},'shop',false)`, state.money < (starterFree ? 0 : sc) || activeTasksByMethod(car.id, "diy").length, "", "padding:5px 10px;font-size:11px;white-space:nowrap;background:#7da0c2;border-color:var(--blue-bright)")}`;
-              return `<div class="dense-row ${open ? "open" : ""}" style="border-left:3px solid ${tierCol(p.tier)}"><div class="dense-head" onclick="toggleDense('part_${p.id}')"><span class="dense-name">${p.name} ${badge}</span><span class="dense-imp good">+${p.imp}</span><span class="dense-actions">${headBtns}<span class="dense-chev">${open ? "▾" : "▸"}</span></span></div>${open ? `<div class="dense-body"><div class="tiny muted" style="margin:6px 0 8px">${p.tier} · ${p.desc}</div>${rq.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${rq.map((tid) => { const t = TOOLS_LIST.find((x) => x.id === tid); const owned = state.ownedTools.includes(tid); const can2 = canOwnTool(t); return `<span class="tool-chip ${owned ? "owned" : ""}">${t?.emoji} ${t?.name}${owned ? " " : ` ${button(`$${fmt(t.cost)}`, `event.stopPropagation();buyTool('${tid}')`, !can2.ok || state.money < t.cost, "", "padding:2px 8px;font-size:10px;margin-left:5px")}`}</span>`; }).join("")}</div>` : ""}${activeTask ? `<div class="info-box" data-task-id="${activeTask.id}">${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>` : ""}${yardPull && !activeTask ? button(`Install yard pull · +${yardImp} (vs +${p.imp} new)`, `installYardPull('${yardPull.id}')`, !hasAll || maxed || activeTasksByMethod(car.id, "shop").length, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright);margin-top:4px") : ""}${state.freePart && p.tier === "Budget" && !maxed && !activeTask ? button("Sponsored · FREE", `installPart(${p.id},'shop',true)`, false, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright);margin-top:6px") : ""}</div>` : ""}</div>`;
+              return `<div class="dense-row ${open ? "open" : ""}" style="border-left:3px solid ${tierCol(p.tier)}"><div class="dense-head" onclick="toggleDense('part_${p.id}')"><span class="dense-name">${p.name} ${badge}</span><span class="dense-imp good">+${p.imp}</span><span class="dense-actions">${headBtns}<span class="dense-chev">${open ? "▾" : "▸"}</span></span></div>${open ? `<div class="dense-body"><div class="tiny muted" style="margin:6px 0 8px">${p.tier} · ${p.desc}</div>${rq.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${rq.map((tid) => { const t = TOOLS_LIST.find((x) => x.id === tid); const owned = hasToolFor(tid); const can2 = canOwnTool(t); return `<span class="tool-chip ${owned ? "owned" : ""}">${t?.emoji} ${t?.name}${owned ? " " : ` ${button(`$${fmt(t.cost)}`, `event.stopPropagation();buyTool('${tid}')`, !can2.ok || state.money < t.cost, "", "padding:2px 8px;font-size:10px;margin-left:5px")}`}</span>`; }).join("")}</div>` : ""}${activeTask ? `<div class="info-box" data-task-id="${activeTask.id}">${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>` : ""}${yardPull && !activeTask ? button(`Install yard pull · +${yardImp} (vs +${p.imp} new)`, `installYardPull('${yardPull.id}')`, !hasAll || maxed || activeTasksByMethod(car.id, "shop").length, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright);margin-top:4px") : ""}${state.freePart && p.tier === "Budget" && !maxed && !activeTask ? button("Sponsored · FREE", `installPart(${p.id},'shop',true)`, false, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright);margin-top:6px") : ""}</div>` : ""}</div>`;
             })
             .join("")}</div>`;
         }
@@ -25744,9 +25814,7 @@ addEventListener("DOMContentLoaded",function(){
               const part = PARTS.find((p) => p.id === s.partId);
               if (!part) return "";
               const yardImp = Math.max(1, Math.round(part.imp * s.conditionMult));
-              const missing = (part.tools || []).filter(
-                (tid) => !state.ownedTools.includes(tid),
-              );
+              const missing = (part.tools || []).filter((tid) => !hasToolFor(tid));
               const missingNote = missing.length
                 ? `<div class="tiny" style="color:var(--red-bright);margin-top:4px">Need ${missing.map((id) => TOOLS_LIST.find((t) => t.id === id)?.name).join(", ")}</div>`
                 : "";

@@ -505,14 +505,44 @@ const pass = (msg) => console.log("✓", msg);
     if (!state.ownedTools.includes("t9"))
       return "listing it anyway took the compressor off the shelf";
 
-    // Every tool that opens a job is kit, not stock.
+    // Every tool that opens a job is kit, not stock, unless something in the
+    // box supersedes it.
     const gating = TOOLS_LIST.filter((t) => toolGatesWork(t.id));
-    state.ownedTools = TOOLS_LIST.map((t) => t.id);
+    // Everything except the three tools that supersede another, so nothing in
+    // the box is a spare and every gating tool must read as kit.
+    const superseders = Object.values(TOOL_SUPERSEDES).flat();
+    state.ownedTools = TOOLS_LIST.map((t) => t.id).filter((id) => !superseders.includes(id));
     const wrong = gating.filter((t) => toolIsSurplus(t.id));
     if (wrong.length)
       return "these open jobs but were listed as surplus: " + wrong.map((t) => t.id).join(",");
 
+    // A better tool in the same trade does the lesser one's work. The shop
+    // compressor is the case this exists for: a man who bought it could not
+    // shoot a single stage respray, because the part names the small one.
+    const respray = PARTS.find((x) => x.name === "Single Stage Respray");
+    if (!respray) return "the respray that motivated tool superseding is gone";
+    state.ownedTools = ["t1", "t14", "t10", "t11", "t15"];
+    if (!hasToolFor("t9")) return "the shop compressor does not cover the small one";
+    if ((respray.tools || []).some((t) => !hasToolFor(t)))
+      return "a full box with the shop compressor still cannot shoot a single stage respray";
+    // One direction only. A small compressor is not a shop compressor.
+    state.ownedTools = ["t1", "t14", "t9"];
+    if (hasToolFor("t10")) return "the small compressor was accepted as the shop one";
+    // And things that merely share a shelf are not upgrades.
+    state.ownedTools = ["t12"];
+    if (hasToolFor("t11")) return "a paint booth was treated as a paint gun";
+    state.ownedTools = ["t3"];
+    if (hasToolFor("t18")) return "an engine hoist was treated as a floor jack";
+    // Which finally makes a real spare possible: the small one, once the big
+    // one is on the wall.
+    state.ownedTools = ["t1", "t14", "t9"];
+    if (toolIsSurplus("t9")) return "the only compressor you own was offered for sale";
+    state.ownedTools = ["t1", "t14", "t9", "t10"];
+    if (!toolIsSurplus("t9")) return "the small compressor stayed kit after the shop one arrived";
+    if (toolIsSurplus("t10")) return "the shop compressor was offered for sale";
+
     // What can honestly go: the things bought to be looked at.
+    state.ownedTools = TOOLS_LIST.map((t) => t.id);
     const vanity = TOOLS_LIST.filter((t) => !toolGatesWork(t.id)).map((t) => t.id);
     if (!vanity.includes("t_gold") || !vanity.includes("t_lift"))
       return "expected the gold ratchet and the lift to gate no work";
@@ -771,7 +801,7 @@ const pass = (msg) => console.log("✓", msg);
       state.tutorialComplete = true; state.onboardStage = 3;
       state.history = [{ tier: "Local", place: 2, show: "Palomar Junction Local" }];
       state.weddingRingPawned = false; state.ringEverPawned = false;
-      state.wifeCarSold = false; state.ringOfferSeason = 0;
+      state.wifeCarSold = false; state.ringOfferMade = false;
       state.week = 17; state.seasonLength = 22; state.seasonNumber = 2;
       state.money = 100; state.paycheckProgress = 0;
       state.bankLoanBalance = 4000; state.sharkLoanBalance = 0; state.toolTruckBalance = 0;
@@ -789,25 +819,26 @@ const pass = (msg) => console.log("✓", msg);
       return `the offer only reached ${r}% of eligible weeks, it is being cancelled by a busy screen again rather than deferred`;
     }
 
-    // Asked once a season, because walking away deliberately sets none of the
-    // pawned flags and would otherwise be asked again the following week.
+    // Asked once in a run, and once means once. Walking away deliberately
+    // sets none of the pawned flags, because refusing is not the same as doing
+    // it and must not cost the player Clean Hands, so without this there was
+    // nothing at all stopping the offer coming back the following week.
     let capped = 0;
     for (let i = 0; i < 300; i++) {
-      clean(); arm(); state.ringOfferSeason = state.seasonNumber;
-      maybeOfferRingPawnStretch();
+      clean(); arm(); state.ringOfferMade = true;
+      maybeOfferRingPawnStretch(); maybeOfferRingPawn();
       if (fired()) capped++;
     }
-    if (capped) { Object.assign(state, JSON.parse(snapshot)); return "the ring was offered twice in one season"; }
+    if (capped) { Object.assign(state, JSON.parse(snapshot)); return "the ring was offered a second time"; }
 
-    // A later season can put the same fork back in front of a player who is
-    // cornered again.
+    // Not even seasons later. A man decides this once.
     let later = 0;
     for (let i = 0; i < 300; i++) {
-      clean(); arm(); state.ringOfferSeason = 2; state.seasonNumber = 3;
-      maybeOfferRingPawnStretch();
+      clean(); arm(); state.ringOfferMade = true; state.seasonNumber = 5;
+      maybeOfferRingPawnStretch(); maybeOfferRingPawn();
       if (fired()) later++;
     }
-    if (!later) { Object.assign(state, JSON.parse(snapshot)); return "a later season could never raise it again"; }
+    if (later) { Object.assign(state, JSON.parse(snapshot)); return "a later season asked him again"; }
 
     // Once it is actually pawned it is over, and refusing must never cost the
     // player Clean Hands.
@@ -833,7 +864,7 @@ const pass = (msg) => console.log("✓", msg);
     return true;
   });
   if (ringOk !== true) fail("ring pawn offer: " + ringOk);
-  pass("the pawn-shop fork actually reaches the player, once a season, and refusing stays clean");
+  pass("the pawn-shop fork reaches the player, once in a run, and refusing stays clean");
 
   // ── the bug class itself, not one more instance of it. queueScene(),
   // queueWeeklyEvent() and pushNotice() all defer on their own when the screen
@@ -930,7 +961,7 @@ const pass = (msg) => console.log("✓", msg);
       state.history = [1,2,3,4,5,6].map((n) => ({ tier: "Local", place: n, show: "S" + n }));
       state.gameOver = false; state.seasonWrap = false;
       state.lifeBeatWeek = null; state.restraintStage = 0; state.restraintLastWeek = null;
-      state.birthdayReceived = true; state.ringOfferSeason = 0;
+      state.birthdayReceived = true; state.ringOfferMade = false;
       state.weddingRingPawned = false; state.ringEverPawned = false;
       state.loansUnlocked = false; state.sharkMetWeek = null; state.sharkRefused = false;
       state.bankMentioned = false; state.leanStreak = 0; state.tripsKnown = {};
