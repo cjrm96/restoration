@@ -744,6 +744,97 @@ const pass = (msg) => console.log("✓", msg);
   if (coachOk !== true) fail("this-week coach: " + coachOk);
   pass("the \"This week\" coach retires after season one, keeping only the score gap");
 
+  // ── the ring. Both roads to the pawn shop bailed on modalBusy(), which is
+  // the same bug that once kept the loan shark off the board for whole
+  // seasons: the week advance nearly always has a notice queued behind it, so
+  // a busy screen cancelled the roll instead of delaying it and the beat fired
+  // on about 4% of eligible weeks instead of the 30-35% it reads as.
+  // queueScene() defers on its own, so the check was the thing breaking it. ──
+  const ringOk = await page.evaluate(() => {
+    const snapshot = JSON.stringify(state);
+    const car = state.cars[0];
+    const clean = () => {
+      state.pendingScene = null; state.pendingEvent = null; state.eventQueue = [];
+      state.noticeQueue = []; state.cutscene = null; state.pendingUnlock = null;
+      state.showStore = false; state.weekRecap = null; state.pendingRecap = null;
+      state.result = null; state.pendingVictory = null; state.showStage = null;
+      state.showLoading = false; state.view = "workshop";
+      clearTabArrival();
+    };
+    const fired = () =>
+      !!(state.pendingScene && state.pendingScene.id === "ring_pawn_offer") ||
+      (state.eventQueue || []).some((e) => e.payload && e.payload.id === "ring_pawn_offer");
+    // Cornered late in a season: roadworthy, broke, a loan working, and the
+    // wife's car still in the driveway so this is the stretch road.
+    const arm = () => {
+      car.engine = 99; car.transmission = 99; car.brakes = 99; car.steering = 99;
+      state.tutorialComplete = true; state.onboardStage = 3;
+      state.history = [{ tier: "Local", place: 2, show: "Palomar Junction Local" }];
+      state.weddingRingPawned = false; state.ringEverPawned = false;
+      state.wifeCarSold = false; state.ringOfferSeason = 0;
+      state.week = 17; state.seasonLength = 22; state.seasonNumber = 2;
+      state.money = 100; state.paycheckProgress = 0;
+      state.bankLoanBalance = 4000; state.sharkLoanBalance = 0; state.toolTruckBalance = 0;
+      state.gameOver = false; state.seasonWrap = false;
+    };
+
+    // Through the real week advance, with a screen that is busy the way a real
+    // week advance leaves it. Anything near 4% means the cancel is back.
+    const N = 200;
+    let hits = 0;
+    for (let i = 0; i < N; i++) { clean(); arm(); advanceWeek("time"); if (fired()) hits++; }
+    const rate = (hits / N) * 100;
+    if (rate < 12) {
+      const r = rate.toFixed(1); Object.assign(state, JSON.parse(snapshot));
+      return `the offer only reached ${r}% of eligible weeks, it is being cancelled by a busy screen again rather than deferred`;
+    }
+
+    // Asked once a season, because walking away deliberately sets none of the
+    // pawned flags and would otherwise be asked again the following week.
+    let capped = 0;
+    for (let i = 0; i < 300; i++) {
+      clean(); arm(); state.ringOfferSeason = state.seasonNumber;
+      maybeOfferRingPawnStretch();
+      if (fired()) capped++;
+    }
+    if (capped) { Object.assign(state, JSON.parse(snapshot)); return "the ring was offered twice in one season"; }
+
+    // A later season can put the same fork back in front of a player who is
+    // cornered again.
+    let later = 0;
+    for (let i = 0; i < 300; i++) {
+      clean(); arm(); state.ringOfferSeason = 2; state.seasonNumber = 3;
+      maybeOfferRingPawnStretch();
+      if (fired()) later++;
+    }
+    if (!later) { Object.assign(state, JSON.parse(snapshot)); return "a later season could never raise it again"; }
+
+    // Once it is actually pawned it is over, and refusing must never cost the
+    // player Clean Hands.
+    let after = 0;
+    for (let i = 0; i < 200; i++) {
+      clean(); arm(); state.ringEverPawned = true; state.seasonNumber = 5;
+      maybeOfferRingPawnStretch(); maybeOfferRingPawn();
+      if (fired()) after++;
+    }
+    if (after) { Object.assign(state, JSON.parse(snapshot)); return "it was offered again after the ring was already pawned"; }
+
+    // The offer itself is still a real fork with a way out.
+    clean(); arm();
+    queueRingPawnOffer("probe");
+    const sc = state.pendingScene ||
+      ((state.eventQueue || []).find((e) => e.payload && e.payload.id === "ring_pawn_offer") || {}).payload;
+    if (!sc || (sc.choices || []).length !== 2) { Object.assign(state, JSON.parse(snapshot)); return "the pawn offer lost its second choice"; }
+    if (sc.choices.some((c) => c.ringPawnAccept) === false) { Object.assign(state, JSON.parse(snapshot)); return "no way to accept"; }
+    const walk = sc.choices.find((c) => !c.ringPawnAccept);
+    if (walk.ringEverPawned || walk.ringPawnAccept) { Object.assign(state, JSON.parse(snapshot)); return "walking away was recorded as pawning it"; }
+
+    Object.assign(state, JSON.parse(snapshot));
+    return true;
+  });
+  if (ringOk !== true) fail("ring pawn offer: " + ringOk);
+  pass("the pawn-shop fork actually reaches the player, once a season, and refusing stays clean");
+
   // ── the Saturday trips. Neither the yard nor the swap was ever introduced:
   // the Road Trip pill turned up with two others when show season opened, and
   // the only writing explaining either place fired after the player had paid

@@ -11643,7 +11643,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.81.1";
+      const GAME_VERSION = "0.81.2";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -11797,6 +11797,7 @@
           ringPawnBalance: 0,
           ringPawnPayment: 50,
           weddingRingPawned: false,
+          ringOfferSeason: 0,
           birthdayReceived: false,
           fakeFollowersBought: false,
           weekStartMoney: 5000,
@@ -18992,6 +18993,12 @@
       // Both roads to the pawn shop end at the same glass case and the same
       // two choices. Only the reason you're standing there changes.
       function queueRingPawnOffer(text) {
+        // Asked once a season at most. Walking away deliberately sets none of
+        // the pawned flags, because refusing is not the same as doing it and
+        // must not cost the player Clean Hands, which meant the offer had
+        // nothing at all stopping it coming back the following week. It was
+        // only ever rare because a bug was eating it.
+        state.ringOfferSeason = state.seasonNumber || 1;
         queueScene({
           id: "ring_pawn_offer",
           title: "The pawn shop is open late",
@@ -19023,7 +19030,13 @@
         if (state.bankLoanBalance <= 0) return;
         if (state.sharkLoanBalance <= 0) return;
         if (state.toolTruckBalance <= 0) return;
-        if (modalBusy()) return;
+        if ((state.ringOfferSeason || 0) === (state.seasonNumber || 1)) return;
+        // No modalBusy() check. This is the same bug that kept the loan shark
+        // off the board for whole seasons: the week advance almost always has
+        // a notice queued behind it, so a busy screen was cancelling the roll
+        // rather than delaying it, and the offer fired on about 4% of eligible
+        // weeks instead of the 35% it reads as. queueScene() already defers on
+        // its own, so the check was both redundant and the thing breaking it.
         if (Math.random() > 0.35) return;
         queueRingPawnOffer(
           "It's 10:47 PM. You're standing across the street from a pawn shop you've driven past a hundred times and never thought about. Three loans out, the wife's car already gone, and the bank account thirty bucks deep. Your wedding ring has been sitting on the dresser since you started painting last weekend. She has never once doubted this build. That's what makes the thought so ugly. She wouldn't even notice tonight.",
@@ -19039,7 +19052,9 @@
       function maybeOfferRingPawnStretch() {
         if (state.weddingRingPawned || state.ringEverPawned) return;
         if (state.wifeCarSold) return; // the reckless path owns that case
-        if (state.pendingScene || modalBusy()) return;
+        if ((state.ringOfferSeason || 0) === (state.seasonNumber || 1)) return;
+        // Same cancel-instead-of-defer bug as the road above. queueScene()
+        // holds it until the screen is clear.
         const car = currentCar();
         if (!car || !roadworthy(car)) return;
         // Late season, chasing the big show, and genuinely broke with debt
