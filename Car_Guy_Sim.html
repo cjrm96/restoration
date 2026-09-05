@@ -11720,7 +11720,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.85.0";
+      const GAME_VERSION = "0.86.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -11760,6 +11760,8 @@
           // So the man who comments on everything does not say the same thing
           // two weeks running.
           lastPestLine: "",
+          // So a look does not turn up the same line it did last time.
+          lastLookLine: "",
           seasonLength: 22,
           cars: [
             {
@@ -12164,8 +12166,11 @@
         if ((car.setup || "balanced") === id) return toast("She's already dialed in that way.", "err");
         const first = !car.setup;
         if (!first) {
-          if (hasActiveRestorations())
-            return toast("Finish or park your jobs first, a re-tune takes the weekend on the rack.", "err");
+          // Kept, and narrowed to the car it is actually about. A re-tune puts
+          // this car on the rack, so a job running on this car conflicts with
+          // it physically. A job on a different car does not.
+          if (hasActiveRestorations(car.id))
+            return toast("She's in pieces on the rack right now. Finish what's on her first.", "err");
           if (state.money < RETUNE_COST)
             return toast(`A re-tune runs $${RETUNE_COST} and a weekend in the shop.`, "err");
           state.money -= RETUNE_COST;
@@ -12591,14 +12596,19 @@
           : pickFresh(DIY_START_LINES, "diyStart");
       }
       function canAdvanceWeekCheck(showToast = true) {
-        if (hasActiveRestorations()) {
-          if (showToast)
-            toast(
-              "Finish all current restoration jobs before advancing the week.",
-              "err",
-            );
-          return false;
-        }
+        // A job on the bench used to stop the week dead, and with it the two
+        // trips, the weekend at home, the re-tune and every quiet-week beat,
+        // because all of them route through here or through the same test. At
+        // the Public Curb, which is where everybody starts and has exactly one
+        // bay, that left a man holding a wrench and locked out of his own
+        // calendar for seventy five seconds at a time.
+        //
+        // The week does not wait for a water pump. There is one clock on a job
+        // and it is the real-time timer; the week is not it. weeksRequired was
+        // written on every task and never once read, which is the seam between
+        // the two ideas, and it stays unread rather than becoming a second
+        // clock that disagrees with the first the moment somebody closes the
+        // tab for a day.
         return true;
       }
       function hasBlockingPopup() {
@@ -13831,9 +13841,13 @@
         if (state.seasonWrap || state.gameOver) return false;
         return true;
       }
-      // A quiet week: all of the above, and nothing on the lift either.
+      // A quiet week is a week with nothing else already on the screen. It
+      // used to also require an empty bench, which was survivable while a job
+      // froze the calendar and is not now: with the weeks running through the
+      // work, most of a season has something on the bench, and these beats
+      // would have gone quiet for good.
       function quietWeekForBeat() {
-        return beatWindowOpen() && !hasActiveRestorations();
+        return beatWindowOpen();
       }
       function maybeTriggerYardIntro() {
         if (tripKnown("yard")) return false;
@@ -16025,8 +16039,10 @@
         if (location === "swap" && !tripKnown("swap")) return;
         if (state.atTrip)
           return toast("You're already at this Saturday's trip.", "err");
-        if (hasActiveRestorations())
-          return toast("Finish or park your current restoration jobs before spending a Saturday out, the trip burns the week.", "err");
+        // The old reason for blocking this was that the trip burns the week,
+        // and the week is no longer something a job holds. What actually stops
+        // a man driving to the yard is not having anything to drive, and
+        // canMakeScavengeTrip is the test for that, so it is the only one left.
         const ride = canMakeScavengeTrip();
         if (!ride.ok) return toast(ride.msg, "err");
         const cost =
@@ -24734,6 +24750,149 @@ addEventListener("DOMContentLoaded",function(){
           _renderRestorationPanelInner(car, tasks),
         );
       }
+      /* ═══════════════════════════════════════════
+     WHILE I'M IN HERE
+     A man with a job on the bench and time to kill does one thing in every
+     shop there has ever been: he goes and looks at something else that is
+     wrong with the car. He was not going to fix it today. He wanted to know
+     how bad it is.
+     One look per job, so choosing to go under the dash is choosing not to
+     pull the door card this time, and you will never find out what was behind
+     the other one. That is the whole cost, and it is the reason this is a
+     decision rather than something to click at.
+  ═══════════════════════════════════════════ */
+      // Four kinds of answer. Nothing is the commonest, because that is what
+      // looking usually gets you, and it is not a failure state: it is the
+      // relief of finding out the thing you were worried about is fine.
+      const IN_HERE_FINDS = [
+        { k: "nothing", t: "You pull the door card off expecting the worst. Dry as a bone behind it. Somebody garaged this thing for thirty years and never said so.", lore: 2 },
+        { k: "nothing", t: "Up under the dash with a light in your teeth. Wiring is original, brittle at the ends, and nowhere near as bad as the smell suggested.", lore: 2 },
+        { k: "nothing", t: "Pull the plugs to read them. All eight the same colour. Whoever had this last knew what they were doing and never got the credit.", lore: 3 },
+        { k: "nothing", t: "Crawl under with the drop light. Frame is straight. No filler, no ripples, no sign anybody ever hit anything. You lie there a minute longer than you need to.", lore: 3 },
+        { k: "nothing", t: "Check the spare well for rot. Not a hole in it. The spare is still the one that came with the truck, still holding air.", lore: 2 },
+        { k: "nothing", t: "Take the valve cover off just to see. Everything in there is wet with clean oil. You put it straight back on.", lore: 2 },
+        { k: "nothing", t: "Pull the carpet back at the pedals, where they always rot. Dry, solid, factory. Somebody kept this thing out of the weather its whole life.", lore: 2 },
+        { k: "nothing", t: "Get the wheel off to look at the backing plate. Shoes have half their life left and the springs are the right colour. Fine.", lore: 2 },
+        { k: "nothing", t: "You are sure you heard something in the door. It is a pen. It has been a pen for a very long time.", lore: 3 },
+        { k: "nothing", t: "Take a look at the fuel sender while you are near it. Clean tank, no rust flakes, no varnish. Somebody drove this regularly and did not let it sit.", lore: 2 },
+        { k: "nothing", t: "Check the cab mounts, because they are always gone. Every one of them is intact. You check twice because you do not believe it.", lore: 3 },
+        { k: "nothing", t: "Look behind the grille for a nest, the way you always do. Nothing. Not even an old one.", lore: 2 },
+        { k: "nothing", t: "Trace the ground strap because you half expect it to be missing. It is right where it should be, clean and tight. Wayne would be disappointed.", lore: 3 },
+        { k: "nothing", t: "Pop the horn button off just to see what is under there. What is under there is a horn. You put it back.", lore: 2 },
+        { k: "nothing", t: "Inspect the seat frame while the cushion is out. Not a broken spring in it. Whoever sat here was gentle or was never here much.", lore: 2 },
+        { k: "nothing", t: "You go looking for the rust everybody says these have behind the rear wheel. It is not there. It is genuinely not there.", lore: 3 },
+        { k: "story", t: "Behind the kick panel, a receipt. Tune-up, March 1974, eleven dollars and forty cents, paid in cash by a man with the same last name as the road you live on.", lore: 8, followers: 40 },
+        { k: "story", t: "There is a name written in pencil on the inside of the glovebox door, and a date, and the words FIRST CAR. You leave it exactly where it is.", lore: 9, followers: 60 },
+        { k: "story", t: "Somebody wrapped a heater hose in the same green tape twice, twenty years apart. You can tell which one is which. Whoever it was, they were doing their best.", lore: 7, followers: 30 },
+        { k: "story", t: "Under the seat, a church bulletin from a town two hours north, folded to the crossword. Half done. In pen.", lore: 7, followers: 45 },
+        { k: "story", t: "The radio has one preset that is not a station any more. It has not been a station since before you were born.", lore: 8, followers: 50 },
+        { k: "story", t: "Sun visor comes down and a photograph falls out. Two people, a dog, this truck when it was new. Nobody is looking at the camera.", lore: 10, followers: 70 },
+        { k: "story", t: "Inside the tailgate, in grease pencil, somebody has written a phone number with only six digits. That was enough, once.", lore: 8, followers: 55 },
+        { k: "story", t: "The odometer stopped at a round number, and the cable was neatly disconnected, on purpose, a long time ago. Somebody decided this truck was done counting.", lore: 9, followers: 65 },
+        { k: "story", t: "There is a second key taped inside the frame rail, and a note that just says HERS.", lore: 10, followers: 80 },
+        { k: "story", t: "Fairground sticker on the inside of the tailgate, 1978, from a county two states over. This truck has been further than you have.", lore: 7, followers: 40 },
+        { k: "good", t: "You find a whole box of the right clips taped inside the fender, put there by somebody who knew he would need them again.", part: "Budget" },
+        { k: "good", t: "There is a spare that has never touched the road bolted under the bed, and the shop rag around it is older than you are.", part: "Budget" },
+        { k: "good", t: "Behind the bench seat, wrapped in a feed sack: the original trim piece, the one that is impossible to find, still in the paper.", part: "Quality" },
+        { k: "good", t: "The previous owner put a factory part on and kept the old one in the trunk, cleaned, in case. It is better than what is on it now.", part: "Quality" },
+        { k: "good", t: "You go looking for a leak and find forty dollars in the seat springs instead, in old notes, folded small.", cash: 40 },
+        { k: "good", t: "Under the floor mat, the original build sheet. Somebody would pay for that. You are not somebody.", lore: 6, followers: 90 },
+        { k: "good", t: "Taped to the inside of the inner fender, in a bread bag: every receipt this truck ever had, in order, going back to the dealer.", lore: 9, followers: 120 },
+        { k: "good", t: "The bed is holding a full set of the original hubcaps, face down under a sheet of plywood, not a mark on them.", part: "Quality" },
+        { k: "good", t: "There is a coffee can of hardware bolted to the frame, and every fastener in it is the correct one for this truck.", part: "Budget" },
+        { k: "good", t: "You find sixty dollars rolled in the ashtray, which has never once been used as an ashtray.", cash: 60 },
+        { k: "bad", t: "Get a light on the inner rocker and there it is. Not new, not from you, just finally somebody looking at it. It has been like that a long time.", hit: "body", lore: 4 },
+        { k: "bad", t: "The pinion seal has been weeping since before you owned it. Nobody caused this. It has just been waiting for somebody to notice.", hit: "differential", lore: 4 },
+        { k: "bad", t: "Poke at the top of the heater core and your finger comes away wet and sweet. That is going to be a whole day, and not today.", hit: "cooling", lore: 4 },
+        { k: "bad", t: "Somebody spliced into the harness with a twist and some tape, back when that was normal. You leave it, but now you know it is there.", hit: "electrical", lore: 5 },
+        { k: "bad", t: "The brake line runs against the frame where it should not, and it has been rubbing itself thin for a couple of decades.", hit: "brakes", lore: 5 },
+        { k: "bad", t: "There is filler in the lower quarter, thick, and a straight edge shows the whole panel is not the shape it left the factory as.", hit: "body", lore: 5 },
+        { k: "bad", t: "The exhaust hanger is a coat hanger. An actual coat hanger. It has held for years and it is not going to hold forever.", hit: "exhaust", lore: 4 },
+        { k: "bad", t: "You put a wrench on a suspension bolt and it turns with no fight at all. That has not been tight in a long time.", hit: "suspension", lore: 4 },
+      ];
+      // Odds are declared here, not left to emerge from how many lines of each
+      // kind happen to be written, which is how the first build ended up at
+      // thirty percent bad news: the pool was picked flat and I had written
+      // eight problems and six of everything else. A kind is chosen first, a
+      // line inside it second, so more writing never moves the balance.
+      //
+      // Nothing is the commonest because that is what looking usually gets
+      // you, and it is not a failure: it is finding out the thing you were
+      // worried about is fine. Bad news is the rarest because a look that
+      // punishes you one time in three teaches the player not to look, and a
+      // hook that trains avoidance is not a hook.
+      const IN_HERE_ODDS = [
+        ["nothing", 36],
+        ["good", 24],
+        ["story", 24],
+        ["bad", 16],
+      ];
+      const IN_HERE_HIT = 3;
+      function canLookInHere(task) {
+        return !!task && !task.completed && !task.looked && Date.now() < task.finishTime;
+      }
+      function lookWhileInHere(taskId) {
+        const task = (state.activeRestorations || []).find((t) => t.id === taskId);
+        if (!canLookInHere(task)) return;
+        // One per job. Spent whatever the answer turns out to be, because the
+        // cost of looking here is not looking anywhere else on this one.
+        task.looked = true;
+        const car = getCarById(task.carId) || currentCar();
+        const total = IN_HERE_ODDS.reduce((a, o) => a + o[1], 0);
+        let roll = Math.random() * total;
+        let kind = IN_HERE_ODDS[0][0];
+        for (const [k, w] of IN_HERE_ODDS) {
+          if (roll < w) { kind = k; break; }
+          roll -= w;
+        }
+        const pool = IN_HERE_FINDS.filter((f) => f.k === kind);
+        // Never the same line twice running, so a short pool does not read as
+        // a short pool.
+        const fresh = pool.filter((f) => f.t !== state.lastLookLine);
+        const find = (fresh.length ? fresh : pool)[Math.floor(Math.random() * (fresh.length ? fresh.length : pool.length))];
+        state.lastLookLine = find.t;
+        let tail = "";
+        if (find.lore) addGarageLore(find.lore);
+        if (find.followers) {
+          state.followers += find.followers;
+          clampFollowers();
+          tail = ` (+${find.followers} followers, people love this stuff.)`;
+        }
+        if (find.cash) {
+          state.money += find.cash;
+          recordMoneyChange(find.cash, "Found in the seat springs");
+          tail = ` (+$${find.cash}.)`;
+        }
+        if (find.part) {
+          const tierPool = PARTS.filter((x) => x.tier === find.part);
+          const part = tierPool[Math.floor(Math.random() * tierPool.length)];
+          if (part) {
+            const val = Math.max(35, Math.round(partCost(part, "diy") * 0.6));
+            state.partsInventory.push({
+              id: `inhere_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+              name: `${part.name} · found in the car`,
+              sourcePart: part.name,
+              category: part.category,
+              tier: part.tier,
+              askingPrice: Math.round(val * 1.35),
+              baselineValue: val,
+              listed: false,
+              sold: false,
+            });
+            tail = ` (${part.name}, yours.)`;
+          }
+        }
+        if (find.hit && car) {
+          // It was always like this. Finding it does not break the truck, it
+          // stops the truck pretending, and the number was never honest.
+          car[find.hit] = Math.max(0, (car[find.hit] || 0) - IN_HERE_HIT);
+          tail = ` (${CAT_LABELS[find.hit] || find.hit} -${IN_HERE_HIT}. It was always like that.)`;
+        }
+        pushNotice(find.t + tail, find.k === "bad" ? "bad" : "good");
+        playSfx(find.k === "bad" ? "error" : "ding");
+        saveGame();
+        requestRender("full");
+      }
       function _renderRestorationPanelInner(car, tasks) {
         // Shop Notes used to carry "Active Jobs 1 / 1" directly under this
         // board, which counted the cards you were already looking at. The
@@ -24761,7 +24920,13 @@ addEventListener("DOMContentLoaded",function(){
             .map((task) => {
               const part = PARTS.find((p) => p.id === task.partId);
               const remaining = Math.max(0, task.finishTime - Date.now());
-              return `<div class="info-box" data-task-id="${task.id}"><div class="flex between center" style="margin-bottom:8px;gap:10px"><div><div class="small" style="color:var(--text-bright);font-weight:bold">${part?.name || "Restoration"}</div></div><div class="small good task-time" style="font-weight:bold">${remaining <= 0 ? "COMPLETE" : formatRemaining(remaining)}</div></div>${gauge("", Math.round(getRestorationProgress(task) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${remaining <= 0 ? "Wrapping up now…" : taskStatusText(task)}</div></div>`;
+              return `<div class="info-box" data-task-id="${task.id}"><div class="flex between center" style="margin-bottom:8px;gap:10px"><div><div class="small" style="color:var(--text-bright);font-weight:bold">${part?.name || "Restoration"}</div></div><div class="small good task-time" style="font-weight:bold">${remaining <= 0 ? "COMPLETE" : formatRemaining(remaining)}</div></div>${gauge("", Math.round(getRestorationProgress(task) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${remaining <= 0 ? "Wrapping up now…" : taskStatusText(task)}</div>${
+                canLookInHere(task)
+                  ? `${button("While you're in there, have a look", `lookWhileInHere('${task.id}')`, false, "", "width:100%;margin-top:8px;font-size:11px;background:#3a2a1a;border-color:#8a5a2a;color:#e8c79a")}<div class="tiny muted" style="margin-top:4px;line-height:1.45">One look while she is open. Whatever you check, you are not checking the other thing.</div>`
+                  : task.looked
+                    ? `<div class="tiny muted" style="margin-top:8px;line-height:1.45">You already had your look at this one.</div>`
+                    : ""
+              }</div>`;
             })
             .join("")}`,
           bayLine + timerHint,
@@ -25796,8 +25961,10 @@ addEventListener("DOMContentLoaded",function(){
       function takeWeekendHome() {
         if (state.atTrip)
           return toast("You're already out for the day. Head home to end the Saturday.", "err");
-        if (hasActiveRestorations())
-          return toast("Finish or park your current jobs first, then the weekend's yours.", "err");
+        // No test for work on the bench. Telling a man he cannot spend Sunday
+        // with his family until the water pump is done makes his family a
+        // reward for finishing his chores, which is the exact inversion of
+        // what this game is about.
         if (!canAdvanceWeekCheck(true)) return;
         state.weekendHome = true;
         playSfx("click");
@@ -25945,10 +26112,9 @@ addEventListener("DOMContentLoaded",function(){
         const yardCount = state.junkyardStock.length;
         const swapCount = state.swapMeetStock.length;
         const ride = canMakeScavengeTrip();
-        // A Saturday out burns the whole week, so an in-progress build blocks
-        // the trip. Reflect it in the buttons (negative affordance) and say why,
-        // same as the no-ride case, instead of only erroring on click.
-        const busy = hasActiveRestorations();
+        // Work on the bench no longer blocks a Saturday out. Only having
+        // nothing to drive does, and that has its own banner below.
+        const busy = false;
         const noRideBanner = !ride.ok
           ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border:1px solid rgba(196,109,96,0.4);margin-bottom:12px;padding:10px 12px"><div class="tiny" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px"> No way to get there</div><div class="tiny muted" style="line-height:1.5">${ride.msg} Get the project running (engine ${ROADWORTHY_ENGINE}+, transmission ${ROADWORTHY_TRANSMISSION}+, brakes ${ROADWORTHY_BRAKES}+, steering ${ROADWORTHY_STEERING}+) and the trip opens up.</div></div>`
           : busy

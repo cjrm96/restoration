@@ -1156,6 +1156,103 @@ const pass = (msg) => console.log("✓", msg);
   if (callsOk !== true) fail("pre-season calls: " + callsOk);
   pass("the off-season group: four people posting in four voices, one pest, and standing spoken by the town");
 
+  // ── a job on the bench used to switch the game off. At the Public Curb,
+  // where everybody starts with one bay, a running restoration blocked the
+  // week, both trips, the weekend at home, the re-tune and every quiet-week
+  // beat, for seventy five seconds at a time. There is one clock on a job and
+  // it is the real-time timer; the week is not it. ──
+  const cageOk = await page.evaluate(() => {
+    const snapshot = JSON.stringify(state);
+    const car = state.cars[0];
+    const bail = (m) => { Object.assign(state, JSON.parse(snapshot)); return m; };
+    const clear = () => {
+      state.pendingScene = null; state.pendingEvent = null; state.eventQueue = [];
+      state.noticeQueue = []; state.cutscene = null; state.pendingUnlock = null;
+      state.showStore = false; state.weekRecap = null; state.pendingRecap = null;
+      state.result = null; state.view = "workshop"; state.atTrip = false;
+      state.weekendHome = false; state.scavengeChoice = null; clearTabArrival();
+    };
+    const putJobOnBench = () => {
+      state.activeRestorations = [{
+        id: "smoke_job", carId: car.id, partId: PARTS[0].id, method: "diy",
+        startTime: Date.now(), finishTime: Date.now() + 75000,
+        weeksRequired: 1, completed: false,
+      }];
+    };
+    state.tutorialComplete = true; state.onboardStage = 3; state.installsDone = 9;
+    state.week = 6; state.seasonNumber = 1; state.money = 5000;
+    state.tripsKnown = { yard: true, swap: true }; state.workshopLevel = "curb";
+    state.gameOver = false; state.seasonWrap = false;
+
+    clear(); putJobOnBench();
+    if (!canAdvanceWeekCheck(false)) return bail("a job on the bench still stops the week");
+    if (!quietWeekForBeat()) return bail("a job on the bench still silences the quiet-week beats");
+    clear(); putJobOnBench();
+    const wkBefore = state.week;
+    takeWeekendHome();
+    if (state.week === wkBefore)
+      return bail("a man still cannot spend Sunday with his family until the water pump is done");
+    clear(); putJobOnBench(); state.week = 6;
+    commitScavengeTrip("junkyard");
+    if (!state.atTrip) return bail("a job on the bench still blocks the Saturday trip");
+    // The one clock, tested by behaviour rather than by reading the source,
+    // which only proves somebody mentioned the word. A job whose weeksRequired
+    // says ninety nine still finishes the moment its timer is up: the week is
+    // not a second clock on the work.
+    clear();
+    state.activeRestorations = [{
+      id: "clock_job", carId: car.id, partId: PARTS[0].id, method: "diy",
+      startTime: Date.now() - 1000, finishTime: Date.now() - 1,
+      weeksRequired: 99, completed: false,
+    }];
+    resolveCompletedRestorations(false);
+    if (!state.activeRestorations.every((t) => t.id !== "clock_job" || t.completed))
+      return bail("a finished job was held open by weeksRequired, so there are two clocks now");
+
+    // ── while I'm in here ──
+    clear(); putJobOnBench();
+    const task = state.activeRestorations[0];
+    if (!canLookInHere(task)) return bail("cannot look while a job is running");
+    lookWhileInHere(task.id);
+    if (!task.looked) return bail("the look did not spend itself");
+    if (canLookInHere(task)) return bail("a second look was offered on the same job");
+    const q = state.noticeQueue.length;
+    lookWhileInHere(task.id);
+    if (state.noticeQueue.length !== q) return bail("a second look on one job produced something");
+
+    // Balance is declared, not a side effect of how many lines got written.
+    if (typeof IN_HERE_ODDS === "undefined") return bail("the odds are not stated anywhere");
+    const odds = Object.fromEntries(IN_HERE_ODDS);
+    const worst = Object.entries(odds).sort((a, b) => b[1] - a[1])[0][0];
+    if (worst === "bad") return bail("bad news is the likeliest outcome, which teaches the player not to look");
+    if (odds.bad > 20) return bail(`bad news at ${odds.bad}% will train avoidance`);
+    // Every kind the odds name has to have lines behind it.
+    for (const [k] of IN_HERE_ODDS) {
+      if (!IN_HERE_FINDS.some((f) => f.k === k)) return bail("no lines written for outcome kind: " + k);
+    }
+    if (IN_HERE_FINDS.length < 36)
+      return bail(`only ${IN_HERE_FINDS.length} finds, a run will see repeats`);
+    // And it lands where the odds say.
+    const seen = {};
+    for (let i = 0; i < 1200; i++) {
+      state.activeRestorations[0].looked = false;
+      state.noticeQueue = [];
+      lookWhileInHere("smoke_job");
+      const note = state.noticeQueue[state.noticeQueue.length - 1];
+      const txt = (note && (note.text || note.title)) || "";
+      const f = IN_HERE_FINDS.find((x) => txt.startsWith(x.t.slice(0, 30)));
+      if (f) seen[f.k] = (seen[f.k] || 0) + 1;
+    }
+    const badPct = ((seen.bad || 0) / 1200) * 100;
+    if (badPct > odds.bad + 8)
+      return bail(`bad news came up ${badPct.toFixed(0)}% of the time against a stated ${odds.bad}%`);
+
+    Object.assign(state, JSON.parse(snapshot));
+    return true;
+  });
+  if (cageOk !== true) fail("work on the bench: " + cageOk);
+  pass("a job on the bench no longer switches the game off, and buys one look under the car");
+
   // ── the Saturday trips. Neither the yard nor the swap was ever introduced:
   // the Road Trip pill turned up with two others when show season opened, and
   // the only writing explaining either place fired after the player had paid
