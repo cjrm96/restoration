@@ -991,6 +991,101 @@ const pass = (msg) => console.log("✓", msg);
   if (reachOk !== true) fail("money beats reaching the right player: " + reachOk);
   pass("the money beats find a cornered builder and leave a comfortable one alone");
 
+  // ── pre-season side work is four people who call, not a job board. The old
+  // board was three anonymous postings a week whose only decision was
+  // arithmetic. These pay in four different currencies so two calls in one
+  // week cannot be compared by subtraction, a week holds two of them, and
+  // standing decides who rings. ──
+  const callsOk = await page.evaluate(() => {
+    const snapshot = JSON.stringify(state);
+    const clear = () => {
+      state.pendingScene = null; state.pendingEvent = null; state.eventQueue = [];
+      state.noticeQueue = []; state.cutscene = null; state.pendingUnlock = null;
+      state.showStore = false; state.weekRecap = null; state.pendingRecap = null;
+      state.result = null; state.view = "workshop"; clearTabArrival();
+    };
+    const bail = (msg) => { Object.assign(state, JSON.parse(snapshot)); return msg; };
+
+    state.tutorialComplete = true; state.onboardStage = 3; state.seasonNumber = 2;
+    state.regulars = {}; state.money = 0; state.partsInventory = [];
+    state.ownedTools = ["t1", "t14"]; state.workshopLevel = "carport";
+    state.toolTruckBalance = 0; state.ringPawnBalance = 0;
+    state.bankLoanBalance = 0; state.sharkLoanBalance = 0;
+    enterPreSeason(); clear();
+
+    // Somebody always rings. A silent week is a failed roll wearing a quiet
+    // week's coat, and the player cannot tell the difference.
+    for (let i = 0; i < 200; i++) {
+      state.regulars = {}; rollGigBoard();
+      if (!(state.gigs || []).length) return bail("a pre-season week came up with nobody calling at all");
+      for (const g of state.gigs) {
+        if (!g.who || !REGULARS.some((r) => r.id === g.who))
+          return bail("a call arrived with no caller behind it");
+        if (!["cash", "part", "tool", "favour"].includes(g.kind))
+          return bail("a call paid in something that is not one of the four kinds: " + g.kind);
+      }
+    }
+
+    // A week holds two. The third is refused, and the refusal is spoken.
+    state.regulars = { dell: 9, trey: 9, hollis: 9, vic: 9 };
+    rollGigBoard(); clear();
+    if ((state.gigs || []).length < 3) {
+      // force a full board so the cap can be tested
+      state.gigs = REGULARS.map((r, i) => ({ id: "c" + i, who: r.id, kind: "cash",
+        title: "t", tier: "Budget", pay: 100, done: false }));
+    }
+    let done = 0;
+    for (const g of state.gigs) { doGig(g.id); clear(); if (g.done) done++; }
+    if (done !== CALLS_PER_WEEK)
+      return bail(`a week let ${done} calls through, the cap is ${CALLS_PER_WEEK}`);
+
+    // Each currency actually pays what the card says.
+    const kindPays = (kind) => {
+      state.regulars = {}; state.money = 0; state.partsInventory = [];
+      state.ownedTools = ["t1", "t14"];
+      state.gigs = [{ id: "k", who: "dell", kind, title: "t", tier: "Budget", pay: 200, done: false }];
+      doGig("k"); clear();
+      return { money: state.money, inv: state.partsInventory.length,
+               tools: state.ownedTools.length, standing: standingWith("dell") };
+    };
+    const c = kindPays("cash");
+    if (c.money !== 200) return bail("a cash call did not pay cash");
+    const pt = kindPays("part");
+    if (pt.money !== 0 || pt.inv !== 1) return bail("a part call did not hand over a part");
+    const tl = kindPays("tool");
+    if (tl.money !== 0 || (tl.tools === 2 && tl.inv === 0))
+      return bail("a tool call handed over neither a tool nor stock");
+    const fv = kindPays("favour");
+    if (fv.money !== 0 || fv.inv !== 0) return bail("a favour paid something");
+    if (!(fv.standing > c.standing)) return bail("a favour did not count for more standing than cash");
+
+    // Standing opens work a man only gives somebody he trusts.
+    const trustedOnly = Object.values(REGULAR_CALLS).flat().filter((x) => x.trust).length;
+    if (!trustedOnly) return bail("no call is gated behind standing at all");
+    const trustedTitles = new Set(
+      Object.values(REGULAR_CALLS).flat().filter((x) => x.trust).map((x) => x.t),
+    );
+    state.regulars = {};
+    for (let i = 0; i < 300; i++) {
+      rollGigBoard();
+      if ((state.gigs || []).some((g) => trustedTitles.has(g.title)))
+        return bail("a stranger was offered the work reserved for a regular");
+    }
+    // And a man who trusts you does offer it.
+    state.regulars = { dell: 9, trey: 9, hollis: 9, vic: 9 };
+    let sawTrusted = false;
+    for (let i = 0; i < 300; i++) {
+      rollGigBoard();
+      if ((state.gigs || []).some((g) => trustedTitles.has(g.title))) { sawTrusted = true; break; }
+    }
+    if (!sawTrusted) return bail("standing never opened the work it is supposed to open");
+
+    Object.assign(state, JSON.parse(snapshot));
+    return true;
+  });
+  if (callsOk !== true) fail("pre-season calls: " + callsOk);
+  pass("pre-season side work is four people who call, paying in four currencies, two to a week");
+
   // ── the Saturday trips. Neither the yard nor the swap was ever introduced:
   // the Road Trip pill turned up with two others when show season opened, and
   // the only writing explaining either place fired after the player had paid
@@ -1582,17 +1677,28 @@ const pass = (msg) => console.log("✓", msg);
     enterPreSeason();
     if (!inPreSeason() || state.preWeek < 1) return "enterPreSeason did not open pre-season";
     if (tabUnlocked("shows")) return "Compete not locked during pre-season";
-    if (!(state.gigs || []).length) return "gig board empty in pre-season";
-    const before = state.money;
+    if (!(state.gigs || []).length) return "nobody called in the pre-season";
+    // Side work pays in four currencies now, so "did it pay" is no longer a
+    // question about money. Answering a call always moves something: cash, the
+    // inventory, the tool box, or the standing that decides who rings next.
+    const before = { money: state.money, inv: (state.partsInventory || []).length,
+                     tools: (state.ownedTools || []).length };
     const g = state.gigs.find((x) => !x.done);
+    const standBefore = standingWith(g.who);
     doGig(g.id);
-    if (state.money <= before) return "side job did not pay";
+    if (!g.done) return "the call could not be answered at all";
+    const moved =
+      state.money > before.money ||
+      (state.partsInventory || []).length > before.inv ||
+      (state.ownedTools || []).length > before.tools;
+    if (!moved && g.kind !== "favour") return "answering a paying call moved nothing";
+    if (standingWith(g.who) <= standBefore) return "answering a call earned no standing";
     // reset back to the competitive season for the rest of the suite
-    state.preWeek = 0; state.week = 1; state.gigs = [];
+    state.preWeek = 0; state.week = 1; state.gigs = []; state.regulars = {};
     return true;
   });
   if (preOk !== true) fail("pre-season: " + preOk);
-  pass("pre-season ramp (season 2+): shows locked, side-work board pays");
+  pass("pre-season ramp (season 2+): shows locked, the phone rings and answering moves something");
 
   // ── first installs → Social unlock ──
   await page.evaluate(() => {

@@ -3891,6 +3891,45 @@
         font-style: italic;
       }
 
+      /* ── The first time a paper board arrives, it arrives written.
+         Both side boards used to pop in fully typed the moment the first job
+         started, which reads as a panel appearing rather than as somebody
+         writing something down. The lines scratch on left to right, one after
+         another, in steps rather than a smooth wipe so it reads as a pen and
+         not as a curtain. Once per save per board, then it never does it
+         again, because a thing that animates every render is a nuisance. ── */
+      @keyframes inkLine {
+        from { clip-path: inset(0 100% 0 0); }
+        to   { clip-path: inset(0 0 0 0); }
+      }
+      @keyframes inkPaper {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: none; }
+      }
+      .panel.ink-in { animation: inkPaper 0.34s ease both; }
+      .panel.ink-in .row,
+      .panel.ink-in .dense-row,
+      .panel.ink-in .info-box,
+      .panel.ink-in > .small,
+      .panel.ink-in > .tiny {
+        animation: inkLine 0.5s steps(22, end) both;
+      }
+      .panel.ink-in .row:nth-of-type(1)  { animation-delay: 0.30s; }
+      .panel.ink-in .row:nth-of-type(2)  { animation-delay: 0.52s; }
+      .panel.ink-in .row:nth-of-type(3)  { animation-delay: 0.74s; }
+      .panel.ink-in .row:nth-of-type(4)  { animation-delay: 0.96s; }
+      .panel.ink-in .row:nth-of-type(5)  { animation-delay: 1.18s; }
+      .panel.ink-in .row:nth-of-type(6)  { animation-delay: 1.40s; }
+      .panel.ink-in .dense-row:nth-of-type(1) { animation-delay: 0.34s; }
+      .panel.ink-in .dense-row:nth-of-type(2) { animation-delay: 0.58s; }
+      .panel.ink-in .dense-row:nth-of-type(3) { animation-delay: 0.82s; }
+      .panel.ink-in .info-box { animation-delay: 0.30s; }
+      .panel.ink-in > .small, .panel.ink-in > .tiny { animation-delay: 0.24s; }
+      /* Somebody who has asked for less movement gets the board, not the pen. */
+      @media (prefers-reduced-motion: reduce) {
+        .panel.ink-in, .panel.ink-in * { animation: none !important; }
+      }
+
       /* ── Clipboard (Shop Notes) ── */
       .panel.clipboard {
         background:
@@ -11643,7 +11682,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.82.0";
+      const GAME_VERSION = "0.83.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -11676,6 +11715,10 @@
           preWeek: 0,
           gigs: [],
           gigsWorked: 0,
+          // One integer per regular. That is the whole side-work system.
+          regulars: {},
+          // Which paper boards have already been written on once.
+          inkSeen: {},
           seasonLength: 22,
           cars: [
             {
@@ -11694,8 +11737,16 @@
               // anything. The bar stays at 25 for every car in the game; the
               // barn find simply turns out to be in better shape than the
               // listing let on, which is six jobs instead of eight.
+              //
+              // Brakes sat one point below the rest of that logic. Engine and
+              // transmission both clear the bar on a single cheap job, the
+              // plus seven taking eighteen to exactly twenty five, but brakes
+              // at nineteen left a gap of six that the cheapest brake job
+              // could not close, so the one system every player touches first
+              // was the one that quietly wanted two. Twenty one puts it on the
+              // same footing as the other two.
               transmission: 18,
-              brakes: 19,
+              brakes: 21,
               suspension: 16,
               steering: 15,
               wheels: 20,
@@ -16756,6 +16807,13 @@
           // Saves from before pre-season existed were mid-competition, resume
           // there rather than dropping a veteran into a fresh off-season.
           if (!savedHasPreWeek) { state.preWeek = 0; state.gigs = []; }
+          // The side-work board used to be anonymous postings. A save holding
+          // one of those has no caller on it, so it is re-rolled into calls
+          // rather than rendered against a regular it never had.
+          if (!state.regulars || typeof state.regulars !== "object") state.regulars = {};
+          if (Array.isArray(state.gigs) && state.gigs.some((g) => g && !g.who)) {
+            state.gigs = [];
+          }
           state.cutscene = null;
           // Scrub transient UI/blocking flags that should never survive a
           // reload. A save written mid-modal (show cinematic, loan store,
@@ -18060,51 +18118,213 @@
       }
       // Paid mechanic side work. Each is a one-off cash job that clears when the
       // pre-season week advances. The board is the tunable income faucet.
-      const GIG_POOL = [
-        { t: "Neighbor's brakes are grinding. Won't stop putting it off.", lo: 150, hi: 210 },
-        { t: "Buddy needs a water pump before a road trip Friday.", lo: 110, hi: 160 },
-        { t: "Guy from the meet wants his carb dialed in.", lo: 90, hi: 140 },
-        { t: "Old-timer's starter is dragging every cold morning.", lo: 100, hi: 150 },
-        { t: "Coworker's alternator quit in the work lot.", lo: 120, hi: 180 },
-        { t: "Somebody's got a coolant leak they're scared to touch.", lo: 110, hi: 160 },
-        { t: "Kid down the street wants his exhaust louder. Easy money.", lo: 70, hi: 110 },
-        { t: "Lady needs her A/C recharged before it gets hot.", lo: 90, hi: 130 },
-        { t: "Fleet guy needs an oil change and a once-over on the truck.", lo: 70, hi: 100 },
-        { t: "Buddy's clutch is slipping. Big job, big favor.", lo: 190, hi: 260 },
-        { t: "Local shop's backed up, they'll pay you to knock out a brake job.", lo: 170, hi: 230 },
-        { t: "Tune-up on a barn-fresh survivor before the owner sells it.", lo: 130, hi: 190 },
-        { t: "U-joint's clunking on a work truck. Cash in hand.", lo: 100, hi: 150 },
-        { t: "Church van needs new plugs and wires before Sunday.", lo: 80, hi: 120 },
+      // Four people, not a job board.
+      //
+      // The side work used to be three anonymous postings a week, each one a
+      // sentence and a number, and the only decision was arithmetic: take the
+      // biggest. Nobody remembers a posting. So the postings became four
+      // people who call, and the jobs differ in KIND rather than in amount, so
+      // that choosing between them is a choice about who you are working for
+      // rather than a division problem.
+      //
+      // One integer each, and that is the whole system. Standing goes up when
+      // you answer. It decides who calls, and it opens the work a man only
+      // hands to somebody he trusts.
+      const REGULARS = [
+        {
+          id: "dell",
+          name: "Dell",
+          who: "Old-timer two streets over. Starter drags every cold morning.",
+          trust: "Dell hands you the whole car now, not just the part he diagnosed.",
+        },
+        {
+          id: "trey",
+          name: "Trey",
+          who: "Kid down the street. Wants everything louder.",
+          trust: "Trey has started asking why before he asks how much.",
+        },
+        {
+          id: "hollis",
+          name: "Hollis",
+          who: "Your buddy. Always needs it by Friday.",
+          trust: "Hollis stopped asking what he owes you and started just leaving things in the garage.",
+        },
+        {
+          id: "vic",
+          name: "Vic",
+          who: "Pays late. Pays well. Eventually.",
+          trust: "Vic pays up front now. He will not say why and you will not ask.",
+        },
       ];
-      function rollGigBoard() {
-        const n = 3;
-        const pool = GIG_POOL.map((_, i) => i);
-        const picks = [];
-        while (picks.length < n && pool.length) {
-          picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
-        }
-        state.gigs = picks.map((idx) => {
-          const g = GIG_POOL[idx];
-          return {
-            id: `gig_${state.preWeek || 1}_${idx}`,
-            title: g.t,
-            pay: Math.round((g.lo + Math.random() * (g.hi - g.lo)) / 5) * 5,
-            done: false,
-          };
-        });
+      function regularDef(id) {
+        return REGULARS.find((r) => r.id === id) || REGULARS[0];
       }
+      function standingWith(id) {
+        const r = state.regulars || {};
+        return r[id] || 0;
+      }
+      function bumpStanding(id, by) {
+        if (!state.regulars || typeof state.regulars !== "object") state.regulars = {};
+        state.regulars[id] = (state.regulars[id] || 0) + by;
+      }
+      // The trust threshold. One number, used by every regular, so the rule the
+      // player is learning is the same rule everywhere.
+      const REGULAR_TRUST = 3;
+      // How many calls you can actually take in a week. This is the whole
+      // scarcity: more people ring than you have evenings for, so a week is
+      // spent choosing between them. The off-season has no shows to sell a
+      // Saturday to, but it does have a wage on a four week clock and tabs
+      // that bill every week, so the weeks themselves are the currency.
+      const CALLS_PER_WEEK = 2;
+      // kind: cash | part | tool | favour. Each one pays in a different
+      // currency, which is the point: they cannot be compared with subtraction.
+      const REGULAR_CALLS = {
+        dell: [
+          { kind: "cash", t: "Starter is dragging again. He has the part, he wants the hands.", lo: 255, hi: 350 },
+          { kind: "cash", t: "Points and plugs before the cold snap. He will sit and talk the whole time.", lo: 215, hi: 290 },
+          { kind: "part", t: "Wants his carb rebuilt. Says take whatever is on the shelf as part of it.", tier: "Quality" },
+          { kind: "cash", trust: true, t: "Hands you the keys and a list. Four days, whatever it needs.", lo: 585, hi: 740 },
+        ],
+        trey: [
+          { kind: "cash", t: "Wants the exhaust louder. It is already loud. He is paying anyway.", lo: 115, hi: 185 },
+          { kind: "tool", t: "No money, but his old man is clearing the garage and there is a box in it." },
+          { kind: "favour", t: "Blew a hose and has no idea. Asks if you can look, then goes quiet." },
+          { kind: "cash", trust: true, t: "Brings you the whole car and a notebook of questions. Wants to watch.", lo: 290, hi: 390 },
+        ],
+        hollis: [
+          { kind: "cash", t: "Water pump. Needs it by Friday. Says that like it is new information.", lo: 275, hi: 370 },
+          { kind: "favour", t: "Clutch is slipping and he is broke until the fifteenth. He would do it for you." },
+          { kind: "tool", t: "Trade: you do the brakes, he clears something out of his garage for you." },
+          { kind: "part", trust: true, t: "Wants the whole front end done, and says take what you need off the parts car.", tier: "Quality" },
+        ],
+        vic: [
+          { kind: "cash", t: "Fleet truck, oil and a once-over. He will pay. He will not pay today.", lo: 350, hi: 470 },
+          { kind: "cash", t: "U-joint clunking on the work truck. Big job, big number, long wait.", lo: 430, hi: 585 },
+          { kind: "favour", t: "Needs a van running before Sunday and has nothing on him at all." },
+          { kind: "cash", trust: true, t: "Cash up front, in an envelope, before you have picked up a wrench.", lo: 625, hi: 780 },
+        ],
+      };
+      // Who rings this week. Standing makes a man more likely to call, which is
+      // the loop: answer somebody and you hear from them more.
+      function rollGigBoard() {
+        if (!state.regulars || typeof state.regulars !== "object") state.regulars = {};
+        const calls = [];
+        REGULARS.forEach((r) => {
+          const st = standingWith(r.id);
+          const chance = Math.min(0.9, 0.45 + st * 0.12);
+          if (Math.random() > chance) return;
+          const trusted = st >= REGULAR_TRUST;
+          const pool = (REGULAR_CALLS[r.id] || []).filter((c) => !c.trust || trusted);
+          if (!pool.length) return;
+          const c = pool[Math.floor(Math.random() * pool.length)];
+          calls.push({
+            id: `call_${state.preWeek || 1}_${r.id}`,
+            who: r.id,
+            kind: c.kind,
+            title: c.t,
+            tier: c.tier || "Budget",
+            pay: c.lo ? Math.round((c.lo + Math.random() * (c.hi - c.lo)) / 5) * 5 : 0,
+            done: false,
+          });
+        });
+        // A week where nobody rings is a bug wearing a quiet week's coat, so
+        // the least-heard-from regular always calls.
+        if (!calls.length) {
+          const r = REGULARS.slice().sort((a, b) => standingWith(a.id) - standingWith(b.id))[0];
+          const pool = (REGULAR_CALLS[r.id] || []).filter((c) => !c.trust);
+          const c = pool[Math.floor(Math.random() * pool.length)];
+          calls.push({
+            id: `call_${state.preWeek || 1}_${r.id}`,
+            who: r.id, kind: c.kind, title: c.t, tier: c.tier || "Budget",
+            pay: c.lo ? Math.round((c.lo + Math.random() * (c.hi - c.lo)) / 5) * 5 : 0,
+            done: false,
+          });
+        }
+        state.gigs = calls;
+      }
+      function callsTakenThisWeek() {
+        return (state.gigs || []).filter((g) => g.done).length;
+      }
+      // Paid in four different currencies, so two calls in the same week are
+      // not comparable by subtracting one number from another.
       function doGig(id) {
         if (!inPreSeason()) return;
         const gig = (state.gigs || []).find((g) => g.id === id);
         if (!gig || gig.done) return;
+        if (callsTakenThisWeek() >= CALLS_PER_WEEK)
+          return toast(`Two jobs is the week. The rest of it belongs to your own truck.`, "err");
+        const who = regularDef(gig.who);
         gig.done = true;
-        state.money += gig.pay;
-        recordMoneyChange(gig.pay, "Side job");
         state.gigsWorked = (state.gigsWorked || 0) + 1;
-        playSfx("coin");
-        toast(`Knocked out the job, $${fmt(gig.pay)} in your pocket.`, "ok");
+        bumpStanding(gig.who, gig.kind === "favour" ? 2 : 1);
+        if (gig.kind === "cash") {
+          state.money += gig.pay;
+          recordMoneyChange(gig.pay, `Side job for ${who.name}`);
+          playSfx("coin");
+          toast(`Done. ${who.name} paid $${fmt(gig.pay)}.`, "ok");
+        } else if (gig.kind === "part") {
+          const pool = PARTS.filter((x) => x.tier === gig.tier);
+          const part = pool[Math.floor(Math.random() * pool.length)] || PARTS[0];
+          const val = Math.max(40, Math.round(partCost(part, "diy") * 0.65));
+          state.partsInventory.push({
+            id: `gig_part_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+            name: `${part.name} · off ${who.name}'s shelf`,
+            sourcePart: part.name,
+            category: part.category,
+            tier: part.tier,
+            askingPrice: Math.round(val * 1.35),
+            baselineValue: val,
+            listed: false,
+            sold: false,
+          });
+          playSfx("coin");
+          toast(`No cash. ${who.name} sent you home with a ${part.name}.`, "ok");
+        } else if (gig.kind === "tool") {
+          giveGigTool(who);
+        } else {
+          // A favour. Nothing today, and he will remember it, which is the
+          // only currency here that compounds.
+          playSfx("click");
+          toast(`You did it for nothing. ${who.name} knows exactly what that was.`, "ok");
+        }
         saveGame();
         requestRender("full");
+      }
+      // A tool out of somebody's garage. If it fits the shop it goes in the
+      // box and opens work; if it does not, it is still worth money to
+      // somebody, so it arrives as stock rather than vanishing.
+      function giveGigTool(who) {
+        const wd = toolStorageData();
+        const room = (state.ownedTools || []).length < wd.maxTools;
+        const fits = TOOLS_LIST.filter(
+          (t) =>
+            !state.ownedTools.includes(t.id) &&
+            !t.id.startsWith("t_") &&
+            getWorkspaceIndex(state.workshopLevel) >= getWorkspaceIndex(t.workshop),
+        );
+        if (room && fits.length) {
+          const t = fits[Math.floor(Math.random() * fits.length)];
+          state.ownedTools.push(t.id);
+          playSfx("success");
+          toast(`${who.name} paid you in a ${t.name}. It is yours, and it opens work.`, "event-good");
+          return;
+        }
+        const any = TOOLS_LIST.filter((t) => !t.id.startsWith("t_"));
+        const t = any[Math.floor(Math.random() * any.length)];
+        const val = Math.max(30, Math.round((t.cost || 60) * 0.5));
+        state.partsInventory.push({
+          id: `gig_tool_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          name: `${t.name} · surplus`,
+          sourcePart: "Paid in kind",
+          category: "tool",
+          tier: "Used",
+          askingPrice: Math.round(val * 1.35),
+          baselineValue: val,
+          listed: false,
+          sold: false,
+        });
+        playSfx("coin");
+        toast(`${who.name} paid you in a ${t.name}. No room for it, so it is stock.`, "ok");
       }
       // Entering the off-season: covers off, socials warming up, gig board fresh.
       function enterPreSeason() {
@@ -20782,6 +21002,27 @@
           needle.style.transform = `rotate(${fuelNeedleAngle(state.fuel, MAX_FUEL)}deg)`;
         });
       }
+      // True once, the first time a given paper board is drawn in a save.
+      // Reading it also spends it, on the next tick so this render still gets
+      // the class it just asked for.
+      function inkOnce(key) {
+        if (!state.inkSeen || typeof state.inkSeen !== "object") state.inkSeen = {};
+        if (state.inkSeen[key]) return "";
+        // Spent only once the board has actually reached the screen. Markup
+        // gets built for renders that are then discarded, and a board the
+        // player never saw must not use up the one time this happens. Two
+        // frames, so the check runs after the paint rather than before it.
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            if (!document.querySelector(".panel.ink-" + key)) return;
+            if (!state.inkSeen || typeof state.inkSeen !== "object") state.inkSeen = {};
+            if (state.inkSeen[key]) return;
+            state.inkSeen[key] = true;
+            saveGame();
+          }),
+        );
+        return " ink-in ink-" + key;
+      }
       function chalkRow(k, v, cls = "") {
         return `<div class="row"><span class="row-k">${k}</span><span class="row-v ${cls}">${v}</span></div>`;
       }
@@ -22610,6 +22851,10 @@ addEventListener("DOMContentLoaded",function(){
         saveGame();
         requestRender("full");
       }
+      // When we last dropped out of fullscreen, so the Escape that did it does
+      // not also get read as "open Settings".
+      let leftFullscreenAt = 0;
+      const FULLSCREEN_ESC_GRACE_MS = 500;
       function isFullscreenSupported() {
         const el = document.documentElement;
         return !!(
@@ -24339,7 +24584,7 @@ addEventListener("DOMContentLoaded",function(){
             .join("")}`,
           bayLine + timerHint,
           "#1a0f08",
-          "work-order",
+          "work-order" + inkOnce("resto"),
         );
       }
 
@@ -24496,28 +24741,60 @@ addEventListener("DOMContentLoaded",function(){
         if (!state.gigs || !state.gigs.length) rollGigBoard();
         const gigs = state.gigs || [];
         const weeksLeft = PRESEASON_WEEKS - state.preWeek;
+        const taken = callsTakenThisWeek();
+        const full = taken >= CALLS_PER_WEEK;
+        // What each kind actually pays, said plainly on the card. A player
+        // choosing between a hundred and eighty dollars and a tool has to be
+        // told they are not the same kind of thing.
+        const payLine = (g) => {
+          if (g.kind === "cash") return `<span style="color:var(--green-bright);font-weight:bold">Pays $${fmt(g.pay)}</span>`;
+          if (g.kind === "part") return `<span style="color:#a884dd;font-weight:bold">Pays in a part off his shelf</span>`;
+          if (g.kind === "tool") return `<span style="color:#e8c79a;font-weight:bold">Pays in a tool out of his garage</span>`;
+          return `<span style="color:var(--gold);font-weight:bold">Pays nothing. He remembers.</span>`;
+        };
         const rows = gigs
-          .map(
-            (g) => `
+          .map((g) => {
+            const who = regularDef(g.who);
+            const st = standingWith(g.who);
+            const trusted = st >= REGULAR_TRUST;
+            return `
       <div class="feed-item" style="display:flex;align-items:center;gap:12px;${g.done ? "opacity:0.5" : ""}">
         <div style="flex:1">
-          <div class="small" style="color:var(--text);line-height:1.4">${g.title}</div>
-          <div class="tiny" style="color:var(--green-bright);font-weight:bold;margin-top:2px">Pays $${fmt(g.pay)}</div>
+          <div class="tiny" style="color:var(--gold-soft);font-weight:bold;letter-spacing:.3px">${who.name.toUpperCase()} CALLED${trusted ? " · REGULAR" : ""}</div>
+          <div class="small" style="color:var(--text);line-height:1.4;margin-top:2px">${g.title}</div>
+          <div class="tiny" style="margin-top:3px">${payLine(g)}</div>
         </div>
         ${
           g.done
-            ? `<span class="tiny muted" style="white-space:nowrap"> Done</span>`
-            : button(`Take it · $${fmt(g.pay)}`, `doGig('${g.id}')`, false, "", "padding:7px 12px;font-size:12px;white-space:nowrap;background:#7da0c2;border-color:var(--blue-bright)")
+            ? `<span class="tiny muted" style="white-space:nowrap">Done</span>`
+            : button(full ? "No time this week" : "Take it", `doGig('${g.id}')`, full, "", "padding:7px 12px;font-size:12px;white-space:nowrap;background:#7da0c2;border-color:var(--blue-bright)")
         }
-      </div>`,
-          )
+      </div>`;
+          })
           .join("");
-        const allDone = gigs.length && gigs.every((g) => g.done);
+        // Nobody goes quiet without the board saying so. A regular who has
+        // stopped ringing is content; a regular who has stopped ringing
+        // silently is indistinguishable from a pool that failed to roll, to
+        // the player and to the smoke suite both.
+        const quiet = REGULARS.filter(
+          (r) => !gigs.some((g) => g.who === r.id) && standingWith(r.id) === 0,
+        );
+        const quietLine =
+          quiet.length && (state.preWeek || 1) >= 2
+            ? `<div class="tiny muted" style="margin-top:10px;line-height:1.5">${quiet.map((r) => r.name).join(" and ")} did not ring this week. ${quiet.length === 1 ? "He does not know you well enough to think of you first." : "Neither of them knows you well enough to think of you first."}</div>`
+            : "";
+        // Standing said out loud, one line, never hidden in a number.
+        const trustLines = REGULARS.filter((r) => standingWith(r.id) >= REGULAR_TRUST)
+          .map((r) => `<div class="tiny" style="color:var(--gold-soft);line-height:1.5">${r.trust}</div>`)
+          .join("");
+        const capLine = full
+          ? `<div class="tiny good" style="margin-top:10px;text-align:center">That is the week. Advance when you are ready.</div>`
+          : `<div class="tiny muted" style="margin-top:10px;text-align:center">${CALLS_PER_WEEK - taken} more job${CALLS_PER_WEEK - taken === 1 ? "" : "s"} in you this week. The rest belongs to your own truck.</div>`;
         return `<div style="margin-bottom:14px">${heroPanel(
-          "Pre-Season · Side Work",
+          "Pre-Season · The Phone",
           `Off-season. Shows open in ${weeksLeft + 1} week${weeksLeft === 0 ? "" : "s"}.`,
-          "No competition yet. Build, flip, post, and scavenge, and pick up paid jobs to stack cash before the calendar goes live.",
-          `<div class="tiny muted" style="margin-bottom:10px">Word's out that you can wrench. A few paying jobs came in this week:</div>${rows}${allDone ? `<div class="tiny good" style="margin-top:10px;text-align:center">That's all the work this week. Advance the week to line up more.</div>` : ""}`,
+          "No competition yet. Build, flip, post and scavenge, and answer the people who call.",
+          `<div class="tiny muted" style="margin-bottom:10px">Word is out that you can wrench. Two jobs is all a week holds.</div>${rows}${quietLine}${trustLines}${capLine}`,
           "gold",
         )}</div>`;
       }
@@ -24835,7 +25112,7 @@ addEventListener("DOMContentLoaded",function(){
         // nothing in the second column, which does not read as restraint so much as
         // a page that half failed to load. When the side has nothing to say, the
         // layout stops holding space for it.
-        const sideCol = `${renderUpcomingBar()}${renderRestorationPanel(car)}${(state.installsDone || 0) > 0 || activeTasksForCar(car.id).length ? mobileFold("notes", " Shop Notes", workspaceData().name, panel("Shop Notes",`${chalkRow("Work Space", workspaceData().name)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${toolStorageData().speedBonus > 0 ? chalkRow("Build Speed", `+${Math.round(toolStorageData().speedBonus * 100)}% faster`) : ""}`, "", "#1d1611", "clipboard")) : ""}`;
+        const sideCol = `${renderUpcomingBar()}${renderRestorationPanel(car)}${(state.installsDone || 0) > 0 || activeTasksForCar(car.id).length ? mobileFold("notes", " Shop Notes", workspaceData().name, panel("Shop Notes",`${chalkRow("Work Space", workspaceData().name)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${toolStorageData().speedBonus > 0 ? chalkRow("Build Speed", `+${Math.round(toolStorageData().speedBonus * 100)}% faster`) : ""}`, "", "#1d1611", "clipboard" + inkOnce("notes"))) : ""}`;
         return `<div class="grid-main${sideCol.trim() ? '' : ' solo'}"><div>${gigBoardMarkup()}${heroPanel(
           "Auto Shop Floor",
           onboardStageVal() >= 3 ? "" : "Every bolt, every part, one at a time",
@@ -28218,7 +28495,15 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
 
       // Fullscreen feature detection + state sync
       ["fullscreenchange", "webkitfullscreenchange", "mozfullscreenchange", "MSFullscreenChange"].forEach((ev) =>
-        document.addEventListener(ev, syncFullscreenButtons),
+        document.addEventListener(ev, () => {
+          // Escape leaving fullscreen is the browser's, not ours. It drops out
+          // of fullscreen and then the same keystroke arrives here, where the
+          // free Escape opens Settings, so one press both left fullscreen and
+          // put a menu on the screen. Note when we came out so the handler can
+          // let that one press go.
+          if (!isInFullscreen()) leftFullscreenAt = Date.now();
+          syncFullscreenButtons();
+        }),
       );
       syncFullscreenButtons();
 
@@ -28464,7 +28749,16 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
             closeSettings();
           } else if (state.showStore) {
             closeStore();
-          } else if (!typing && !keyboardModalBlocking() && !state.gameOver) {
+          } else if (isInFullscreen()) {
+            // Still in it, so this browser routed the key to us instead of
+            // handling it. Do what the player meant.
+            toggleFullscreen();
+          } else if (
+            !typing &&
+            !keyboardModalBlocking() &&
+            !state.gameOver &&
+            Date.now() - leftFullscreenAt > FULLSCREEN_ESC_GRACE_MS
+          ) {
             openSettings();
           }
           return;
