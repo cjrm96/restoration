@@ -11590,6 +11590,11 @@
       const SWAP_PARKING_COST = 20;
       const SWAP_TRIP_COST = SWAP_GAS_COST + SWAP_ENTRY_FEE + SWAP_PARKING_COST;
       const SWAP_DISCOUNT = 0.5; // 50% off list price
+      // Surplus tools: somebody else's spares, priced as stock rather than kit.
+      // Cheaper than the swap's working tools because they are duplicates and
+      // clear-outs, and they resell for about half of new.
+      const SWAP_TOOL_FLIP_BUY = 0.3;
+      const SWAP_TOOL_FLIP_RESALE = 0.52;
       const SWAP_STOCK_MIN = 3;
       const SWAP_STOCK_MAX = 5;
       // Wry car-guy grumble when the wife's reliable daily gets pressed
@@ -11638,7 +11643,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.80.0";
+      const GAME_VERSION = "0.81.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -11877,6 +11882,8 @@
           junkyardStock: [],
           swapMeetStock: [],
           swapFlipStock: [],
+          swapToolFlipStock: [],
+          borderRunWeek: null,
           carListings: [],
           pendingCarOffer: null,
           yardPulls: [],
@@ -12207,20 +12214,31 @@
       // a quarter the price. You describe the color over the phone and hope.
       // Mostly a steal, sometimes a rush job, once in a while a real scare, but
       // always a story. Never a run-ender.
+      function borderRunThisWeek() {
+        return !!state.borderRunWeek && state.borderRunWeek === weekStamp();
+      }
       function tijuanaRun() {
         const car = currentCar();
         if (!car) return;
-        const paintComp = getCategoryCompletion(car, "paint");
-        if (!paintComp || !paintComp.allDone)
-          return toast("Finish the paint restoration first, even the border shops want something to work with.", "err");
+        // You have to drive it down there. That is the whole gate, and it is
+        // the one the fiction always implied.
+        if (!roadworthy(car))
+          return toast("It is a long drive south and a longer one back. Get her roadworthy first.", "err");
+        if (borderRunThisWeek())
+          return toast("You already made the run this week. Give the paint a minute to cure.", "err");
         if (state.money < TJ_COST)
           return toast(`Not even the cheap shop is that cheap. Need $${TJ_COST}.`, "err");
         state.money -= TJ_COST;
         recordMoneyChange(-TJ_COST, "Border paint run");
+        state.borderRunWeek = weekStamp();
         const options = PAINT_SWATCHES.filter((p) => p.id !== car.palette);
         const picked = options[Math.floor(Math.random() * options.length)] || PAINT_SWATCHES[0];
         car.palette = picked.id;
-        const roll = Math.random();
+        // They shoot what you bring them. A straight body comes back looking
+        // like money; a rough one comes back looking like a rough one that is
+        // now a different color. Prep is the player's half of the gamble.
+        const prep = Math.max(0, Math.min(100, car.body || 0)) / 100;
+        const roll = Math.random() - (prep - 0.5) * 0.35;
         let title, text;
         if (roll < 0.6) {
           addGarageLore(6);
@@ -12229,14 +12247,17 @@
           title = `Best $${TJ_COST} You Ever Spent`;
           text = `Two days later you cross back with a flawless ${picked.label} respray, laid down by a painter who has clearly forgotten more about a spray gun than you will ever know. Four times the price back home, easy, and he still threw in a hand wax and waved off the tip. Best call you have made all season. (+120 followers, the story alone was worth it.)`;
         } else if (roll < 0.88) {
-          car.paint = Math.max(0, (car.paint || 0) - 4);
-          addGarageLore(4);
-          title = "Twenty Feet, Looks Great";
-          text = `${picked.label}, and honestly it pops, right up until you find the orange peel on the passenger door in the afternoon light. That is the gamble with any one-day turnaround anywhere, cheap and fast means somebody was moving quick. Nobody at a show stands that close. Probably. (Paint -4, but you saved a fortune.)`;
-        } else {
+          // Ordered by how it actually turns out, so that weighting the roll
+          // by prep means something: the scare is only a scare, the orange
+          // peel is the one that costs you.
           addGarageLore(7);
           title = "All in Your Head";
           text = `They need an extra day, so you leave her there and catch a ride home, and you do not sleep a wink. You lie awake running every worst case, and the drive back down is pure dread. Then you round the corner and there she is, gleaming ${picked.label}, exactly as promised, the owner grinning as he hands you the keys. The only thing that got wrecked on this trip was your nerves. Never again. (You will absolutely do it again.)`;
+        } else {
+          car.paint = Math.max(0, (car.paint || 0) - 4);
+          addGarageLore(4);
+          title = "Twenty Feet, Looks Great";
+          text = `${picked.label}, and honestly it pops, right up until you find the orange peel on the passenger door in the afternoon light. They shot it over the body you handed them, and the body you handed them had a story. Nobody at a show stands that close. Probably. (Paint -4, but you saved a fortune.)`;
         }
         queueScene({
           id: "tijuana_result",
@@ -12292,7 +12313,7 @@
           ? `<div class="tiny" style="margin-bottom:7px;color:var(--text-bright)">Currently: <b>${(PAINT_SWATCHES.find((s) => s.id === car.palette) || {}).label || car.palette}</b> · ${finishDef(car).label}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${PAINT_SWATCHES.map(
               (p) =>
                 `<button title="${p.label}" onclick="resprayCar('${p.id}')" style="width:26px;height:26px;padding:0;border-radius:6px;border:2px solid ${car.palette === p.id ? "var(--gold)" : "#3a3129"};background:${p.hex};cursor:pointer"></button>`,
-            ).join("")}</div><div class="tiny muted" style="margin-top:8px">Respray $${RESPRAY_COST} · wheels get matched to the scheme</div>${button(`Border run · $${TJ_COST}`, "tijuanaRun()", state.money < TJ_COST, "", "width:100%;margin-top:8px;font-size:11px;background:#3a2a1a;border-color:#8a5a2a;color:#e8c79a")}<div class="tiny muted" style="margin-top:4px">A quarter the price down south. You pick nothing, you just kinda risk it.</div><div class="tiny" style="margin-top:12px;color:var(--gold-soft)">Finish</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px">${FINISHES.map(
+            ).join("")}</div><div class="tiny muted" style="margin-top:8px">Respray $${RESPRAY_COST} · wheels get matched to the scheme</div><div class="tiny" style="margin-top:12px;color:var(--gold-soft)">Finish</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px">${FINISHES.map(
               (f) =>
                 button(f.label, `setPaintFinish('${f.id}')`, (car.finish || "gloss") === f.id, "", "padding:5px 11px;font-size:11px;" + ((car.finish || "gloss") === f.id ? "background:var(--gold);color:#1a1206;border-color:var(--gold);" : "")),
             ).join("")}</div><div class="tiny muted" style="margin-top:6px">${finishDef(car).note} · clear-coat reshoot $${FINISH_COST}</div>`
@@ -12325,9 +12346,30 @@
         const setupRow = roadworthy(car) && tuneKnown("setup")
           ? `<div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(217,162,79,0.14)"><div class="tiny" style="color:var(--gold-soft);font-weight:bold;margin-bottom:6px">Setup, the build's character</div><div class="tiny muted" style="margin-bottom:7px">Currently: <b style="color:var(--text-bright)">${cur.label}</b> · ${cur.note}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${setupButtons}</div><div class="tiny muted" style="margin-top:6px">${costHint} It shifts how judges score her by show type; it never touches the build itself.</div></div>`
           : "";
+        // The border run is the cheap way, so it cannot sit behind the
+        // expensive one. It used to need every paint service on the car
+        // finished, and the last of those wants a paint booth that only fits
+        // in a warehouse, so the shortcut unlocked long after the player had
+        // stopped needing a shortcut. What it actually takes is a car that can
+        // make the drive.
+        const canDrive = roadworthy(car);
+        const ranBorder = borderRunThisWeek();
+        const borderRow = `<div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(217,162,79,0.14)"><div class="tiny" style="color:var(--gold-soft);font-weight:bold;margin-bottom:6px">The border run</div>${button(
+          canDrive ? `Border run · $${TJ_COST}` : "Needs a car that can make the drive",
+          "tijuanaRun()",
+          !canDrive || ranBorder || state.money < TJ_COST,
+          "",
+          "width:100%;font-size:11px;background:#3a2a1a;border-color:#8a5a2a;color:#e8c79a",
+        )}<div class="tiny muted" style="margin-top:4px;line-height:1.5">${
+          !canDrive
+            ? "It is a long drive south and a longer one back. Get her roadworthy first."
+            : ranBorder
+              ? "You already made the run this week. Give the paint a minute."
+              : "A quarter the price down south. You pick nothing, you just kinda risk it, and how straight the body is decides how it comes back."
+        }</div></div>`;
         return panel(
           "Paint Booth & Build Direction",
-          `${boothBody}${styleRow}${setupRow}`,
+          `${boothBody}${borderRow}${styleRow}${setupRow}`,
           "",
           "#d19a3f",
         );
@@ -15747,6 +15789,15 @@
         return out;
       }
 
+      // Why a good tool is lying on somebody's table at seven in the morning.
+      const SURPLUS_TOOL_STORIES = [
+        "Estate lot. His widow wants the garage empty by Sunday and is not haggling.",
+        "Guy finally admitted he owns three. This is the one he likes least.",
+        "Came in a job lot with a bench he actually wanted. He'd rather not haul it home.",
+        "Shop closed in March. The lease was up and the tools went out the door with everything else.",
+        "Bought it for one job, did the job, never touched it again.",
+        "His kid was going to get into cars. His kid did not get into cars.",
+      ];
       function regenerateScavengeStock() {
         // Junkyard: Budget + Quality parts only, no Show Grade pulls.
         // Used parts at the yard never come out factory-fresh.
@@ -15781,6 +15832,21 @@
           partId: p.id,
           buy: Math.max(15, Math.round(p.diy * 0.35)),
           resale: Math.max(30, Math.round(p.diy * 0.55)),
+        }));
+        // Surplus tools, the same flip play as the parts. These are stock, not
+        // kit: buying one never puts it in your box and never opens a job, it
+        // goes straight into the inventory to be listed. You own exactly one of
+        // every tool you actually use, so this is the only honest way a tool
+        // ever ends up on the market with your name on it.
+        const surplusCandidates = TOOLS_LIST.filter(
+          (t) => t.workshop !== "warehouse" && !t.id.startsWith("t_"),
+        );
+        const surplusCount = 1 + Math.floor(Math.random() * 2); // 1-2
+        state.swapToolFlipStock = pickN(surplusCandidates, surplusCount).map((t) => ({
+          toolId: t.id,
+          buy: Math.max(15, Math.round(t.cost * SWAP_TOOL_FLIP_BUY)),
+          resale: Math.max(30, Math.round(t.cost * SWAP_TOOL_FLIP_RESALE)),
+          story: SURPLUS_TOOL_STORIES[Math.floor(Math.random() * SURPLUS_TOOL_STORIES.length)],
         }));
       }
 
@@ -16100,6 +16166,40 @@
         state.junkyardStock.splice(stockIdx, 1);
         playSfx("coin");
         toast(`Grabbed the ${part.name} to flip for $${fmt(buy)}. List it on the Marketplace and make the spread.`, "ok");
+        saveGame();
+        requestRender("full");
+      }
+
+      // Surplus is stock. It never touches ownedTools, so it never opens a job
+      // and it never counts against tool storage: you are buying it to move it.
+      function buySwapToolFlip(toolId) {
+        if (state.scavengeChoice !== "swap")
+          return toast("You're not at the swap right now.", "err");
+        const idx = (state.swapToolFlipStock || []).findIndex((s) => s.toolId === toolId);
+        if (idx === -1) return toast("Already grabbed or gone.", "err");
+        const stock = state.swapToolFlipStock[idx];
+        const tool = TOOLS_LIST.find((t) => t.id === toolId);
+        if (!tool) return;
+        if (state.money < stock.buy) return toast("Cash only at the swap.", "err");
+        state.money -= stock.buy;
+        recordMoneyChange(-stock.buy, `Pamona Swap: ${tool.name} (to flip)`);
+        state.partsInventory.push({
+          id: `flip_tool_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          name: `${tool.name} · surplus`,
+          sourcePart: "Somebody else's spare",
+          category: "tool",
+          tier: "Used",
+          askingPrice: Math.round(stock.resale * 1.35),
+          baselineValue: stock.resale,
+          listed: false,
+          sold: false,
+        });
+        state.swapToolFlipStock.splice(idx, 1);
+        playSfx("coin");
+        toast(
+          `Grabbed the ${tool.name} for $${fmt(stock.buy)}. That is stock, not kit, list it and take the spread.`,
+          "ok",
+        );
         saveGame();
         requestRender("full");
       }
@@ -16689,6 +16789,7 @@
           ensureArray("junkyardStock");
           ensureArray("swapMeetStock");
           ensureArray("swapFlipStock");
+          ensureArray("swapToolFlipStock");
           ensureArray("carListings");
           ensureArray("yardPulls");
           ensureArray("postHistory");
@@ -25253,7 +25354,19 @@ addEventListener("DOMContentLoaded",function(){
                 ${button(state.money < s.buy ? `Need $${fmt(s.buy)}` : `Grab to flip · $${fmt(s.buy)}`, `buySwapFlipPart(${s.partId})`, state.money < s.buy, "", "width:100%;margin-top:8px;font-size:12px")}
               </div>`;
           }).join("");
-          const swapItems = chestCard + flipCards + state.swapMeetStock
+          const surplusCards = (state.swapToolFlipStock || []).map((s) => {
+            const tool = TOOLS_LIST.find((t) => t.id === s.toolId);
+            if (!tool) return "";
+            const margin = s.resale - s.buy;
+            return `<div class="feed-item">
+                <div class="feed-kicker">PAMONA SWAP · SURPLUS, FLIP IT</div>
+                <div class="feed-text">${tool.name}</div>
+                <div class="feed-meta">Buy $${fmt(s.buy)} · resells around $${fmt(s.resale)} (~+$${fmt(margin)} spread)</div>
+                <div class="tiny muted" style="margin-top:4px;line-height:1.5">${s.story} Stock, not kit: it goes on the Marketplace, not in your box.</div>
+                ${button(state.money < s.buy ? `Need $${fmt(s.buy)}` : `Grab to flip · $${fmt(s.buy)}`, `buySwapToolFlip('${tool.id}')`, state.money < s.buy, "", "width:100%;margin-top:8px;font-size:12px")}
+              </div>`;
+          }).join("");
+          const swapItems = chestCard + flipCards + surplusCards + state.swapMeetStock
             .map((s) => {
               const tool = TOOLS_LIST.find((t) => t.id === s.toolId);
               if (!tool) return "";

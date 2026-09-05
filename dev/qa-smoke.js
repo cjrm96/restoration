@@ -540,6 +540,140 @@ const pass = (msg) => console.log("✓", msg);
   if (toolSaleOk !== true) fail("tool sale shelf: " + toolSaleOk);
   pass("you own one of every tool, so anything that opens a job stays in the box");
 
+  // ── the border run is the cheap way to paint a car, and it used to sit
+  // behind the expensive way: it wanted every paint service on the car
+  // finished, and the last of those needs a paint booth that only fits in a
+  // warehouse. The shortcut unlocked long after anybody needed a shortcut.
+  // What it takes now is a car that can make the drive. ──
+  const borderOk = await page.evaluate(() => {
+    const car = state.cars[0];
+    const stash = JSON.parse(JSON.stringify({
+      installed: car.installedParts, paint: car.paint, body: car.body,
+      palette: car.palette, money: state.money,
+      eng: car.engine, tr: car.transmission, br: car.brakes, st: car.steering,
+      followers: state.followers,
+    }));
+    const clr = () => { state.cutscene = null; state.pendingScene = null;
+                        state.noticeQueue = []; state.eventQueue = []; };
+    const titleOf = () => {
+      const sc = state.pendingScene ||
+        ((state.eventQueue || []).find((e) => e.payload && e.payload.id === "tijuana_result") || {}).payload;
+      return (sc && sc.title) || "";
+    };
+
+    // Not roadworthy: it is a long drive, and it does not happen.
+    car.engine = 10; car.transmission = 10; car.brakes = 10; car.steering = 10;
+    state.money = 5000; state.borderRunWeek = null;
+    const before = car.palette;
+    tijuanaRun(); clr();
+    if (car.palette !== before) return "the run happened in a car that could not drive there";
+    if (state.money !== 5000) return "a refused run still charged for it";
+
+    // Roadworthy with no paint work at all: this is the midgame case.
+    car.engine = 99; car.transmission = 99; car.brakes = 99; car.steering = 99;
+    car.installedParts = []; car.paint = 15;
+    const comp = getCategoryCompletion(car, "paint");
+    if (comp && comp.allDone) return "the no-paint-work setup did not set up";
+    tijuanaRun(); clr();
+    if (car.palette === before) return "a roadworthy car with paint still to do could not make the run";
+    if (state.money !== 5000 - TJ_COST) return "the run did not charge " + TJ_COST;
+
+    // Once a week, on the stamp, so the pre-season counts too.
+    const held = state.money;
+    tijuanaRun(); clr();
+    if (state.money !== held) return "a second run landed in the same week";
+    state.borderRunWeek = null;
+    tijuanaRun(); clr();
+    if (state.money !== held - TJ_COST) return "the run did not reopen on a new week";
+
+    // Prep is the player's half of the gamble: a straight body should come
+    // back clean far more often than a rough one, and the orange peel is the
+    // outcome that actually costs paint.
+    const sample = (body) => {
+      const t = { great: 0, peel: 0 };
+      for (let i = 0; i < 1500; i++) {
+        state.borderRunWeek = null; state.money = 5000;
+        car.body = body; car.paint = 60;
+        tijuanaRun();
+        const title = titleOf();
+        if (/^Best \$/.test(title)) t.great++;
+        else if (/Twenty Feet/.test(title)) t.peel++;
+        clr();
+      }
+      return t;
+    };
+    const rough = sample(0), straight = sample(100);
+    if (!(straight.great > rough.great))
+      return `a straight body did not paint better than a rough one (${straight.great} vs ${rough.great} of 1500)`;
+    if (!(rough.peel > straight.peel))
+      return `a rough body did not pick up more orange peel (${rough.peel} vs ${straight.peel} of 1500)`;
+
+    Object.assign(car, { installedParts: stash.installed, paint: stash.paint,
+      body: stash.body, palette: stash.palette, engine: stash.eng,
+      transmission: stash.tr, brakes: stash.br, steering: stash.st });
+    state.money = stash.money; state.followers = stash.followers;
+    state.borderRunWeek = null; clr();
+    return true;
+  });
+  if (borderOk !== true) fail("border run: " + borderOk);
+  pass("the border run needs a car that can drive there, once a week, and prep decides how it comes back");
+
+  // ── surplus tools. Your own tools are never for sale, so the only honest
+  // way a tool reaches the market is as stock you bought to move: somebody
+  // else's spare, off a swap-meet table, straight into the inventory. It must
+  // never land in ownedTools, or it would be kit you could sell. ──
+  const surplusOk = await page.evaluate(() => {
+    const stash = JSON.parse(JSON.stringify({
+      tools: state.ownedTools, inv: state.partsInventory, money: state.money,
+      choice: state.scavengeChoice, stock: state.swapToolFlipStock,
+    }));
+    const clr = () => { state.cutscene = null; state.pendingScene = null;
+                        state.noticeQueue = []; state.eventQueue = []; };
+
+    regenerateScavengeStock();
+    if (!(state.swapToolFlipStock || []).length)
+      return "the swap generated no surplus tools at all";
+    for (const st of state.swapToolFlipStock) {
+      const t = TOOLS_LIST.find((x) => x.id === st.toolId);
+      if (!t) return "surplus stock names a tool that does not exist: " + st.toolId;
+      if (t.id.startsWith("t_")) return "a vanity piece turned up on the surplus table: " + t.id;
+      if (t.workshop === "warehouse") return "a warehouse-tier tool turned up at the swap: " + t.id;
+      if (!(st.resale > st.buy)) return `no spread on ${t.id}: buy ${st.buy}, resale ${st.resale}`;
+      if (!st.story) return "surplus stock arrived with no reason for being there";
+    }
+
+    // Buying it is buying stock, not kit.
+    state.scavengeChoice = "swap";
+    state.money = 5000;
+    const st = state.swapToolFlipStock[0];
+    const ownedBefore = JSON.stringify(state.ownedTools);
+    const invBefore = state.partsInventory.length;
+    buySwapToolFlip(st.toolId); clr();
+    if (JSON.stringify(state.ownedTools) !== ownedBefore)
+      return "buying surplus put the tool in your box";
+    if (state.partsInventory.length !== invBefore + 1)
+      return "buying surplus did not add stock to the inventory";
+    if (state.money !== 5000 - st.buy) return "surplus did not charge the buy price";
+    const item = state.partsInventory[state.partsInventory.length - 1];
+    if (item.category !== "tool") return "surplus stock is not filed as a tool";
+    if (!(item.askingPrice > item.baselineValue)) return "surplus stock has no asking margin";
+    // And it lists like any other part.
+    listPartOnMarketplaceWithTone(item.id, "firm"); clr();
+    if (!item.listed) return "surplus stock could not be listed on the Marketplace";
+    // Buying it twice is not a thing: it came off the table.
+    buySwapToolFlip(st.toolId); clr();
+    if (state.partsInventory.length !== invBefore + 1)
+      return "the same surplus tool sold twice off one table";
+
+    Object.assign(state, { ownedTools: stash.tools, partsInventory: stash.inv,
+      money: stash.money, scavengeChoice: stash.choice,
+      swapToolFlipStock: stash.stock });
+    clr();
+    return true;
+  });
+  if (surplusOk !== true) fail("surplus tools: " + surplusOk);
+  pass("surplus tools flip like parts, and never land in your own tool box");
+
   // ── the Saturday trips. Neither the yard nor the swap was ever introduced:
   // the Road Trip pill turned up with two others when show season opened, and
   // the only writing explaining either place fired after the player had paid
