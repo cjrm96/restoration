@@ -906,6 +906,91 @@ const pass = (msg) => console.log("✓", msg);
   if (bdayOk !== true) fail("birthday card delivery: " + bdayOk);
   pass("the birthday card reaches nearly every season, the way its odds read");
 
+  // ── who the money beats find. They were keyed to being poor, which is a
+  // lagging read on decisions made eight weeks earlier, and measured across
+  // 300 seasons with the money moving the way a real season moves it, a
+  // careful debt-free builder saw the bank, the shark and the ring in 0% of
+  // them. They key off the build outrunning the wallet now. Two things have to
+  // stay true at once: a player who is genuinely never cornered still gets
+  // silence, and a player who is cornered with a real truck gets the door. ──
+  const reachOk = await page.evaluate(() => {
+    const snapshot = JSON.stringify(state);
+    const car = state.cars[0];
+    const clear = () => {
+      state.pendingScene = null; state.pendingEvent = null; state.eventQueue = [];
+      state.noticeQueue = []; state.cutscene = null; state.pendingUnlock = null;
+      state.showStore = false; state.weekRecap = null; state.pendingRecap = null;
+      state.result = null; state.pendingVictory = null; state.showStage = null;
+      state.showLoading = false; state.view = "workshop"; clearTabArrival();
+    };
+    const season = (opts) => {
+      state.tutorialComplete = true; state.onboardStage = 3;
+      state.seasonNumber = 2; state.seasonLength = 22;
+      state.installsDone = 9; state.followers = 4000;
+      state.history = [1,2,3,4,5,6].map((n) => ({ tier: "Local", place: n, show: "S" + n }));
+      state.gameOver = false; state.seasonWrap = false;
+      state.lifeBeatWeek = null; state.restraintStage = 0; state.restraintLastWeek = null;
+      state.birthdayReceived = true; state.ringOfferSeason = 0;
+      state.weddingRingPawned = false; state.ringEverPawned = false;
+      state.loansUnlocked = false; state.sharkMetWeek = null; state.sharkRefused = false;
+      state.bankMentioned = false; state.leanStreak = 0; state.tripsKnown = {};
+      state.money = opts.start; state.paycheckProgress = 0; state.wifeCarSold = false;
+      state.bankLoanBalance = 0; state.sharkLoanBalance = 0;
+      state.toolTruckBalance = opts.tab ? 3600 : 0;
+      let hit = {};
+      const qs = queueScene, qe = queueEvent;
+      const watch = (id) => { if (id) hit[id] = true; };
+      queueScene = function (sc) { watch(sc && sc.id); return qs.apply(this, arguments); };
+      queueEvent = function (k, pl) { watch(pl && pl.id); return qe.apply(this, arguments); };
+      for (let w = 1; w <= 22; w++) {
+        clear(); state.week = w;
+        const prog = 20 + Math.round((w / 22) * 45);
+        CATS.forEach((c) => { car[c] = prog; });
+        ["engine","transmission","brakes","steering"].forEach((c) => { car[c] = Math.min(95, prog + 25); });
+        if (Math.random() < opts.spendChance) {
+          state.money = Math.max(0, state.money - (opts.min + Math.floor(Math.random() * (opts.max - opts.min))));
+        }
+        advanceWeek("time");
+      }
+      queueScene = qs; queueEvent = qe;
+      return hit;
+    };
+    const tally = (opts, n) => {
+      const c = { bank_intro: 0, shark_intro: 0, ring_pawn_offer: 0 };
+      for (let i = 0; i < n; i++) {
+        const hit = season(opts);
+        for (const k of Object.keys(c)) if (hit[k]) c[k]++;
+      }
+      for (const k of Object.keys(c)) c[k] = (c[k] / n) * 100;
+      return c;
+    };
+
+    const N = 40;
+    // A builder who spends modestly and never borrows is never cornered, and
+    // must never be chased by any of it.
+    const careful = tally({ start: 5000, spendChance: 0.5, min: 100, max: 500, tab: false }, N);
+    if (careful.bank_intro > 15 || careful.shark_intro > 15 || careful.ring_pawn_offer > 15) {
+      Object.assign(state, JSON.parse(snapshot));
+      return `a builder who is never short is being chased anyway (bank ${careful.bank_intro}%, shark ${careful.shark_intro}%, ring ${careful.ring_pawn_offer}%)`;
+    }
+    // A builder running a tab and spending like the build matters gets the
+    // door. The bank is the entry to the whole ladder, so it is the one that
+    // must not be shut.
+    const cornered = tally({ start: 5000, spendChance: 0.75, min: 200, max: 900, tab: true }, N);
+    if (cornered.bank_intro < 20) {
+      Object.assign(state, JSON.parse(snapshot));
+      return `the bank, which opens the whole debt ladder, reached only ${cornered.bank_intro}% of seasons for a cornered builder`;
+    }
+    if (cornered.shark_intro < 20) {
+      Object.assign(state, JSON.parse(snapshot));
+      return `the shark reached only ${cornered.shark_intro}% of seasons for a cornered builder`;
+    }
+    Object.assign(state, JSON.parse(snapshot));
+    return true;
+  });
+  if (reachOk !== true) fail("money beats reaching the right player: " + reachOk);
+  pass("the money beats find a cornered builder and leave a comfortable one alone");
+
   // ── the Saturday trips. Neither the yard nor the swap was ever introduced:
   // the Road Trip pill turned up with two others when show season opened, and
   // the only writing explaining either place fired after the player had paid

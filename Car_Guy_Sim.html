@@ -11643,7 +11643,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.81.3";
+      const GAME_VERSION = "0.82.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -14485,9 +14485,42 @@
       // finds out about a small loan: somebody at the kitchen table says it
       // out loud.
       const BANK_INTRO_LEAN_WEEKS = 3;
+      // The build outran the wallet.
+      //
+      // This is not the same thing as being poor, and the difference is the
+      // whole reason the money beats were reaching nobody. A rough truck and
+      // an empty account is a bad week. A truck this nice and this little in
+      // the bank is a man with something to lose and nothing left to spend on
+      // it, and that man is who the kitchen-table talk about the bank and both
+      // roads to the pawn shop were written for. They were keyed to the first
+      // man and found the second one never: measured across 300 seasons with
+      // the money moving the way a real season moves it, a careful debt-free
+      // builder saw the bank, the shark and the ring in 0% of them.
+      //
+      // The threshold scales with the build, because that is the point. The
+      // better the truck, the more it costs to keep it moving, so the same
+      // few hundred dollars that is comfortable early is thin later.
+      // `floor` is how far along the build has to be before this reads as
+      // temptation rather than as an ordinary broke week early on. The bank is
+      // the gentlest rung and opens on a project merely underway; the pawn
+      // shop wants a truck somebody would actually miss.
+      function buildOutranTheWallet(factor, floor) {
+        const car = currentCar();
+        if (!car) return false;
+        const overall = getOverall(car);
+        if (overall < (floor == null ? 55 : floor)) return false;
+        return (state.money || 0) < overall * factor;
+      }
       function maybeTriggerBankIntro() {
         if (state.loansUnlocked || state.bankMentioned) return false;
-        if ((state.leanStreak || 0) < BANK_INTRO_LEAN_WEEKS) return false;
+        // Either road in: three lean weeks the old way, or a build that has
+        // got ahead of the account. She is doing the math either way, and the
+        // scene already says so out loud.
+        if (
+          (state.leanStreak || 0) < BANK_INTRO_LEAN_WEEKS &&
+          !buildOutranTheWallet(14, 30)
+        )
+          return false;
         // Week three is broke because a truck just got bought, which was the
         // right call. Wait until being broke has outlived the purchase.
         if (state.week < 5) return false;
@@ -19067,7 +19100,10 @@
         // already working, not merely cash-poor by choice.
         if (state.week < (state.seasonLength || 22) - 6) return;
         if ((state.history || []).length === 0) return;
-        if (state.money > 250) return;
+        // Not a flat $250. The man in this scene is close to something and
+        // short for it, which is a different and much more common state than
+        // being down to bus fare.
+        if ((state.money || 0) > 250 && !buildOutranTheWallet(8, 55)) return;
         const anyLoan =
           (state.bankLoanBalance || 0) > 0 ||
           (state.sharkLoanBalance || 0) > 0 ||
@@ -19075,7 +19111,7 @@
         if (!anyLoan) return;
         if (Math.random() > 0.3) return;
         queueRingPawnOffer(
-          "It's past ten and you're parked across from a pawn shop you've driven by a hundred times and never once thought about. The season's biggest show is weeks out, the truck is finally ready, and the account is thirty bucks from empty with every loan already working. Your wedding ring has been on the dresser since you started painting. She has never once doubted this build. That's what makes the thought so ugly. She wouldn't even notice tonight.",
+          "It's past ten and you're parked across from a pawn shop you've driven by a hundred times and never once thought about. The season's biggest show is weeks out, the truck is finally ready, and what is in the account will not cover what it still needs, with every loan already working. Your wedding ring has been on the dresser since you started painting. She has never once doubted this build. That's what makes the thought so ugly. She wouldn't even notice tonight.",
         );
       }
 
