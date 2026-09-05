@@ -5561,6 +5561,44 @@
       .phone-dm-avatar.red { background: linear-gradient(135deg, #c97d70, #8c4e44); }
       .phone-dm-avatar.blue { background: linear-gradient(135deg, #7da0c2, #4a6b8c); }
       .phone-dm-avatar.gold { background: linear-gradient(135deg, #e0b45a, #a07820); }
+      /* ── The off-season group. Not a new palette: the avatars, the radius and
+         the card ground are the phone's, because this is a phone. It used to
+         render in .feed-item, the same row the parts store and the swap tables
+         use, which is why a panel full of people read like inventory. ── */
+      .grp-post {
+        display: flex;
+        gap: 10px;
+        padding: 11px 12px;
+        background: rgba(255, 255, 255, 0.028);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        margin-bottom: 9px;
+      }
+      .grp-post.done { opacity: 0.45; }
+      .grp-body { flex: 1; min-width: 0; }
+      .grp-head { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
+      .grp-name { font-size: 12.5px; font-weight: bold; color: var(--text-bright); }
+      .grp-at { font-size: 10.5px; color: #7f7566; }
+      .grp-text {
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: var(--text);
+        margin-top: 3px;
+        overflow-wrap: anywhere;
+      }
+      .grp-pay { font-size: 11px; font-weight: bold; margin-top: 5px; }
+      .grp-reply {
+        display: flex;
+        gap: 7px;
+        align-items: flex-start;
+        margin-top: 8px;
+        padding-left: 10px;
+        border-left: 2px solid rgba(255, 255, 255, 0.08);
+      }
+      .grp-reply .phone-dm-avatar { width: 20px; height: 20px; }
+      .grp-reply-t { font-size: 11px; line-height: 1.45; color: #9a9084; }
+      .grp-reply-t b { color: #b5aa9a; font-weight: bold; }
+      .grp-act { margin-top: 9px; }
       .phone-dm-fresh {
         background: rgba(224, 180, 90, 0.09);
         border-color: rgba(224, 180, 90, 0.4);
@@ -11682,7 +11720,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.83.0";
+      const GAME_VERSION = "0.84.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -11719,6 +11757,9 @@
           regulars: {},
           // Which paper boards have already been written on once.
           inkSeen: {},
+          // So the man who comments on everything does not say the same thing
+          // two weeks running.
+          lastPestLine: "",
           seasonLength: 22,
           cars: [
             {
@@ -18133,29 +18174,65 @@
       const REGULARS = [
         {
           id: "dell",
-          name: "Dell",
+          name: "Dell Prater",
+          tone: "gold",
           who: "Old-timer two streets over. Starter drags every cold morning.",
-          trust: "Dell hands you the whole car now, not just the part he diagnosed.",
         },
         {
           id: "trey",
           name: "Trey",
+          tone: "green",
           who: "Kid down the street. Wants everything louder.",
-          trust: "Trey has started asking why before he asks how much.",
         },
         {
           id: "hollis",
           name: "Hollis",
+          tone: "blue",
           who: "Your buddy. Always needs it by Friday.",
-          trust: "Hollis stopped asking what he owes you and started just leaving things in the garage.",
         },
         {
           id: "vic",
-          name: "Vic",
+          name: "Vic Ordonez",
+          tone: "red",
           who: "Pays late. Pays well. Eventually.",
-          trust: "Vic pays up front now. He will not say why and you will not ask.",
         },
       ];
+      // Somebody in every town group who never hires anybody and comments on
+      // all of it anyway. He is not a customer and he never becomes one.
+      const GROUP_PEST = {
+        name: "Wayne",
+        tone: "purple",
+        lines: [
+          "check your grounds",
+          "9 times out of 10 its the ground strap. ask me how i know",
+          "before you spend money on that check your battery terminals",
+          "sounds electrical to me",
+          "had the exact same thing. was a ground.",
+          "clean your grounds first before anybody charges you anything",
+        ],
+      };
+      // What a man says under somebody else's post once you have done work for
+      // him. This is the only thing in the group that is not flavour: it is the
+      // town saying out loud what your standing is, so the standing does not
+      // need a line of its own explaining itself.
+      const GROUP_VOUCH = {
+        dell: [
+          "I would call the young fella on Mesa. Did my starter. Charged me what he said he would.",
+          "Ask the kid who did my truck. He does not talk your ear off and the work is right.",
+        ],
+        trey: [
+          "yo the dude that did my exhaust is legit fr. does not talk down to you either",
+          "get the guy who did mine. actually explained it instead of just taking my money",
+        ],
+        hollis: [
+          "My guy. Has bailed me out twice on a Thursday night. Say I sent you.",
+          "Whoever is reading this, the one on Mesa is the real deal. Ask me how many times he has saved me.",
+        ],
+        vic: [
+          "I use him for the fleet. Straight work, no surprises on the invoice.",
+          "Reliable. I would not put my trucks with him otherwise.",
+        ],
+      };
       function regularDef(id) {
         return REGULARS.find((r) => r.id === id) || REGULARS[0];
       }
@@ -18178,30 +18255,35 @@
       const CALLS_PER_WEEK = 2;
       // kind: cash | part | tool | favour. Each one pays in a different
       // currency, which is the point: they cannot be compared with subtraction.
+      // Written the way each of them actually types. Dell is a man using a
+      // phone he does not like and signs his posts. Trey does not capitalise
+      // anything. Hollis is asking a friend so he is already halfway to
+      // assuming yes. Vic is oddly formal, which is what a man sounds like
+      // when he is being careful not to mention money.
       const REGULAR_CALLS = {
         dell: [
-          { kind: "cash", t: "Starter is dragging again. He has the part, he wants the hands.", lo: 255, hi: 350 },
-          { kind: "cash", t: "Points and plugs before the cold snap. He will sit and talk the whole time.", lo: 215, hi: 290 },
-          { kind: "part", t: "Wants his carb rebuilt. Says take whatever is on the shelf as part of it.", tier: "Quality" },
-          { kind: "cash", trust: true, t: "Hands you the keys and a list. Four days, whatever it needs.", lo: 585, hi: 740 },
+          { kind: "cash", t: "Truck wont start when its cold. Been doing it about a month now. I have the part already. Can pay. Thank you. Dell", lo: 255, hi: 350 },
+          { kind: "cash", t: "Looking for someone to do plugs and points before it gets cold. I will make coffee. Thank you. Dell", lo: 215, hi: 290 },
+          { kind: "part", t: "Carb needs rebuilding and my hands are not what they were. Take whatever you want off the shelf out back as part of it. Dell", tier: "Quality" },
+          { kind: "cash", trust: true, t: "Leaving the keys under the mat and a list on the seat. Four days. Whatever she needs, you know better than me. Dell", lo: 585, hi: 740 },
         ],
         trey: [
-          { kind: "cash", t: "Wants the exhaust louder. It is already loud. He is paying anyway.", lo: 115, hi: 185 },
-          { kind: "tool", t: "No money, but his old man is clearing the garage and there is a box in it." },
-          { kind: "favour", t: "Blew a hose and has no idea. Asks if you can look, then goes quiet." },
-          { kind: "cash", trust: true, t: "Brings you the whole car and a notebook of questions. Wants to watch.", lo: 290, hi: 390 },
+          { kind: "cash", t: "anyone do exhaust work. want it louder. i know its already loud", lo: 115, hi: 185 },
+          { kind: "tool", t: "no cash rn but my old man is clearing out the garage and theres a whole box of stuff. would trade" },
+          { kind: "favour", t: "somethings leaking and its hot and it smells sweet. probably fine right" },
+          { kind: "cash", trust: true, t: "bringing the whole car over saturday. wrote down like 20 questions. can i just watch this time. ill pay obviously", lo: 290, hi: 390 },
         ],
         hollis: [
-          { kind: "cash", t: "Water pump. Needs it by Friday. Says that like it is new information.", lo: 275, hi: 370 },
-          { kind: "favour", t: "Clutch is slipping and he is broke until the fifteenth. He would do it for you." },
-          { kind: "tool", t: "Trade: you do the brakes, he clears something out of his garage for you." },
-          { kind: "part", trust: true, t: "Wants the whole front end done, and says take what you need off the parts car.", tier: "Quality" },
+          { kind: "cash", t: "Water pump went out. Need it by Friday. I know, I know. Before you say anything, I already know.", lo: 275, hi: 370 },
+          { kind: "favour", t: "Clutch is slipping and I am flat broke till the 15th. Would not ask if it was not the truck I get to work in." },
+          { kind: "tool", t: "Trade you: you do my brakes, I clear something out of my garage you have been eyeing. You know the one." },
+          { kind: "part", trust: true, t: "Whole front end, whenever you can get to it. Take whatever you need off the parts car, I am not counting.", tier: "Quality" },
         ],
         vic: [
-          { kind: "cash", t: "Fleet truck, oil and a once-over. He will pay. He will not pay today.", lo: 350, hi: 470 },
-          { kind: "cash", t: "U-joint clunking on the work truck. Big job, big number, long wait.", lo: 430, hi: 585 },
-          { kind: "favour", t: "Needs a van running before Sunday and has nothing on him at all." },
-          { kind: "cash", trust: true, t: "Cash up front, in an envelope, before you have picked up a wrench.", lo: 625, hi: 780 },
+          { kind: "cash", t: "Requesting oil and a general inspection on one fleet vehicle. Payment terms to be discussed at completion.", lo: 350, hi: 470 },
+          { kind: "cash", t: "There is a clunk in the driveline on the work truck. Larger job. I am good for it, as always.", lo: 430, hi: 585 },
+          { kind: "favour", t: "Need a van running before Sunday. I will be honest with you, I have nothing on me at the moment." },
+          { kind: "cash", trust: true, t: "Envelope is in my hand. Job is not started yet. I would like to keep it that way going forward.", lo: 625, hi: 780 },
         ],
       };
       // Who rings this week. Standing makes a man more likely to call, which is
@@ -18217,15 +18299,7 @@
           const pool = (REGULAR_CALLS[r.id] || []).filter((c) => !c.trust || trusted);
           if (!pool.length) return;
           const c = pool[Math.floor(Math.random() * pool.length)];
-          calls.push({
-            id: `call_${state.preWeek || 1}_${r.id}`,
-            who: r.id,
-            kind: c.kind,
-            title: c.t,
-            tier: c.tier || "Budget",
-            pay: c.lo ? Math.round((c.lo + Math.random() * (c.hi - c.lo)) / 5) * 5 : 0,
-            done: false,
-          });
+          calls.push(makeCall(r, c));
         });
         // A week where nobody rings is a bug wearing a quiet week's coat, so
         // the least-heard-from regular always calls.
@@ -18233,14 +18307,52 @@
           const r = REGULARS.slice().sort((a, b) => standingWith(a.id) - standingWith(b.id))[0];
           const pool = (REGULAR_CALLS[r.id] || []).filter((c) => !c.trust);
           const c = pool[Math.floor(Math.random() * pool.length)];
-          calls.push({
-            id: `call_${state.preWeek || 1}_${r.id}`,
-            who: r.id, kind: c.kind, title: c.t, tier: c.tier || "Budget",
-            pay: c.lo ? Math.round((c.lo + Math.random() * (c.hi - c.lo)) / 5) * 5 : 0,
-            done: false,
-          });
+          calls.push(makeCall(r, c));
         }
+        addThePest(calls);
         state.gigs = calls;
+      }
+      // Nobody posts at two in the afternoon. They post before work or when
+      // they cannot sleep, which is most of what makes the times read as real.
+      const POST_TIMES = ["5:41 AM", "6:12 AM", "6:48 AM", "7:03 AM", "7:26 AM",
+                          "9:55 PM", "10:31 PM", "11:04 PM", "11:47 PM", "12:18 AM"];
+      function makeCall(r, c) {
+        const trusted = standingWith(r.id) >= REGULAR_TRUST;
+        // The vouch is guaranteed once a man trusts you, because it is the only
+        // thing telling the player their standing moved. It used to be a line
+        // of the game explaining itself; now somebody says it instead, and a
+        // signal that only sometimes appears is not a signal.
+        let comment = null;
+        if (trusted) {
+          const others = REGULARS.filter((x) => x.id !== r.id && standingWith(x.id) > 0);
+          const from = others.length
+            ? others[Math.floor(Math.random() * others.length)]
+            : REGULARS.filter((x) => x.id !== r.id)[0];
+          const pool = GROUP_VOUCH[from.id] || [];
+          comment = { name: from.name, tone: from.tone, text: pool[Math.floor(Math.random() * pool.length)] };
+        }
+        return {
+          id: `call_${state.preWeek || 1}_${r.id}`,
+          who: r.id,
+          kind: c.kind,
+          title: c.t,
+          tier: c.tier || "Budget",
+          pay: c.lo ? Math.round((c.lo + Math.random() * (c.hi - c.lo)) / 5) * 5 : 0,
+          at: POST_TIMES[Math.floor(Math.random() * POST_TIMES.length)],
+          comment,
+          done: false,
+        };
+      }
+      // Wayne comments once. Not on every post, and not the same line he used
+      // last week: he is funny as a fixture and tiresome as a chorus.
+      function addThePest(calls) {
+        const open = calls.filter((c) => !c.comment);
+        if (!open.length || Math.random() > 0.62) return;
+        const lines = GROUP_PEST.lines.filter((l) => l !== state.lastPestLine);
+        const text = lines[Math.floor(Math.random() * lines.length)];
+        state.lastPestLine = text;
+        const target = open[Math.floor(Math.random() * open.length)];
+        target.comment = { name: GROUP_PEST.name, tone: GROUP_PEST.tone, text };
       }
       function callsTakenThisWeek() {
         return (state.gigs || []).filter((g) => g.done).length;
@@ -24743,58 +24855,58 @@ addEventListener("DOMContentLoaded",function(){
         const weeksLeft = PRESEASON_WEEKS - state.preWeek;
         const taken = callsTakenThisWeek();
         const full = taken >= CALLS_PER_WEEK;
-        // What each kind actually pays, said plainly on the card. A player
-        // choosing between a hundred and eighty dollars and a tool has to be
-        // told they are not the same kind of thing.
+        // Four currencies, said in the poster's own terms rather than as a
+        // field label, because nobody in a group posts a payout figure.
         const payLine = (g) => {
-          if (g.kind === "cash") return `<span style="color:var(--green-bright);font-weight:bold">Pays $${fmt(g.pay)}</span>`;
-          if (g.kind === "part") return `<span style="color:#a884dd;font-weight:bold">Pays in a part off his shelf</span>`;
-          if (g.kind === "tool") return `<span style="color:#e8c79a;font-weight:bold">Pays in a tool out of his garage</span>`;
-          return `<span style="color:var(--gold);font-weight:bold">Pays nothing. He remembers.</span>`;
+          if (g.kind === "cash") return `<div class="grp-pay" style="color:var(--green-bright)">Says he can pay $${fmt(g.pay)}</div>`;
+          if (g.kind === "part") return `<div class="grp-pay" style="color:#a884dd">Paying in parts off his shelf</div>`;
+          if (g.kind === "tool") return `<div class="grp-pay" style="color:#e8c79a">Paying in something out of his garage</div>`;
+          return `<div class="grp-pay" style="color:var(--gold)">Cannot pay. Would owe you one.</div>`;
         };
-        const rows = gigs
+        const posts = gigs
           .map((g) => {
             const who = regularDef(g.who);
-            const st = standingWith(g.who);
-            const trusted = st >= REGULAR_TRUST;
+            const c = g.comment;
             return `
-      <div class="feed-item" style="display:flex;align-items:center;gap:12px;${g.done ? "opacity:0.5" : ""}">
-        <div style="flex:1">
-          <div class="tiny" style="color:var(--gold-soft);font-weight:bold;letter-spacing:.3px">${who.name.toUpperCase()} CALLED${trusted ? " · REGULAR" : ""}</div>
-          <div class="small" style="color:var(--text);line-height:1.4;margin-top:2px">${g.title}</div>
-          <div class="tiny" style="margin-top:3px">${payLine(g)}</div>
+      <div class="grp-post ${g.done ? "done" : ""}">
+        <div class="phone-dm-avatar ${who.tone}"></div>
+        <div class="grp-body">
+          <div class="grp-head"><span class="grp-name">${who.name}</span><span class="grp-at">${g.at || ""}</span></div>
+          <div class="grp-text">${g.title}</div>
+          ${payLine(g)}
+          ${
+            c
+              ? `<div class="grp-reply"><div class="phone-dm-avatar ${c.tone}"></div><div class="grp-reply-t"><b>${c.name}</b> ${c.text}</div></div>`
+              : ""
+          }
+          <div class="grp-act">${
+            g.done
+              ? `<span class="tiny muted">You answered this one.</span>`
+              : button(full ? "No time this week" : "Reply", `doGig('${g.id}')`, full, "", "padding:6px 14px;font-size:12px;background:#7da0c2;border-color:var(--blue-bright)")
+          }</div>
         </div>
-        ${
-          g.done
-            ? `<span class="tiny muted" style="white-space:nowrap">Done</span>`
-            : button(full ? "No time this week" : "Take it", `doGig('${g.id}')`, full, "", "padding:7px 12px;font-size:12px;white-space:nowrap;background:#7da0c2;border-color:var(--blue-bright)")
-        }
       </div>`;
           })
           .join("");
-        // Nobody goes quiet without the board saying so. A regular who has
-        // stopped ringing is content; a regular who has stopped ringing
-        // silently is indistinguishable from a pool that failed to roll, to
-        // the player and to the smoke suite both.
+        // Nobody goes quiet without the group saying so. A man who has stopped
+        // posting is content; a man who has stopped posting silently cannot be
+        // told apart from a pool that failed to roll.
         const quiet = REGULARS.filter(
           (r) => !gigs.some((g) => g.who === r.id) && standingWith(r.id) === 0,
         );
         const quietLine =
           quiet.length && (state.preWeek || 1) >= 2
-            ? `<div class="tiny muted" style="margin-top:10px;line-height:1.5">${quiet.map((r) => r.name).join(" and ")} did not ring this week. ${quiet.length === 1 ? "He does not know you well enough to think of you first." : "Neither of them knows you well enough to think of you first."}</div>`
+            ? `<div class="tiny muted" style="margin-top:2px;line-height:1.5">Nothing from ${quiet.map((r) => r.name.split(" ")[0]).join(" or ")} this week. ${quiet.length === 1 ? "He does not know you well enough to think of you first." : "Neither of them knows you well enough to think of you first."}</div>`
             : "";
-        // Standing said out loud, one line, never hidden in a number.
-        const trustLines = REGULARS.filter((r) => standingWith(r.id) >= REGULAR_TRUST)
-          .map((r) => `<div class="tiny" style="color:var(--gold-soft);line-height:1.5">${r.trust}</div>`)
-          .join("");
         const capLine = full
-          ? `<div class="tiny good" style="margin-top:10px;text-align:center">That is the week. Advance when you are ready.</div>`
-          : `<div class="tiny muted" style="margin-top:10px;text-align:center">${CALLS_PER_WEEK - taken} more job${CALLS_PER_WEEK - taken === 1 ? "" : "s"} in you this week. The rest belongs to your own truck.</div>`;
+          ? `<div class="tiny good" style="margin-top:10px;text-align:center">That is the week. The rest of it belongs to your own truck.</div>`
+          : `<div class="tiny muted" style="margin-top:10px;text-align:center">Room for ${CALLS_PER_WEEK - taken} more this week.</div>`;
+        // No header naming the group. Names and times say what it is.
         return `<div style="margin-bottom:14px">${heroPanel(
-          "Pre-Season · The Phone",
+          "Pamona Valley Auto Help",
           `Off-season. Shows open in ${weeksLeft + 1} week${weeksLeft === 0 ? "" : "s"}.`,
-          "No competition yet. Build, flip, post and scavenge, and answer the people who call.",
-          `<div class="tiny muted" style="margin-bottom:10px">Word is out that you can wrench. Two jobs is all a week holds.</div>${rows}${quietLine}${trustLines}${capLine}`,
+          "",
+          `${posts}${quietLine}${capLine}`,
           "gold",
         )}</div>`;
       }

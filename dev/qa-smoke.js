@@ -1080,11 +1080,50 @@ const pass = (msg) => console.log("✓", msg);
     }
     if (!sawTrusted) return bail("standing never opened the work it is supposed to open");
 
+    // The group is people talking, so two things have to hold. The man who
+    // comments on everything comments once, because a running joke at three
+    // posts a week is a soundboard. And a man who trusts you always vouches
+    // for you under somebody else's post, because that vouch replaced the line
+    // where the game explained your standing, and a signal that only sometimes
+    // appears is not a signal.
+    state.preWeek = 1;
+    let worst = 0, dupes = 0, lastLine = null;
+    state.regulars = {}; state.lastPestLine = "";
+    for (let i = 0; i < 250; i++) {
+      rollGigBoard();
+      const pests = (state.gigs || []).filter((g) => g.comment && g.comment.name === "Wayne");
+      worst = Math.max(worst, pests.length);
+      if (pests.length) {
+        if (pests[0].comment.text === lastLine) dupes++;
+        lastLine = pests[0].comment.text;
+      }
+    }
+    if (worst > 1) return bail(`the man who comments on everything commented ${worst} times in one week`);
+    if (dupes) return bail("he used the same line two weeks running");
+    state.regulars = { dell: 5, trey: 2, hollis: 2, vic: 2 };
+    let trusted = 0, vouched = 0;
+    for (let i = 0; i < 250; i++) {
+      rollGigBoard();
+      for (const g of state.gigs || []) {
+        if (standingWith(g.who) < REGULAR_TRUST) continue;
+        trusted++;
+        if (g.comment && g.comment.name !== "Wayne") vouched++;
+      }
+    }
+    if (!trusted) return bail("no trusted post was ever offered, cannot check the vouch");
+    if (vouched !== trusted)
+      return bail(`standing went unspoken on ${trusted - vouched} of ${trusted} posts from a man who trusts you`);
+    // Every post is somebody typing, at a time somebody would actually type.
+    for (const g of state.gigs || []) {
+      if (!g.at) return bail("a post arrived with no time on it");
+      if (!g.title || g.title.length < 20) return bail("a post is too short to read as somebody asking for help");
+    }
+
     Object.assign(state, JSON.parse(snapshot));
     return true;
   });
   if (callsOk !== true) fail("pre-season calls: " + callsOk);
-  pass("pre-season side work is four people who call, paying in four currencies, two to a week");
+  pass("the off-season group: four people posting in four voices, one pest, and standing spoken by the town");
 
   // ── the Saturday trips. Neither the yard nor the swap was ever introduced:
   // the Road Trip pill turned up with two others when show season opened, and
