@@ -835,6 +835,77 @@ const pass = (msg) => console.log("✓", msg);
   if (ringOk !== true) fail("ring pawn offer: " + ringOk);
   pass("the pawn-shop fork actually reaches the player, once a season, and refusing stays clean");
 
+  // ── the bug class itself, not one more instance of it. queueScene(),
+  // queueWeeklyEvent() and pushNotice() all defer on their own when the screen
+  // is busy. A beat that ALSO bails on modalBusy()/pendingScene before rolling
+  // therefore does not wait, it throws the week away, and the week advance
+  // leaves the screen busy on ~85% of weeks. That is what hid the loan shark
+  // for whole seasons, then the pawn shop, then the birthday card. This reads
+  // the shipped functions and fails if the shape comes back. ──
+  const deferOk = await page.evaluate(() => {
+    // Beats that queue their own content and must therefore never cancel.
+    const mustDefer = [
+      "maybeTriggerBirthday", "maybeOfferRingPawn", "maybeOfferRingPawnStretch",
+      "maybeTriggerSharkIntro", "maybeTriggerBankIntro", "maybeRestraintBeat",
+      "maybeTriggerBuckIntro", "maybeKidWrenchBeat", "maybeHomeBalanceBeat",
+      "maybeTriggerYardIntro", "maybeTriggerSwapIntro", "maybeOfferBrandDeal",
+    ];
+    const offenders = [];
+    const missing = [];
+    for (const name of mustDefer) {
+      const fn = window[name];
+      if (typeof fn !== "function") { missing.push(name); continue; }
+      const src = fn.toString();
+      const queues = /queueScene\(|queueWeeklyEvent\(|pushNotice\(|queueRingPawnOffer\(|queueEvent\(/.test(src);
+      if (!queues) continue; // it hands off some other way, not this rule's business
+      const cancels = /if\s*\([^)]*\bmodalBusy\(\)/.test(src) ||
+                      /if\s*\([^)]*state\.pendingScene[^)]*\)\s*return/.test(src);
+      if (cancels) offenders.push(name);
+    }
+    if (missing.length) return "could not read these beats to check them: " + missing.join(", ");
+    if (offenders.length)
+      return "these queue their own content but still cancel on a busy screen, so they lose the week instead of waiting: " + offenders.join(", ");
+    return true;
+  });
+  if (deferOk !== true) fail("beats must defer, not cancel: " + deferOk);
+  pass("no beat throws away its week because the screen was busy (it queues instead)");
+
+  // ── and the birthday card as the measured case: a 30%/week roll live for ten
+  // weeks should reach almost every season. Behind the busy check it reached
+  // 41% of them. ──
+  const bdayOk = await page.evaluate(() => {
+    const snapshot = JSON.stringify(state);
+    const car = state.cars[0];
+    const clear = () => {
+      state.pendingScene = null; state.pendingEvent = null; state.eventQueue = [];
+      state.noticeQueue = []; state.cutscene = null; state.pendingUnlock = null;
+      state.showStore = false; state.weekRecap = null; state.pendingRecap = null;
+      state.result = null; state.pendingVictory = null; state.showStage = null;
+      state.showLoading = false; state.view = "workshop"; clearTabArrival();
+    };
+    const N = 150;
+    let got = 0;
+    for (let s = 0; s < N; s++) {
+      car.engine = 70; car.transmission = 70; car.brakes = 70; car.steering = 70;
+      state.tutorialComplete = true; state.onboardStage = 3;
+      state.seasonNumber = 2; state.seasonLength = 22; state.money = 2000;
+      state.history = [{ tier: "Local", place: 2, show: "Palomar Junction Local" }];
+      state.gameOver = false; state.seasonWrap = false; state.birthdayReceived = false;
+      for (let w = 13; w <= 22; w++) {
+        clear(); state.week = w - 1;
+        advanceWeek("time");
+        if (state.birthdayReceived) break;
+      }
+      if (state.birthdayReceived) got++;
+    }
+    const pct = (got / N) * 100;
+    Object.assign(state, JSON.parse(snapshot));
+    if (pct < 80) return `the card reached only ${pct.toFixed(0)}% of seasons, it is being eaten by a busy screen again`;
+    return true;
+  });
+  if (bdayOk !== true) fail("birthday card delivery: " + bdayOk);
+  pass("the birthday card reaches nearly every season, the way its odds read");
+
   // ── the Saturday trips. Neither the yard nor the swap was ever introduced:
   // the Road Trip pill turned up with two others when show season opened, and
   // the only writing explaining either place fired after the player had paid

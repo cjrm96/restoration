@@ -11643,7 +11643,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.81.2";
+      const GAME_VERSION = "0.81.3";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -13537,7 +13537,9 @@
         if (!state.tutorialComplete || state.week < 6) return;
         const L = moralLedger();
         if (!L.cleanHands) return;
-        if (state.pendingScene) return;
+        // queueScene() queues behind a scene that is already up, so bailing
+        // here only threw the week's roll away. The arc is spaced four weeks
+        // apart on its own and does not need a second limiter.
         const stage = state.restraintStage || 0;
         if (stage >= 3) return;
         // Space the beats out so the arc breathes across the season.
@@ -13992,7 +13994,8 @@
 
       function maybeTriggerBuckIntro() {
         if (!state.buck || state.buck.metOnce) return;
-        if (state.pendingScene || state.pendingEvent) return;
+        // queueScene() holds him until the screen is clear. Checking here as
+        // well just pushed the introduction back a week at a time.
         queueScene({
           id: BUCK_INTRO_SCENE.id,
           title: BUCK_INTRO_SCENE.title,
@@ -18977,7 +18980,10 @@
       function maybeTriggerBirthday() {
         if (state.birthdayReceived) return;
         if (state.week < 13) return;
-        if (modalBusy()) return;
+        // No modalBusy() check: it sat in front of the roll, and the week
+        // advance leaves the screen busy most weeks, so the card was being
+        // rolled for on a fraction of the weeks it reads as. pushNotice()
+        // queues behind whatever is up, which is the whole point of it.
         if (Math.random() > 0.3) return; // ~30% chance per week once eligible
         state.birthdayReceived = true;
         state.money += 1000;
