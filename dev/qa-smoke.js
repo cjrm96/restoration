@@ -1253,6 +1253,75 @@ const pass = (msg) => console.log("✓", msg);
   if (cageOk !== true) fail("work on the bench: " + cageOk);
   pass("a job on the bench no longer switches the game off, and buys one look under the car");
 
+  // ── the player's half of the sentence. Every conversation in this game
+  // happened TO him: Buck needled, Dale asked, and the man holding the phone
+  // never said a word back. A message worth answering carries two replies and
+  // neither is free, because a reply you can make for nothing is a button
+  // rather than a decision. ──
+  const replyOk = await page.evaluate(() => {
+    const snapshot = JSON.stringify(state);
+    const bail = (m) => { Object.assign(state, JSON.parse(snapshot)); return m; };
+    state.tutorialComplete = true; state.onboardStage = 3;
+    state.buck = { metOnce: true, beatenCount: 2, lostToCount: 1 };
+    state.mechanic = { metOnce: true, trust: 2, shopVisits: 1 };
+    state.regulars = { dell: 2, trey: 2, hollis: 2, vic: 2 };
+    state.characterDMs = []; state.answeredDMs = []; state.neglectStreak = 3;
+    state.noticeQueue = [];
+
+    if (ANSWERABLE_DMS.length < 8) return bail("too few conversations to last a run");
+    for (const d of ANSWERABLE_DMS) {
+      if (!Array.isArray(d.r) || d.r.length !== 2)
+        return bail(`${d.id} is not a choice between two things`);
+      for (const r of d.r) {
+        if (!r.l) return bail(`${d.id} has a reply with nothing written on it`);
+        const moves = r.lore || r.followers || r.dale || r.standing || r.home || r.neglect;
+        if (!moves) return bail(`${d.id}: "${r.l}" costs and earns nothing, that is a button not a decision`);
+      }
+    }
+
+    // One conversation open at a time, so the inbox never becomes a chore list.
+    for (let i = 0; i < 200; i++) maybeAnswerableDM();
+    const open = (state.characterDMs || []).filter((d) => d.r && !d.said);
+    if (open.length > 1) return bail(`${open.length} conversations were left open at once`);
+    if (!open.length) return bail("nobody ever texted at all");
+
+    // Answering says it, once, and it is remembered.
+    const dm = open[0];
+    replyToDM(dm.id, 0);
+    if (!dm.said) return bail("the reply was not kept on the thread");
+    const after = JSON.stringify({ f: state.followers, n: state.neglectStreak });
+    replyToDM(dm.id, 1);
+    if (JSON.stringify({ f: state.followers, n: state.neglectStreak }) !== after)
+      return bail("the other reply could still be taken afterwards");
+
+    // Never the same conversation twice in a run.
+    state.characterDMs = [];
+    for (let i = 0; i < 400; i++) {
+      maybeAnswerableDM();
+      (state.characterDMs || []).forEach((d) => { if (d.r && !d.said) d.said = "x"; });
+    }
+    const ids = state.answeredDMs || [];
+    if (ids.length !== new Set(ids).size) return bail("a conversation was opened twice");
+
+    // Her thread stays one-way on purpose, and its closing line is the reason
+    // it was left alone: "You never text back. You go downstairs." That is a
+    // better line than any reply button would have been.
+    if (typeof renderWifeThread === "function") {
+      if (!Array.isArray(state.wifeThread)) state.wifeThread = [];
+      state.wifeThread.push({ week: state.week || 1, t: "probe" });
+      const thread = renderWifeThread();
+      if (!/never text back/i.test(thread))
+        return bail("the wife thread lost the line that makes it one-way on purpose");
+      if (/replyToDM/.test(thread))
+        return bail("reply buttons were added to her thread, which was deliberately one-way");
+    }
+
+    Object.assign(state, JSON.parse(snapshot));
+    return true;
+  });
+  if (replyOk !== true) fail("answering the phone: " + replyOk);
+  pass("the player finally gets to answer, once per conversation, and no reply is free");
+
   // ── the Saturday trips. Neither the yard nor the swap was ever introduced:
   // the Road Trip pill turned up with two others when show season opened, and
   // the only writing explaining either place fired after the player had paid

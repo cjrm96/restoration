@@ -5599,6 +5599,25 @@
       .grp-reply-t { font-size: 11px; line-height: 1.45; color: #9a9084; }
       .grp-reply-t b { color: #b5aa9a; font-weight: bold; }
       .grp-act { margin-top: 9px; }
+      /* The player's half of the conversation, which the game did not have
+         until now. Right-aligned and warmer, so a thread reads as two people
+         rather than as a log. */
+      .dm-said {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 7px;
+      }
+      .dm-said-t {
+        max-width: 88%;
+        background: rgba(217, 162, 79, 0.14);
+        border: 1px solid rgba(217, 162, 79, 0.4);
+        border-radius: 12px 12px 3px 12px;
+        padding: 7px 10px;
+        font-size: 12px;
+        line-height: 1.45;
+        color: var(--text-bright);
+      }
+      .dm-replies { margin-top: 4px; }
       .phone-dm-fresh {
         background: rgba(224, 180, 90, 0.09);
         border-color: rgba(224, 180, 90, 0.4);
@@ -11720,7 +11739,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.86.0";
+      const GAME_VERSION = "0.87.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -11762,6 +11781,8 @@
           lastPestLine: "",
           // So a look does not turn up the same line it did last time.
           lastLookLine: "",
+          // Conversations already had, so nobody opens the same one twice.
+          answeredDMs: [],
           seasonLength: 22,
           cars: [
             {
@@ -16970,6 +16991,7 @@
           ensureArray("swapMeetStock");
           ensureArray("swapFlipStock");
           ensureArray("swapToolFlipStock");
+          ensureArray("answeredDMs");
           ensureArray("carListings");
           ensureArray("yardPulls");
           ensureArray("postHistory");
@@ -18827,6 +18849,7 @@
         maybeTriggerFollowerPayout();
         maybeOfferBrandDeal();
         maybeOfferCollab();
+        maybeAnswerableDM();
         maybeOfferRingPawn();
         maybeOfferRingPawnStretch();
         maybeTriggerBirthday();
@@ -24922,7 +24945,7 @@ addEventListener("DOMContentLoaded",function(){
               const remaining = Math.max(0, task.finishTime - Date.now());
               return `<div class="info-box" data-task-id="${task.id}"><div class="flex between center" style="margin-bottom:8px;gap:10px"><div><div class="small" style="color:var(--text-bright);font-weight:bold">${part?.name || "Restoration"}</div></div><div class="small good task-time" style="font-weight:bold">${remaining <= 0 ? "COMPLETE" : formatRemaining(remaining)}</div></div>${gauge("", Math.round(getRestorationProgress(task) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${remaining <= 0 ? "Wrapping up now…" : taskStatusText(task)}</div>${
                 canLookInHere(task)
-                  ? `${button("While you're in there, have a look", `lookWhileInHere('${task.id}')`, false, "", "width:100%;margin-top:8px;font-size:11px;background:#3a2a1a;border-color:#8a5a2a;color:#e8c79a")}<div class="tiny muted" style="margin-top:4px;line-height:1.45">One look while she is open. Whatever you check, you are not checking the other thing.</div>`
+                  ? `${button("While you're in there, have a look", `lookWhileInHere('${task.id}')`, false, "", "width:100%;margin-top:8px;font-size:11px;background:#3a2a1a;border-color:#8a5a2a;color:#e8c79a")}`
                   : task.looked
                     ? `<div class="tiny muted" style="margin-top:8px;line-height:1.45">You already had your look at this one.</div>`
                     : ""
@@ -27339,6 +27362,185 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         "alright, the build's legit. don't tell anyone i said so.",
         "you're getting hard to ignore at these things. respect.",
       ];
+      /* ═══════════════════════════════════════════
+     ANSWERING THE PHONE
+     Every conversation in this game happened TO the player. Buck needled,
+     Dale asked, she said the thing she had been not saying, and the man
+     holding the phone never once said a word back. The threads were built,
+     the people were written, and the player's half of the sentence was
+     missing.
+     A message that can be answered carries two replies. Never a right one
+     and a wrong one: the satisfying line always costs something and the
+     restrained one always costs something else, because a reply you can
+     make for free is not a decision, it is a button.
+  ═══════════════════════════════════════════ */
+      // The messages worth answering. Two replies each, and neither is free:
+      // the one that feels good costs something and the one that keeps the
+      // peace costs something else.
+      //
+      // Her thread is deliberately not in here. It ends with "You never text
+      // back. You go downstairs," which is a sentence somebody wrote on
+      // purpose, and it is a better line than any reply button would be.
+      const ANSWERABLE_DMS = [
+        {
+          id: "ans_buck_lucky", c: "red", h: "@BuckStallion67", need: "beatBuck",
+          t: "lucky lap. wind was behind you and we both know it.",
+          r: [
+            { l: "It was. Same wind was behind you.", back: "...", followers: 90, lore: 3,
+              note: "He read it. He did not answer. Somebody screenshotted it and now it is going around.", tone: "good" },
+            { l: "Good run today.", back: "yeah. yeah it was.", lore: 8, dale: 1,
+              note: "You typed the other thing first. Then you deleted it and sent this instead, and you are not sure why it felt harder.", tone: "good" },
+          ],
+        },
+        {
+          id: "ans_buck_level", c: "red", h: "@BuckStallion67", need: "lostBuck",
+          t: "tough break out there. happens to guys at your level.",
+          r: [
+            { l: "See you at the next one.", lore: 6, followers: 25,
+              note: "Four words. He was expecting more and got less, which is the only thing that has ever bothered him.", tone: "good" },
+            { l: "My level. Right.", back: "easy. it was a compliment.", lore: 4, followers: 60,
+              note: "It was not a compliment and you both know it. You are going to think about this all week.", tone: "bad" },
+          ],
+        },
+        {
+          id: "ans_dale_pieces", c: "gold", h: "Dale", need: "knowsDale",
+          t: "You still got that thing in pieces? Been a while.",
+          r: [
+            { l: "Further apart than I want to admit.", back: "That is how it goes. Call if you get stuck.", dale: 2, lore: 5,
+              note: "He has heard that sentence from a hundred men and never once laughed at it.", tone: "good" },
+            { l: "Nearly done.", back: "Uh huh.", lore: 2,
+              note: "He has been doing this forty years. He knew before he asked.", tone: "bad" },
+          ],
+        },
+        {
+          id: "ans_dale_look", c: "gold", h: "Dale", need: "knowsDale",
+          t: "Passing your place Thursday. Want me to put eyes on it?",
+          r: [
+            { l: "I would appreciate that.", back: "Then I will.", dale: 3, lore: 6,
+              note: "He looked at it for twenty minutes, said three sentences, and two of them were about something you had not noticed.", tone: "good" },
+            { l: "I have got it. Thanks though.", back: "Suit yourself. Offer stands.", lore: 3,
+              note: "You have got it. You mostly have got it. The offer standing is somehow worse than him coming.", tone: "good" },
+          ],
+        },
+        {
+          id: "ans_hollis_sat", c: "blue", h: "Hollis", need: "knowsHollis",
+          t: "you around saturday? not for a job. just around.",
+          r: [
+            { l: "Yeah. Bring the bad coffee.", standing: { id: "hollis", n: 2 }, lore: 6, neglect: 1,
+              note: "Four hours in the driveway and nobody turned a bolt. It was the best part of the week and it cost you the Saturday.", tone: "good" },
+            { l: "Cannot. Family stuff.", home: 1, lore: 4,
+              note: "You were not lying. You were also relieved to have a reason.", tone: "good" },
+          ],
+        },
+        {
+          id: "ans_tony_patina", c: "green", h: "@torquewrench_tony",
+          t: "saw the build. do NOT repaint that truck. i am begging you",
+          r: [
+            { l: "It is staying exactly as it is.", followers: 110, lore: 4,
+              note: "The patina crowd found you. They are loud, they are loyal, and they will turn on you the day you pick up a spray gun.", tone: "good" },
+            { l: "It is my truck.", back: "fair. fair. still begging though", followers: 30, lore: 6,
+              note: "Correct, and it cost you a few of them, and the ones who stayed liked you more for it.", tone: "good" },
+          ],
+        },
+        {
+          id: "ans_stranger_advice", c: "purple", h: "@first_project_kev",
+          t: "hey man sorry to bother. mine does the same thing yours did. how did you fix it",
+          r: [
+            { l: "Type it out for him properly.", followers: 70, lore: 7, neglect: 1,
+              note: "Took you forty minutes and three photos. He got it running on Sunday and told everybody who helped him.", tone: "good" },
+            { l: "Send him to the group.", standing: { id: "dell", n: 1 }, lore: 3,
+              note: "Dell picked it up in the group and answered better than you would have. That is what the group is.", tone: "good" },
+          ],
+        },
+        {
+          id: "ans_buyer_offer", c: "gold", h: "@cash_today_carl",
+          t: "what do you want for it. cash today. do not overthink it",
+          r: [
+            { l: "Not for sale.", lore: 9,
+              note: "You typed it before you finished reading the message. That told you something you already knew.", tone: "good" },
+            { l: "Everything is for sale. Make it stupid.", back: "ok noted lol", followers: 55, lore: 2,
+              note: "He is not going to make it stupid. But the thought sat with you longer than it should have.", tone: "bad" },
+          ],
+        },
+        {
+          id: "ans_vic_late", c: "red", h: "Vic Ordonez", need: "knowsVic",
+          t: "I have not forgotten what I owe you. I want you to know that.",
+          r: [
+            { l: "I know. It is fine.", standing: { id: "vic", n: 2 }, lore: 5,
+              note: "It is not entirely fine and he knows it is not, and that is exactly why saying it worked.", tone: "good" },
+            { l: "Then send it.", back: "...Friday.", standing: { id: "vic", n: -1 }, lore: 3,
+              note: "Friday came. Most of it came on Friday.", tone: "good" },
+          ],
+        },
+        {
+          id: "ans_trey_advice", c: "green", h: "Trey", need: "knowsTrey",
+          t: "ok dumb question. is it bad if it does that. it has been doing that",
+          r: [
+            { l: "It is bad. Stop driving it.", back: "ok. ok yeah. thank you", standing: { id: "trey", n: 2 }, lore: 5,
+              note: "He stopped driving it. That is not nothing, at nineteen.", tone: "good" },
+            { l: "Not a dumb question. Send me a video.", standing: { id: "trey", n: 3 }, lore: 7, neglect: 1,
+              note: "You watched a shaky vertical video eleven times and diagnosed it correctly from the sound. You are somebody's Dale now.", tone: "good" },
+          ],
+        },
+      ];
+      function answerableDMReady(d) {
+        if ((state.answeredDMs || []).includes(d.id)) return false;
+        if ((state.characterDMs || []).some((x) => x.id === d.id)) return false;
+        const b = state.buck || {};
+        if (d.need === "beatBuck") return (b.beatenCount || 0) > 0;
+        if (d.need === "lostBuck") return (b.lostToCount || 0) > 0;
+        if (d.need === "knowsDale") return !!(state.mechanic && state.mechanic.metOnce);
+        if (d.need === "knowsHollis") return standingWith("hollis") > 0;
+        if (d.need === "knowsVic") return standingWith("vic") > 0;
+        if (d.need === "knowsTrey") return standingWith("trey") > 0;
+        return true;
+      }
+      // Somebody texts you in a quiet week. queueScene is not involved: this
+      // lands in the phone and waits, which is what a message does.
+      function maybeAnswerableDM() {
+        if (!state.tutorialComplete) return;
+        // At most one conversation open at a time, so the inbox never becomes
+        // a list of chores.
+        if ((state.characterDMs || []).some((d) => Array.isArray(d.r) && !d.said)) return;
+        if (Math.random() > 0.3) return;
+        const pool = ANSWERABLE_DMS.filter(answerableDMReady);
+        if (!pool.length) return;
+        const d = pool[Math.floor(Math.random() * pool.length)];
+        if (!Array.isArray(state.answeredDMs)) state.answeredDMs = [];
+        state.answeredDMs.push(d.id);
+        pushCharacterDM({ id: d.id, c: d.c, h: d.h, t: d.t, r: d.r });
+      }
+      function applyReplyEffect(r) {
+        if (r.lore) addGarageLore(r.lore);
+        if (r.followers) {
+          state.followers += r.followers;
+          clampFollowers();
+        }
+        if (r.dale) {
+          if (!state.mechanic) state.mechanic = { metOnce: false, trust: 0, shopVisits: 0 };
+          state.mechanic.trust = Math.max(0, (state.mechanic.trust || 0) + r.dale);
+        }
+        if (r.standing && r.standing.id) bumpStanding(r.standing.id, r.standing.n);
+        // Time at home is the only currency the family has, so a reply that
+        // buys goodwill spends off the streak rather than adding to a number
+        // that does not exist.
+        if (r.home) state.neglectStreak = Math.max(0, (state.neglectStreak || 0) - r.home);
+        if (r.neglect) state.neglectStreak = (state.neglectStreak || 0) + r.neglect;
+      }
+      function replyToDM(dmId, idx) {
+        const dm = (state.characterDMs || []).find((d) => d.id === dmId);
+        if (!dm || dm.said || !Array.isArray(dm.r)) return;
+        const r = dm.r[idx];
+        if (!r) return;
+        // Said is said. The thread keeps it, and the other line is gone.
+        dm.said = r.l;
+        dm.back = r.back || "";
+        applyReplyEffect(r);
+        if (r.note) pushNotice(r.note, r.tone === "bad" ? "bad" : "good");
+        playSfx("click");
+        saveGame();
+        requestRender("full");
+      }
       function pushCharacterDM(dm, silent) {
         if (!dm || !dm.id) return;
         if (!Array.isArray(state.characterDMs)) state.characterDMs = [];
@@ -27436,6 +27638,15 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
             <div class="phone-dm-body">
               <div class="phone-dm-handle">${d.h}${fresh ? ` <span class="phone-dm-new">NEW</span>` : ""}</div>
               <div class="phone-dm-text">${d.t}</div>
+              ${
+                d.said
+                  ? `<div class="dm-said"><div class="dm-said-t">${d.said}</div></div>${d.back ? `<div class="phone-dm-text" style="margin-top:6px">${d.back}</div>` : ""}`
+                  : Array.isArray(d.r) && d.r.length
+                    ? `<div class="dm-replies">${d.r
+                        .map((r, ri) => button(r.l, `replyToDM('${d.id}',${ri})`, false, "", "width:100%;margin-top:6px;font-size:11.5px;text-align:left;background:#2b3a49;border-color:#4a6b8c;color:#dbe6f0"))
+                        .join("")}</div>`
+                    : ""
+              }
             </div>
           </div>`,
           });
