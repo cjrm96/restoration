@@ -11643,7 +11643,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.81.0";
+      const GAME_VERSION = "0.81.1";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -24370,6 +24370,19 @@ addEventListener("DOMContentLoaded",function(){
      MAIN RENDER VIEWS
   ═══════════════════════════════════════════ */
 
+      // The coach retires. Everything this line says is teaching, and teaching
+      // has an end: a player who has finished a season already knows to chase
+      // overall, already knows a quiet week is allowed, and being told again
+      // reads as the game not having noticed they are still here. It had no
+      // expiry at all, so it kept coaching into season five.
+      //
+      // From season two only the one line that is a fact rather than a lesson
+      // survives, the gap between the next show's bar and where the build
+      // actually sits, and even that goes quiet once there is no gap. The
+      // schedule itself is already on the Upcoming board, so nothing is lost.
+      function coachHasRetired() {
+        return onboardStageVal() >= 3 && (state.seasonNumber || 1) > 1;
+      }
       function thisWeekNudge(car) {
         const ob = onboardStageVal();
         if (ob === 0) {
@@ -24403,8 +24416,14 @@ addEventListener("DOMContentLoaded",function(){
         const paint = getCategoryCompletion(car, "paint");
         const overall = getOverall(car);
         if (next && next.minScore && overall < next.minScore) {
-          return `${next.name} wants ~${next.minScore} overall, you're at ${overall}. Keep building before it lands ${deadline}.`;
+          // A number and a number. The veteran does not need the sentence
+          // about building faster, they can see the gap.
+          return coachHasRetired()
+            ? `${next.name} wants ~${next.minScore} overall. You're at ${overall}.`
+            : `${next.name} wants ~${next.minScore} overall, you're at ${overall}. Keep building before it lands ${deadline}.`;
         }
+        // Past here every line is encouragement, which is for a first season.
+        if (coachHasRetired()) return "";
         if (paint && !paint.allDone && overall >= 55) {
           return `Drivetrain's done, pour the next dollars into paint & body to climb the standings at ${next ? next.name : "the next show"} ${next ? deadline : ""}.`;
         }
@@ -24774,7 +24793,12 @@ addEventListener("DOMContentLoaded",function(){
               // Once the player has taken any car to its first show,
               // the 'Roadworthy · Time to compete' banner has done its
               // job. Hide it to give the Build tab back the space.
-              if ((state.history || []).length > 0) return `<div class="coach-nudge">${ico("toolbox", "15px")} <span>This week:</span> ${thisWeekNudge(car)}</div>`;
+              if ((state.history || []).length > 0) {
+                const nudge = thisWeekNudge(car);
+                return nudge
+                  ? `<div class="coach-nudge">${ico("toolbox", "15px")} <span>This week:</span> ${nudge}</div>`
+                  : "";
+              }
               return `<div style="display:flex;align-items:center;gap:10px;background:rgba(143,203,126,0.1);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span>${ico("warn", "17px")}</span><div><div class="small" style="color:var(--green-bright);font-weight:bold">Roadworthy</div><div class="tiny muted">The car can drive itself to a show. Time to compete.</div></div></div>`;
             }
             return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px"></span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " "} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " "} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " "} · Steering ${car.steering}/${ROADWORTHY_STEERING}${steerGap ? " (need +" + steerGap + ")" : " "}${onboardStageVal() <= 1 ?`<div class="tiny" style="color:var(--gold-soft);margin-top:4px"> Get her running and the Marketplace opens up.</div>` : ""}</div></div></div>`;

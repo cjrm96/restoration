@@ -674,6 +674,76 @@ const pass = (msg) => console.log("✓", msg);
   if (surplusOk !== true) fail("surplus tools: " + surplusOk);
   pass("surplus tools flip like parts, and never land in your own tool box");
 
+  // ── the "This week:" line is teaching, and teaching has an end. It had no
+  // expiry at all: a player four seasons in was still being told to chase
+  // overall and reminded that a quiet week is allowed. It retires after
+  // season one, keeping only the one line that is a fact rather than a
+  // lesson, and going quiet when even that has nothing to say. ──
+  const coachOk = await page.evaluate(() => {
+    const car = state.cars[0];
+    const stash = JSON.parse(JSON.stringify({
+      eng: car.engine, tr: car.transmission, br: car.brakes, st: car.steering,
+      installed: car.installedParts, paint: car.paint, body: car.body,
+      stage: state.onboardStage, season: state.seasonNumber, history: state.history,
+    }));
+    const realUpcoming = getUpcomingSummary;
+    const restore = () => {
+      getUpcomingSummary = realUpcoming;
+      Object.assign(car, { engine: stash.eng, transmission: stash.tr, brakes: stash.br,
+        steering: stash.st, installedParts: stash.installed, paint: stash.paint, body: stash.body });
+      state.onboardStage = stash.stage; state.seasonNumber = stash.season;
+      state.history = stash.history;
+    };
+
+    car.engine = 99; car.transmission = 99; car.brakes = 99; car.steering = 99;
+    car.installedParts = []; car.paint = 20; car.body = 20;
+    state.onboardStage = 3;
+    state.history = [{ tier: "Local", place: 2 }];
+
+    // While the onboarding is still running the coach must never go quiet,
+    // whatever season the save claims to be in.
+    state.seasonNumber = 3;
+    for (const stage of [0, 1, 2]) {
+      state.onboardStage = stage;
+      if (!thisWeekNudge(car)) { restore(); return "the coach went silent during onboarding, stage " + stage; }
+    }
+    state.onboardStage = 3;
+
+    const fake = { nextShow: { name: "Kettle Ridge Classic", minScore: 70, weeksUntil: 2 }, nextShowText: "x" };
+    getUpcomingSummary = () => fake;
+    const overall = getOverall(car);
+    if (!(overall < 70)) { restore(); return "the score-gap setup did not leave a gap"; }
+
+    // Season one still gets the whole coaching voice.
+    state.seasonNumber = 1;
+    const rookie = thisWeekNudge(car);
+    if (!rookie) { restore(); return "season one lost its coaching line"; }
+    if (!/Keep building/.test(rookie)) { restore(); return "season one lost the encouragement: " + rookie; }
+
+    // Season two keeps the numbers and drops the lesson.
+    state.seasonNumber = 2;
+    const vet = thisWeekNudge(car);
+    if (!vet) { restore(); return "the score gap vanished for a veteran, that one is a fact not a lesson"; }
+    if (/Keep building/.test(vet)) { restore(); return "a veteran was still being coached: " + vet; }
+    if (vet.indexOf(String(overall)) === -1 || vet.indexOf("70") === -1) {
+      restore(); return "the veteran line dropped one of its numbers: " + vet;
+    }
+
+    // No gap, nothing to say.
+    fake.nextShow.minScore = 10;
+    if (thisWeekNudge(car)) {
+      const said = thisWeekNudge(car); restore();
+      return "a veteran with nothing to fix was still talked at: " + said;
+    }
+    // And the empty string must not leave an empty box on the screen.
+    state.view = "workshop"; state.shopSub = "suggested";
+    requestRender("full");
+    restore();
+    return true;
+  });
+  if (coachOk !== true) fail("this-week coach: " + coachOk);
+  pass("the \"This week\" coach retires after season one, keeping only the score gap");
+
   // ── the Saturday trips. Neither the yard nor the swap was ever introduced:
   // the Road Trip pill turned up with two others when show season opened, and
   // the only writing explaining either place fired after the player had paid
