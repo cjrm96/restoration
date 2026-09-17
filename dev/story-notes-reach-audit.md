@@ -119,5 +119,9 @@ and line-polish notes all applied). Shipped:
   record the kid is building that same model, because they remembered.
   **Art still pending**: the `scene-handoff` prompt is written into
   art/GEMINI-PROMPTS.md and the in-file bible, but the key is deliberately out
-  of `ART_KEYS` until the webp ships, so the beat runs on scene-legacy-wall
-  until then.
+  of `ART_KEYS` until the webp ships, so the beat runs on scene-barn-find until
+  then, which makes the last image in the game the first image in the game.
+  Reviewed retroactively as `dev/reviews/005-generational-handoff.md`; the
+  board's three revisions landed in 0.87.1. Two follow-ups logged there and not
+  built: nothing in the world remembers the handoff happened, and it is the one
+  major beat that does not read the moral ledger.
