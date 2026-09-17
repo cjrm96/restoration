@@ -388,6 +388,33 @@ sunrise palette echoing the barn-find dawn. Keep the center-low calm for a
 caption. 16:9.
 ```
 
+#### `scene-handoff` — the generational handoff, the true finale · 16:9 (lower-left calm)
+```
+Pixel art at golden hour, the quietest scene in the set. A chain-link fence
+runs across the foreground, seen from slightly behind and to one side of an
+older mechanic standing at it: grey at the temples, work jacket, hands in his
+pockets, not holding a wrench and not going in. He is small in frame and facing
+away from the viewer. Beyond the fence, across a patch of cracked asphalt, the
+roll-up door of a small rented shop bay stands open and lit warm amber from
+inside. In that doorway a young adult in a t-shirt has both hands on a dusty
+grey car cover and is pulling it back off a project car, the cover half off, the
+shape underneath still mostly hidden, dust lifting into the light. A cheap
+droplight, a milk crate and a borrowed toolbox sit on the floor beside them. No
+trophies anywhere. Long low amber sun raking across the lot, deep blue shadow
+pooling under the fence, one bird on the wire. The emotional note is pride held
+at a distance and deliberately not interrupting: the older man is watching
+somebody start the thing he spent his life on, and staying outside the fence so
+they get to do it themselves. Warm gold against cool dusk blue, wide cinematic
+composition, eye-level camera behind the man's shoulder. Keep the LOWER-LEFT
+calm for a long caption. 16:9.
+```
+
+**Shoot order note.** Generate `scene-barn-find` first and feed it back as a
+reference, so the half-lifted cover here rhymes with the tarp that opened the
+game. This image is the bookend to the bookend: the barn find is a shape under
+a cover that the player uncovers, and this is a shape under a cover that
+somebody else uncovers while the player keeps their hands off it.
+
 ---
 
 ## The wife's car (the game's most-talked-about beat) — 2:1, lower-left calm

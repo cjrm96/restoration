@@ -108,6 +108,16 @@ and line-polish notes all applied). Shipped:
 - **The kid's "Right One"** still needs a three-season run to land. Arguably
   correct (a generational payoff should cost seasons), but revisit if legacy
   completion proves rare.
-- **The generational handoff** (the kid pulls the tarp off their own car, you
-  stand at the fence like Ray) is still the one true finale left to write. It
-  should come last, once we know the road to it is well-traveled.
+- ~~**The generational handoff**~~ shipped in 0.87.0 as the seventh and last
+  stage of the victory ceremony, "Somebody Else's Tarp". The kid pulls the cover
+  off their own project in a rented bay behind a tire shop and the player watches
+  from the fence without going in, which is what Ray was doing at that Regional
+  all along. Gated on `handoffUnlocked()`: the kid arc has to have landed
+  (`state.kidRightOne`, set by the season-three "The Right One" beat) AND this
+  has to be career build #3 or later. Everyone short of that still ends on the
+  next tarp, which stays a real ending. When the first Legacy Wall build is on
+  record the kid is building that same model, because they remembered.
+  **Art still pending**: the `scene-handoff` prompt is written into
+  art/GEMINI-PROMPTS.md and the in-file bible, but the key is deliberately out
+  of `ART_KEYS` until the webp ships, so the beat runs on scene-legacy-wall
+  until then.

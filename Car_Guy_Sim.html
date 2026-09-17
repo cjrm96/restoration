@@ -3293,6 +3293,22 @@
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
       }
+      /* One beat runs several paragraphs long instead of the usual two lines.
+         Bottom-anchored copy that tall clips off the top of a laptop screen,
+         so this variant caps the box and scrolls inside it instead. The
+         vignette only darkens the lower-left corner, which is all a two-line
+         caption ever needs, so tall copy carries its own backing plate to stay
+         readable up where the art is still bright. */
+      .cs-caption-long {
+        bottom: 8vh;
+        max-width: 600px;
+        max-height: 84vh;
+        overflow-y: auto;
+        padding: 20px 24px;
+        margin-left: -24px;
+        border-radius: 12px;
+        background: linear-gradient(100deg, rgba(10, 8, 6, 0.92), rgba(10, 8, 6, 0.86) 82%, rgba(10, 8, 6, 0.4) 100%);
+      }
       .cs-kicker {
         font-size: 13px;
         letter-spacing: 0.34em;
@@ -6544,6 +6560,32 @@
    at the covered shape, the itch already back. Hopeful, inevitable, "here we go
    again" energy, sunrise palette echoing the barn-find dawn. Keep the
    center-low calm for a caption. 16:9.
+
+   [ scene-handoff ]  The generational handoff, the true finale. 16:9.
+   ...........................................................................
+   NOT WIRED YET. The key is deliberately kept out of ART_KEYS until the webp
+   ships, so the beat falls back to scene-legacy-wall instead of rendering a
+   black frame. Drop assets/art/scene-handoff.webp in, add the key, done.
+   Shoot scene-barn-find first and feed it back as the reference, so the
+   half-lifted cover here rhymes with the tarp that opened the game.
+
+   Pixel art at golden hour, the quietest scene in the set. A chain-link fence
+   runs across the foreground, seen from slightly behind and to one side of an
+   older mechanic standing at it: grey at the temples, work jacket, hands in his
+   pockets, not holding a wrench and not going in. He is small in frame and
+   facing away from the viewer. Beyond the fence, across a patch of cracked
+   asphalt, the roll-up door of a small rented shop bay stands open and lit warm
+   amber from inside. In that doorway a young adult in a t-shirt has both hands
+   on a dusty grey car cover and is pulling it back off a project car, the cover
+   half off, the shape underneath still mostly hidden, dust lifting into the
+   light. A cheap droplight, a milk crate and a borrowed toolbox sit on the floor
+   beside them. No trophies anywhere. Long low amber sun raking across the lot,
+   deep blue shadow pooling under the fence, one bird on the wire. The emotional
+   note is pride held at a distance and deliberately not interrupting: the older
+   man is watching somebody start the thing he spent his life on, and staying
+   outside the fence so they get to do it themselves. Warm gold against cool dusk
+   blue, wide cinematic composition, eye-level camera behind the man's shoulder.
+   Keep the LOWER-LEFT calm for a long caption. 16:9.
 
    ═══════════════════════════════════════════════════════════════════════════
    THE WIFE'S CAR (the game's most-talked-about beat), 2:1, lower-LEFT calm
@@ -11720,7 +11762,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.86.0";
+      const GAME_VERSION = "0.87.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -13612,6 +13654,10 @@
                   title: "The Right One",
                   text: "You reach for the 9/16 and it's already there, held out in a small grease-smudged hand. The right one. Before you asked. You don't say anything and neither do they. Some things you teach without ever teaching them.",
                 };
+        // The arc landing is the gate on the handoff finale, so flag it
+        // explicitly rather than inferring it from kidWrenchSeason, which only
+        // records the last season a beat fired and not which one.
+        if (n >= 3) state.kidRightOne = true;
         queueScene({
           id: "kid_wrench_s" + n,
           title: beat.title,
@@ -24207,6 +24253,19 @@ addEventListener("DOMContentLoaded",function(){
       function seasonCountWord(n) {
         return n === 1 ? "one season" : n === 2 ? "two seasons" : n === 3 ? "three seasons" : n === 4 ? "four seasons" : `${n} seasons`;
       }
+      // The handoff is the last thing the story has to say and it is deliberately
+      // the hardest screen in the game to reach. Two conditions, both about the
+      // long road rather than about winning harder:
+      //   1. The kid arc landed. They handed you the right wrench before you
+      //      asked, which is the whole point being paid off.
+      //   2. This is career build #3 or later, so the player has already put a
+      //      car on the Legacy Wall twice and come back out for another one.
+      // The win itself is implied, this only ever renders inside the ceremony.
+      // Everyone short of that still gets the next tarp as their last beat,
+      // which was the ending for the whole game up to now and stays a real one.
+      function handoffUnlocked() {
+        return !!state.kidRightOne && (state.legacyBuilds || []).length >= 2;
+      }
       function victoryColdOpenLines() {
         const n = state.seasonNumber || 1;
         const seasons = seasonCountWord(n).replace(/^./, (c) => c.toUpperCase());
@@ -24346,17 +24405,53 @@ addEventListener("DOMContentLoaded",function(){
           }
           return true;
         }
+        // Stage 7, the handoff. The last thing the story has to say, and it
+        // only gets said to a player who taught the kid the whole way through
+        // and then went back out and did it again. Everyone else stops at the
+        // next tarp, which is still a real ending.
+        if (stage === "handoff") {
+          const builds = state.legacyBuilds || [];
+          const first = builds[builds.length - 1];
+          const firstLine =
+            first && first.make && first.model
+              ? ` It's a ${first.year} ${first.make} ${first.model}. Same shape you started under. They never once asked you what to look for. They just remembered.`
+              : "";
+          // Ray only reads as a callback to a player who watched him show up.
+          const fenceLine = state.uncleRegionalSeen
+            ? "Ray stood at the back of your first Regional and left before the trophies, and for years you had that filed somewhere near cowardice. Standing at this fence you finally get it. He wasn't leaving early. He was staying out of the way."
+            : "Every man who ever taught you anything taught you the same last thing and none of them said it out loud: sooner or later the most useful thing you can do for somebody is stand outside the fence and let them get it wrong on their own.";
+          const handoffSub = `The address is a rented bay behind a tire shop across town and you didn't tell anybody you were driving over. The door's up. There's a shape under a cover in there, and the oldest is standing in front of it with both hands on the fabric, working out where to start.${firstLine}<br><br>You get as far as the fence.<br><br>${fenceLine}<br><br>You don't walk in. You don't tell them the 9/16 is the one they want. They'll find it. They found it once already, in your garage, in pajamas, before you asked.<br><br>The cover comes off. You're too far away to hear what they say about it. You drive home and leave the porch light on.`;
+          const handoffActions = `<div class="cs-actions"><button class="victory-primary" onclick="startLegacyRun()">Start a Legacy Build →</button><button class="victory-secondary" onclick="dismissVictoryCallItDone()">Call it done, see the season recap</button></div>`;
+          // scene-handoff is not in ART_KEYS until the .webp ships, so this
+          // resolves to the legacy wall until then and swaps itself over the
+          // day the key is added. Keeping it out of ART_KEYS is what stops a
+          // missing file rendering as a black frame.
+          const handoffArt = CUTSCENE_ART["scene-handoff"] || CUTSCENE_ART["scene-legacy-wall"] || CUTSCENE_ART["scene-barn-find"];
+          if (handoffArt) {
+            root.innerHTML = `<div class="modal modal-cine"><div class="cs-art cs-drift-b" style="background-image:url('${handoffArt}')"></div><div class="cs-scrim"></div><div class="cs-grain"></div><div class="cs-vignette"></div><div class="cs-bar cs-bar-top"></div><div class="cs-bar cs-bar-bot"></div><div class="cs-caption cs-caption-long"><div class="cs-kicker">Years from here</div><div class="cs-title">SOMEBODY ELSE'S TARP.</div><div class="cs-sub">${handoffSub}</div>${handoffActions}</div></div>`;
+          } else {
+            root.innerHTML = `<div class="modal"><div class="modal-card victory-modal show-beat" style="max-width:620px"><div class="victory-kicker">Years from here</div><div class="victory-title" style="font-size:26px">SOMEBODY ELSE'S TARP.</div><div class="victory-sub">${handoffSub}</div><div class="victory-actions"><button class="victory-primary" onclick="startLegacyRun()">Start a Legacy Build →</button><button class="victory-secondary" onclick="dismissVictoryCallItDone()">Call it done, see the season recap</button></div></div></div>`;
+          }
+          return true;
+        }
         // Stage 6, the next tarp. The cycle, and the two doors out.
         const statLine = `<div style="margin-top:14px;font-size:13px;letter-spacing:0.08em;color:#e8b954;font-weight:bold">Final overall ${b.finalOverall || 0} · ${fmtF(b.followersAtCompletion || 0)} followers · Career build #${buildNo}</div>`;
         const finalSub =
           "In a field behind a fence. In a barn two counties over. In a classified with three bad photos and the words \"ran when parked.\" It never really ends, that's the best part.";
-        const finalActions = `<div class="cs-actions"><button class="victory-primary" onclick="startLegacyRun()">Start a Legacy Build →</button><button class="victory-secondary" onclick="dismissVictoryCallItDone()">Call it done, see the season recap</button></div>`;
+        // When the handoff is earned the two doors out move to it, and the next
+        // tarp becomes the second-to-last beat instead of the last one.
+        const finalActions = handoffUnlocked()
+          ? `<div class="cs-actions"><button class="victory-primary" onclick="setVictoryStage('handoff')">And somebody else is out there too →</button></div>`
+          : `<div class="cs-actions"><button class="victory-primary" onclick="startLegacyRun()">Start a Legacy Build →</button><button class="victory-secondary" onclick="dismissVictoryCallItDone()">Call it done, see the season recap</button></div>`;
         const nextArt = CUTSCENE_ART["scene-next-tarp"] || CUTSCENE_ART["scene-season-start"];
         if (nextArt) {
           root.innerHTML = `<div class="modal modal-cine"><div class="cs-art cs-drift-a" style="background-image:url('${nextArt}')"></div><div class="cs-grain"></div><div class="cs-vignette"></div><div class="cs-bar cs-bar-top"></div><div class="cs-bar cs-bar-bot"></div><div class="cs-caption"><div class="cs-kicker">Some morning, soon</div><div class="cs-title">ANOTHER ONE IS OUT THERE.</div><div class="cs-sub">${finalSub}</div>${statLine}${finalActions}</div></div>`;
           return true;
         }
-        root.innerHTML = `<div class="modal"><div class="modal-card victory-modal show-beat"><div class="victory-kicker">National Champion · Season Complete</div><div class="victory-trophy">${ico("trophy", "42px")}</div><div class="victory-title">${carLine}</div><div class="victory-sub">${finalSub}</div><div class="victory-statline"><div class="victory-stat"><div class="victory-stat-v">${b.finalOverall || 0}</div><div class="victory-stat-k">Final Overall</div></div><div class="victory-stat"><div class="victory-stat-v">${fmtF(b.followersAtCompletion || 0)}</div><div class="victory-stat-k">Followers</div></div><div class="victory-stat"><div class="victory-stat-v">#${buildNo}</div><div class="victory-stat-k">Career Build</div></div></div><div class="victory-actions"><button class="victory-primary" onclick="startLegacyRun()">Start a Legacy Build →</button><button class="victory-secondary" onclick="dismissVictoryCallItDone()">Call it done, see the season recap</button></div></div></div>`;
+        const finalPlainActions = handoffUnlocked()
+          ? `<div class="victory-actions"><button class="victory-primary" onclick="setVictoryStage('handoff')">And somebody else is out there too →</button></div>`
+          : `<div class="victory-actions"><button class="victory-primary" onclick="startLegacyRun()">Start a Legacy Build →</button><button class="victory-secondary" onclick="dismissVictoryCallItDone()">Call it done, see the season recap</button></div>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card victory-modal show-beat"><div class="victory-kicker">National Champion · Season Complete</div><div class="victory-trophy">${ico("trophy", "42px")}</div><div class="victory-title">${carLine}</div><div class="victory-sub">${finalSub}</div><div class="victory-statline"><div class="victory-stat"><div class="victory-stat-v">${b.finalOverall || 0}</div><div class="victory-stat-k">Final Overall</div></div><div class="victory-stat"><div class="victory-stat-v">${fmtF(b.followersAtCompletion || 0)}</div><div class="victory-stat-k">Followers</div></div><div class="victory-stat"><div class="victory-stat-v">#${buildNo}</div><div class="victory-stat-k">Career Build</div></div></div>${finalPlainActions}</div></div>`;
         return true;
       }
 
