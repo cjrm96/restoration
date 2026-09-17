@@ -409,6 +409,12 @@ composition, eye-level camera behind the man's shoulder. Keep the LOWER-LEFT
 calm for a long caption. 16:9.
 ```
 
+**Shipped in 0.88.0.** The delivered image left the older mechanic out and put
+the camera behind the chain-link fence instead. That is better than the prompt:
+the player is not watching a man watch, the player *is* the one at the fence.
+If this is ever regenerated, keep the first-person framing and drop the figure
+from the prompt.
+
 **Shoot order note.** Generate `scene-barn-find` first and feed it back as a
 reference, so the half-lifted cover here rhymes with the tarp that opened the
 game. This image is the bookend to the bookend: the barn find is a shape under

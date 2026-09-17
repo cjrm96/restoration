@@ -210,10 +210,17 @@ The game's best screen is the only one that does not know who you were.
   not granted, no-beat not granted, an explicit `false` respected). The Red
   Team's redundancy question was answered by test: three Legacy Wall builds with
   no `kidRightOne` does **not** open the gate, so the two conditions are
-  genuinely independent. `scene-handoff` stays out of `ART_KEYS` until the webp
-  ships, which is what keeps a missing file from rendering a black frame. Version
-  bumped 0.87.0 to 0.87.1 (patch: fixes and polish), board gate and the full
-  smoke suite green.
+  genuinely independent. `scene-handoff` stayed out of `ART_KEYS` until the webp
+  existed, which is what kept a missing file from rendering a black frame.
+  Version bumped 0.87.0 to 0.87.1 (patch: fixes and polish), board gate and the
+  full smoke suite green.
+
+- **Postscript, 0.88.0:** the art landed and the key went into `ART_KEYS`. The
+  delivered image answers Wynn's objection in a way nobody in the room proposed:
+  it leaves the older mechanic out entirely and puts the camera behind the
+  chain-link fence, so the player is not watching a man watch, the player is the
+  one at the fence. The barn find stays as the fallback, so the Legacy Wall
+  contradiction cannot recur if the file ever goes missing.
 
 - **Follow-ups logged, not built:** Gilligan's ripple (one line in a later
   season that remembers the handoff), and the moral-ledger branch the Red Team

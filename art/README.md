@@ -57,6 +57,7 @@ single-file itch build.
 | `scene-restored-barn.png` | Finale trilogy 1/3 — the tarp comes off. Restored champion car in the barn doorway, golden hour. Bookend to `scene-barn-find`. Plays in the National Champion ceremony. |
 | `scene-empty-garage.png` | Finale trilogy 2/3 — the cost. Empty garage at night after the car's gone, lone trophy on the shelf. Plays in the National Champion ceremony. |
 | `scene-next-tarp.png` | Finale trilogy 3/3 — the cycle. Next project under a fresh tarp at dawn, mechanic with coffee. Plays in the National Champion ceremony. |
+| `scene-handoff.jfif` | Finale stage 7/7 — the generational handoff. The kid pulls the cover off their own project in a rented bay; the camera stands behind the chain-link fence, so the player is the one not going in. Gated on `handoffUnlocked()`. |
 | `scene-tool-truck.png` | Top tool-storage upgrade cutscene, the Snap-it truck delivers the 72-inch bank. Fires on the final storage tier (the "I made it" box). |
 | `scene-going-viral.png` | Going-viral cutscene, the morning after a post blows up. Fires the first time a post lands a big overnight follower spike. |
 | `scene-loan-shark.png` | Loan-shark deal cutscene, the noir back room. Fires when the shark loan is taken. |

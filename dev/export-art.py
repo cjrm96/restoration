@@ -20,12 +20,25 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ART_MASTERS = os.path.join(ROOT, "art")
 ASSETS = os.path.join(ROOT, "assets", "art")
 MAX_W = 1920
+# Masters are usually PNG, but Gemini hands back .jfif and there is no reason
+# to make somebody re-container a file by hand before it can ship. First match
+# wins, so a PNG master still beats a JPEG one of the same key.
+MASTER_EXTS = (".png", ".jfif", ".jpg", ".jpeg", ".webp")
+
+
+def find_master(key):
+    for ext in MASTER_EXTS:
+        path = os.path.join(ART_MASTERS, key + ext)
+        if os.path.exists(path):
+            return path
+    return None
 
 
 def export(key):
-    src = os.path.join(ART_MASTERS, f"{key}.png")
-    if not os.path.exists(src):
-        print(f"  ! no master: art/{key}.png")
+    src = find_master(key)
+    if src is None:
+        exts = "/".join(e.lstrip(".") for e in MASTER_EXTS)
+        print(f"  ! no master: art/{key}.({exts})")
         return False
     im = Image.open(src).convert("RGB")
     if im.width > MAX_W:
@@ -41,10 +54,19 @@ def export(key):
 def main():
     args = sys.argv[1:]
     if args:
-        keys = [a.replace(".png", "") for a in args]
+        keys = [os.path.splitext(os.path.basename(a))[0] for a in args]
     else:
+        # A bare run exports every master. Editor leftovers like
+        # "scene-gas-station - Edited.png" are not keys and never will be, so
+        # skip anything with a space in the name rather than shipping an asset
+        # the game cannot reference.
         keys = sorted(
-            f[:-4] for f in os.listdir(ART_MASTERS) if f.endswith(".png")
+            {
+                os.path.splitext(f)[0]
+                for f in os.listdir(ART_MASTERS)
+                if os.path.splitext(f)[1].lower() in MASTER_EXTS
+                and " " not in os.path.splitext(f)[0]
+            }
         )
     ok = sum(export(k) for k in keys)
     print(f"exported {ok}/{len(keys)} -> assets/art/")

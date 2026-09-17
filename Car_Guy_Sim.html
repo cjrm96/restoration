@@ -3298,7 +3298,9 @@
          so this variant caps the box and scrolls inside it instead. The
          vignette only darkens the lower-left corner, which is all a two-line
          caption ever needs, so tall copy carries its own backing plate to stay
-         readable up where the art is still bright. */
+         readable up where the art is still bright. The plate is deliberately
+         all of it: a full-frame scrim was tried and it flattened the one scene
+         whose warmth is the point. Darken the words, not the picture. */
       .cs-caption-long {
         bottom: 8vh;
         max-width: 600px;
@@ -6563,11 +6565,10 @@
 
    [ scene-handoff ]  The generational handoff, the true finale. 16:9.
    ...........................................................................
-   NOT WIRED YET. The key is deliberately kept out of ART_KEYS until the webp
-   ships, so the beat falls back to scene-legacy-wall instead of rendering a
-   black frame. Drop assets/art/scene-handoff.webp in, add the key, done.
-   Shoot scene-barn-find first and feed it back as the reference, so the
-   half-lifted cover here rhymes with the tarp that opened the game.
+   SHIPPED in 0.88.0. The delivered image drops the man at the fence and puts
+   the camera behind the chain link instead, so the player is the one staying
+   outside rather than watching somebody else do it. Keep that if this is ever
+   regenerated: it is better than what the prompt asked for.
 
    Pixel art at golden hour, the quietest scene in the set. A chain-link fence
    runs across the foreground, seen from slightly behind and to one side of an
@@ -7296,6 +7297,7 @@
         "scene-breakdown",
         "scene-rival-showdown",
         "scene-radio-interview",
+        "scene-handoff",
       ];
       const CUTSCENE_ART = /*__ART_MAP__*/ Object.fromEntries(
         ART_KEYS.map((k) => [k, "assets/art/" + k + ".webp"])
@@ -11762,7 +11764,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.87.1";
+      const GAME_VERSION = "0.88.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -24431,19 +24433,17 @@ addEventListener("DOMContentLoaded",function(){
             : "Every man who ever taught you anything taught you the same last thing and none of them said it out loud: sooner or later the most useful thing you can do for somebody is stand outside the fence and let them get it wrong on their own.";
           const handoffSub = `The address is a rented bay behind a tire shop across town and you didn't tell anybody you were driving over. The door's up. There's a shape under a cover in there, and the oldest is standing in front of it with both hands on the fabric, working out where to start.${firstLine}<br><br>You get as far as the fence.<br><br>${fenceLine}<br><br>You don't walk in. You don't tell them the 9/16 is the one they want. They'll find it. They found it once already, in your garage, in pajamas, before you asked.<br><br>The cover comes off. You're too far away to hear what they say about it. You drive home and leave the porch light on.`;
           const handoffActions = `<div class="cs-actions"><button class="victory-primary" onclick="startLegacyRun()">Start a Legacy Build →</button><button class="victory-secondary" onclick="dismissVictoryCallItDone()">Call it done, see the season recap</button></div>`;
-          // scene-handoff is not in ART_KEYS until the .webp ships, so this
-          // resolves to a stand-in until then and swaps itself over the day the
-          // key is added. Keeping it out of ART_KEYS is what stops a missing
-          // file rendering as a black frame.
-          // The stand-in is the barn find, not the Legacy Wall. The wall is the
-          // player's own trophies, and playing a scene about staying outside
-          // somebody else's garage over a wall of your own wins says the
-          // opposite of the scene. The barn find says the right thing by
-          // accident: the last image in the game is the first image in the
-          // game, the same shape under the same cover, except it isn't yours.
+          // The fence, the lit bay, the cover coming off. The camera stands
+          // behind the chain link rather than beside a man at it, so the player
+          // is the one staying outside instead of watching somebody else do it.
+          // The barn find stays as the fallback because it is the right kind of
+          // wrong if the file ever goes missing: the same shape under the same
+          // cover, except it isn't yours. The Legacy Wall is last and would be
+          // the worst of the three, since a wall of the player's own trophies
+          // says the opposite of a scene about keeping your hands off.
           const handoffArt = CUTSCENE_ART["scene-handoff"] || CUTSCENE_ART["scene-barn-find"] || CUTSCENE_ART["scene-legacy-wall"];
           if (handoffArt) {
-            root.innerHTML = `<div class="modal modal-cine"><div class="cs-art cs-drift-b" style="background-image:url('${handoffArt}')"></div><div class="cs-scrim"></div><div class="cs-grain"></div><div class="cs-vignette"></div><div class="cs-bar cs-bar-top"></div><div class="cs-bar cs-bar-bot"></div><div class="cs-caption cs-caption-long"><div class="cs-kicker">Years from here</div><div class="cs-title">SOMEBODY ELSE'S TARP.</div><div class="cs-sub">${handoffSub}</div>${handoffActions}</div></div>`;
+            root.innerHTML = `<div class="modal modal-cine"><div class="cs-art cs-drift-b" style="background-image:url('${handoffArt}')"></div><div class="cs-grain"></div><div class="cs-vignette"></div><div class="cs-bar cs-bar-top"></div><div class="cs-bar cs-bar-bot"></div><div class="cs-caption cs-caption-long"><div class="cs-kicker">Years from here</div><div class="cs-title">SOMEBODY ELSE'S TARP.</div><div class="cs-sub">${handoffSub}</div>${handoffActions}</div></div>`;
           } else {
             root.innerHTML = `<div class="modal"><div class="modal-card victory-modal show-beat" style="max-width:620px"><div class="victory-kicker">Years from here</div><div class="victory-title" style="font-size:26px">SOMEBODY ELSE'S TARP.</div><div class="victory-sub">${handoffSub}</div><div class="victory-actions"><button class="victory-primary" onclick="startLegacyRun()">Start a Legacy Build →</button><button class="victory-secondary" onclick="dismissVictoryCallItDone()">Call it done, see the season recap</button></div></div></div>`;
           }
