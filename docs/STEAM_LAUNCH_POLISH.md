@@ -1,5 +1,12 @@
 # Steam Launch — Top 3 Polish Items
 
+> **Status, 0.87.0.** Item 3 (distinct car art) is **done**: all ten bodies
+> ship. Item 2 is **half done**: the keyboard minimum landed, controller and
+> Deck fit did not. Item 1 is **open**, though export/import shipped.
+> The two plans that replace this document:
+> [`CONTROLLER_AND_DECK_PLAN.md`](CONTROLLER_AND_DECK_PLAN.md) and
+> [`STEAM_BUILD_PLAN.md`](STEAM_BUILD_PLAN.md). Kept for the original framing.
+
 Car Guy Simulator is feature-complete as a browser game: the full restoration
 loop, show circuit, marketplace, social/sponsor systems, tutorial, victory arc,
 and legacy runs are all in place. The gap to a Steam launch is not more
