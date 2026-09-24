@@ -1509,34 +1509,24 @@
       }
       /* The section of the site you are actually on, under the masthead, the
          way a classifieds page has always done it. */
-      /* A listing on the Lot: the seller's photo beside the ad. */
-      .lot-listing {
-        display: flex;
-        gap: 12px;
-        align-items: stretch;
+      /* A car is wide and low, and a square crop shrank it to a stripe across
+         the middle of the tile. The Lot's photos are 4:3; everything else about
+         the tile is the parts grid's own. */
+      .lst-shot.lot-shot { aspect-ratio: 4 / 3; overflow: hidden; }
+      /* A part's name survives an ellipsis. "1969 Chevvi Cam..." does not:
+         the year, make and model are the whole point of the ad. */
+      .lot-grid .lst-title {
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-height: 1.3;
       }
-      .lot-listing-body {
-        flex: 1 1 auto;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
-      .lot-photo {
-        flex: 0 0 150px;
-        height: 86px;
-        align-self: center;
-        border-radius: 3px;
-        /* a seller's snapshot: flat daylight, a strip of driveway */
-        background:
-          linear-gradient(180deg, #c9d3d8 0%, #dfe4e2 58%, #9d978b 58%, #8a8478 100%);
-        border: 3px solid #f4efe3;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+      .lot-grid .lst-tag {
+        white-space: nowrap;
+        max-width: calc(100% - 12px);
         overflow: hidden;
-      }
-      @media (max-width: 520px) {
-        .lot-listing { flex-direction: column; }
-        .lot-photo { flex-basis: auto; width: 100%; height: 120px; }
+        text-overflow: ellipsis;
       }
       .crt-site-sub {
         font-size: 10.5px;
@@ -4763,10 +4753,7 @@
       }
 
       /* ── Marketplace (parchment classified-ad cards) ── */
-      /* The Lot lost its hero panel but keeps the paper, so its board is named
-         alongside the wrapper the other marketplace tabs still use. */
-      .hero-panel.marketplace .feed-item,
-      .lot-board .feed-item {
+      .hero-panel.marketplace .feed-item {
         background: linear-gradient(180deg, #efe5cb 0%, #e3d7b6 100%);
         color: #1d1208;
         border: 1px solid #8d7a55;
@@ -4777,31 +4764,26 @@
           inset 0 1px 0 rgba(255, 255, 255, 0.35),
           0 4px 12px rgba(0, 0, 0, 0.45);
       }
-      .hero-panel.marketplace .feed-item .feed-kicker,
-      .lot-board .feed-item .feed-kicker {
+      .hero-panel.marketplace .feed-item .feed-kicker {
         color: #2c4d6e;
         font-size: 10px;
         font-weight: bold;
         letter-spacing: 1.5px;
         text-transform: uppercase;
       }
-      .hero-panel.marketplace .feed-item .feed-text,
-      .lot-board .feed-item .feed-text {
+      .hero-panel.marketplace .feed-item .feed-text {
         color: #1d1208;
         font-weight: 600;
         font-size: 14px;
         margin-top: 3px;
       }
-      .hero-panel.marketplace .feed-item .feed-meta,
-      .lot-board .feed-item .feed-meta {
+      .hero-panel.marketplace .feed-item .feed-meta {
         color: #5d4a30;
         font-size: 12px;
         margin-top: 4px;
       }
       .hero-panel.marketplace .feed-item .tiny.muted,
-      .hero-panel.marketplace .feed-item .small.muted,
-      .lot-board .feed-item .tiny.muted,
-      .lot-board .feed-item .small.muted {
+      .hero-panel.marketplace .feed-item .small.muted {
         color: #6b5840;
       }
 
@@ -6032,8 +6014,7 @@
         transition: transform .12s ease, box-shadow .12s ease;
       }
       .feed-item:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.4); }
-      .hero-panel.marketplace .feed-item:hover,
-      .lot-board .feed-item:hover { box-shadow: 0 10px 22px rgba(0,0,0,.5); }
+      .hero-panel.marketplace .feed-item:hover { box-shadow: 0 10px 22px rgba(0,0,0,.5); }
       /* the two Saturday road-trip choice cards (inline-styled grid in a hero) */
       .hero-panel .info-box[style*="grid-template-columns:1fr 1fr"] > div {
         border-radius: 11px !important;
@@ -12031,7 +12012,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.91.0";
+      const GAME_VERSION = "0.91.1";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -23098,13 +23079,103 @@ addEventListener("DOMContentLoaded",function(){
         const draw = CAR_SPRITES[car.style];
         return draw ? draw(l.stageLevel, l.spriteColors) : "";
       }
-      // A listing's photo. The same car the bay would draw, at the stage and in
-      // the colours its stats put it at, cropped to the car. No bay, no
-      // effects: a seller's snapshot. What the ad says and what the photo shows
-      // are allowed to disagree, which is most of what a classifieds page is.
+      // A listing's photo, the Lot's answer to LISTING_ART: the same car the bay
+      // would draw, at the stage and in the colours its stats put it at, parked
+      // wherever the seller happened to shoot it. Seeded per car so a listing
+      // looks the same every visit, and the setting leans on the condition,
+      // because nobody photographs a barn find on a clean driveway: the rough
+      // ones sit in a field or a barn with grass through the wheels, the
+      // tidier ones get the driveway or the garage. Drawn in the car's own
+      // coordinates so the backdrop and the sprite compose in one picture.
+      const LOT_PHOTO = (function () {
+        const hash = (s) => { let h = 2166136261; s = String(s);
+          for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+        const rand = (seed) => { let a = seed >>> 0; return () => {
+          a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+        const ri = (r, a, b) => a + Math.floor(r() * (b - a + 1));
+        const rr = (r, a, b) => a + r() * (b - a);
+        const bx = (x, y, w, h, f, o) =>
+          `<rect x="${Math.round(x)}" y="${Math.round(y)}" width="${Math.max(1, Math.round(w))}" height="${Math.max(1, Math.round(h))}" fill="${f}"${o !== undefined ? ` opacity="${o.toFixed ? o.toFixed(2) : o}"` : ""}/>`;
+        // The frame: 4:3, the car across the lower middle, wheels on GROUND.
+        const X0 = 34, Y0 = -1, W = 276, H = 207, GROUND = 153;
+        const specks = (r, n, y0, y1, cols, o0, o1) => { let o = "";
+          for (let i = 0; i < n; i++) o += bx(ri(r, X0, X0 + W), ri(r, y0, y1), ri(r, 1, 3), 1, cols[ri(r, 0, cols.length - 1)], rr(r, o0, o1));
+          return o; };
+        const sky = (r, top, bottom) => {
+          const hue = [["#9fb6c7", "#c7d3d9"], ["#b8c4cc", "#dde1df"], ["#a9b9c4", "#e4d9c4"]][ri(r, 0, 2)];
+          return bx(X0, Y0, W, bottom - Y0, hue[1]) + bx(X0, Y0, W, (bottom - Y0) * 0.55, hue[0], 0.55);
+        };
+        const SETTINGS = {
+          field(r) {
+            const hz = ri(r, 112, 124);
+            let b = sky(r, Y0, hz);
+            for (let x = X0; x < X0 + W; x += ri(r, 6, 14)) b += bx(x, hz - ri(r, 4, 22), ri(r, 8, 18), 40, r() > 0.5 ? "#3d4a2c" : "#4a5733");
+            b += bx(X0, hz + 8, W, H, "#6d7a3c") + specks(r, 160, hz + 10, Y0 + H, ["#7f8f45", "#56652d", "#8a9a50"], 0.4, 0.9);
+            let f = "";   // grass through the wheels
+            for (let i = 0; i < 70; i++) f += bx(ri(r, X0, X0 + W), GROUND - ri(r, 2, 11), 1, ri(r, 3, 12), r() > 0.5 ? "#6f8038" : "#8a9a4a", rr(r, 0.6, 1));
+            return [b, f];
+          },
+          barn(r) {
+            let b = bx(X0, Y0, W, H, "#3a2819");
+            for (let x = X0; x < X0 + W; x += 16) b += bx(x, Y0, 1, GROUND - Y0, "#241810", 0.9) + bx(x + ri(r, 2, 9), Y0, 2, GROUND - Y0, "#4a3422", 0.5);
+            b += bx(X0 + ri(r, 30, 180), Y0, ri(r, 30, 50), GROUND - Y0, "#e8c98a", 0.13);
+            b += bx(X0, GROUND - 4, W, H, "#5a4630") + specks(r, 120, GROUND - 2, Y0 + H, ["#6b5439", "#48382a", "#c9a860"], 0.3, 0.8);
+            return [b, specks(r, 18, GROUND - 3, GROUND + 4, ["#c9a860", "#b08d4c"], 0.6, 1)];
+          },
+          gravel(r) {
+            const hz = ri(r, 104, 116);
+            let b = sky(r, Y0, hz) + bx(X0, hz, W, GROUND - hz, "#8d8a82", 0.35);
+            for (let y = hz + 2; y < GROUND - 8; y += 4) for (let x = X0 + (y % 8 ? 2 : 0); x < X0 + W; x += 4) b += bx(x, y, 1, 1, "#5e5d58", 0.7);
+            for (let x = X0 + ri(r, 4, 20); x < X0 + W; x += 58) b += bx(x, hz - 4, 3, GROUND - hz, "#56554f");
+            b += bx(X0, hz - 3, W, 2, "#5e5d58");
+            b += bx(X0, GROUND - 6, W, H, "#817b70") + specks(r, 260, GROUND - 4, Y0 + H, ["#9a948a", "#6a655c", "#b3ada2", "#5d5850"], 0.5, 1);
+            return [b, ""];
+          },
+          driveway(r) {
+            const hz = ri(r, 96, 108);
+            let b = sky(r, Y0, hz - 30);
+            b += bx(X0, hz - 30, W, GROUND - hz + 30, "#cdc3ad");
+            for (let y = hz - 28; y < GROUND - 6; y += 5) b += bx(X0, y, W, 1, "#b3a88f", 0.7);
+            const dx = ri(r, X0 + 20, X0 + 140);
+            b += bx(dx, hz - 16, 110, GROUND - hz + 10, "#e4ded0") ;
+            for (let y = hz - 12; y < GROUND - 8; y += 11) b += bx(dx + 3, y, 104, 1, "#bdb5a3");
+            b += bx(X0, GROUND - 6, W, H, "#9a958b") + specks(r, 90, GROUND - 4, Y0 + H, ["#8a857c", "#aaa59b"], 0.3, 0.7);
+            b += bx(X0 + ri(r, 60, 180), GROUND + ri(r, 14, 30), ri(r, 40, 90), 1, "#6d6961", 0.8);
+            return [b, ""];
+          },
+          garage(r) {
+            let b = bx(X0, Y0, W, H, "#5d574d");
+            for (let y = Y0 + 20; y < GROUND - 40; y += 6) for (let x = X0 + 10; x < X0 + W - 10; x += 6) b += bx(x, y, 1, 1, "#3f3a33", 0.6);
+            b += bx(X0 + ri(r, 20, 160), Y0 + 14, ri(r, 50, 80), 6, "#fff4d6", 0.35);
+            b += bx(X0, GROUND - 6, W, H, "#6f6a62") + specks(r, 80, GROUND - 4, Y0 + H, ["#5f5a52", "#7d786f"], 0.3, 0.7);
+            b += bx(X0 + ri(r, 90, 170), GROUND + 4, ri(r, 30, 60), ri(r, 6, 12), "#2f2c28", 0.35);
+            return [b, ""];
+          },
+        };
+        // Where a car of this condition tends to get photographed.
+        const WHERE = [
+          ["field", "field", "field", "barn", "barn", "gravel"],
+          ["gravel", "gravel", "field", "driveway", "barn"],
+          ["driveway", "driveway", "gravel", "garage"],
+          ["driveway", "garage", "garage"],
+          ["garage", "driveway", "garage"],
+        ];
+        const LIGHT = [["#ffcf8a", 0.1], ["#8fb3d9", 0.08], ["#000000", 0.06], ["#ffffff", 0.05]];
+        function photo(car) {
+          const look = carConditionLook(car);
+          const r = rand(hash("lot" + car.id + ":" + car.year + car.model));
+          const kinds = WHERE[look.stageLevel] || WHERE[0];
+          const kind = kinds[ri(r, 0, kinds.length - 1)];
+          const [behind, infront] = SETTINGS[kind](r);
+          const [lc, lo] = LIGHT[ri(r, 0, LIGHT.length - 1)];
+          const shadow = bx(X0 + 42, GROUND - 1, W - 84, 5, "#000", 0.32);
+          return `<svg class="lst-art" viewBox="${X0} ${Y0} ${W} ${H}" preserveAspectRatio="xMidYMid slice" shape-rendering="crispEdges">${behind}${shadow}${carSpriteSvg(car, look)}${infront}${bx(X0, Y0, W, H, lc, lo)}</svg>`;
+        }
+        return { photo };
+      })();
       function carListingPhoto(car) {
-        const sprite = carSpriteSvg(car);
-        return `<div class="lot-photo"><svg viewBox="34 48 276 124" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block;image-rendering:pixelated" shape-rendering="crispEdges">${sprite}</svg></div>`;
+        return LOT_PHOTO.photo(car);
       }
       function carPreview(car) {
         // What the car looks like in its current condition, shared with every
@@ -27038,7 +27109,9 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         const carsForSale = BUYABLE_CARS.filter(
           (c) => !state.cars.find((x) => x.id === c.id),
         );
-        const LOT_PREVIEW = 3;
+        // Two rows of tiles at desk width. Three used to be three tall list
+        // rows, which showed fewer cars in more height.
+        const LOT_PREVIEW = 8;
         const lotExpanded = !!state.lotExpanded;
         const lotShown = lotExpanded
           ? carsForSale
@@ -27048,7 +27121,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           ? `<div style="text-align:center;margin-top:8px">${button(lotExpanded ? "Show less" : `Show all ${carsForSale.length} listings`, "toggleLotExpanded()", false, "", "padding:6px 14px;font-size:11px;background:transparent;color:var(--gold-soft);border:1px solid rgba(217,162,79,0.4)")}</div>`
           : "";
         const carBuyMarkup = carsForSale.length
-          ? lotShown
+          ? `<div class="lst-grid lot-grid">` + lotShown
               .map(
                 (c) => {
                   const starter = Math.round((c.engine + c.transmission + c.brakes + c.body + c.paint + c.interior + c.chrome) / 7);
@@ -27062,24 +27135,25 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
                       ? ["NEEDS TLC · NO LOWBALLERS", "MECHANIC'S SPECIAL", "95% DONE · JUST NEEDS FINISHING"]
                       : ["GARAGE KEPT · SERIOUS INQUIRIES ONLY", "ADULT OWNED · CLEAN TITLE", "RARE FIND · WON'T LAST"];
                   const listingTone = tonePool[c.id % tonePool.length];
-                  // The tag is the seller talking, so it is in quotes. With the
-                  // photo beside it, "95% DONE" over a barn find is the joke every
-                  // classifieds page has always told; without quotes it read as
-                  // the game making a claim about the car.
+                  // The chip carries the seller's headline, in quotes because
+                  // it is the seller talking; the photo underneath is what
+                  // the car actually is. The rest of the line is on hover.
+                  const chip = listingTone.split(" · ")[0];
+                  const name = `${c.year} ${c.make} ${c.model}`;
+                  const short = state.money < c.price;
                   return `
-      <div class="feed-item lot-listing">
-        ${carListingPhoto(c)}
-        <div class="lot-listing-body">
-          <div class="feed-kicker">&ldquo;${listingTone}&rdquo;</div>
-          <div class="feed-text">${c.year} ${c.make} ${c.model}</div>
-          <div class="feed-meta">$${fmt(c.price)} · Score ${starter} starter · Marketplace find</div>
-          ${button(`Buy for $${fmt(c.price)}`, `buyCar(${c.id})`, state.money < c.price, "", "width:100%;margin-top:8px")}
+      <div class="lst">
+        <div class="lst-shot lot-shot" title="&ldquo;${listingTone}&rdquo;">${carListingPhoto(c)}<div class="lst-tag">&ldquo;${chip}&rdquo;</div></div>
+        <div class="lst-body">
+          <div class="lst-price">$${fmt(c.price)}</div>
+          <div class="lst-title" title="${name}">${name}</div>
+          <div class="lst-sub">Score ${starter} · ${LISTING_ART.adPlace("lot" + c.id)}</div>
+          <div class="lst-acts">${button(short ? `Short $${fmt(c.price - state.money)}` : "Buy it", `buyCar(${c.id})`, short, "", "width:100%")}</div>
         </div>
-      </div>
-    `;
+      </div>`;
                 },
               )
-              .join("") + lotToggle
+              .join("") + `</div>` + lotToggle
           : `<div class="small muted">Every project on the lot is already in your garage. Move some metal before more comes around.</div>`;
 
         // Selling cars needs a spare, with a single project in the garage,
@@ -27188,12 +27262,25 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           // itself, and it pushed the first car below the fold to say "cars
           // for sale" on the tab that already says so. The listings are the
           // page.
-          return onScreen(`
+          const lotPrices = carsForSale.map((c) => c.price);
+          const lotRange = lotPrices.length
+            ? `<div class="tiny muted" style="margin-bottom:8px;line-height:1.5">${carsForSale.length} for sale around Palomar Junction · asking $${fmt(Math.min(...lotPrices))} to $${fmt(Math.max(...lotPrices))}</div>`
+            : "";
+          // Framed exactly the way List an Item is: a gold kicker and a panel,
+          // no title and no strapline. It was the blue variant, carrying both,
+          // that looked like a second web page drawn inside this one.
+          return onScreen(heroPanel(
+            "Browse the Lot",
+            "",
+            "",
+            `
       <div class="info-box lot-board">
-        <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Cars for sale</div>
+        <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:6px">Project cars</div>
+        ${lotRange}
         ${carBuyMarkup}
       </div>
-    `);
+    `,
+          ));
         }
 
         if (marketTab === "sellcar") {
