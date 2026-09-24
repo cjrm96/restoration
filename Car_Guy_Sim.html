@@ -5719,9 +5719,13 @@
 
       /* ── shared: more outer air, calmer rhythm ── */
       .app { max-width: 1320px; padding: 22px; }
-      .content { padding: 26px; }
+      /* Vertical air only. The horizontal padding is what makes the page
+         feel like a panel instead of a spreadsheet, so it stays; the top and
+         bottom were stacking with the tab row above and every panel below,
+         which is how a view ends up two screens tall before any content. */
+      .content { padding: 15px 26px 18px; }
       .grid-main,
-      .grid-main-shows { gap: 22px; }
+      .grid-main-shows { gap: 15px; }
       .btn-row { gap: 10px; }
       .btn { padding: 10px 14px; }
 
@@ -5745,10 +5749,10 @@
       .chip { padding: 5px 13px; }
       .chip + .chip { border-left-color: rgba(255,255,255,.07); }
 
-      .tabs { padding: 14px 18px 16px; gap: 12px; }
-      .tab { padding: 12px 22px; border-radius: 5px; }
+      .tabs { padding: 8px 18px 9px; gap: 12px; }
+      .tab { padding: 9px 20px; border-radius: 5px; }
 
-      .hero-panel { padding: 26px 26px 22px; border-radius: 16px; }
+      .hero-panel { padding: 16px 22px 16px; border-radius: 16px; }
       .hero-panel-kicker { letter-spacing: 3.2px; }
       .hero-panel-title { font-size: 27px; margin-bottom: 6px; }
       .hero-panel-sub { font-size: 13.5px; margin-bottom: 20px; }
@@ -5777,7 +5781,7 @@
         box-shadow: inset 0 0 0 1px rgba(217,162,79,.12), inset 0 8px 30px rgba(0,0,0,.55);
       }
 
-      .panel { padding: 18px; margin-bottom: 16px; border-radius: 12px; }
+      .panel { padding: 13px 15px; margin-bottom: 11px; border-radius: 12px; }
       .panel-header { margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid rgba(217,162,79,.14); }
       .panel-title { font-size: 15px; }
 
@@ -5802,7 +5806,7 @@
       /* ── Showroom · MARKETPLACE + COMPETE tabs ──
          Hero panels share the BUILD framing already. Tighten the feed/ad
          cards: deeper radius, real shadow, tactile hover lift. */
-      .hero-panel { margin-bottom: 16px; }
+      .hero-panel { margin-bottom: 11px; }
       .feed-item {
         border-radius: 11px;
         padding: 12px 14px;
@@ -5823,7 +5827,7 @@
         box-shadow: 0 10px 22px rgba(0,0,0,.4);
       }
       /* sub-tab strip (All Builds / Tools / Space), match the roomier tabs */
-      .car-tabs { padding: 12px 18px; gap: 10px; }
+      .car-tabs { padding: 7px 18px; gap: 10px; }
 
       /* ── responsive: stack the two columns on narrow screens ── */
       @media (max-width: 880px) {
