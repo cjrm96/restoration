@@ -61,14 +61,22 @@
         border-radius: 14px;
         box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
       }
+      /* One line, and it stays one line. The bar used to run three rows deep
+         on a narrow desktop: the week plate stacked its own two lines, then
+         the buttons wrapped underneath. It is a status bar, not a panel, so
+         the week and the tier sit side by side and the tier line is the thing
+         that gives, truncating from the right. That order is deliberate. What
+         it drops first is "Saved", then the finished-part headline, both of
+         which are transient; the tier and the week, which the player actually
+         navigates by, are the last things standing. */
       .topbar {
-        padding: 16px 18px;
+        padding: 7px 14px;
         border-bottom: 1px solid var(--line);
         border-radius: 14px 14px 0 0;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 14px;
+        gap: 12px;
         flex-wrap: wrap;
         background: linear-gradient(180deg, #312922 0%, #241d17 100%);
         position: sticky;
@@ -81,19 +89,40 @@
       .topbar.topbar-stuck { border-radius: 0; }
       .topbar-state {
         display: flex;
-        flex-direction: column;
-        gap: 2px;
+        flex-direction: row;
+        align-items: baseline;
+        gap: 9px;
         min-width: 0;
+        flex: 1 1 auto;
       }
       .topbar-state-main {
         color: #e8d8b2;
-        font-size: 16px;
+        font-size: 14px;
         font-weight: bold;
         letter-spacing: 0.3px;
+        white-space: nowrap;
+        flex: 0 0 auto;
       }
       .topbar-state-sub {
         color: var(--muted);
-        font-size: 12px;
+        font-size: 11.5px;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      /* Above this the bar is never allowed to wrap: the tier line ellipsises
+         instead, which costs a few words rather than a whole row of height.
+         Below it the existing stacking takes over, because a phone genuinely
+         does not have the width and a sideways scroll is worse than a row.
+         The stats cluster and the buttons are pinned at their natural size so
+         the squeeze lands on the one element built to absorb it. Without the
+         pin the buttons stacked among themselves at Deck width and put the
+         header straight back to eighty pixels. */
+      @media (min-width: 900px) {
+        .topbar { flex-wrap: nowrap; }
+        .topbar .top-stats,
+        .topbar .top-actions { flex: 0 0 auto; flex-wrap: nowrap; }
       }
       .top-stats {
         display: flex;
@@ -111,9 +140,9 @@
         background: transparent;
         border: none;
         border-radius: 0;
-        padding: 6px 14px;
+        padding: 3px 11px;
         font-weight: 600;
-        font-size: 13px;
+        font-size: 12px;
         color: var(--text);
         white-space: nowrap;
         /* Cash, fuel and followers all change while the player watches.
@@ -134,9 +163,19 @@
       }
       .chip.money {
         color: var(--gold);
-        font-size: 16px;
+        font-size: 14px;
         font-weight: bold;
         letter-spacing: 0.3px;
+      }
+      /* The bar's own buttons run shorter than a body button. They set the
+         height of the whole row, so their padding is the single biggest lever
+         on how thick the header reads. */
+      .topbar .top-actions .btn {
+        padding: 6px 12px;
+        font-size: 12.5px;
+      }
+      .topbar .top-actions .audio-toggle {
+        padding: 5px 8px;
       }
       .chip.fuel {
         color: #c8d4dd;
@@ -5687,17 +5726,23 @@
       .btn { padding: 10px 14px; }
 
       /* ═══════════════ SHOWROOM ═══════════════ */
-      .topbar { padding: 18px 24px; gap: 18px; }
-      .topbar-state-main { font-size: 18px; letter-spacing: .2px; }
+      /* This pass is what the player actually sees: it lands after the base
+         rules and wins. The header was the worst offender, running 18px of
+         padding on a plate that was already two lines tall, so the status bar
+         took nearly eighty pixels of a Deck screen before any game showed. It
+         is trimmed here rather than in the base block so the instrument
+         cluster keeps its framing and only loses the air around it. */
+      .topbar { padding: 8px 18px; gap: 14px; }
+      .topbar-state-main { font-size: 15px; letter-spacing: .2px; }
       /* loose chips become one cohesive instrument cluster */
       .top-stats {
         background: linear-gradient(180deg, rgba(0,0,0,.30), rgba(0,0,0,.44));
         border: 1px solid rgba(217,162,79,.18);
-        border-radius: 12px;
-        padding: 5px 4px;
+        border-radius: 10px;
+        padding: 2px 3px;
         box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 2px 8px rgba(0,0,0,.3);
       }
-      .chip { padding: 7px 18px; }
+      .chip { padding: 5px 13px; }
       .chip + .chip { border-left-color: rgba(255,255,255,.07); }
 
       .tabs { padding: 14px 18px 16px; gap: 12px; }
@@ -11764,7 +11809,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.88.0";
+      const GAME_VERSION = "0.89.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
