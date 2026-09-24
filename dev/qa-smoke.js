@@ -2753,6 +2753,84 @@ const pass = (msg) => console.log("✓", msg);
     await phone.close();
   }
 
+  // ── nested scrollers ──────────────────────────────────────────────────────
+  // Two scrollbars a pixel apart is always a bug, never a design. The phone
+  // grew a pair because the screen was a fixed 600px box while the thread
+  // inside it was sized 62vh, so on a tall window the thread alone was taller
+  // than the device and both of them scrolled. Anything sized off the viewport
+  // inside a fixed-height box can do this, so the check is general: no
+  // scrollable element may contain another scrollable element.
+  for (const vh of [1440, 900, 800]) {
+    const ns = await browser.newPage({ viewport: { width: 1280, height: vh } });
+    await ns.goto(GAME);
+    await ns.waitForTimeout(700);
+    await ns.keyboard.press("Enter"); await ns.waitForTimeout(1100);
+    for (let i = 0; i < 9; i++) {
+      await ns.evaluate(() => {
+        if (state.cutscene) dismissCutscene(true);
+        state.noticeQueue = []; state.pendingScene = null; state.pendingUnlock = null;
+        const cr = document.getElementById("cutsceneRoot"); if (cr) cr.innerHTML = "";
+        const mr = document.getElementById("modalRoot"); if (mr) mr.innerHTML = "";
+      });
+      await ns.waitForTimeout(110);
+    }
+    await ns.evaluate(() => {
+      state.tutorialComplete = true;
+      Object.keys(state.milestones).forEach((k) => (state.milestones[k] = true));
+      state.onboardStage = 3; state.preWeek = 0; state.wifeThread = [];
+      // Vary the text: pushWifeMessage drops a line identical to the one
+      // before it, so pushing the same string in a loop leaves a thread of
+      // one and the check below silently measures nothing.
+      for (let w = 4; w <= 19; w += 3) {
+        state.week = w;
+        pushWifeMessage(`week ${w}: a line long enough to wrap onto a second line in the bubble, so the thread ends up genuinely taller than the screen it sits in.`, "wife-week-warm");
+      }
+      state.week = 19; setView("career"); setPhoneApp("wife"); requestRender("full");
+    });
+    await ns.waitForTimeout(700);
+    const nested = await ns.evaluate(() => {
+      const scrollers = [...document.querySelectorAll("body *")].filter((e) => {
+        const cs = getComputedStyle(e);
+        return (
+          (cs.overflowY === "auto" || cs.overflowY === "scroll") &&
+          e.scrollHeight > e.clientHeight + 2 &&
+          e.offsetParent !== null
+        );
+      });
+      // A page scroller containing a component scroller is normal and every
+      // site does it. What is never right is two bars sitting side by side on
+      // the same edge, which is what a fixed-height box that also scrolls
+      // looks like. So: flag a nested pair only when their right edges are
+      // close enough that both bars draw in the same place.
+      const name = (e) => (e.className || "").toString().split(" ")[0] || e.tagName;
+      const bad = [];
+      for (const a of scrollers)
+        for (const b of scrollers) {
+          if (a === b || !a.contains(b)) continue;
+          const ar = a.getBoundingClientRect(), br = b.getBoundingClientRect();
+          if (Math.abs(ar.right - br.right) <= 24)
+            bad.push(`${name(a)} > ${name(b)} (edges ${Math.round(ar.right)} / ${Math.round(br.right)})`);
+        }
+      const pc = document.querySelector(".phone-content");
+      const sawPhone = !!pc && pc.scrollHeight > pc.clientHeight + 2;
+      return { bad, count: scrollers.length, sawPhone };
+    });
+    if (nested.bad.length)
+      fail(`two scrollbars on the same edge at 1280x${vh}: ` + [...new Set(nested.bad)].join(", "));
+    // A check that found nothing to look at is not a passing check. The phone
+    // thread has to be one of them, or the setup failed and this proved
+    // nothing: the pair only appears at heights where the thread overflows
+    // its own max-height AND the device box, which is why this runs at
+    // several. At 1440 the thread fits and only the screen scrolls, so a
+    // single height here would have passed over the exact bug it is for.
+    if (!nested.count)
+      fail(`doubled-scrollbar check found no scroll regions at 1280x${vh}, so it proved nothing`);
+    if (!nested.sawPhone)
+      fail(`doubled-scrollbar check never found the phone thread at 1280x${vh}; the setup did not take`);
+    pass(`no doubled scrollbars at 1280x${vh} (${nested.count} scroll regions checked)`);
+    await ns.close();
+  }
+
   // ── the itch embed ────────────────────────────────────────────────────────
   // itch serves the game in an iframe and the host decides whether that frame
   // may scroll; its scrollbars option defaults off. A build that relies on

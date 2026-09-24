@@ -65,9 +65,13 @@
         height: 100%;
         overflow: hidden;
       }
+      /* The scroller is full width so its scrollbar lands on the edge of the
+         screen, where a scrollbar belongs. Constraining .app instead put the
+         bar on the edge of the 1320px panel, which at 1920 is three hundred
+         pixels in from the window, floating in the middle of the wood. The
+         column width moved to .shell, which is the thing that was ever meant
+         to be a column. */
       .app {
-        max-width: 1240px;
-        margin: 0 auto;
         /* No padding on TOP of the scroll container. A sticky header pins to
            the padding edge, so top padding here leaves a strip of moving
            content above the stuck bar and the whole header reads as floating
@@ -114,7 +118,10 @@
         border: 1px solid #51453a;
         border-radius: 14px;
         box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
-        margin-top: 18px;
+        /* 1240 minus .app's 18px of side padding: the same content width the
+           column had when .app carried the max-width. */
+        max-width: 1204px;
+        margin: 18px auto 0;
       }
       /* One line, and it stays one line. The bar used to run three rows deep
          on a narrow desktop: the week plate stacked its own two lines, then
@@ -1499,7 +1506,15 @@
         font-weight: bold;
         color: var(--gold);
         letter-spacing: .4px;
-        margin-bottom: 10px;
+      }
+      /* The section of the site you are actually on, under the masthead, the
+         way a classifieds page has always done it. */
+      .crt-site-sub {
+        font-size: 10.5px;
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+        color: rgba(217, 162, 79, 0.62);
+        margin: 2px 0 10px;
       }
       /* Nothing in the sidebar when there is only one place to go, so the
          page takes the whole screen instead of sitting next to an empty rail. */
@@ -3065,7 +3080,7 @@
           /* Same reason as the desktop rule: nothing above the sticky bar. */
           padding: 0 10px 10px;
         }
-        .shell { margin-top: 10px; }
+        .shell { margin: 10px auto 0; }
         .topbar {
           padding: 12px 14px;
           gap: 10px;
@@ -5180,8 +5195,16 @@
         border-radius: 26px;
         height: 600px;
         position: relative;
-        overflow-y: auto;
-        overflow-x: hidden;
+        /* The screen is a fixed-size device, not a scroller. It used to be
+           overflow-y:auto while the thread inside it was ALSO auto, and the
+           thread was sized 62vh: a viewport height inside a fixed 600px box.
+           On a tall window 62vh plus the status bar plus the app bar came to
+           more than 600, so the screen scrolled too and the phone grew two
+           scrollbars a pixel apart. Now it is a flex column that clips, and
+           exactly one thing inside it scrolls. */
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
         border: 1px solid #2a221a;
       }
       .phone-status-bar {
@@ -5247,7 +5270,12 @@
       }
       .phone-content {
         padding: 6px 16px 20px;
-        max-height: 62vh;
+        /* Fills whatever the screen has left after the status and app bars,
+           rather than guessing at it with a viewport height. min-height:0 is
+           what lets a flex child actually shrink and scroll instead of
+           pushing its parent open. */
+        flex: 1 1 auto;
+        min-height: 0;
         overflow-y: auto;
         scrollbar-width: thin;
         scrollbar-color: rgba(217,162,79,0.35) transparent;
@@ -5851,8 +5879,9 @@
       ════════════════════════════════════════════════════════════ */
 
       /* ── shared: more outer air, calmer rhythm ── */
-      .app { max-width: 1320px; padding: 0 22px 22px; }
-      .shell { margin-top: 22px; }
+      .app { padding: 0 22px 22px; }
+      /* 1320 minus 22px a side, so the panel keeps the exact width it had. */
+      .shell { max-width: 1276px; margin: 22px auto 0; }
       /* Vertical air only. The horizontal padding is what makes the page
          feel like a panel instead of a spreadsheet, so it stays; the top and
          bottom were stacking with the tab row above and every panel below,
@@ -11947,7 +11976,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.90.0";
+      const GAME_VERSION = "0.90.1";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -17804,14 +17833,15 @@
           requestRender("full");
           return;
         }
-        const ringClearedNote =
-          kind === "ring" && cleared
-            ? " Picked up the ring on the way home. She didn't say anything when you put it back on the dresser, but you saw her smile."
-            : "";
-        toast(
-          `${label} paid down by $${fmt(pay)}.${cleared ? " Debt cleared." : ""}${ringClearedNote}`,
-          "event-good",
-        );
+        // Everything that clears a debt has already returned above with its own
+        // cut scene, so the only thing that reaches here is a partial payment:
+        // a transaction the player just made and can see the result of on the
+        // desk in front of them. It gets a toast that fades.
+        // It used to pass "event-good", and toast() routes that straight to
+        // pushNotice, which is a click-through modal. A player paying a loan
+        // down in five goes before closing the desk was handed five modals to
+        // dismiss, each one repeating what the balance already said.
+        toast(`${label} paid down by $${fmt(pay)}. $${fmt(remaining)} left.`, "ok");
         saveGame();
         requestRender("full");
       }
@@ -27178,6 +27208,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
               <div class="crt-page${showSide ? "" : " crt-page-wide"}">
                 ${showSide ? `<aside class="crt-side">
                   <div class="crt-site">Gearbook</div>
+                  <div class="crt-site-sub">Trading Post</div>
                   <div class="crt-nav">${sideNav}</div>
                   <div class="crt-block">
                     <div class="crt-block-h">Location</div>
