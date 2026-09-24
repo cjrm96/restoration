@@ -5270,6 +5270,52 @@
         color: #f0ecf6;
         border-bottom-left-radius: 5px;
       }
+      /* His half of it. Small, gold, right-aligned, and visually subordinate
+         to hers on purpose: her bubbles are the thread, his are answers to
+         them. A wider or louder sent bubble turns the best screen in the game
+         into a chat app. */
+      .imsg-row.me { justify-content: flex-end; }
+      .imsg-bubble.me {
+        max-width: 66%;
+        background: linear-gradient(180deg, #d2a558 0%, #c2913f 100%);
+        color: #241a0c;
+        font-weight: 600;
+        border-bottom-left-radius: 17px;
+        border-bottom-right-radius: 5px;
+      }
+      .imsg-reply {
+        margin: 12px 4px 2px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+      }
+      .imsg-reply-head {
+        align-self: flex-end;
+        font-size: 9.5px;
+        letter-spacing: 1.1px;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.3);
+        margin-bottom: 2px;
+      }
+      .imsg-reply-btn {
+        max-width: 82%;
+        text-align: right;
+        padding: 7px 12px;
+        border-radius: 16px;
+        border: 1px dashed rgba(217, 162, 79, 0.5);
+        background: rgba(217, 162, 79, 0.09);
+        color: #e8c98a;
+        font-family: inherit;
+        font-size: 12px;
+        line-height: 1.35;
+        cursor: pointer;
+        transition: background 0.12s ease, border-color 0.12s ease;
+      }
+      .imsg-reply-btn:hover {
+        background: rgba(217, 162, 79, 0.2);
+        border-color: rgba(217, 162, 79, 0.85);
+      }
       .imsg-foot {
         margin: 16px 6px 4px;
         padding: 9px 14px;
@@ -24447,6 +24493,18 @@ addEventListener("DOMContentLoaded",function(){
                   : `Buck still took the season series, ${bl}-${bw}. The National trophy says you won the argument anyway.`
               : "";
           const L = moralLedger();
+          // Gilligan's condition, carried over from review 005: a thing the
+          // player did for four seasons has to reach the end or it did not
+          // happen. Answering her is the only input he has ever had in this
+          // marriage, so the empty-garage screen is where it gets counted.
+          const replies = state.wifeRepliesSent || 0;
+          const repliedLine = replies >= 25
+            ? " You answered her, over and over, badly, for years. Four words at a time from under a truck. She kept every one of them."
+            : replies >= 8
+              ? " You started texting her back somewhere in there. Never well. She noticed anyway, the way she notices everything."
+              : replies > 0
+                ? " You texted her back a handful of times across the whole run. She never once mentioned that it was a handful."
+                : "";
           const wifeLine = L.heldTheLine
             ? "Inside, the porch light's on and your socket set is back in the drawer where it belongs, the pawn tickets torn up on the bench. She's on the front steps with two beers and the good blanket, waiting up. You kept your hands clean and it nearly took the skin with it, and she watched every minute. She didn't say anything when you pulled in. She didn't have to."
             : L.cleanHands
@@ -24456,7 +24514,7 @@ addEventListener("DOMContentLoaded",function(){
               : L.soldCar
                 ? "Inside, the porch light's on. The note on the microwave says \"Champion,\" and it's in her handwriting, and she means it. Her spot in the driveway is still empty. Both things are true tonight."
                 : "Inside, the porch light's still on. There's a plate in the microwave and a note in her handwriting: \"Told you so. Champion.\"";
-          const costSub = `The trophy's on the bench. The jack stands are empty for the first time all year.${buckLine ? " " + buckLine : ""}<br><br>${wifeLine}`;
+          const costSub = `The trophy's on the bench. The jack stands are empty for the first time all year.${buckLine ? " " + buckLine : ""}<br><br>${wifeLine}${repliedLine}`;
           const costArt = CUTSCENE_ART["scene-empty-garage"] || CUTSCENE_ART["scene-season-end"];
           if (costArt) {
             root.innerHTML = `<div class="modal modal-cine"><div class="cs-art cs-drift-b" style="background-image:url('${costArt}')"></div><div class="cs-grain"></div><div class="cs-vignette"></div><div class="cs-bar cs-bar-top"></div><div class="cs-bar cs-bar-bot"></div><div class="cs-caption"><div class="cs-kicker">Later that night</div><div class="cs-title">THE GARAGE IS QUIET.</div><div class="cs-sub">${costSub}</div><div class="cs-actions"><button class="victory-primary" onclick="setVictoryStage('final')">One more thing →</button></div></div></div>`;
@@ -27183,10 +27241,34 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
                 ? `<div class="imsg-day">Week ${m.week}</div>`
                 : "";
             lastWeek = m.week;
-            return `${head}<div class="imsg-row"><div class="imsg-bubble">${m.t}</div></div>`;
+            const mine = m.me ? " me" : "";
+            return `${head}<div class="imsg-row${mine}"><div class="imsg-bubble${mine}">${m.t}</div></div>`;
           })
           .join("");
-        return `<div class="imsg">${rows}<div class="imsg-foot">You never text back. You go downstairs.</div></div>`;
+        // What he could say back, if he says anything. Three ways out of the
+        // same sentence: he deflects, he is honest, or he is an idiot.
+        const ro = wifeReplyOptions();
+        const replyRow = ro
+          ? `<div class="imsg-reply"><div class="imsg-reply-head">Say something back</div>${ro.picks
+              .map(
+                (p) =>
+                  `<button class="imsg-reply-btn" onclick="sendWifeReply(${ro.i}, ${p.idx})">${p.opt.text}</button>`,
+              )
+              .join("")}</div>`
+          : "";
+        // The footer is the original line and it is not going anywhere, but it
+        // is a claim about the player, so it has to be true. A man who has
+        // answered her four times has not "never texted back", and printing it
+        // at him anyway would be the game not paying attention. It is earned
+        // by the player who never uses the reply row, which is the whole
+        // point of the reply row existing.
+        const sent = state.wifeRepliesSent || 0;
+        const foot = !sent
+          ? "You never text back. You go downstairs."
+          : sent < 5
+            ? "You text back now. Not well, but you do it."
+            : "You text back. She still says more with less. You are learning.";
+        return `<div class="imsg">${rows}${replyRow}<div class="imsg-foot">${foot}</div></div>`;
       }
       function renderPhoneHomeScreen() {
         const next = SPONSORS.find((s) => state.followers < s.req);
@@ -27438,7 +27520,10 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         const last = state.wifeThread[state.wifeThread.length - 1];
         // She does not send the same thing twice in a row.
         if (last && last.t === text) return;
-        state.wifeThread.push({ week: state.week, t: text });
+        // The topic tag rides along on the message. It is what the reply
+        // options hang off, so a reply answers the thing she actually said
+        // rather than being a joke fired into a menu.
+        state.wifeThread.push({ week: state.week, t: text, k: id || "default" });
         if (state.wifeThread.length > WIFE_THREAD_MAX)
           state.wifeThread.splice(0, state.wifeThread.length - WIFE_THREAD_MAX);
         state.wifeUnread = (state.wifeUnread || 0) + 1;
@@ -27475,6 +27560,216 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         "your truck smells like your grandfather's garage and i did not expect to like that as much as i do.",
         "i told someone at work my husband restores cars and i said it like it was a fact about me too.",
       ];
+      // ── Texting her back ─────────────────────────────────────────────────
+      // Every other relationship in this game is something the player does.
+      // Hers was the only one that happened to him: she talked, he went
+      // downstairs. This is the first verb he has ever had in the marriage.
+      //
+      // It is a reply system, not a compose box. Options hang off the thing
+      // she actually said, so a reply carries the context a menu never could,
+      // and the footer is not deleted, it is earned by the player who never
+      // uses it.
+      //
+      // Three registers, in order, every time: he deflects, he is honest, or
+      // he is an idiot. The joke is never that he is witty. It is that he is
+      // a man who types four words and means a paragraph, and that she reads
+      // all three correctly, because she has never once been fooled.
+      //
+      // wr(text, reply, cool): what he sends, what she sends back, and what
+      // she sends back instead when the family ledger has gone strained. The
+      // cool variant is not the warm line with a frown on it. She is running
+      // out of patience, and the writing has to cost her something.
+      const wr = (text, reply, cool) => ({ text, reply, cool });
+      const WIFE_REPLIES = {
+        "wife-week-broke": [
+          wr("there is a plan", "there is not a plan. say the plan out loud and we will both hear that there is not a plan.", "ok. tell me the plan on saturday then. i will be here. i am always here."),
+          wr("i will fix it", "i know you will. that is not the part i worry about. you always fix it eventually and eventually is a long word.", "you always say that part. it is the only part you ever say."),
+          wr("dont look at the account", "too late. i looked at the account. the account and i have an understanding now.", "i already looked. that is what i am telling you about."),
+          wr("its an investment", "it is a truck. i love the truck. it is a truck.", "say investment again and i am going to laugh and it will not be the good laugh."),
+          wr("i love you", "do not do that. you cannot love your way out of a spreadsheet. ... it worked a little.", "i love you too. that was never the thing that was missing this week."),
+          wr("beans and rice is good actually", "it IS good actually. that is what makes it infuriating. you are not even wrong.", "sure. it is great. i will make it again thursday and friday."),
+          wr("dont worry", "wrong sentence. try one of the other ones.", "i am not worried. worried is a week two feeling. we are past that."),
+        ],
+        "wife-week-flush": [
+          wr("dont get used to it", "i never get used to it. that is the tragedy of being married to a man with a project.", "i am not used to anything."),
+          wr("told you", "you did not tell me. you have never told me. you looked worried for six weeks and then money appeared.", "you told me nothing. money appeared and you looked surprised too."),
+          wr("get the good coffee", "already bought. i bought it before i texted you. the text was a courtesy.", "already did. did not ask. noticed you did not ask either."),
+          wr("spending it on the truck", "obviously. i budgeted for you saying that. the coffee money is separate and it is mine.", "there it is."),
+          wr("lets go out", "yes. somewhere with a menu that does not have pictures on it. i will get changed.", "you want to go out. now. this week. ... ok. yes. ok."),
+          wr("i did a good thing", "you did a good thing. write it down. i want it in your handwriting for the record.", "you did. i am saying it back so you hear it said."),
+          wr("its not that much", "it is more than tuesday. tuesday we had forty dollars and a feeling. take the win.", "it is more than we had. that is allowed to be good."),
+        ],
+        "wife-week-grind": [
+          wr("coming in soon", "you said soon at nine. it is a very flexible word in this house.", "that word has stopped meaning anything and we both know it."),
+          wr("ten more minutes", "the ten minutes is a lie we have agreed to tell each other. i respect the tradition.", "it is never ten minutes. i stopped setting the timer in august."),
+          wr("i saw the drawing", "she made you tall. she has never seen you standing up straight but she made you tall.", "she left it on the workbench so you would find it out there. she knows where you live."),
+          wr("come out here", "i am not coming out there. you come in here. that is the whole entire point i am making.", "no. i asked first and i have been asking for six weeks."),
+          wr("sorry about the plate", "eat the plate. i am not mad about the plate. the plate is a metaphor and you are eating it cold.", "the plate is fine. the plate was never the thing."),
+          wr("this part is almost done", "there is always a part that is almost done. it is an infinite supply of almost.", "there is always a part. that is what i am saying to you. there is always a part."),
+          wr("i know", "i know you know. knowing is the easy half.", "you do know. that is somehow worse."),
+        ],
+        "wife-week-proud": [
+          wr("its getting there", "it is past getting there. i walked past it and stopped walking. that is data.", "it looks good. i can still think it looks good."),
+          wr("you actually looked at it", "i look at it every day. i just do not usually tell you, because you get like this.", "i look at it. i look at it more than you think."),
+          wr("your mother said that", "my mother said oh. from her that is a standing ovation with fireworks.", "she did. write it down, it will not happen twice."),
+          wr("i will be weird when it sells", "i know. i have a whole afternoon set aside for you being weird about it.", "you will be. i will handle it, same as the rest."),
+          wr("come see it now", "give me two minutes and do not do the thing where you explain the whole engine.", "later. i want to, later."),
+          wr("its just a truck", "do not do that. you do not get to be casual about it in front of me, i have seen your hands.", "it is not just a truck and you saying that is not going to make this week easier."),
+        ],
+        "wife-week-warm": [
+          wr("what brought this on", "nothing brought it on. that is what makes it worth sending. go back to work.", "nothing. forget it."),
+          wr("no reason back", "correct answer. carry on.", "ok."),
+          wr("that socket is mine", "everything on that windowsill is technically yours. it is a museum of your carelessness.", "it is on the windowsill with the others."),
+          wr("he would have liked you", "your grandfather would have liked that i own a wire brush. that is the whole test, isn't it.", "i think he would have. i wish i had met him."),
+          wr("say that again", "no.", "not this week."),
+          wr("i love you", "there it is. that is the whole text. go back to your truck.", "i love you too. i want it to be easier than it has been."),
+          wr("you are a fact about me too", "that is the nicest thing you have said all year and you sent it with a typo. perfect.", "that is a good thing to say. i am going to keep it."),
+        ],
+        "wife-show-win": [
+          wr("first place", "first. i said it out loud in the kitchen to nobody. the kettle heard it.", "first. good."),
+          wr("buck was there", "i hope he watched. i hope he watched the whole thing with his arms folded.", "was he. good."),
+          wr("we won", "WE won. i like we. i did nothing and i am taking a third of the credit.", "you won. good. i mean that, i do."),
+          wr("your line worked", "of course it worked. i say true things and then they happen. that is my whole method.", "i am glad something did."),
+          wr("bringing home a trophy", "put it in the garage. it is a garage object. it does not go in the living room, we discussed this.", "put it with the others."),
+          wr("wish you were there", "next one. actually say the date out loud this time and i will be there.", "you could have told me when it was."),
+          wr("i got lucky", "you did not get lucky. you got up at five on a saturday for four months. be normal about it.", "you did not get lucky and i am not going to argue about it tonight."),
+        ],
+        "wife-show-loss": [
+          wr("dont wait up", "i will wait up. i always wait up, that is not a favour, it is just what happens.", "i was not going to."),
+          wr("i hate this", "you love this. you hate tonight. there is a difference and tomorrow you will find it.", "then stop for a week. genuinely. stop for one week."),
+          wr("it went bad", "how bad. bad like the brakes, or bad like a man with more money than you.", "ok."),
+          wr("i should stop", "you should eat something and go to bed. you can quit tomorrow, the offer stands every day.", "you should come home. that is the sentence i would pick."),
+          wr("the judges were wrong", "sure they were. they were also wrong last time. at some point this becomes a pattern with judges.", "maybe. i am not going to be the one who argues that with you."),
+          wr("i am fine", "you are not fine. you are typing in full sentences, which is how i know.", "you are not. you never are, on these nights."),
+          wr("thanks for asking", "i always ask. that is the thing about me you keep being surprised by.", "i asked. i am going to keep asking for a while yet."),
+        ],
+        "wife-pep-buck": [
+          wr("you basically have", "i have. the house is on you. no pressure and also all of the pressure.", "i have. that is not a joke i enjoy this week."),
+          wr("money doesnt sand quarter panels", "it does not. write that on the wall out there. i want royalties.", "no. but it buys time, and time is the thing you keep spending."),
+          wr("he has a shop", "and you have a driveway and a light on an extension cord. i know where my money is.", "he has a shop and you have a driveway. i still know where my money is."),
+          wr("you bet the house", "i bet the house. do not make me explain that to the bank in person.", "i did. do not make me regret the timing of it."),
+          wr("i will take him", "there he is. that is the voice. keep it.", "good. bring that home with you at some point."),
+          wr("he is just better", "he is not better. he is earlier. those are completely different problems and one of them fixes itself.", "he is not better. i am too tired to say it with the right amount of fight in it."),
+        ],
+        "wife-pep-coffee": [
+          wr("it was just coffee", "nothing is just coffee. you talked to people. you are practically a socialite now.", "fine. it was just coffee."),
+          wr("people liked it", "people liked it. say that again slowly and then believe it for one entire minute.", "good. that is good."),
+          wr("i barely talked", "you barely talk here either. it is a consistent brand and i have made peace with it.", "you never do."),
+          wr("come next time", "yes. tell me the actual day though. not the week. the day.", "tell me the day and i will think about it."),
+        ],
+        "wife-pep-national": [
+          wr("thats the big one", "that is the big one. do not get strange about it. get strange after.", "that is the big one. i hope it is worth what it took."),
+          wr("i am not ready", "nobody is ready. ready is a thing people say afterward about the day they were not ready.", "you are more ready than you were. that is all anybody gets."),
+          wr("come with me", "try and stop me. i will bring the good blanket and be unbearable in the stands.", "ask me properly and i will come."),
+          wr("if i lose", "then you lose at the national level, which is a sentence you could not say two years ago.", "then you lose and you come home and we go from there."),
+        ],
+        "wife-radio": [
+          wr("you were listening", "i was in the car in the driveway. i did not come in until it finished.", "i heard it. i was in the car."),
+          wr("i said pitman arm on air", "you said pitman arm on air. that is the most you thing that has ever happened.", "you did."),
+          wr("did i sound stupid", "you sounded like a man who knows what a pitman arm is. on the radio. i was unbearable about it.", "you sounded fine."),
+          wr("the kid heard it", "the kid HEARD IT. the kid is telling the neighbours. the kid has appointed himself your publicist.", "he heard it. he was proud of you. i thought you should know."),
+          wr("i hated every second", "obviously. you hate being perceived. you did it anyway, which is the part that counts.", "i know you did."),
+          wr("go build something", "that is a good line. you did not plan that line. that is why it is a good line.", "that was a good line."),
+        ],
+        "wife-viral": [
+          wr("this is insane", "it is insane. strangers are arguing about your paint job. this is your life now.", "it is a lot. it does not change what the week was like here."),
+          wr("dont read the comments", "too late. i have read the comments. i have opinions about a man called truckdaddy1972.", "i am not reading the comments. i have enough going on."),
+          wr("does this mean money", "it means attention. money is a completely separate conversation and you know that.", "does it. genuinely asking."),
+          wr("i am famous now", "you are famous to a very specific kind of man. that is not nothing but let us keep perspective.", "sure."),
+        ],
+        "wife-ringback": [
+          wr("i got it back", "i know. i saw the box on the dresser and i sat down on the bed for a minute.", "i saw. i sat down for a while when i saw."),
+          wr("i am sorry", "i know you are. you were sorry the whole time, that was never the part in question.", "i know. i am still working out what to do with that."),
+          wr("never again", "no. never again. and i am going to hold you to that in a very calm voice.", "no. never again. say it once and then we stop talking about it."),
+          wr("it was only a few weeks", "it was eleven weeks. i am not angry. i am telling you i counted, because i did.", "it was eleven weeks. i counted every one of them."),
+        ],
+        "wife-shark": [
+          wr("i had to", "you did not have to. you chose to, quickly, on your own. those are not the same and you know it.", "you did not have to. you did it anyway. that is the whole thing."),
+          wr("i will handle it", "i believe that you believe that. that is genuinely where i am at right now.", "handle it then. i am not going to ask again."),
+          wr("he seemed fine", "men like that always seem fine. that is the entire product they are selling.", "they always seem fine. that is how it works."),
+          wr("dont tell anyone", "who would i tell. this is not a thing a person brings up at work.", "i have not told anyone. i would not."),
+        ],
+        "wife-sharkpaid": [
+          wr("its done", "it is done. i have not exhaled like that since spring.", "good. it is done."),
+          wr("that was close", "it was close. i want you to remember the feeling and not the story you will tell about it later.", "it was. remember it."),
+          wr("never again", "you said that about the last one too. i am choosing to believe you about this one.", "ok."),
+          wr("thanks for not leaving", "do not. i was never going anywhere. do not turn that into a compliment.", "i was not going anywhere. that was never on the table."),
+        ],
+        "wife-victory": [
+          wr("national champion", "say it again. i want to see you type it twice.", "national champion. i know. i was here for all of it."),
+          wr("was it worth it", "ask me next week. tonight it was worth it. next week is a different question and it is allowed to be.", "i do not know yet. neither do you."),
+          wr("we did it", "we. look at you. yes. we did it.", "you did it. i am proud. i am also very tired, both are true."),
+          wr("coming home", "come home. the light is on. it has been on for a while.", "come home."),
+          wr("i couldnt have done it without you", "you could have. it would have been worse and lonelier and it would have taken longer.", "you nearly did do it without me. that is the part to think about."),
+          wr("what do you want", "nothing. genuinely nothing. ask me again in a week and i will have a list.", "i want the next one to cost less. that is all i want."),
+        ],
+        "wife-banner": [
+          wr("saw it", "good. i put it where you would see it.", "good."),
+          wr("thank you", "you are welcome. that took a surprising amount of tape.", "you are welcome."),
+          wr("you made that", "i made that. i am not crafty. that was an act of love and a glue gun.", "i made it last week. it has been sitting there."),
+          wr("i dont deserve you", "no. now go and win something so the banner is not a lie.", "do not do that one tonight."),
+        ],
+        // The fallback. Anything she says that has no pool of its own still
+        // gets a reply, because a thread where some messages can be answered
+        // and others cannot reads as broken rather than designed.
+        "default": [
+          wr("busy, back soon", "you are never back soon. i have data.", "sure."),
+          wr("i hear you", "do you though. i am genuinely asking, it is not rhetorical.", "i hope so."),
+          wr("ok", "ok. the man of letters, everyone.", "ok. great."),
+          wr("on my way", "you are not on your way. you are typing. but i appreciate the fiction.", "you are not. but ok."),
+          wr("love you", "love you too. go on then.", "love you too."),
+          wr("say more", "no. i said the amount i meant to say.", "i said what i wanted to say."),
+          wr("you are right", "i am aware. it is nice to have it in writing.", "i know. it did not help."),
+          wr("sorry", "for which part. i am not being cruel, i genuinely need you to pick one.", "for which part."),
+        ],
+      };
+      // One reply per message, and only to the newest thing she has said,
+      // within a week of her saying it. Without the recency test a player who
+      // ignores the phone for a season opens it to a stack of twelve
+      // unanswered messages and fires twelve replies in ten seconds, which is
+      // not a rate limit, it is a queue. A conversation you can have a month
+      // late is not a conversation.
+      const WIFE_REPLY_GRACE_WEEKS = 1;
+      function wifeReplyOptions() {
+        const thread = Array.isArray(state.wifeThread) ? state.wifeThread : [];
+        if (!thread.length) return null;
+        const i = thread.length - 1;
+        const m = thread[i];
+        if (!m || m.me || m.answered) return null;
+        if (state.week - m.week > WIFE_REPLY_GRACE_WEEKS) return null;
+        const pool = WIFE_REPLIES[m.k] || WIFE_REPLIES["default"];
+        if (!pool || !pool.length) return null;
+        // Three at a time, rotated off the message's own position in the
+        // thread, so the same line asked twice in one save does not offer the
+        // same three ways out of it.
+        const start = (i * 3) % pool.length;
+        const picks = [];
+        for (let n = 0; n < Math.min(3, pool.length); n++)
+          picks.push({ idx: (start + n) % pool.length, opt: pool[(start + n) % pool.length] });
+        return { i, picks };
+      }
+      function sendWifeReply(threadIndex, poolIdx) {
+        const thread = state.wifeThread || [];
+        const m = thread[threadIndex];
+        if (!m || m.me || m.answered) return;
+        const pool = WIFE_REPLIES[m.k] || WIFE_REPLIES["default"];
+        const opt = pool && pool[poolIdx];
+        if (!opt) return;
+        m.answered = 1;
+        // His side never counts against her cap. Her thread stays her thread:
+        // filling it with his half would push her own story off the top twice
+        // as fast, and her story is the reason the thread exists.
+        state.wifeThread.push({ week: state.week, t: opt.text, me: 1 });
+        state.wifeRepliesSent = (state.wifeRepliesSent || 0) + 1;
+        const strained = familyTimeLedger().standing === "strained";
+        const back = (strained && opt.cool) ? opt.cool : opt.reply;
+        pushWifeMessage(back, m.k || "wife-reply");
+        // He is standing in the thread reading it, so it is not unread.
+        state.wifeUnread = 0;
+        playSfx("click");
+        requestRender("full");
+        setTimeout(scrollWifeThreadToNewest, 30);
+      }
       function maybeWifeWeeklyLine() {
         // Not every week. She has a life.
         const last = state.wifeLineWeek || 0;
@@ -27485,13 +27780,15 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         // How many jobs he has had on the bench lately is the closest thing
         // to "how many nights has he been out there" that the state carries.
         const onTheBench = (state.activeRestorations || []).length;
-        let pool = WIFE_WEEK_WARM, key = "wife:warm";
-        if ((state.money || 0) < 250) { pool = WIFE_WEEK_BROKE; key = "wife:broke"; }
-        else if ((state.money || 0) > 12000) { pool = WIFE_WEEK_FLUSH; key = "wife:flush"; }
-        else if (overall >= 60) { pool = WIFE_WEEK_PROUD; key = "wife:proud"; }
-        else if (onTheBench >= 1) { pool = WIFE_WEEK_GRIND; key = "wife:grind"; }
+        let pool = WIFE_WEEK_WARM, key = "wife:warm", mood = "warm";
+        if ((state.money || 0) < 250) { pool = WIFE_WEEK_BROKE; key = "wife:broke"; mood = "broke"; }
+        else if ((state.money || 0) > 12000) { pool = WIFE_WEEK_FLUSH; key = "wife:flush"; mood = "flush"; }
+        else if (overall >= 60) { pool = WIFE_WEEK_PROUD; key = "wife:proud"; mood = "proud"; }
+        else if (onTheBench >= 1) { pool = WIFE_WEEK_GRIND; key = "wife:grind"; mood = "grind"; }
         state.wifeLineWeek = state.week;
-        pushWifeMessage(pickFresh(pool, key, pool.length - 1), "wife-week");
+        // Tagged by mood rather than by "wife-week", because answering a
+        // broke-week message and a proud-week message are different acts.
+        pushWifeMessage(pickFresh(pool, key, pool.length - 1), "wife-week-" + mood);
       }
       const RIVAL_DM_WARM = [
         "not bad out there. had you pegged as all hype. i was maybe 60% wrong.",
@@ -27565,11 +27862,11 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         const strained = familyTimeLedger().standing === "strained";
         if (place === 1) {
           if (Math.random() < (strained ? 0.5 : 0.3)) {
-            pushWifeMessage(pickFresh(strained ? WIFE_DMS_WIN_COOL : WIFE_DMS_WIN, strained ? "dm:wife:win:cool" : "dm:wife:win"), "wife-show");
+            pushWifeMessage(pickFresh(strained ? WIFE_DMS_WIN_COOL : WIFE_DMS_WIN, strained ? "dm:wife:win:cool" : "dm:wife:win"), "wife-show-win");
           }
         } else if (place >= 5) {
           if (Math.random() < (strained ? 0.6 : 0.35)) {
-            pushWifeMessage(pickFresh(strained ? WIFE_DMS_LOSS_COOL : WIFE_DMS_LOSS, strained ? "dm:wife:loss:cool" : "dm:wife:loss"), "wife-show");
+            pushWifeMessage(pickFresh(strained ? WIFE_DMS_LOSS_COOL : WIFE_DMS_LOSS, strained ? "dm:wife:loss:cool" : "dm:wife:loss"), "wife-show-loss");
           }
         }
       }
