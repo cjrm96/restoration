@@ -12038,7 +12038,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.92.0";
+      const GAME_VERSION = "0.93.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -15706,8 +15706,12 @@
      CAR FLIPPING, list a build, field offers, sell
   ═══════════════════════════════════════════ */
       function carBasePrice(car) {
+        // The body's own worth, not the Lot sticker: a project car's sticker
+        // carries somebody else's parts bill, and resale already counts the
+        // condition those parts bought. Reading the sticker here would pay
+        // for the same work twice.
         const srcCar = BUYABLE_CARS.find((c) => c.id === car.id);
-        return srcCar ? srcCar.price : 5500;
+        return srcCar ? srcCar.basePrice || srcCar.price : 5500;
       }
       // What the market will bear for a build right now. Scales hard with
       // condition: a rough barn find sells near (or a touch under) what you
@@ -20721,7 +20725,11 @@
           followersAtCompletion: state.followers,
           bestPlace: state.seasonStats.bestPlace,
           bestTier: state.seasonStats.bestTier,
-          partsInstalled: car.installedParts ? car.installedParts.length : 0,
+          // Only the ones you fitted. A project car came with somebody
+          // else's, and the wall counts your work.
+          partsInstalled: Math.max(0, (car.installedParts ? car.installedParts.length : 0) - (car.boughtParts || 0)),
+          origin: car.origin || "barn",
+          boughtAt: car.boughtAt || 0,
         };
       }
 
@@ -21095,18 +21103,109 @@
           return false;
         }
       }
+
+      // ── The Lot's spread ──
+      // Every BUYABLE_CARS literal came out at about the same score, 21 to 27,
+      // so the Lot was forty photos of one rusty car. The sprites can show
+      // three stages below a driver, barn find, rough project and project car,
+      // so the Lot is spread across exactly those and nothing above. Past
+      // project car the photo stops changing, and the Lot would only be
+      // selling you the build.
+      //
+      // Prices are derived, never typed. A literal's price is what that car
+      // is worth as it sits. One somebody else worked on costs that plus the
+      // parts it took them (the cheapest DIY path at list) plus a margin for
+      // their time. A barn find that sat another ten years is the same sum
+      // run backward. Every body runs its own numbers, so no one car is the
+      // cheap way to a head start.
+      const LOT_BARN_BAND = [15, 19];
+      const LOT_PROJECT_BAND = [40, 49];
+      const LOT_WORK_MARGIN = 1.15;
+      // Scattered, not sorted: a classifieds page is not sorted by quality.
+      // Dale's are the three he has been telling you about, so they stay
+      // exactly as he described them.
+      function lotBucketFor(index, id) {
+        if (DALE_LOT_IDS[id]) return "rough";
+        if (index % 7 === 2) return "project";
+        if (index % 4 === 3) return "rough";
+        return "barn";
+      }
+      // The cheapest way up: each step fits the part that buys the most
+      // overall per dollar, DIY at list, none twice. Mutates the car.
+      function cheapestBuildTo(car, target) {
+        let spent = 0;
+        const fitted = [];
+        const have = new Set(car.installedParts || []);
+        while (getOverall(car) < target) {
+          let best = null;
+          let bestRate = 0;
+          PARTS.forEach((p) => {
+            if (have.has(p.id)) return;
+            const gain = Math.min(p.imp, 100 - (car[p.category] || 0));
+            const rate = gain / Math.max(1, p.diy);
+            if (gain > 0 && rate > bestRate) {
+              bestRate = rate;
+              best = p;
+            }
+          });
+          if (!best) break;
+          car[best.category] = clamp(car[best.category] + best.imp);
+          have.add(best.id);
+          fitted.push(best.id);
+          spent += best.diy;
+        }
+        return { spent, fitted };
+      }
+      function prepareLotConditions() {
+        const seeded = (id, lo, hi) => lo + (((id * 2654435761) >>> 0) % (hi - lo + 1));
+        const toHundred = (n) => Math.round(n / 100) * 100;
+        BUYABLE_CARS.forEach((c, i) => {
+          if (c.lotBucket) return;
+          ensureCarSystems(c);
+          c.installedParts = [];
+          c.basePrice = c.price;
+          const bucket = lotBucketFor(i, c.id);
+          c.lotBucket = bucket;
+          const asItSits = getOverall(c);
+          if (bucket === "project") {
+            const { spent, fitted } = cheapestBuildTo(c, seeded(c.id, ...LOT_PROJECT_BAND));
+            c.installedParts = fitted;
+            c.price = toHundred(c.basePrice + spent * LOT_WORK_MARGIN);
+          } else if (bucket === "barn") {
+            const target = seeded(c.id, ...LOT_BARN_BAND);
+            const f = target / Math.max(1, asItSits);
+            CATS.forEach((cat) => {
+              c[cat] = Math.max(4, Math.round(c[cat] * f));
+            });
+            const back = JSON.parse(JSON.stringify(c));
+            const { spent } = cheapestBuildTo(back, asItSits);
+            c.price = toHundred(c.basePrice - spent * LOT_WORK_MARGIN);
+          }
+        });
+      }
+      prepareLotConditions();
+
       function buyCar(id) {
         const c = BUYABLE_CARS.find((x) => x.id === id);
         if (state.money < c.price) return toast("Not enough cash.", "err");
         if (state.cars.find((x) => x.id === c.id))
           return toast("Already in your garage.", "err");
-        const { price, ...data } = c;
+        const { price, basePrice, lotBucket, ...data } = c;
         state.money -= price;
         recordMoneyChange(
           -price,
           `Vehicle purchase: ${c.year} ${c.make} ${c.model}`,
         );
-        const bought = { ...data, installedParts: [] };
+        // Where she came from rides with her to the end: the Legacy Wall and
+        // the finale both tell a bought project apart from a pulled tarp.
+        const bought = {
+          ...data,
+          installedParts: [...(c.installedParts || [])],
+          extras: [],
+          origin: lotBucket || "barn",
+          boughtAt: getOverall(c),
+          boughtParts: (c.installedParts || []).length,
+        };
         // Seed the sim-expansion systems from this car's mechanical condition
         // (BUYABLE_CARS literals predate the split).
         ensureCarSystems(bought);
@@ -24630,7 +24729,9 @@ addEventListener("DOMContentLoaded",function(){
           ];
         if (arc === "grind")
           return [
-            `${seasons} ago, a dead car rolled off a trailer and into your life.`,
+            (currentCar() || {}).origin === "project"
+              ? `${seasons} ago, somebody else's half-finished car rolled off a trailer and into your life.`
+              : `${seasons} ago, a dead car rolled off a trailer and into your life.`,
             "Every winter you covered it. Every spring you pulled the cover back off and went again.",
             "Listen, they're reading the results.",
           ];
@@ -24695,7 +24796,25 @@ addEventListener("DOMContentLoaded",function(){
           root.innerHTML = `<div class="modal modal-cine"><div class="cs-grain"></div><div class="cs-vignette"></div><div class="cs-bar cs-bar-top"></div><div class="cs-bar cs-bar-bot"></div><div class="finale-reveal">${spotMarkup}<div class="cs-kicker">Nationals · The results are in</div><div class="cs-title">NATIONAL CHAMPION</div><div class="cs-sub" style="margin:0 auto">${revealSub}</div><div class="cs-actions" style="justify-content:center"><button class="victory-primary" onclick="setVictoryStage('barn')">Take it in →</button></div></div></div>`;
           return true;
         }
-        // Stage 3, the bookend. Back to the barn, tarp on the floor.
+        // Stage 3, the bookend. Back to the barn, tarp on the floor. Unless
+        // there never was a tarp: a car bought off the Lot as a project
+        // started on a stranger's trailer, and the ending says so rather
+        // than claim a barn she was never in.
+        if (stage === "barn" && vcar && vcar.origin === "project") {
+          const at = vcar.boughtAt || 40;
+          const tripSub =
+            arc === "dynasty"
+              ? `This one never sat under a tarp. You bought her half done off a trailer and finished what a stranger started. The scene knows the difference, and stood up anyway.`
+              : arc === "longroad"
+                ? `No tarp on this one. She came home on a trailer at ${at}, half of somebody else's plans, and it took you ${seasonCountWord(seasonN)} and a thousand skinned knuckles to finish the other half. Tonight the whole scene stood up.`
+                : `No tarp on this one. She came home on a trailer from a stranger's driveway, already a ${at} on somebody else's build sheet. Every point after that was yours, and tonight the whole scene saw them.`;
+          const tripArt = CUTSCENE_ART["loading-haul-home"];
+          const cta = `<button class="victory-primary" onclick="setVictoryStage('credits')">Roll it →</button>`;
+          root.innerHTML = tripArt
+            ? `<div class="modal modal-cine"><div class="cs-art cs-drift-a" style="background-image:url('${tripArt}')"></div><div class="cs-grain"></div><div class="cs-vignette"></div><div class="cs-bar cs-bar-top"></div><div class="cs-bar cs-bar-bot"></div><div class="cs-caption"><div class="cs-kicker">Where it started</div><div class="cs-title">IT STARTED ON A TRAILER.</div><div class="cs-sub">${tripSub}</div><div class="cs-actions">${cta}</div></div></div>`
+            : `<div class="modal"><div class="modal-card victory-modal show-beat" style="max-width:600px"><div class="victory-kicker">Where it started</div><div class="victory-trophy" style="font-size:34px"></div><div class="victory-title" style="font-size:26px">IT STARTED ON A TRAILER.</div><div class="victory-sub">${tripSub}</div><div class="victory-actions">${cta}</div></div></div>`;
+          return true;
+        }
         if (stage === "barn") {
           const barnSub =
             arc === "prodigy"
@@ -27204,6 +27323,14 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         // Two rows of tiles at desk width. Three used to be three tall list
         // rows, which showed fewer cars in more height.
         const LOT_PREVIEW = 8;
+        // The project cars are scattered, but the first page always carries
+        // one, the tile that stops you on a page of rust. If buying it, or
+        // Dale's three parked up front, pushed them all past the fold, the
+        // next one down moves up to the fourth spot.
+        if (!carsForSale.slice(0, LOT_PREVIEW).some((c) => c.lotBucket === "project")) {
+          const k = carsForSale.findIndex((c) => c.lotBucket === "project");
+          if (k >= LOT_PREVIEW) carsForSale.splice(3, 0, carsForSale.splice(k, 1)[0]);
+        }
         const lotExpanded = !!state.lotExpanded;
         const lotShown = lotExpanded
           ? carsForSale
@@ -27216,16 +27343,19 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           ? `<div class="lst-grid lot-grid">` + lotShown
               .map(
                 (c) => {
-                  const starter = Math.round((c.engine + c.transmission + c.brakes + c.body + c.paint + c.interior + c.chrome) / 7);
+                  const score = getOverall(c);
                   // Classified-ad kicker instead of repeating the section
                   // title on every card, the seller's tone tells you what
                   // you're walking into. Deterministic per car, so a listing
-                  // reads the same every visit.
-                  const tonePool = starter < 20
-                    ? ["RAN WHEN PARKED", "SAT FOR YEARS · MUST GO", "PROJECT · BRING A TRAILER"]
-                    : starter < 26
-                      ? ["NEEDS TLC · NO LOWBALLERS", "MECHANIC'S SPECIAL", "95% DONE · JUST NEEDS FINISHING"]
-                      : ["GARAGE KEPT · SERIOUS INQUIRIES ONLY", "ADULT OWNED · CLEAN TITLE", "RARE FIND · WON'T LAST"];
+                  // reads the same every visit. It stays the seller talking,
+                  // never a grade: the photo is the truth about the body,
+                  // and "95% done" on a barn find is a man lying to himself
+                  // before he lies to you.
+                  const tonePool = c.lotBucket === "project"
+                    ? ["GARAGE KEPT · SERIOUS INQUIRIES ONLY", "ADULT OWNED · CLEAN TITLE", "RARE FIND · WON'T LAST", "LOST MY SHOP · SELLING AS IS"]
+                    : c.lotBucket === "rough"
+                      ? ["NEEDS TLC · NO LOWBALLERS", "MECHANIC'S SPECIAL", "RUNS AND DRIVES · NEEDS EVERYTHING ELSE"]
+                      : ["RAN WHEN PARKED", "SAT FOR YEARS · MUST GO", "95% DONE · JUST NEEDS FINISHING", "PROJECT · BRING A TRAILER"];
                   const listingTone = tonePool[c.id % tonePool.length];
                   // The chip carries the seller's headline, in quotes because
                   // it is the seller talking; the photo underneath is what
@@ -27245,7 +27375,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         <div class="lst-body">
           <div class="lst-price">$${fmt(c.price)}</div>
           <div class="lst-title" title="${name}">${name}</div>
-          <div class="lst-sub">Score ${starter} · ${where}</div>
+          <div class="lst-sub">Score ${score} · ${where}</div>
           <div class="lst-acts">${button(short ? `Short $${fmt(c.price - state.money)}` : "Buy it", `buyCar(${c.id})`, short, "", "width:100%")}</div>
         </div>
       </div>`;
@@ -28486,7 +28616,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
             ${b.wonNational ? `<div class="legacy-card-badge">${ico("trophy", "15px")}</div>` : ""}
             <div class="legacy-card-emoji">${b.emoji || ""}</div>
             <div class="legacy-card-title">${b.year || ""} ${b.make || ""} ${b.model || ""}</div>
-            <div class="legacy-card-sub">Build #${b.completedSeason || "-"} · ${b.wonNational ? "National Champion" : "Retired Project"}</div>
+            <div class="legacy-card-sub">Build #${b.completedSeason || "-"} · ${b.wonNational ? "National Champion" : "Retired Project"}${b.origin === "project" ? ` · Bought as a project${b.boughtAt ? `, at ${b.boughtAt}` : ""}` : ""}</div>
             <div class="legacy-card-stats">
               <div class="legacy-card-stat">
                 <div class="legacy-card-stat-v ${b.finalOverall >= 90 ? "gold" : ""}">${b.finalOverall || 0}</div>
