@@ -68,17 +68,53 @@
       .app {
         max-width: 1240px;
         margin: 0 auto;
-        padding: 18px;
+        /* No padding on TOP of the scroll container. A sticky header pins to
+           the padding edge, so top padding here leaves a strip of moving
+           content above the stuck bar and the whole header reads as floating
+           over the game. The air above the shell is the shell's margin
+           instead: it scrolls away, and the bar pins flush like it used to
+           when the document was the scroller. */
+        padding: 0 18px 18px;
         height: 100%;
         overflow-y: auto;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+      }
+      /* The scroll column's own bar. Once the document stopped scrolling this
+         became a default OS scrollbar sitting in the middle of a warm brown
+         game, bright grey with arrows on it. Dressed to match: thin, brass on
+         dark, and it fades up on hover rather than announcing itself. Firefox
+         takes the two-value form, WebKit and Blink take the pseudo-elements,
+         and anything else just gets its own default, which is fine. */
+      .app {
+        scrollbar-width: thin;
+        scrollbar-color: #7a6242 rgba(0, 0, 0, 0.25);
+      }
+      .app::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      .app::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.25);
+        border-radius: 8px;
+      }
+      .app::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #7d6647 0%, #5d4a33 100%);
+        border: 2px solid rgba(0, 0, 0, 0.25);
+        border-radius: 8px;
+      }
+      .app::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, #a3814f 0%, #7d6647 100%);
+      }
+      .app::-webkit-scrollbar-corner {
+        background: transparent;
       }
       .shell {
         background: linear-gradient(180deg, #2a231d 0%, #1c1713 100%);
         border: 1px solid #51453a;
         border-radius: 14px;
         box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+        margin-top: 18px;
       }
       /* One line, and it stays one line. The bar used to run three rows deep
          on a narrow desktop: the week plate stacked its own two lines, then
@@ -3018,8 +3054,10 @@
       }
       @media (max-width: 640px) {
         .app {
-          padding: 10px;
+          /* Same reason as the desktop rule: nothing above the sticky bar. */
+          padding: 0 10px 10px;
         }
+        .shell { margin-top: 10px; }
         .topbar {
           padding: 12px 14px;
           gap: 10px;
@@ -5783,7 +5821,8 @@
       ════════════════════════════════════════════════════════════ */
 
       /* ── shared: more outer air, calmer rhythm ── */
-      .app { max-width: 1320px; padding: 22px; }
+      .app { max-width: 1320px; padding: 0 22px 22px; }
+      .shell { margin-top: 22px; }
       /* Vertical air only. The horizontal padding is what makes the page
          feel like a panel instead of a spreadsheet, so it stays; the top and
          bottom were stacking with the tab row above and every panel below,
@@ -11878,7 +11917,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.89.2";
+      const GAME_VERSION = "0.89.3";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -25064,8 +25103,20 @@ addEventListener("DOMContentLoaded",function(){
         ["bad", 16],
       ];
       const IN_HERE_HIT = 3;
+      // Only on a job you are doing yourself. The whole beat is that you are
+      // already under there with the trim off and you get one look at what
+      // else the car is hiding. Send it to the shop and you are not under
+      // there: somebody else is, and whatever they notice is theirs. Offering
+      // the look on a shop ticket was the game letting you rummage through a
+      // car sitting in another man's bay.
       function canLookInHere(task) {
-        return !!task && !task.completed && !task.looked && Date.now() < task.finishTime;
+        return (
+          !!task &&
+          task.method !== "shop" &&
+          !task.completed &&
+          !task.looked &&
+          Date.now() < task.finishTime
+        );
       }
       function lookWhileInHere(taskId) {
         const task = (state.activeRestorations || []).find((t) => t.id === taskId);
@@ -25161,7 +25212,9 @@ addEventListener("DOMContentLoaded",function(){
                   ? `${button("While you're in there, have a look", `lookWhileInHere('${task.id}')`, false, "", "width:100%;margin-top:8px;font-size:11px;background:#3a2a1a;border-color:#8a5a2a;color:#e8c79a")}<div class="tiny muted" style="margin-top:4px;line-height:1.45">One look while she is open. Whatever you check, you are not checking the other thing.</div>`
                   : task.looked
                     ? `<div class="tiny muted" style="margin-top:8px;line-height:1.45">You already had your look at this one.</div>`
-                    : ""
+                    : task.method === "shop" && remaining > 0
+                      ? `<div class="tiny muted" style="margin-top:8px;line-height:1.45">She's up on somebody else's lift. Whatever he finds in there, he finds.</div>`
+                      : ""
               }</div>`;
             })
             .join("")}`,
