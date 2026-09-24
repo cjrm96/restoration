@@ -11993,7 +11993,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.90.2";
+      const GAME_VERSION = "0.90.3";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -28419,9 +28419,31 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         </div>`;
       }
 
+      // The Annual is the season's last word, so nothing talks over it. It is
+      // page content and every notice is a modal, so anything queued at the
+      // final show (Buck's jab about a first Local win, a milestone, a DM)
+      // used to open straight on top of the front page with the paper
+      // printed behind it. The weekly recap has waited behind these for a
+      // long time (recapBlockersActive); the season recap never learned to.
+      // It waits now: the notices play out over whatever screen the player
+      // was on, and the Annual arrives once they are read. Held at render
+      // time rather than at the three places that start the wrap, so a
+      // fourth one cannot forget.
+      function seasonWrapHeld() {
+        return (
+          !!state.seasonWrap &&
+          (!!(state.noticeQueue && state.noticeQueue.length) ||
+            !!(state.eventQueue && state.eventQueue.length) ||
+            !!state.pendingScene ||
+            !!state.pendingEvent ||
+            !!state.pendingUnlock ||
+            !!state.pendingVictory ||
+            !!state.cutscene)
+        );
+      }
       function renderContent() {
         if (state.gameOver) return renderGameOver();
-        if (state.seasonWrap) return renderSeasonWrap();
+        if (state.seasonWrap && !seasonWrapHeld()) return renderSeasonWrap();
         switch (state.view) {
           case "garage":
           case "workshop":
@@ -28625,7 +28647,9 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
             : `${seasonPhaseTop.remaining} wk${seasonPhaseTop.remaining === 1 ? "" : "s"} left`;
         getEl("topStateMain").textContent = inPreSeason()
           ? `Pre-Season · Wk ${state.preWeek}/${PRESEASON_WEEKS} · shows open in ${Math.max(0, PRESEASON_WEEKS - state.preWeek) + 1} wk${(PRESEASON_WEEKS - state.preWeek) === 0 ? "" : "s"}`
-          : `Wk ${state.week}/${state.seasonLength} · ${seasonPhaseTop.phase}${seasonPhaseTop.remaining === 0 ? " · season finale" : ""}`;
+          : // The week ticks past the last one on the way into the wrap, and the
+            // header used to print it: "Wk 23/22". There is no week 23.
+            `Wk ${Math.min(state.week, state.seasonLength)}/${state.seasonLength} · ${seasonPhaseTop.phase}${seasonPhaseTop.remaining === 0 ? " · season finale" : ""}`;
         getEl("topStateSub").innerHTML =
           `Build Tier: <span style="color:#e8d8b2;font-weight:bold">${headerTier}</span> · <span style="color:var(--gold-soft);font-weight:bold">${garageLoreTier()}</span>${state.freshHeadline ? " · " + state.freshHeadline : ""}${Date.now() < state.saveFlashUntil ? " · Saving…" : state.lastSaved ? " · Saved" : ""}`;
         const moneyChip = getEl("moneyChip");
@@ -28865,6 +28889,9 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           state.carId,
           state.gameOver ? 1 : 0,
           state.seasonWrap ? 1 : 0,
+          // Without this the last notice is dismissed, the hold lifts, and the
+          // content stays cached on whatever was behind it: no Annual.
+          seasonWrapHeld() ? 1 : 0,
           // Pre-season week + the gig board: advancing the off-season week
           // rolls a fresh board, and without these in the signature the main
           // content stayed cached on the old (all-done) jobs while only the
