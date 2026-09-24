@@ -1964,6 +1964,23 @@
         color: var(--red-bright);
         margin-left: 6px;
       }
+      /* A named face who is not Buck. Tagged with where you actually stand
+         with them, the same words the Social tab uses, so a man who already
+         told the old guard you are one of the good ones is not painted red. */
+      .rival-badge.known {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(228, 216, 193, 0.28);
+        color: #b8ab94;
+      }
+      .rival-badge.known.warm {
+        border-color: rgba(217, 162, 79, 0.5);
+        color: var(--gold-soft);
+      }
+      .rival-badge.known.ally {
+        background: rgba(79, 112, 74, 0.18);
+        border-color: rgba(143, 196, 128, 0.5);
+        color: #9fd18e;
+      }
 
       .guide-step {
         display: flex;
@@ -11976,7 +11993,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.90.1";
+      const GAME_VERSION = "0.90.2";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -20062,13 +20079,24 @@
         // debut look like a grudge match. They arrive a face at a time now.
         // Buck is not counted here, he enters every show on the calendar and
         // says so, so early on he is the only name you recognise.
+        // And they stop at one. The cap used to climb with experience, one
+        // after two shows, two after five, three after nine, and never came
+        // back down, so from the ninth show on every field was Buck plus three
+        // named rivals plus one stranger: four of five opponents wearing the
+        // tag. A rival is the one person you are measuring yourself against,
+        // and when it is everybody it is nobody. One familiar face a show,
+        // rotating, so over a season you still meet all of them. This costs
+        // the alliance arc nothing: respect is earned from every rival who
+        // runs the tier and likes the build (see rivalCrossings below),
+        // whether or not they were drawn into this field.
         const runsSoFar = (state.history || []).length;
-        const namedCap =
-          runsSoFar >= 9 ? 3 : runsSoFar >= 5 ? 2 : runsSoFar >= 2 ? 1 : 0;
+        const namedCap = runsSoFar >= 2 ? 1 : 0;
         const namedInField = attendingRivals.slice(0, namedCap).map((r) => ({
           name: r.car || `${r.short}'s build`,
           score: rivalPersonaScore(r, show, compMax),
-          isRival: true,
+          // Not isRival: that is Buck. A named face carries where you actually
+          // stand with them instead, which the standings draw as its own tag.
+          named: true,
           rivalId: r.id,
         }));
         const fillerCount = Math.max(0, 4 - namedInField.length);
@@ -26271,7 +26299,7 @@ addEventListener("DOMContentLoaded",function(){
             ? ""
             : `<div class="tiny muted" style="text-align:center;margin-bottom:4px">Prize $${fmt(r.prize)} · Entry -$${fmt(r.fee)} · Fuel -${r.fuelUsed} gal</div>`
         }${!isCoffee && r.repDelta > 0 ? `<div class="tiny muted" style="text-align:center;margin-bottom:4px">Scene standing: <b style="color:var(--text)">${r.repTitle}</b>, word's getting around</div>` : ""}${shareHint}`;
-        const standingsBody = `${r.standings.map((e, i) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 6px;border-bottom:${i < r.standings.length - 1 ? "1px dashed #453a31" : "none"};background:${e.isPlayer ? "rgba(79,112,74,0.18)" : e.isRival ? "rgba(112,40,40,0.15)" : "transparent"};border-radius:4px"><div style="display:flex;gap:10px"><span style="color:${i === 0 ? "#d8a24f" : "#7d7468"};font-weight:bold;width:18px">${i + 1}</span><span style="color:${e.isPlayer ? "#9fd18e" : e.isRival ? "#e07070" : "#e4d8c1"};font-size:14px">${e.name}${e.isRival ? `<span class="rival-badge">RIVAL</span>` : ""}</span></div><span class="small muted">${isCoffee ? "" : e.score}</span></div>`).join("")}`;
+        const standingsBody = `${r.standings.map((e, i) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 6px;border-bottom:${i < r.standings.length - 1 ? "1px dashed #453a31" : "none"};background:${e.isPlayer ? "rgba(79,112,74,0.18)" : e.isRival ? "rgba(112,40,40,0.15)" : "transparent"};border-radius:4px"><div style="display:flex;gap:10px"><span style="color:${i === 0 ? "#d8a24f" : "#7d7468"};font-weight:bold;width:18px">${i + 1}</span><span style="color:${e.isPlayer ? "#9fd18e" : e.isRival ? "#e07070" : "#e4d8c1"};font-size:14px">${e.name}${e.isRival ? `<span class="rival-badge">RIVAL</span>` : e.named && e.rivalId ? `<span class="rival-badge known ${rivalTier(e.rivalId)}">${RIVAL_TIER_LABEL[rivalTier(e.rivalId)]}</span>` : ""}</span></div><span class="small muted">${isCoffee ? "" : e.score}</span></div>`).join("")}`;
         const tasteLine =
           !isCoffee && r.tasteEdge && r.tasteId && SCENE_TASTES[r.tasteId]
             ? r.tasteEdge > 0
