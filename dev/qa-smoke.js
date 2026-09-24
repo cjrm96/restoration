@@ -2730,7 +2730,15 @@ const pass = (msg) => console.log("✓", msg);
     await phone.evaluate(() => { state.noticeQueue = []; render("full"); });
     await phone.waitForTimeout(400);
     const m = await phone.evaluate(() => ({
-      doc: document.documentElement.scrollWidth, vp: window.innerWidth,
+      // The app column owns the scroll now (see the .app rule in the game), so
+      // the document can no longer report sideways overflow: overflow:hidden
+      // clamps it. Measure the real scroller or this check quietly stops
+      // checking anything.
+      doc: Math.max(
+        document.documentElement.scrollWidth,
+        (document.querySelector(".app") || {}).scrollWidth || 0,
+      ),
+      vp: window.innerWidth,
       h: document.getElementById("appContent").scrollHeight, vh: window.innerHeight,
       cards: [...document.querySelectorAll("#appContent .job-card")].length,
       wrap: (() => { const el = document.querySelector(".shop-subtabs");
@@ -2743,6 +2751,73 @@ const pass = (msg) => console.log("✓", msg);
     if (perrs.length) fail("phone: " + perrs.join(" | "));
     pass(`phone 390x844: no sideways scroll, ${m.cards} job cards, ${(m.h / m.vh).toFixed(2)} screens tall`);
     await phone.close();
+  }
+
+  // ── the itch embed ────────────────────────────────────────────────────────
+  // itch serves the game in an iframe and the host decides whether that frame
+  // may scroll; its scrollbars option defaults off. A build that relies on
+  // document scroll is cut off at the fold there with no way down, which is
+  // most of the Build tab. So: the document must NOT be the scroller, and the
+  // app column must be.
+  {
+    const embed = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+    // The host has to be a real file next to the game: a file:// iframe inside
+    // an about:blank parent (what setContent gives you) is cross-origin and
+    // never loads, which looks exactly like the failure this check is for.
+    const efs = require("fs");
+    const hostPath = path.resolve(__dirname, "..", ".qa-embed-host.html");
+    efs.writeFileSync(
+      hostPath,
+      "<!doctype html><html><head><meta charset=\"utf-8\"><style>" +
+        "html,body{margin:0;height:100%;overflow:hidden}" +
+        "iframe{display:block;width:100%;height:100%;border:0}</style></head><body>" +
+        `<iframe scrolling="no" src="${GAME}"></iframe></body></html>`,
+    );
+    const cleanupHost = () => { try { efs.unlinkSync(hostPath); } catch (e) {} };
+    await embed.goto("file://" + hostPath);
+    await embed.waitForTimeout(1200);
+    const gf = embed.frames().find((f) => f.url().includes("Car_Guy_Sim"));
+    if (!gf) fail("itch embed: the game frame never loaded");
+    await gf.waitForFunction(() => typeof window.startGame === "function");
+    await gf.evaluate(() => startGame());
+    await embed.waitForTimeout(800);
+    for (let i = 0; i < 8; i++) {
+      await gf.evaluate(() => {
+        if (state.cutscene) dismissCutscene(true);
+        state.noticeQueue = []; state.pendingScene = null; state.pendingUnlock = null;
+        const cr = document.getElementById("cutsceneRoot"); if (cr) cr.innerHTML = "";
+        const mr = document.getElementById("modalRoot"); if (mr) mr.innerHTML = "";
+      });
+      await embed.waitForTimeout(110);
+    }
+    await gf.evaluate(() => {
+      state.tutorialComplete = true;
+      Object.keys(state.milestones).forEach((k) => (state.milestones[k] = true));
+      state.onboardStage = 3; state.preWeek = 0; state.week = 13;
+      state.money = 25000; state.installsDone = 12;
+      setView("workshop"); requestRender("full");
+    });
+    await embed.waitForTimeout(700);
+    const e1 = await gf.evaluate(() => {
+      const app = document.querySelector(".app");
+      return {
+        docScrolls: document.documentElement.scrollHeight > window.innerHeight + 2,
+        appScrolls: app.scrollHeight > app.clientHeight + 2,
+        tall: app.scrollHeight, frame: app.clientHeight,
+      };
+    });
+    if (e1.docScrolls) fail("itch embed: the document is the scroller, so a no-scroll frame cuts the game off");
+    if (!e1.appScrolls) fail(`itch embed: the app column cannot scroll (${e1.tall}px in a ${e1.frame}px frame)`);
+    await gf.evaluate(() => { const a = document.querySelector(".app"); a.scrollTop = 99999; });
+    await embed.waitForTimeout(250);
+    const e2 = await gf.evaluate(() => {
+      const a = document.querySelector(".app");
+      return a.scrollTop + a.clientHeight >= a.scrollHeight - 4;
+    });
+    if (!e2) fail("itch embed: cannot reach the bottom of the Build tab inside the frame");
+    pass(`itch embed: scrolls inside scrolling="no" (${e1.tall}px of game in a ${e1.frame}px frame)`);
+    cleanupHost();
+    await embed.close();
   }
 
   await browser.close();

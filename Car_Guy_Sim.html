@@ -50,10 +50,29 @@
           linear-gradient(180deg, #56483a 0%, #302721 45%, #1f1915 100%);
         min-height: 100vh;
       }
+      /* The document does not scroll. The app column does.
+         On itch the game is served inside an iframe and the host page decides
+         whether that frame may scroll at all; itch's "fullscreen/scrollbars"
+         option defaults off, and a game that relies on document scroll is then
+         simply cut off at the fold with no way down. The Build tab runs about
+         two screens, so that is most of the game.
+         Element scrolling is not the frame's scroll and works no matter what
+         the host set scrolling= to, so the column owns it and the embed stops
+         mattering. Everything position:fixed still anchors to the viewport,
+         and the sticky header now sticks to this container instead. */
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
       .app {
         max-width: 1240px;
         margin: 0 auto;
         padding: 18px;
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
       }
       .shell {
         background: linear-gradient(180deg, #2a231d 0%, #1c1713 100%);
@@ -11859,7 +11878,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.89.1";
+      const GAME_VERSION = "0.89.2";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -20904,7 +20923,7 @@
         state.view = v;
         // Every tab starts at the top, don't carry a deep build-screen
         // scroll over to Social (where the phone lives up top).
-        if (changed) window.scrollTo(0, 0);
+        if (changed) scrollAppToTop();
         requestRender("full");
       }
       function setCar(id) {
@@ -27202,6 +27221,17 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         requestRender("full");
       }
 
+      // The element that actually scrolls. See the .app rule: the document is
+      // locked so the game still scrolls inside an iframe whose host will not
+      // let the frame itself move.
+      function appScroller() {
+        return document.querySelector(".app");
+      }
+      function scrollAppToTop() {
+        const el = appScroller();
+        if (el) el.scrollTop = 0;
+        else window.scrollTo(0, 0);
+      }
       function renderPhoneStatusBar() {
         return `<div class="phone-status-bar"><span class="ps-time">8:24 AM</span><span class="ps-icons"> </span></div>`;
       }
@@ -29266,9 +29296,16 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         if (!bar) return;
         let stuck = null;
         const upd = () => {
-          const now = window.scrollY > 4;
+          // The scroll owner is the app column now, not the document. Keep
+          // reading the window too so this still behaves if the page is ever
+          // opened somewhere the column is not the scroller.
+          const el = appScroller();
+          const y = el ? el.scrollTop : window.scrollY;
+          const now = y > 4;
           if (now !== stuck) { stuck = now; bar.classList.toggle("topbar-stuck", now); }
         };
+        const el = appScroller();
+        if (el) el.addEventListener("scroll", upd, { passive: true });
         window.addEventListener("scroll", upd, { passive: true });
         upd();
       })();
