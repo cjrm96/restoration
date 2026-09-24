@@ -1509,6 +1509,35 @@
       }
       /* The section of the site you are actually on, under the masthead, the
          way a classifieds page has always done it. */
+      /* A listing on the Lot: the seller's photo beside the ad. */
+      .lot-listing {
+        display: flex;
+        gap: 12px;
+        align-items: stretch;
+      }
+      .lot-listing-body {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .lot-photo {
+        flex: 0 0 150px;
+        height: 86px;
+        align-self: center;
+        border-radius: 3px;
+        /* a seller's snapshot: flat daylight, a strip of driveway */
+        background:
+          linear-gradient(180deg, #c9d3d8 0%, #dfe4e2 58%, #9d978b 58%, #8a8478 100%);
+        border: 3px solid #f4efe3;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+      }
+      @media (max-width: 520px) {
+        .lot-listing { flex-direction: column; }
+        .lot-photo { flex-basis: auto; width: 100%; height: 120px; }
+      }
       .crt-site-sub {
         font-size: 10.5px;
         letter-spacing: 1.4px;
@@ -4734,7 +4763,10 @@
       }
 
       /* ── Marketplace (parchment classified-ad cards) ── */
-      .hero-panel.marketplace .feed-item {
+      /* The Lot lost its hero panel but keeps the paper, so its board is named
+         alongside the wrapper the other marketplace tabs still use. */
+      .hero-panel.marketplace .feed-item,
+      .lot-board .feed-item {
         background: linear-gradient(180deg, #efe5cb 0%, #e3d7b6 100%);
         color: #1d1208;
         border: 1px solid #8d7a55;
@@ -4745,26 +4777,31 @@
           inset 0 1px 0 rgba(255, 255, 255, 0.35),
           0 4px 12px rgba(0, 0, 0, 0.45);
       }
-      .hero-panel.marketplace .feed-item .feed-kicker {
+      .hero-panel.marketplace .feed-item .feed-kicker,
+      .lot-board .feed-item .feed-kicker {
         color: #2c4d6e;
         font-size: 10px;
         font-weight: bold;
         letter-spacing: 1.5px;
         text-transform: uppercase;
       }
-      .hero-panel.marketplace .feed-item .feed-text {
+      .hero-panel.marketplace .feed-item .feed-text,
+      .lot-board .feed-item .feed-text {
         color: #1d1208;
         font-weight: 600;
         font-size: 14px;
         margin-top: 3px;
       }
-      .hero-panel.marketplace .feed-item .feed-meta {
+      .hero-panel.marketplace .feed-item .feed-meta,
+      .lot-board .feed-item .feed-meta {
         color: #5d4a30;
         font-size: 12px;
         margin-top: 4px;
       }
       .hero-panel.marketplace .feed-item .tiny.muted,
-      .hero-panel.marketplace .feed-item .small.muted {
+      .hero-panel.marketplace .feed-item .small.muted,
+      .lot-board .feed-item .tiny.muted,
+      .lot-board .feed-item .small.muted {
         color: #6b5840;
       }
 
@@ -5995,7 +6032,8 @@
         transition: transform .12s ease, box-shadow .12s ease;
       }
       .feed-item:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.4); }
-      .hero-panel.marketplace .feed-item:hover { box-shadow: 0 10px 22px rgba(0,0,0,.5); }
+      .hero-panel.marketplace .feed-item:hover,
+      .lot-board .feed-item:hover { box-shadow: 0 10px 22px rgba(0,0,0,.5); }
       /* the two Saturday road-trip choice cards (inline-styled grid in a hero) */
       .hero-panel .info-box[style*="grid-template-columns:1fr 1fr"] > div {
         border-radius: 11px !important;
@@ -11993,7 +12031,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.90.3";
+      const GAME_VERSION = "0.91.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -22830,7 +22868,11 @@ addEventListener("DOMContentLoaded",function(){
           return cleanBody({ lights: true });
       }
 
-      function carPreview(car) {
+      // The car as it actually is. Every stat that shows on the body (paint,
+      // chrome, rust, dents, which build stage the silhouette is drawn at) is
+      // read here and nowhere else, so the bay and the Lot agree on what a
+      // given car looks like.
+      function carConditionLook(car) {
         const palette = ((n) =>
           ({
             truck: {
@@ -22995,11 +23037,6 @@ addEventListener("DOMContentLoaded",function(){
                     : "show car")(overall);
         const bodyHealth = (car.body + car.paint + car.chrome) / 3;
         const mechHealth = (car.engine + car.transmission + car.brakes) / 3;
-        // Rough engine wisps off a little smoke, heavier the worse it runs,
-        // clearing entirely once roadworthy. (The old box behind it is gone;
-        // this is just the rising particles.)
-        const smokeOpacity =
-          car.engine >= ROADWORTHY_ENGINE ? 0 : car.engine < 20 ? 0.55 : 0.3;
         const baseColor = car.paint < 25 ? "#8a8e93" : palette.body;
         const roofColor = car.paint < 25 ? "#5d6470" : palette.roof;
         const trimColor =
@@ -23020,6 +23057,68 @@ addEventListener("DOMContentLoaded",function(){
         const rustOpacity =
           bodyHealth < 30 ? 0.75 : bodyHealth < 50 ? 0.4 : 0.08;
         const dentOpacity = car.body < 35 ? 0.45 : car.body < 55 ? 0.22 : 0.05;
+        const stageLevel =
+          overall < 20 ? 0 : overall < 35 ? 1 : overall < 55 ? 2 : overall < 80 ? 3 : 4;
+        const spriteColors = {
+          baseColor,
+          roofColor,
+          windowColor,
+          trimColor,
+          wheelColor,
+          wheelSpoke,
+          wheelHub,
+          wheelTire: mechHealth < 25 ? "#23262b" : wheelColor,
+          primerColor,
+          rustColor,
+          shadowColor,
+        };
+        return { palette, overall, stage, stageLevel, bodyHealth, mechHealth, baseColor,
+          roofColor, trimColor, wheelColor, wheelSpoke, wheelHub, windowColor, shadowColor,
+          primerColor, rustColor, rustOpacity, dentOpacity, spriteColors };
+      }
+      const CAR_SPRITES = {
+        truck: (l, c) => f100Sprite(l, c),
+        camaro: (l, c) => camaroSprite(l, c),
+        belair: (l, c) => belairSprite(l, c),
+        mustang: (l, c) => mustangSprite(l, c),
+        corvette: (l, c) => corvetteSprite(l, c),
+        eldorado: (l, c) => eldoradoSprite(l, c),
+        transam: (l, c) => transamSprite(l, c),
+        gt500: (l, c) => gt500Sprite(l, c),
+        marauder: (l, c) => marauderSprite(l, c),
+        c10: (l, c) => c10Sprite(l, c),
+        f250: (l, c) => f250Sprite(l, c),
+      };
+      // Just the car, drawn at its stage and in its colours. The sprite
+      // functions read the wheel style from a module variable rather than an
+      // argument, so it is set here, where every caller goes through.
+      function carSpriteSvg(car, look) {
+        const l = look || carConditionLook(car);
+        _activeWheelStyle = wheelStyleFor(car.style);
+        const draw = CAR_SPRITES[car.style];
+        return draw ? draw(l.stageLevel, l.spriteColors) : "";
+      }
+      // A listing's photo. The same car the bay would draw, at the stage and in
+      // the colours its stats put it at, cropped to the car. No bay, no
+      // effects: a seller's snapshot. What the ad says and what the photo shows
+      // are allowed to disagree, which is most of what a classifieds page is.
+      function carListingPhoto(car) {
+        const sprite = carSpriteSvg(car);
+        return `<div class="lot-photo"><svg viewBox="34 48 276 124" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block;image-rendering:pixelated" shape-rendering="crispEdges">${sprite}</svg></div>`;
+      }
+      function carPreview(car) {
+        // What the car looks like in its current condition, shared with every
+        // other place that shows a car (the Lot, first of all), so there is one
+        // answer to "how rusty does a 23 look" instead of two that drift.
+        const look = carConditionLook(car);
+        const { palette, overall, stage, bodyHealth, mechHealth, baseColor, roofColor,
+          trimColor, wheelColor, wheelSpoke, wheelHub, windowColor, shadowColor,
+          primerColor, rustColor, rustOpacity, dentOpacity } = look;
+        // Rough engine wisps off a little smoke, heavier the worse it runs,
+        // clearing entirely once roadworthy. (The old box behind it is gone;
+        // this is just the rising particles.)
+        const smokeOpacity =
+          car.engine >= ROADWORTHY_ENGINE ? 0 : car.engine < 20 ? 0.55 : 0.3;
         const carFinish = finishDef(car);
         const shineOpacity =
           (car.paint > 60 && car.chrome > 60 ? 0.35 : car.paint > 40 ? 0.15 : 0) *
@@ -23060,16 +23159,7 @@ addEventListener("DOMContentLoaded",function(){
         const revealFxMarkup = revealFx
           ? `<g><g class="cg-fx-sweep"><rect x="0" y="64" width="7" height="86" fill="#ffffff" opacity="0.5"/><rect x="7" y="64" width="14" height="86" fill="#ffffff" opacity="0.16"/></g>${[[104, 84], [168, 74], [224, 92], [140, 108], [252, 112]].map((p, i) => `<g class="cg-fx-sparkle" style="animation-delay:${0.5 + i * 0.28}s"><rect x="${p[0]}" y="${p[1]}" width="3" height="3" fill="#fff"/><rect x="${p[0] - 3}" y="${p[1]}" width="3" height="3" fill="#fff" opacity="0.45"/><rect x="${p[0] + 3}" y="${p[1]}" width="3" height="3" fill="#fff" opacity="0.45"/><rect x="${p[0]}" y="${p[1] - 3}" width="3" height="3" fill="#fff" opacity="0.45"/><rect x="${p[0]}" y="${p[1] + 3}" width="3" height="3" fill="#fff" opacity="0.45"/></g>`).join("")}</g>`
           : "";
-        const truckStageLevel =
-          overall < 20
-            ? 0
-            : overall < 35
-              ? 1
-              : overall < 55
-                ? 2
-                : overall < 80
-                  ? 3
-                  : 4;
+        const truckStageLevel = look.stageLevel;
         const bg = ((l) => {
           switch (l) {
             case "curb":
@@ -23115,173 +23205,7 @@ addEventListener("DOMContentLoaded",function(){
           }
         })(state.workshopLevel);
 
-        _activeWheelStyle = wheelStyleFor(car.style);
-        let sprite = "";
-        if (car.style === "truck") {
-          sprite = f100Sprite(truckStageLevel, {
-            baseColor,
-            roofColor,
-            windowColor,
-            trimColor,
-            wheelColor,
-            wheelSpoke,
-            wheelHub,
-            wheelTire: mechHealth < 25 ? "#23262b" : wheelColor,
-            primerColor,
-            rustColor,
-            shadowColor,
-          });
-        }
-        if (car.style === "camaro") {
-          sprite = camaroSprite(truckStageLevel, {
-            baseColor,
-            roofColor,
-            windowColor,
-            trimColor,
-            wheelColor,
-            wheelSpoke,
-            wheelHub,
-            wheelTire: mechHealth < 25 ? "#23262b" : wheelColor,
-            primerColor,
-            rustColor,
-            shadowColor,
-          });
-        }
-        if (car.style === "belair") {
-          sprite = belairSprite(truckStageLevel, {
-            baseColor,
-            roofColor,
-            windowColor,
-            trimColor,
-            wheelColor,
-            wheelSpoke,
-            wheelHub,
-            wheelTire: mechHealth < 25 ? "#23262b" : wheelColor,
-            primerColor,
-            rustColor,
-            shadowColor,
-          });
-        }
-        if (car.style === "mustang") {
-          sprite = mustangSprite(truckStageLevel, {
-            baseColor,
-            roofColor,
-            windowColor,
-            trimColor,
-            wheelColor,
-            wheelSpoke,
-            wheelHub,
-            wheelTire: mechHealth < 25 ? "#23262b" : wheelColor,
-            primerColor,
-            rustColor,
-            shadowColor,
-          });
-        }
-        if (car.style === "corvette") {
-          sprite = corvetteSprite(truckStageLevel, {
-            baseColor,
-            roofColor,
-            windowColor,
-            trimColor,
-            wheelColor,
-            wheelSpoke,
-            wheelHub,
-            wheelTire: mechHealth < 25 ? "#23262b" : wheelColor,
-            primerColor,
-            rustColor,
-            shadowColor,
-          });
-        }
-        if (car.style === "eldorado") {
-          sprite = eldoradoSprite(truckStageLevel, {
-            baseColor,
-            roofColor,
-            windowColor,
-            trimColor,
-            wheelColor,
-            wheelSpoke,
-            wheelHub,
-            wheelTire: mechHealth < 25 ? "#23262b" : wheelColor,
-            primerColor,
-            rustColor,
-            shadowColor,
-          });
-        }
-        if (car.style === "transam") {
-          sprite = transamSprite(truckStageLevel, {
-            baseColor,
-            roofColor,
-            windowColor,
-            trimColor,
-            wheelColor,
-            wheelSpoke,
-            wheelHub,
-            wheelTire: mechHealth < 25 ? "#23262b" : wheelColor,
-            primerColor,
-            rustColor,
-            shadowColor,
-          });
-        }
-        if (car.style === "gt500") {
-          sprite = gt500Sprite(truckStageLevel, {
-            baseColor,
-            roofColor,
-            windowColor,
-            trimColor,
-            wheelColor,
-            wheelSpoke,
-            wheelHub,
-            wheelTire: mechHealth < 25 ? "#23262b" : wheelColor,
-            primerColor,
-            rustColor,
-            shadowColor,
-          });
-        }
-        if (car.style === "marauder") {
-          sprite = marauderSprite(truckStageLevel, {
-            baseColor,
-            roofColor,
-            windowColor,
-            trimColor,
-            wheelColor,
-            wheelSpoke,
-            wheelHub,
-            wheelTire: mechHealth < 25 ? "#23262b" : wheelColor,
-            primerColor,
-            rustColor,
-            shadowColor,
-          });
-        }
-        if (car.style === "c10") {
-          sprite = c10Sprite(truckStageLevel, {
-            baseColor,
-            roofColor,
-            windowColor,
-            trimColor,
-            wheelColor,
-            wheelSpoke,
-            wheelHub,
-            wheelTire: mechHealth < 25 ? "#23262b" : wheelColor,
-            primerColor,
-            rustColor,
-            shadowColor,
-          });
-        }
-        if (car.style === "f250") {
-          sprite = f250Sprite(truckStageLevel, {
-            baseColor,
-            roofColor,
-            windowColor,
-            trimColor,
-            wheelColor,
-            wheelSpoke,
-            wheelHub,
-            wheelTire: mechHealth < 25 ? "#23262b" : wheelColor,
-            primerColor,
-            rustColor,
-            shadowColor,
-          });
-        }
+        let sprite = carSpriteSvg(car, look);
         // Car is physically at the mechanic, leave the bay empty.
         if (atShop) sprite = "";
 
@@ -27138,12 +27062,19 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
                       ? ["NEEDS TLC · NO LOWBALLERS", "MECHANIC'S SPECIAL", "95% DONE · JUST NEEDS FINISHING"]
                       : ["GARAGE KEPT · SERIOUS INQUIRIES ONLY", "ADULT OWNED · CLEAN TITLE", "RARE FIND · WON'T LAST"];
                   const listingTone = tonePool[c.id % tonePool.length];
+                  // The tag is the seller talking, so it is in quotes. With the
+                  // photo beside it, "95% DONE" over a barn find is the joke every
+                  // classifieds page has always told; without quotes it read as
+                  // the game making a claim about the car.
                   return `
-      <div class="feed-item">
-        <div class="feed-kicker">${listingTone}</div>
-        <div class="feed-text">${c.year} ${c.make} ${c.model}</div>
-        <div class="feed-meta">$${fmt(c.price)} · Score ${starter} starter · Marketplace find</div>
-        ${button(`Buy for $${fmt(c.price)}`, `buyCar(${c.id})`, state.money < c.price, "", "width:100%;margin-top:8px")}
+      <div class="feed-item lot-listing">
+        ${carListingPhoto(c)}
+        <div class="lot-listing-body">
+          <div class="feed-kicker">&ldquo;${listingTone}&rdquo;</div>
+          <div class="feed-text">${c.year} ${c.make} ${c.model}</div>
+          <div class="feed-meta">$${fmt(c.price)} · Score ${starter} starter · Marketplace find</div>
+          ${button(`Buy for $${fmt(c.price)}`, `buyCar(${c.id})`, state.money < c.price, "", "width:100%;margin-top:8px")}
+        </div>
       </div>
     `;
                 },
@@ -27252,19 +27183,17 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         </div>${deskKeys}`;
 
         if (marketTab === "buy") {
-          return onScreen(heroPanel(
-            "On the Lot",
-            "Someone else's project, yours for the right price",
-            "Most great builds start as someone else's bad decision.",
-            `
-      <div class="info-box">
+          // No banner. It was a blue hero panel inside a CRT screen, which is a
+          // web page drawing a second, differently styled web page inside
+          // itself, and it pushed the first car below the fold to say "cars
+          // for sale" on the tab that already says so. The listings are the
+          // page.
+          return onScreen(`
+      <div class="info-box lot-board">
         <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Cars for sale</div>
         ${carBuyMarkup}
       </div>
-    `,
-            "blue",
-            "marketplace",
-          ));
+    `);
         }
 
         if (marketTab === "sellcar") {
