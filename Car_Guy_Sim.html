@@ -11859,7 +11859,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.89.0";
+      const GAME_VERSION = "0.89.1";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -27764,6 +27764,13 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         const strained = familyTimeLedger().standing === "strained";
         const back = (strained && opt.cool) ? opt.cool : opt.reply;
         pushWifeMessage(back, m.k || "wife-reply");
+        // Her comeback closes the exchange. It is the last word, not a new
+        // opening: leaving it answerable lets the player reply to the reply
+        // and ping-pong all night, which is the joke dispenser the board
+        // rejected and makes "one reply per message" meaningless. One round
+        // per thing she brings up on her own, and she gets to end it.
+        const last = state.wifeThread[state.wifeThread.length - 1];
+        if (last && !last.me) last.answered = 1;
         // He is standing in the thread reading it, so it is not unread.
         state.wifeUnread = 0;
         playSfx("click");
@@ -28664,14 +28671,28 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           state.workshopLevel,
           state.toolStorageLevel,
           state.activeRestorations.length,
+          // `looked` belongs here. Without it, taking the look under the car
+          // changed the task and nothing on screen: the button stayed, and a
+          // second click did nothing because canLookInHere() was already
+          // false. It looked intermittent rather than broken, because a find
+          // that pays cash or followers moves state.money and re-renders on
+          // that instead, while a lore-only or a bad find moves nothing in
+          // this list and the panel stayed cached on the old markup.
           state.activeRestorations
-            .map((task) => `${task.carId}:${task.partId}:${task.completed ? 1 : 0}`)
+            .map((task) => `${task.carId}:${task.partId}:${task.completed ? 1 : 0}:${task.looked ? 1 : 0}`)
             .join(","),
           state.ownedTools.length,
           state.cars.length,
           (state.legacyBuilds || []).length,
           state.freePart ? 1 : 0,
           state.phoneApp || "home",
+          // Her thread. Texting her back pushes two messages, flips the
+          // message to answered and moves the counter, and none of that was
+          // in here, so the reply buttons registered the reply and repainted
+          // nothing. From the player's side the button simply did not work.
+          (state.wifeThread || []).length,
+          state.wifeRepliesSent || 0,
+          state.wifeUnread || 0,
           (state.postHistory || []).length,
           (state.yardPulls || []).length,
           state.partsInventory
