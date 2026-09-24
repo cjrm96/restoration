@@ -834,6 +834,28 @@ truck in '89" energy, weathered and personal. Keep the lower-left quarter calm.
 16:9.
 ```
 
+### `scene-dale-backlot` — Dale clears his back lot · NOT IN GAME YET
+> The Lot's introduction at the top of season two. Cars customers left with
+> Dale over thirty years go on Gearbook, and he gives you first look. The
+> surveyor's stake pays off his one line about the kid in Fresno wanting the lot
+> for storage units, without anyone saying it. Runs on `scene-dale-brakes` until
+> this exists; add the key to `ART_KEYS` when the webp ships.
+```
+Pixel art at first light, the back lot behind a small weathered highway garage.
+A row of four or five dusty abandoned cars sits nose-in along a sagging chain-link
+fence: a faded work pickup, a rounded 1950s sedan, a heavy-duty truck with a flat
+tire, one car half under a torn grey tarp. Weeds grow up through the wheels and
+between the bumpers, leaves are piled against the tires, one hood is propped open
+on a stick. At the open gate a lean older mechanic in coveralls (Dale) stands with a
+big ring of keys in one hand, looking down the row, not at the viewer: thirty years
+of other people's unfinished business. Behind him a tow truck idles with its
+headlights still on in the dawn haze. In the foreground, easy to miss, a
+surveyor's wooden stake with a strip of orange ribbon is driven into the gravel:
+the storage units are coming. Cool blue dawn warming to gold at the horizon, dew
+on the glass, long soft shadows. Quiet, final, "first look before the flippers get
+here" energy. No text anywhere. Keep the lower-left quarter calm. 16:9.
+```
+
 ### `scene-brand-deal` — a word by the truck · ✅ IN GAME
 > Fires on the first brand-deal offer. A marketing rep pulling the player aside
 > at a meet, the first taste of the hobby turning into a business.

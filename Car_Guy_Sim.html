@@ -1513,6 +1513,13 @@
          the middle of the tile. The Lot's photos are 4:3; everything else about
          the tile is the parts grid's own. */
       .lst-shot.lot-shot { aspect-ratio: 4 / 3; overflow: hidden; }
+      /* Dale's cars: his chip reads as a label, not a sales line. */
+      .lot-dale .lst-tag {
+        background: rgba(217, 162, 79, 0.9);
+        color: #1d1208;
+        border-color: #e8b865;
+        font-weight: bold;
+      }
       /* A part's name survives an ellipsis. "1969 Chevvi Cam..." does not:
          the year, make and model are the whole point of the ad. */
       .lot-grid .lst-title {
@@ -7419,6 +7426,25 @@
    shaft of daylight from the open bay, dust in the air, "I did the brakes on this truck
    in '89" energy. Keep the lower-left quarter calm.
 
+   [ scene-dale-backlot ]  Dale clears his back lot. NOT IN GAME YET.
+   Style note: the Lot's introduction at the top of season two. Runs on
+   scene-dale-brakes until this exists; the key stays out of ART_KEYS until the
+   webp ships so a missing file cannot render a black frame.
+   ...........................................................................
+   Pixel art at first light, the back lot behind a small weathered highway garage.
+   A row of four or five dusty abandoned cars sits nose-in along a sagging chain-link
+   fence: a faded work pickup, a rounded 1950s sedan, a heavy-duty truck with a flat
+   tire, one car half under a torn grey tarp. Weeds grow up through the wheels and
+   between the bumpers, leaves are piled against the tires, one hood is propped open
+   on a stick. At the open gate a lean older mechanic in coveralls (Dale) stands with a
+   big ring of keys in one hand, looking down the row, not at the viewer: thirty years
+   of other people's unfinished business. Behind him a tow truck idles with its
+   headlights still on in the dawn haze. In the foreground, easy to miss, a
+   surveyor's wooden stake with a strip of orange ribbon is driven into the gravel:
+   the storage units are coming. Cool blue dawn warming to gold at the horizon, dew
+   on the glass, long soft shadows. Quiet, final, "first look before the flippers get
+   here" energy. No text anywhere. Keep the lower-left quarter calm. 16:9.
+
    [ scene-brand-deal ]  A word by the truck. IN GAME.
    Style note: fires on the first brand-deal offer. A marketing rep pulling the player
    aside at a meet, the first taste of the hobby turning into a business.
@@ -12012,7 +12038,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.91.1";
+      const GAME_VERSION = "0.92.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -12172,6 +12198,8 @@
           recentScenarios: [],
           // Her side of the conversation, kept rather than overwritten.
           wifeThread: [],
+          lotKnown: false,
+          lotIntroSeason: 0,
           wifeUnread: 0,
           wifeLineWeek: 0,
           // The bank sends a letter when you come up short. He sends people.
@@ -17205,6 +17233,12 @@
           // had not sent yet. The timer that would have delivered it died with
           // the page, so hand it over now rather than leaving a man staring at
           // three dots that are never going anywhere.
+          // A save from before the Lot had an introduction and already past
+          // season one has been browsing it all along. Grandfather it rather
+          // than hiding a tab the player has used. A season-one save gets the
+          // scene when season two arrives.
+          if (!Object.prototype.hasOwnProperty.call(parsed.state, "lotKnown"))
+            state.lotKnown = (state.seasonNumber || 1) >= 2;
           if (state.wifeTyping && state.wifeTyping.t) {
             const pending = state.wifeTyping;
             state.wifeTyping = null;
@@ -18264,8 +18298,53 @@
       // show weeks and these must not. A player who enters something every
       // week the calendar offers one, which is every week, would otherwise
       // never hear any of them.
+      // Dale clears his back lot. The Lot's introduction, at the top of season
+      // two: cars people left with him over thirty years, going on Gearbook,
+      // and he gives you first look. He hands over next year's shop calendar in
+      // the same stop, because that is what a garage does in the off-season.
+      // For a player who heard him say, once, that the kid up in Fresno wants
+      // the lot for storage units, this is that, and he does not say it again.
+      // For one who never sent a job to the shop, it is how they meet him.
+      const DALE_LOT_IDS = { 9: "LEFT FOR A CLUTCH IN '94", 13: "ESTATE · FAMILY WANTS IT GONE", 8: "RAN WHEN IT CAME IN" };
+      function maybeQueueDaleBackLot() {
+        if (seasonNum() < 2 || state.lotKnown) return false;
+        if (!(state.cars || []).length) return false;
+        state.lotKnown = true;
+        state.lotIntroSeason = seasonNum();
+        const met = !!(state.mechanic && state.mechanic.metOnce);
+        const first = state.cars[0];
+        const yy = first ? `'${String(first.year).slice(2)} ${first.make}` : "truck";
+        const fresno = state.daleClockTold
+          ? " He does not say why he is clearing it now. He does not have to."
+          : "";
+        const text = met
+          ? `Dale's tow truck is idling at the end of the driveway before you've finished your coffee. He doesn't get out. He passes a calendar through the window, next year's, the free one off the counter with the shop's name across the top. "Clearing the back lot," he says. "Cars people left with me. Clutch jobs nobody picked up, estate stuff. One fella went to Reno in '94 and I'm still holding his Chevy."${fresno} He looks at your truck a second longer than he needs to. "They go on Gearbook Monday. Figured you'd want first look before the flippers get there."`
+          : `A tow truck you don't recognize is idling at the end of the driveway before you've finished your coffee. The man behind the wheel has grease to the elbow and DALE stitched over the pocket. "You're the one with the ${yy}," he says, like that settles something, and passes a calendar through the window. Next year's, the free one off his counter: Dale's Garage, out on the highway. "Clearing the back lot. Cars people left with me and never came back for. One fella went to Reno in '94 and I'm still holding his Chevy. They go on Gearbook Monday. Figured whoever pulled that truck out of a barn might want first look."`;
+        queueScene({
+          id: "dale_backlot",
+          art: CUTSCENE_ART["scene-dale-backlot"] ? "scene-dale-backlot" : "scene-dale-brakes",
+          title: "The Back Lot",
+          text,
+          choices: [
+            {
+              label: "First look, then",
+              lore: 8,
+              note: "His go up Monday, parked at the front of the Lot. Browse the Lot is on the desk now, on the Marketplace tab. He pulled away before you could say thanks, which is how Dale leaves.",
+              noteTone: "event-good",
+            },
+            {
+              label: "Not this year",
+              lore: 4,
+              note: "He nodded like he'd expected that, and left the calendar on the mailbox anyway. The Lot is on the Marketplace tab when you want it. His cars go up Monday either way.",
+              noteTone: "event-good",
+            },
+          ],
+        });
+        return true;
+      }
       function maybeTriggerScheduledIntro() {
         if (state.pendingScene || state.pendingEvent) return false;
+        if (maybeQueueDaleBackLot()) return true;
         if (maybeTriggerYardNudge()) return true;
         if (maybeTriggerBankIntro()) return true;
         if (maybeTriggerSharkIntro()) return true;
@@ -18507,6 +18586,9 @@
           state.homeWeeksSeason = 0;
           state.awayWeeksSeason = 0;
         }
+        // Then Dale's truck at the end of the driveway, the first time a
+        // season two comes round.
+        maybeQueueDaleBackLot();
         saveGame();
         requestRender("full");
       }
@@ -20775,6 +20857,9 @@
         };
         state.view = "dealership";
         queueVictoryDMs();
+        // A legacy run is a new season as well, and it opens on the Lot, so a
+        // first one after a season-one title needs Dale's visit first.
+        maybeQueueDaleBackLot();
         playSfx("success");
         toast("Legacy run started. Trophy car is still in the garage, pick up an existing build or grab a new project from the Marketplace.", "event-good");
         saveGame();
@@ -21242,7 +21327,11 @@
         // the only arc the season is telling, so the lot stays shut until the
         // player has finished a season, which makes opening it a graduation
         // rather than a tab that was always sitting there.
-        if (id === "buy") return seasonNum() >= 2;
+        // And it opens with a person rather than a date. From season two the
+        // Lot is there once Dale has come by about his back lot (see
+        // maybeQueueDaleBackLot), the same way the yard and the swap each
+        // arrive with somebody telling you about them.
+        if (id === "buy") return seasonNum() >= 2 && !!state.lotKnown;
         // Selling whole cars is the same story: not a business in season one.
         // The one exception is the car that was never yours to flip. While her
         // daily is still in the driveway the tab exists to hold that single
@@ -21260,9 +21349,8 @@
         const noCars = !(state.cars || []).length;
         if (id === "buy") {
           if (noCars) return null;
-          return seasonNum() >= 2
-            ? null
-            : "The lot can wait. This season is about the one truck.";
+          if (seasonNum() < 2) return "The lot can wait. This season is about the one truck.";
+          return state.lotKnown ? null : "Nobody has told you who is selling yet.";
         }
         if (id === "trip") {
           // Being told about the yard is what opens it. The old rule held it
@@ -23070,7 +23158,7 @@ addEventListener("DOMContentLoaded",function(){
         c10: (l, c) => c10Sprite(l, c),
         f250: (l, c) => f250Sprite(l, c),
       };
-      // Just the car, drawn at its stage and in its colours. The sprite
+      // Just the car, drawn at its stage and in its colors. The sprite
       // functions read the wheel style from a module variable rather than an
       // argument, so it is set here, where every caller goes through.
       function carSpriteSvg(car, look) {
@@ -23080,7 +23168,7 @@ addEventListener("DOMContentLoaded",function(){
         return draw ? draw(l.stageLevel, l.spriteColors) : "";
       }
       // A listing's photo, the Lot's answer to LISTING_ART: the same car the bay
-      // would draw, at the stage and in the colours its stats put it at, parked
+      // would draw, at the stage and in the colors its stats put it at, parked
       // wherever the seller happened to shoot it. Seeded per car so a listing
       // looks the same every visit, and the setting leans on the condition,
       // because nobody photographs a barn find on a clean driveway: the rough
@@ -27109,6 +27197,10 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         const carsForSale = BUYABLE_CARS.filter(
           (c) => !state.cars.find((x) => x.id === c.id),
         );
+        // First look was the point of Dale coming by, so for the season he
+        // came, his are parked at the front of the Lot.
+        if (state.lotIntroSeason && seasonNum() === state.lotIntroSeason)
+          carsForSale.sort((a, b) => (DALE_LOT_IDS[b.id] ? 1 : 0) - (DALE_LOT_IDS[a.id] ? 1 : 0));
         // Two rows of tiles at desk width. Three used to be three tall list
         // rows, which showed fewer cars in more height.
         const LOT_PREVIEW = 8;
@@ -27141,13 +27233,19 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
                   const chip = listingTone.split(" · ")[0];
                   const name = `${c.year} ${c.make} ${c.model}`;
                   const short = state.money < c.price;
+                  // Dale is the one seller on the Lot who tells you what the car
+                  // is. No sales line, no quotes: the chip says whose it was and
+                  // the small print says how it came to be sitting there.
+                  const dale = DALE_LOT_IDS[c.id];
+                  const tag = dale ? `Dale's lot` : `&ldquo;${chip}&rdquo;`;
+                  const where = dale ? dale.toLowerCase().replace(" · ", ", ") : LISTING_ART.adPlace("lot" + c.id);
                   return `
-      <div class="lst">
-        <div class="lst-shot lot-shot" title="&ldquo;${listingTone}&rdquo;">${carListingPhoto(c)}<div class="lst-tag">&ldquo;${chip}&rdquo;</div></div>
+      <div class="lst${dale ? " lot-dale" : ""}">
+        <div class="lst-shot lot-shot" title="${dale ? dale : `&ldquo;${listingTone}&rdquo;`}">${carListingPhoto(c)}<div class="lst-tag">${tag}</div></div>
         <div class="lst-body">
           <div class="lst-price">$${fmt(c.price)}</div>
           <div class="lst-title" title="${name}">${name}</div>
-          <div class="lst-sub">Score ${starter} · ${LISTING_ART.adPlace("lot" + c.id)}</div>
+          <div class="lst-sub">Score ${starter} · ${where}</div>
           <div class="lst-acts">${button(short ? `Short $${fmt(c.price - state.money)}` : "Buy it", `buyCar(${c.id})`, short, "", "width:100%")}</div>
         </div>
       </div>`;
@@ -27876,7 +27974,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           wr("you were listening", "i was in the car in the driveway. i did not come in until it finished.", "i heard it. i was in the car."),
           wr("i said pitman arm on air", "you said pitman arm on air. that is the most you thing that has ever happened.", "you did."),
           wr("did i sound stupid", "you sounded like a man who knows what a pitman arm is. on the radio. i was unbearable about it.", "you sounded fine."),
-          wr("the kid heard it", "the kid HEARD IT. the kid is telling the neighbours. the kid has appointed himself your publicist.", "he heard it. he was proud of you. i thought you should know."),
+          wr("the kid heard it", "the kid HEARD IT. the kid is telling the neighbors. the kid has appointed himself your publicist.", "he heard it. he was proud of you. i thought you should know."),
           wr("i hated every second", "obviously. you hate being perceived. you did it anyway, which is the part that counts.", "i know you did."),
           wr("go build something", "that is a good line. you did not plan that line. that is why it is a good line.", "that was a good line."),
         ],

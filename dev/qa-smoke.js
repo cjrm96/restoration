@@ -1312,7 +1312,8 @@ const pass = (msg) => console.log("✓", msg);
   // one car that can change hands is the one that was never yours to flip. ──
   const seasonOneOk = await page.evaluate(() => {
     const stash = { season: state.seasonNumber, wife: state.wifeCarSold, stage: state.onboardStage,
-                    tab: state.marketTab, view: state.view, cars: state.cars.slice() };
+                    tab: state.marketTab, view: state.view, cars: state.cars.slice(),
+                    lotKnown: state.lotKnown, lotIntroSeason: state.lotIntroSeason };
     const setup = (season, wifeSold, tab) => {
       state.onboardStage = 3; state.pendingUnlock = null; clearTabArrival();
       state.noticeQueue = []; state.tripsKnown = { yard: true, swap: true };
@@ -1322,7 +1323,8 @@ const pass = (msg) => console.log("✓", msg);
     };
     const restore = () => {
       Object.assign(state, { seasonNumber: stash.season, wifeCarSold: stash.wife,
-        onboardStage: stash.stage, marketTab: stash.tab, cars: stash.cars, noticeQueue: [] });
+        onboardStage: stash.stage, marketTab: stash.tab, cars: stash.cars, noticeQueue: [],
+        lotKnown: stash.lotKnown, lotIntroSeason: stash.lotIntroSeason, pendingScene: null, eventQueue: [] });
       setView(stash.view); renderMainContent(true);
     };
     const bail = (m) => { restore(); return m; };
@@ -1343,6 +1345,15 @@ const pass = (msg) => console.log("✓", msg);
     if (state.cars.length < 2)
       state.cars.push({ ...JSON.parse(JSON.stringify(state.cars[0])), id: 90210 });
     setup(2, true, "sell");
+    // Season two opens the lot, but with a person rather than a date: it stays
+    // shut until Dale comes by about his back lot, the way the yard and the
+    // swap each wait for a friend. So check both halves, not just the second.
+    state.lotKnown = false;
+    if (marketTabEarned("buy")) return bail("the lot opened in season two before anyone told you about it");
+    state.pendingScene = null; state.eventQueue = [];
+    if (!maybeQueueDaleBackLot()) return bail("Dale never came by about the back lot");
+    state.pendingScene = null; state.eventQueue = [];
+    if (maybeQueueDaleBackLot()) return bail("Dale came by about the back lot twice");
     if (!marketTabEarned("buy")) return bail("the lot never opened in season two");
     if (!marketTabEarned("sellcar")) return bail("Sell Cars never came back in season two");
     const t2 = setup(2, true, "sellcar");
@@ -1357,7 +1368,7 @@ const pass = (msg) => console.log("✓", msg);
     return true;
   });
   if (seasonOneOk !== true) fail("season one shape: " + seasonOneOk);
-  pass("season one is one truck: lot shut, and only her car can change hands");
+  pass("season one is one truck: lot shut, only her car can change hands, and season two's lot waits for Dale");
 
   // ── the two build decisions. The setup is worth four points either way on a
   // show's axis; the build direction is worth three against the season's taste
