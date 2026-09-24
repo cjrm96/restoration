@@ -1666,14 +1666,19 @@ const pass = (msg) => console.log("✓", msg);
   if (fmtFOk !== true) fail("follower counter: " + fmtFOk);
   pass("follower counts round like a counter, no 430.0K");
 
-  // ── the bill. The show card used to be a form: nine bordered objects all
-  // shouting at one volume, a five place payout table, a three tick checklist
-  // and a red validation bar, behind a four button tier filter. It is a
-  // printed bill now, and every tier pins up on the same board. ──
+  // ── the wall and the bill. The show card used to be a form, then every
+  // open show was a full poster: seven and a half screens of them by the end
+  // of a late season. It is Dale's calendar now, one poster for the show you
+  // are looking at and a compact row for everything else that Saturday. The
+  // bill rules still hold for the one that is up, and the board's binding
+  // notes hold for the wall: today first, the pick snaps back when the week
+  // moves, purses stay in the rows, the last Saturday is marked, a blank
+  // square never claims you skipped, and the handwriting ships in the file. ──
   const flyerOk = await page.evaluate(() => {
     const stash = { stage: state.onboardStage, view: state.view, hist: state.history,
                     money: state.money, fuel: state.fuel, act: state.activeRestorations,
-                    season: state.seasonNumber };
+                    season: state.seasonNumber, week: state.week, pick: state.calPick,
+                    entered: state.enteredShowsThisWeek };
     state.onboardStage = 3; state.pendingUnlock = null; clearTabArrival();
     state.noticeQueue = []; state.money = 90000; state.fuel = 60; state.activeRestorations = [];
     const c = currentCar();
@@ -1683,6 +1688,7 @@ const pass = (msg) => console.log("✓", msg);
       Object.assign(c, { engine: car0.e, transmission: car0.t, brakes: car0.b, steering: car0.s });
       Object.assign(state, { onboardStage: stash.stage, history: stash.hist, money: stash.money,
         fuel: stash.fuel, activeRestorations: stash.act, seasonNumber: stash.season,
+        week: stash.week, calPick: stash.pick, enteredShowsThisWeek: stash.entered,
         noticeQueue: [] });
       setView(stash.view); render("full");
     };
@@ -1691,67 +1697,100 @@ const pass = (msg) => console.log("✓", msg);
     for (let i = 0; i < 6; i++) ladder.push({ tier: "Cars & Coffee", place: 1, show: 0 });
     for (let i = 0; i < 8; i++) ladder.push({ tier: "Local", place: 1, show: 1 });
     for (let i = 0; i < 6; i++) ladder.push({ tier: "Regional", place: 1, show: 2 });
+    // Week 4 runs a coffee meet, a Local and a Regional: both paper weights.
+    ladder.push({ tier: "Local", place: 2, week: 2, season: 1, show: "Local Car Show" });
+    ladder.push({ tier: "Local", place: 1, week: 3, show: "Local Car Show" });
     state.history = ladder;
-    state.seasonNumber = 1;
+    state.seasonNumber = 1; state.week = 4; state.enteredShowsThisWeek = []; state.calPick = null;
     setView("shows"); render("full");
-    const bills = [...document.querySelectorAll(".bill")];
     const res = (() => {
-      if (!bills.length) return "no bill rendered";
+      const bills = () => [...document.querySelectorAll(".bill")];
+      if (bills().length !== 1) return bills().length + " posters up, the wall carries one";
       if (document.querySelector(".panel.show-card"))
         return "the old show card is still rendering";
-      // Every tier on one board, so the filter that paged between them is gone.
-      // Measured: five bills a week, never more, so four buttons was navigation
-      // for a list that fits on the screen.
       if (document.querySelector("#appContent .cat-pill-row"))
         return "the tier filter is back on the show board";
-      const tiers = new Set(bills.map((b) =>
-        b.className.includes("loud") ? "loud" : "quiet"));
-      if (tiers.size < 2) return "both paper weights should be on the board at once";
-      // One headline per bill, not nine boxes at one volume.
-      const boxes = (el) => [...el.querySelectorAll("*")].filter((e) => {
-        const cs = getComputedStyle(e);
-        const bordered = parseFloat(cs.borderTopWidth) > 0 || parseFloat(cs.borderLeftWidth) > 0;
-        const filled = cs.backgroundImage !== "none" ||
-          (cs.backgroundColor !== "rgba(0, 0, 0, 0)" && cs.backgroundColor !== "transparent");
-        const r = e.getBoundingClientRect();
-        return (bordered || filled) && r.height > 10 && r.width > 20;
-      }).length;
-      const worst = Math.max(...bills.map(boxes));
-      if (worst > 5) return "a bill is back to " + worst + " bordered objects";
+      const cells = [...document.querySelectorAll(".wcal-cell")];
+      if (cells.length !== state.seasonLength)
+        return `the calendar has ${cells.length} Saturdays, the season has ${state.seasonLength}`;
+      if (!cells[3].classList.contains("today") || !cells[3].classList.contains("sel"))
+        return "the wall did not open on today";
+      if (!cells[state.seasonLength - 1].classList.contains("finale"))
+        return "the last Saturday is not marked apart from the other National weeks";
+      // A finish written down this season is scribbled in; one from before
+      // the calendar (no season on it) leaves the square blank.
+      if (!/2nd/.test(cells[1].textContent)) return "this season's finish is missing from its Saturday";
+      if (/1st/.test(cells[2].textContent)) return "a result with no season on it was written on the wall";
+      const rows = [...document.querySelectorAll(".srow")];
+      if (rows.length < 2) return "this Saturday lists fewer than two shows";
+      if (!rows.every((r) => /to win|no purse/.test(r.textContent)))
+        return "a row hides its purse, and the purses were the reason to scan the old wall";
+      // Both paper weights still exist, one at a time.
+      const on = wallShowsForWeek(4);
+      const loudOne = on.find((x) => x.tier === "Regional");
+      const quietOne = on.find((x) => x.tier === "Cars & Coffee");
+      if (!loudOne || !quietOne) return "week 4 did not carry a Regional and a coffee meet";
+      const weights = [];
+      for (const sh of [loudOne, quietOne]) {
+        calPickShow(sh.id); render("full");
+        const b = bills()[0];
+        if ((b.querySelector(".bill-name") || {}).textContent !== sh.name) return "picking a row did not put it on the poster";
+        weights.push(b.className.includes("loud") ? "loud" : "quiet");
+        // One headline per bill, not nine boxes at one volume. The car art
+        // and the tank strip ride along on the one poster and are not the
+        // bill's own furniture.
+        const skip = (e) => e.closest(".poster-art, .poster-fuel");
+        const boxes = [...b.querySelectorAll("*")].filter((e) => {
+          if (skip(e)) return false;
+          const cs = getComputedStyle(e);
+          const bordered = parseFloat(cs.borderTopWidth) > 0 || parseFloat(cs.borderLeftWidth) > 0;
+          const filled = cs.backgroundImage !== "none" ||
+            (cs.backgroundColor !== "rgba(0, 0, 0, 0)" && cs.backgroundColor !== "transparent");
+          const r = e.getBoundingClientRect();
+          return (bordered || filled) && r.height > 10 && r.width > 20;
+        }).length;
+        if (boxes > 5) return "the bill is back to " + boxes + " bordered objects";
+        if (!b.querySelector(".poster-fuel .fuel-needle")) return "the tank gauge lost its needle on the poster";
+      }
+      if (weights.join() !== "loud,quiet") return "both paper weights should still exist: " + weights.join();
       // Nobody prints a checklist or a validation bar on a poster.
       if (document.querySelector(".show-prep, .prep-block, .prep-clear, .show-payout"))
         return "the checklist or the payout table survived onto the bill";
       // Each show carries its own count. Six Local shows all claiming to be
       // the same annual would be a spreadsheet wearing a costume.
-      const annuals = bills
-        .map((b) => (b.querySelector(".bill-annual") || {}).textContent || "")
-        .filter((t) => /Annual/.test(t));
+      const annuals = SHOWS_MASTER.map((sh) => showBillLine(sh)).filter((t) => /Annual/.test(t));
       if (annuals.length < 2) return "no bill is dated";
       if (new Set(annuals).size !== annuals.length)
         return "two shows claim the same annual: " + annuals.join(" | ");
-      // A weekly coffee meet has no such thing as an annual.
-      const coffee = bills.find((b) =>
-        /Coffee/.test((b.querySelector(".bill-name") || {}).textContent || ""));
-      if (coffee && /Annual/.test((coffee.querySelector(".bill-annual") || {}).textContent || ""))
+      const weekly = SHOWS_MASTER.find((sh) => sh.tier === "Cars & Coffee" && sh.cadence === 1);
+      if (weekly && /Annual/.test(showBillLine(weekly)))
         return "a weekly coffee meet is claiming an annual";
       // And it climbs with the seasons, without the game ever saying so.
-      const firstName = (bills.find((b) => /Annual/.test(
-        (b.querySelector(".bill-annual") || {}).textContent || "")) || {});
-      const s1 = (firstName.querySelector(".bill-annual") || {}).textContent;
-      state.seasonNumber = 3; render("full");
-      const s3 = (() => {
-        const b = [...document.querySelectorAll(".bill")].find((x) =>
-          /Annual/.test((x.querySelector(".bill-annual") || {}).textContent || ""));
-        return b ? b.querySelector(".bill-annual").textContent : "";
-      })();
+      const s1 = showBillLine(loudOne);
+      state.seasonNumber = 3;
+      const s3 = showBillLine(loudOne);
+      state.seasonNumber = 1;
       if (s1 === s3) return "the annual count does not move with the season";
+      // A Saturday still to come says how far off it is, never "wk 7".
+      calSelect(7); render("full");
+      const future = [...document.querySelectorAll(".srow-go")].map((b) => b.textContent);
+      if (!future.length || !future.every((t) => t === "3 wks out"))
+        return "future rows should read 3 wks out: " + future.slice(0, 3).join(", ");
+      // Advance the week and the wall is back on today.
+      state.week = 5; render("full");
+      if (calPick().w !== 5 || !document.querySelector(".wcal-cell.today.sel"))
+        return "the wall stayed on a picked Saturday after the week moved";
+      // Her hand and Dale's marker ship in the file. The Deck has neither.
+      const fams = [...document.fonts].map((f) => f.family.replace(/["']/g, ""));
+      if (!fams.includes("Dale Marker") || !fams.includes("Her Hand"))
+        return "the calendar's handwriting is not embedded";
       return true;
     })();
     restore();
     return res;
   });
-  if (flyerOk !== true) fail("the bill: " + flyerOk);
-  pass("the bill: one board, both paper weights, its own date, no checklist");
+  if (flyerOk !== true) fail("the wall: " + flyerOk);
+  pass("the wall: Dale's calendar, one poster, purses in the rows, today first");
 
   // ── the two notes on the corkboard. They were 11px of mid-tan on tan cork
   // at 85% opacity, effectively invisible. They are paper slips now, and this
