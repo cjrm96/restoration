@@ -1326,6 +1326,14 @@
         max-width: 440px;
         max-height: calc(100vh - 32px);
         overflow-y: auto;
+        /* Not optional. overflow-y:auto computes overflow-x to auto too, and a
+           transformed child expands an ancestor's scrollable overflow even
+           though transforms do not affect layout. The results card pops its
+           placing to scale(1.08), which is one pixel wider than the card, so a
+           horizontal scrollbar flashed across the bottom of the modal for the
+           length of the animation. Nothing in a modal ever wants to scroll
+           sideways. */
+        overflow-x: hidden;
         overscroll-behavior: contain;
         background:
           radial-gradient(
@@ -5339,6 +5347,28 @@
         font-weight: 600;
         border-bottom-left-radius: 17px;
         border-bottom-right-radius: 5px;
+      }
+      /* She types before she answers. Same three dots the buyer uses in the
+         Marketplace, in her bubble instead of his, so the two places in the
+         game where somebody is on the other end behave the same way. */
+      .imsg-bubble.typing {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 12px 14px;
+      }
+      .imsg-bubble.typing span {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #b9b0c6;
+        display: block;
+        animation: mpTypeDot 1.25s ease-in-out infinite;
+      }
+      .imsg-bubble.typing span:nth-child(2) { animation-delay: 0.18s; }
+      .imsg-bubble.typing span:nth-child(3) { animation-delay: 0.36s; }
+      @media (prefers-reduced-motion: reduce) {
+        .imsg-bubble.typing span { animation: none; opacity: 0.6; }
       }
       .imsg-reply {
         margin: 12px 4px 2px;
@@ -11917,7 +11947,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.89.3";
+      const GAME_VERSION = "0.90.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -17106,6 +17136,23 @@
           // the same beat a second time to earn a scene they already earned.
           if (state.kidRightOne == null && (state.kidWrenchSeason || 0) >= 3)
             state.kidRightOne = true;
+          // A save written while she was still typing carries the reply she
+          // had not sent yet. The timer that would have delivered it died with
+          // the page, so hand it over now rather than leaving a man staring at
+          // three dots that are never going anywhere.
+          if (state.wifeTyping && state.wifeTyping.t) {
+            const pending = state.wifeTyping;
+            state.wifeTyping = null;
+            if (!Array.isArray(state.wifeThread)) state.wifeThread = [];
+            state.wifeThread.push({
+              week: state.week,
+              t: pending.t,
+              k: pending.k || "wife-reply",
+              answered: 1,
+            });
+          } else {
+            state.wifeTyping = null;
+          }
           if (Array.isArray(state.gigs) && state.gigs.some((g) => g && !g.who)) {
             state.gigs = [];
           }
@@ -27328,6 +27375,10 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
             return `${head}<div class="imsg-row${mine}"><div class="imsg-bubble${mine}">${m.t}</div></div>`;
           })
           .join("");
+        // Her typing bubble, while she is composing the answer he just earned.
+        const typingRow = state.wifeTyping
+          ? `<div class="imsg-row"><div class="imsg-bubble typing"><span></span><span></span><span></span></div></div>`
+          : "";
         // What he could say back, if he says anything. Three ways out of the
         // same sentence: he deflects, he is honest, or he is an idiot.
         const ro = wifeReplyOptions();
@@ -27351,7 +27402,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           : sent < 5
             ? "You text back now. Not well, but you do it."
             : "You text back. She still says more with less. You are learning.";
-        return `<div class="imsg">${rows}${replyRow}<div class="imsg-foot">${foot}</div></div>`;
+        return `<div class="imsg">${rows}${typingRow}${replyRow}<div class="imsg-foot">${foot}</div></div>`;
       }
       function renderPhoneHomeScreen() {
         const next = SPONSORS.find((s) => state.followers < s.req);
@@ -27814,6 +27865,10 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
       // late is not a conversation.
       const WIFE_REPLY_GRACE_WEEKS = 1;
       function wifeReplyOptions() {
+        // Not while she is typing. Offering him another three ways out while
+        // she is still answering the last one is how a conversation turns
+        // back into a menu.
+        if (state.wifeTyping) return null;
         const thread = Array.isArray(state.wifeThread) ? state.wifeThread : [];
         if (!thread.length) return null;
         const i = thread.length - 1;
@@ -27846,7 +27901,32 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         state.wifeRepliesSent = (state.wifeRepliesSent || 0) + 1;
         const strained = familyTimeLedger().standing === "strained";
         const back = (strained && opt.cool) ? opt.cool : opt.reply;
-        pushWifeMessage(back, m.k || "wife-reply");
+        // She does not fire back the instant he hits send. Three dots first,
+        // the same way the Marketplace buyer takes a moment, because the two
+        // places in this game where somebody is on the other end of a phone
+        // should behave like somebody is on the other end of a phone.
+        state.wifeTyping = { t: back, k: m.k || "wife-reply" };
+        // He is standing in the thread reading it, so it is not unread.
+        state.wifeUnread = 0;
+        playSfx("click");
+        saveGame();
+        requestRender("full");
+        setTimeout(scrollWifeThreadToNewest, 30);
+        startWifeTyping();
+      }
+      // How long she spends typing. Longer than the buyer: he is haggling
+      // over a part, she is deciding how much of it to say.
+      let wifeTypingTimer = null;
+      function clearWifeTyping() {
+        if (wifeTypingTimer) clearTimeout(wifeTypingTimer);
+        wifeTypingTimer = null;
+      }
+      function deliverWifeTyping() {
+        clearWifeTyping();
+        const pending = state.wifeTyping;
+        if (!pending) return;
+        state.wifeTyping = null;
+        pushWifeMessage(pending.t, pending.k);
         // Her comeback closes the exchange. It is the last word, not a new
         // opening: leaving it answerable lets the player reply to the reply
         // and ping-pong all night, which is the joke dispenser the board
@@ -27854,11 +27934,19 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         // per thing she brings up on her own, and she gets to end it.
         const last = state.wifeThread[state.wifeThread.length - 1];
         if (last && !last.me) last.answered = 1;
-        // He is standing in the thread reading it, so it is not unread.
-        state.wifeUnread = 0;
-        playSfx("click");
+        // He is looking at the thread when it lands, so it is not unread.
+        if ((state.phoneApp || "home") === "wife") state.wifeUnread = 0;
+        saveGame();
         requestRender("full");
         setTimeout(scrollWifeThreadToNewest, 30);
+      }
+      function startWifeTyping() {
+        clearWifeTyping();
+        const reduced =
+          window.matchMedia &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const wait = reduced ? 300 : 1700 + Math.random() * 1500;
+        wifeTypingTimer = setTimeout(deliverWifeTyping, wait);
       }
       function maybeWifeWeeklyLine() {
         // Not every week. She has a life.
@@ -28776,6 +28864,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           (state.wifeThread || []).length,
           state.wifeRepliesSent || 0,
           state.wifeUnread || 0,
+          state.wifeTyping ? 1 : 0,
           (state.postHistory || []).length,
           (state.yardPulls || []).length,
           state.partsInventory
