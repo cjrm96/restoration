@@ -1237,8 +1237,6 @@
         font-family: Georgia, serif;
       }
       .wcal-shop { font-weight: bold; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; }
-      .wcal-tag { font-size: 10px; letter-spacing: 0.04em; opacity: 0.85; }
-      .wcal-season { margin-left: auto; font-size: 10px; letter-spacing: 0.06em; opacity: 0.9; white-space: nowrap; }
       .wcal-grid {
         position: relative;
         display: grid;
@@ -1512,15 +1510,10 @@
         .wcal-grid::-webkit-scrollbar { display: none; }
         .wcal-cell { flex: 0 0 60px; scroll-snap-align: start; border-bottom: 0; }
         .wcal-cell:nth-child(11n) { border-right: 1px solid #d3c6a4; }
-        .wcal-tag { display: none; }
         .srow-list { grid-template-columns: 1fr; }
         .poster-stub { margin: 12px -13px -12px; padding: 10px 13px 11px; gap: 10px; }
         .poster-stub .fuel-gauge { width: 72px; max-width: 72px; flex-basis: 72px; }
         .poster-stub-btns { flex-direction: column; }
-        /* Dale's name keeps its line; the season drops under it. */
-        .wcal-head { flex-wrap: wrap; row-gap: 1px; }
-        .wcal-shop { white-space: nowrap; }
-        .wcal-season { margin-left: 0; white-space: normal; }
       }
 
       /* Perks: a sponsor covering your fee is good news and should look it,
@@ -12371,7 +12364,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.95.1";
+      const GAME_VERSION = "0.95.2";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -26821,17 +26814,15 @@ addEventListener("DOMContentLoaded",function(){
       }
       // The coffee meets run every single Saturday, so writing one in all
       // twenty-two squares said nothing twenty-two times and buried the
-      // weeks that matter. The header says it once; the squares carry the
-      // shows worth circling.
+      // weeks that matter. The day's sheet still lists the coffee meet every
+      // week; the squares carry the shows worth circling.
       const isWeeklyCoffee = (sh) => sh.tier === "Cars & Coffee" && sh.cadence === 1 && !sh.seasonWindow;
       function renderWallCalendar(pick) {
         const now = state.week;
         const len = state.seasonLength;
         const cells = [];
-        let weeklyCoffee = false;
         for (let w = 1; w <= len; w++) {
           const shows = w >= now ? wallShowsForWeek(w) : [];
-          if (shows.some(isWeeklyCoffee)) weeklyCoffee = true;
           const marked = shows.filter((sh) => !isWeeklyCoffee(sh));
           const top = marked[0];
           const past = w < now;
@@ -26861,7 +26852,7 @@ addEventListener("DOMContentLoaded",function(){
             `<button class="${cls.join(" ")}" onclick="calSelect(${w})" title="Week ${w}${finale ? ", the last Saturday of the season" : ""}: ${what}" aria-label="Week ${w}, ${what}"${w === pick.w ? ' aria-current="date"' : ""}><span class="wcal-wk">wk ${w}</span>${ink}</button>`,
           );
         }
-        return `<div class="wcal"><div class="wcal-head"><span class="wcal-shop">Dale's Garage</span><span class="wcal-tag">Brakes · Tune-ups · Towing · Palomar Junction</span><span class="wcal-season">Season ${seasonNum()}${weeklyCoffee ? " · coffee every Saturday" : " Saturdays"}</span></div><div class="wcal-grid">${cells.join("")}</div></div>`;
+        return `<div class="wcal"><div class="wcal-head"><span class="wcal-shop">Dale's Garage</span></div><div class="wcal-grid">${cells.join("")}</div></div>`;
       }
       // Once the markup is in, a phone's swipe strip is rolled to the
       // Saturday you are looking at. Every repaint rebuilds the strip, so it
