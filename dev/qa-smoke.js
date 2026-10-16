@@ -1735,6 +1735,17 @@ const pass = (msg) => console.log("✓", msg);
       if (rows.length < 2) return "this Saturday lists fewer than two shows";
       if (!rows.every((r) => /to win|no purse/.test(r.textContent)))
         return "a row hides its purse, and the purses were the reason to scan the old wall";
+      // One way in per show. Each one used to carry a button on its row and
+      // another on its poster that did the same thing.
+      const ways = [...document.querySelectorAll("#appContent button")]
+        .filter((b) => /beginShowEntry/.test(b.getAttribute("onclick") || ""));
+      if (ways.length !== 1) return ways.length + " buttons enter a show; the poster is the one way in";
+      if (!rows.every((r) => r.tagName === "BUTTON" && /calPickShow/.test(r.getAttribute("onclick") || "")))
+        return "a line on the sheet does not pick its poster";
+      // One board: the poster is pinned to the same cork as the paperwork.
+      const board = document.querySelector(".hero-panel.corkboard");
+      if (!board || !board.contains(bills()[0]) || !board.contains(document.querySelector(".wcal")))
+        return "the poster and the calendar are on different boards again";
       // Both paper weights still exist, one at a time.
       const on = wallShowsForWeek(4);
       const loudOne = on.find((x) => x.tier === "Regional");
@@ -1747,9 +1758,9 @@ const pass = (msg) => console.log("✓", msg);
         if ((b.querySelector(".bill-name") || {}).textContent !== sh.name) return "picking a row did not put it on the poster";
         weights.push(b.className.includes("loud") ? "loud" : "quiet");
         // One headline per bill, not nine boxes at one volume. The car art
-        // and the tank strip ride along on the one poster and are not the
+        // and the tank stub ride along on the one poster and are not the
         // bill's own furniture.
-        const skip = (e) => e.closest(".poster-art, .poster-fuel");
+        const skip = (e) => e.closest(".poster-art, .poster-stub");
         const boxes = [...b.querySelectorAll("*")].filter((e) => {
           if (skip(e)) return false;
           const cs = getComputedStyle(e);
@@ -1760,7 +1771,7 @@ const pass = (msg) => console.log("✓", msg);
           return (bordered || filled) && r.height > 10 && r.width > 20;
         }).length;
         if (boxes > 5) return "the bill is back to " + boxes + " bordered objects";
-        if (!b.querySelector(".poster-fuel .fuel-needle")) return "the tank gauge lost its needle on the poster";
+        if (!b.querySelector(".poster-stub .fuel-needle")) return "the tank gauge lost its needle on the poster";
       }
       if (weights.join() !== "loud,quiet") return "both paper weights should still exist: " + weights.join();
       // Nobody prints a checklist or a validation bar on a poster.
@@ -1783,7 +1794,7 @@ const pass = (msg) => console.log("✓", msg);
       if (s1 === s3) return "the annual count does not move with the season";
       // A Saturday still to come says how far off it is, never "wk 7".
       calSelect(7); render("full");
-      const future = [...document.querySelectorAll(".srow-go")].map((b) => b.textContent);
+      const future = [...document.querySelectorAll(".srow-stat")].map((b) => b.textContent);
       if (!future.length || !future.every((t) => t === "3 wks out"))
         return "future rows should read 3 wks out: " + future.slice(0, 3).join(", ");
       // Advance the week and the wall is back on today.
