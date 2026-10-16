@@ -1771,6 +1771,25 @@
          the middle of the tile. The Lot's photos are 4:3; everything else about
          the tile is the parts grid's own. */
       .lst-shot.lot-shot { aspect-ratio: 4 / 3; overflow: hidden; }
+      /* Her car. The one listing on the site that is the same shape as the
+         Lot's and wears the colour of a line being crossed: photo beside the
+         copy rather than above it, since it is the only thing on the page,
+         and the red edge the old warning box had. */
+      .lst.wife-lst {
+        flex-direction: row;
+        margin-bottom: 12px;
+        border-color: rgba(196, 109, 96, 0.5);
+        background: linear-gradient(180deg, rgba(196, 109, 96, 0.07), rgba(196, 109, 96, 0.02)), var(--panel-2);
+      }
+      .wife-lst .lst-shot { flex: 0 0 40%; border-bottom: 0; border-right: 1px solid rgba(196, 109, 96, 0.35); }
+      .wife-lst .lst-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; justify-content: center; padding: 12px 14px; }
+      .wife-lst .lst-title { white-space: normal; }
+      .wife-lst-kicker { font-size: 11px; font-weight: bold; color: var(--red-bright); letter-spacing: 0.3px; margin-bottom: 4px; }
+      .wife-lst-copy { font-size: 11.5px; line-height: 1.5; color: var(--text); margin-top: 6px; }
+      @media (max-width: 560px) {
+        .lst.wife-lst { flex-direction: column; }
+        .wife-lst .lst-shot { border-right: 0; border-bottom: 1px solid rgba(196, 109, 96, 0.35); }
+      }
       /* Dale's cars: his chip reads as a label, not a sales line. */
       .lot-dale .lst-tag {
         background: rgba(217, 162, 79, 0.9);
@@ -12296,7 +12315,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.94.1";
+      const GAME_VERSION = "0.95.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -23308,6 +23327,159 @@ addEventListener("DOMContentLoaded",function(){
           return cleanBody({ lights: true });
       }
 
+      // ---------------------------------------------------------
+      // HER DAILY DRIVER
+      // The one car in the game nobody restores. A navy late-nineties
+      // four-door off the driveway in scene-wife-car-sale: rounded hood and
+      // deck, body-colour bumpers, a clear swept headlamp with an amber
+      // corner, the rubber body-side strip, a thick C-pillar and six-spoke
+      // alloys. It only has one condition, clean, because it was never a
+      // project; that is the point of it. Drawn from smooth profiles in 2px
+      // columns rather than hand-placed slabs, since the shape that makes it
+      // read as a modern sedan is the curve of the hood and roof, which the
+      // classic bodies' straight lines never needed. Front faces left,
+      // wheels at y 122, same frame as the show-stage cars. forSale puts the
+      // card he taped in the back window.
+      // ---------------------------------------------------------
+      function wheelAlloy(cx, cy) {
+        let sp = "";
+        for (let i = 0; i < 6; i++)
+          sp += `<rect x="${cx - 1}" y="${cy - 8}" width="2" height="5.5" fill="#7d848d" transform="rotate(${60 * i + 30} ${cx} ${cy})"/>`;
+        return (
+          _tireRing(cx, cy, false) +
+          `<circle cx="${cx}" cy="${cy}" r="8.6" fill="#c3c8cf"/><circle cx="${cx}" cy="${cy}" r="8.6" fill="none" stroke="#8e959e" stroke-width="0.9"/>` +
+          `<circle cx="${cx}" cy="${cy}" r="6.2" fill="#3a4048"/>${sp}` +
+          `<circle cx="${cx}" cy="${cy}" r="2.6" fill="#e3e7eb"/><circle cx="${cx}" cy="${cy}" r="1" fill="#9aa1aa"/>` +
+          _wheelSpec(cx, cy)
+        );
+      }
+      const WIFE_CAR_PAINT = "#2f4380";
+      function sedanSprite(opts = {}) {
+        const R = ramp(WIFE_CAR_PAINT);
+        const dark = "#121726";
+        const glass = "#1d2536", glassLo = "#141a27", glint = "#8fa6bd";
+        const trim = "#1a1e26", trimHi = "#3d4452", silver = "#c9ced5";
+        const r = (x, y, w, h, f, o) =>
+          h > 0 && w > 0 ? `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}"${o != null ? ` opacity="${o}"` : ""}/>` : "";
+        const lerp = (pts, x) => {
+          for (let i = 1; i < pts.length; i++)
+            if (x <= pts[i][0]) {
+              const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+              return y0 + ((y1 - y0) * (x - x0)) / (x1 - x0);
+            }
+          return pts[pts.length - 1][1];
+        };
+        // Silhouettes: the lower body's top edge, its bottom, and the roof.
+        const BODY_TOP = [[20, 106], [22, 103], [26, 101], [34, 99.5], [56, 98.2], [84, 97], [112, 95.5], [118, 94], [226, 93.5], [262, 92.8], [284, 93], [292, 94], [297, 96.5], [300, 100], [301, 106]];
+        const BODY_BOT = [[20, 112], [22, 116], [26, 118], [34, 119], [290, 119], [296, 117], [300, 114], [301, 110]];
+        const ROOF = [[112, 95], [120, 89], [130, 79], [138, 72.5], [146, 70], [160, 69], [190, 69], [202, 70], [210, 72.5], [218, 79], [226, 88], [230, 93.5]];
+        const WHEELS = [92, 238], AR = 15, CY = 122;
+        let s = r(36, 132, 250, 2, dark, 0.7);
+        // Lower body, banded per column: the hood and deck catch the sky,
+        // the doors carry the shoulder crease, the sill falls into shadow.
+        for (let x = 20; x < 301; x += 2) {
+          const t = Math.round(lerp(BODY_TOP, x + 1)), b = Math.round(lerp(BODY_BOT, x + 1));
+          const deck = x < 112 || x > 226;
+          s += r(x, t, 2, 1, R.spec, deck ? 0.7 : 0.35);
+          s += r(x, t + 1, 2, Math.max(0, 103 - t - 1), deck ? R.hi2 : R.base);
+          s += r(x, Math.max(t + 1, 103), 2, 1, R.hi);
+          s += r(x, Math.max(t + 1, 104), 2, Math.max(0, 112 - Math.max(t + 1, 104)), R.base);
+          s += r(x, 112, 2, Math.min(4, b - 112), R.mid);
+          s += r(x, 116, 2, Math.min(2, b - 116), R.mid2);
+          s += r(x, 118, 2, b - 118, R.lo);
+        }
+        // Greenhouse: body-colour pillars and roof, glass set in.
+        for (let x = 112; x < 230; x += 2) {
+          const t = Math.round(lerp(ROOF, x + 1));
+          s += r(x, t, 2, 1, R.spec, 0.8) + r(x, t + 1, 2, 2, R.hi2) + r(x, t + 3, 2, 95 - t - 3, R.hi);
+        }
+        for (let x = 120; x < 220; x += 2) {
+          const top = Math.max(Math.round(lerp(ROOF, x + 1)) + 3, 73);
+          let y0 = null, y1 = null;
+          for (let y = top; y <= 92; y++)
+            if (x + 1 >= 120 + (92 - y) * 1.05 && x + 1 <= 206 + (y - 74) * 0.62) {
+              if (y0 === null) y0 = y;
+              y1 = y;
+            }
+          if (y0 !== null)
+            s += r(x, y0, 2, y1 - y0 + 1, glass) + r(x, Math.max(y0, 89), 2, Math.max(0, y1 - Math.max(y0, 89) + 1), glassLo);
+        }
+        s += r(166, 73, 5, 20, trim) + r(166, 73, 1, 20, trimHi);
+        // Headrests, so it reads as a car somebody drives every day.
+        s += r(150, 79, 6, 7, "#10141e", 0.8) + r(196, 80, 6, 6, "#10141e", 0.7);
+        s += `<g shape-rendering="auto"><polygon points="138,76 151,76 139,90 126,90" fill="${glint}" opacity="0.33"/><polygon points="182,76 189,76 180,90 173,90" fill="${glint}" opacity="0.2"/></g>`;
+        s += r(117, 88, 7, 4, R.base) + r(117, 88, 7, 1, R.hi2) + r(119, 92, 3, 1, R.key);
+        // Wheel arches.
+        for (const cx of WHEELS)
+          for (let x = cx - AR; x < cx + AR; x += 1) {
+            const dx = x + 0.5 - cx, h = Math.sqrt(Math.max(0, AR * AR - dx * dx));
+            const top = Math.round(CY - h);
+            s += r(x, top, 1, 1, R.key) + r(x, top + 1, 1, 121 - top, "#0b0d12");
+          }
+        // Seams, handles, the rubber strip, the fuel door.
+        s += r(118, 95, 1, 22, R.key, 0.75) + r(168, 95, 1, 23, R.key, 0.75) + r(222, 95, 1, 21, R.key, 0.75);
+        s += r(150, 99, 7, 2, silver) + r(150, 101, 7, 1, R.key) + r(202, 99, 7, 2, silver) + r(202, 101, 7, 1, R.key);
+        for (const [a, b] of [[30, 76], [108, 222], [254, 294]]) s += r(a, 108, b - a, 3, trim) + r(a, 111, b - a, 1, trimHi);
+        s += r(266, 97, 7, 5, R.mid) + r(266, 97, 7, 1, R.key);
+        // Lamps: clear swept headlamp and amber corner up front, red over
+        // amber at the back, a dark lip under each bumper.
+        s += r(21, 103, 13, 4, "#dfe6ec") + r(22, 103, 5, 2, "#ffffff") + r(34, 104, 4, 3, "#f0a23a") + r(22, 115, 10, 2, trim);
+        s += r(294, 97, 6, 6, "#b8262f") + r(295, 97, 2, 2, "#ff8075") + r(294, 103, 6, 2, "#e8942f") + r(292, 115, 8, 2, trim);
+        s += r(278, 80, 1, 13, "#8e959e");
+        if (opts.forSale) {
+          // The card he taped in the back window, red marker on white.
+          s += r(178, 80, 21, 10, "#f4efe2") + r(178, 89, 21, 1, "#b9b2a0");
+          for (const x of [180, 184, 188]) s += r(x, 82, 3, 2, "#c0392b");
+          for (const x of [180, 185, 190, 195]) s += r(x, 85, x === 195 ? 2 : 4, 2, "#c0392b");
+        }
+        return `<g shape-rendering="crispEdges">${s}</g><g shape-rendering="auto">${wheelAlloy(WHEELS[0], CY)}${wheelAlloy(WHEELS[1], CY)}</g>`;
+      }
+      // The listing photo he would take of it: his own driveway at dusk,
+      // garage door down, the window dark because she is at her sister's,
+      // the porch light on, and the kid's bike where it always is.
+      function wifeCarPhoto() {
+        const r = (x, y, w, h, f, o) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}"${o != null ? ` opacity="${o}"` : ""}/>`;
+        const X0 = 6, Y0 = -62, W = 310, H = 232, GROUND = 134;
+        let b = "";
+        // Dusk, banded the way the cut scene paints it.
+        [["#2f2a52", 0], ["#46395f", 18], ["#6a4a6c", 32], ["#a2606a", 44], ["#dd9466", 52]].forEach(([c, dy]) => { b += r(X0, Y0 + dy, W, 30, c); });
+        // Roof and eave.
+        for (let i = 0; i < 6; i++) b += r(X0 - 10 + i * 4, -8 - i * 4, W + 20 - i * 8, 4, i % 2 ? "#2b2530" : "#332b36");
+        b += r(X0, -10, W, 3, "#1b161c");
+        // Brick, with mortar.
+        b += r(X0, -7, W, GROUND - 6 + 7, "#6e3f32");
+        for (let y = -5; y < GROUND - 8; y += 5) {
+          b += r(X0, y, W, 1, "#56302a", 0.7);
+          for (let x = X0 + ((y / 5) % 2 ? 0 : 6); x < X0 + W; x += 12) b += r(x, y + 1, 1, 4, "#56302a", 0.5);
+        }
+        // The front window, dark: nobody home.
+        b += r(4, 16, 84, 52, "#e2dccd") + r(8, 20, 76, 44, "#1f2333") + r(45, 20, 2, 44, "#e2dccd") + r(8, 20, 14, 44, "#4a3a4a", 0.85) + r(70, 20, 14, 44, "#4a3a4a", 0.85) + r(12, 24, 20, 2, "#8fa6bd", 0.25);
+        // Garage door, down.
+        b += r(196, 12, 140, GROUND - 18, "#bdb6a8");
+        for (let y = 12; y < GROUND - 8; y += 18) b += r(196, y, 140, 2, "#9e978a");
+        b += r(196, 12, 3, GROUND - 18, "#8a8377") + r(196, GROUND - 8, 140, 2, "#57524a");
+        // Porch light, and its glow on the brick.
+        b += r(184, 34, 5, 7, "#2a2420") + r(185, 36, 3, 4, "#ffd58a");
+        b += `<circle cx="186" cy="38" r="24" fill="#ffc874" opacity="0.18" shape-rendering="auto"/>`;
+        // Shrubs, the lawn, the bike on its side.
+        for (const [x, w] of [[96, 34], [128, 30], [156, 34]]) b += `<ellipse cx="${x + w / 2}" cy="104" rx="${w / 2}" ry="10" fill="#26371f" shape-rendering="auto"/>`;
+        b += r(X0, 108, 190, GROUND - 108, "#3c5a2c");
+        for (let i = 0; i < 70; i++) b += r(X0 + ((i * 37) % 186), 109 + ((i * 13) % 22), 1, 2, i % 2 ? "#4f7238" : "#2f4823", 0.8);
+        // The driveway.
+        b += r(X0, GROUND - 6, W, H, "#7a7670");
+        for (const x of [60, 170, 280]) b += r(x, GROUND - 4, 1, 60, "#5f5b56", 0.8);
+        b += r(X0, GROUND + 18, W, 1, "#5f5b56", 0.6);
+        const car = sedanSprite({ forSale: true });
+        // The front lawn runs past the end of the driveway, and the bike is
+        // lying on it where it always is.
+        let front = r(X0, 141, 86, 12, "#3c5a2c") + r(X0 + 86, 143, 6, 10, "#3c5a2c") + r(X0, 140, 84, 1, "#4f7238");
+        for (let i = 0; i < 26; i++) front += r(X0 + ((i * 23) % 88), 141 + ((i * 7) % 11), 1, 2, i % 2 ? "#4f7238" : "#2f4823", 0.8);
+        front += `<g shape-rendering="auto" fill="none" stroke-width="1.6"><ellipse cx="30" cy="147" rx="9" ry="3" stroke="#1d1f24"/><ellipse cx="54" cy="147" rx="9" ry="3" stroke="#1d1f24"/><path d="M30 147 L40 144 L52 144 L54 147 M40 144 L44 147 L54 147 M50 142 L56 142" stroke="#3e6fb0"/></g>`;
+        // Dusk over everything, warm from the porch side.
+        const grade = r(X0, Y0, W, H, "#4a3170", 0.16) + r(X0, Y0, W, H, "#ff9e5e", 0.05);
+        return `<svg class="lst-art" viewBox="${X0} ${Y0} ${W} ${H}" preserveAspectRatio="xMidYMid slice" shape-rendering="crispEdges">${b}${car}${front}${grade}</svg>`;
+      }
+
       // The car as it actually is. Every stat that shows on the body (paint,
       // chrome, rust, dents, which build stage the silhouette is drawn at) is
       // read here and nowhere else, so the bay and the Lot agree on what a
@@ -28002,7 +28174,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
               : "There is one set of keys here that is not yours to trade",
             "",
             `
-      ${!state.wifeCarSold && currentCar() ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border-color:rgba(196,109,96,0.4);margin-bottom:12px"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:6px"> Sell the wife's daily driver?</div><div class="tiny" style="color:var(--text);margin-bottom:8px">It's clean, it runs, and she's at her sister's for the weekend. The Marketplace listing practically writes itself. What could go wrong.</div>${button("List the wife's car · ~$8,000", "sellWifeCar()", false, "", "width:100%;background:linear-gradient(180deg,#c97d70 0%,#8c4e44 100%);border-color:#d99a8f;color:#1a120a;font-weight:bold")}</div>` : ""}
+      ${!state.wifeCarSold && currentCar() ? `<div class="lst wife-lst"><div class="lst-shot lot-shot">${wifeCarPhoto()}<div class="lst-tag">&ldquo;Must go by Sunday&rdquo;</div></div><div class="lst-body"><div class="wife-lst-kicker">Sell the wife's daily driver?</div><div class="lst-price">$8,000</div><div class="lst-title">Her daily driver</div><div class="wife-lst-copy">It's clean, it runs, and she's at her sister's for the weekend. The Marketplace listing practically writes itself. What could go wrong.</div><div class="lst-acts">${button("List the wife's car · $8,000", "sellWifeCar()", false, "", "width:100%;background:linear-gradient(180deg,#c97d70 0%,#8c4e44 100%);border-color:#d99a8f;color:#1a120a;font-weight:bold")}</div></div></div>` : ""}
       ${flipSeason ? `<div class="info-box">
         <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px"> List a build for sale</div>
         <div class="tiny muted" style="margin-bottom:8px;line-height:1.5">Flip a project as-is or after a full restoration. Buyers DM you offers over the following weeks, haggle or hold out.</div>

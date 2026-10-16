@@ -1338,6 +1338,15 @@ const pass = (msg) => console.log("✓", msg);
     if (/flip a build/i.test(t1)) return bail("season one still headlines it as a flipping business");
     if (/list a build for sale/i.test(t1)) return bail("the flip listings render in season one");
     if (!/other car in the driveway/i.test(t1)) return bail("her car lost its own framing");
+    // Her car is pictured, like every car on the site: her sedan in your
+    // driveway with his card in the back window, and the one red button.
+    const card = document.querySelector(".wife-lst");
+    if (!card) return bail("her car is a text box again, not a listing");
+    const photo = card.querySelector("svg.lst-art");
+    if (!photo || photo.querySelectorAll("rect").length < 200) return bail("her listing has no photo of the car");
+    if (!photo.querySelector('rect[fill="#f4efe2"]')) return bail("the FOR SALE card is missing from her back window");
+    const sellBtn = card.querySelector("button");
+    if (!sellBtn || sellBtn.getAttribute("onclick") !== "sellWifeCar()") return bail("her listing lost its button");
     // Decision made: nothing legitimate left to sell this season.
     setup(1, true, "sell");
     if (marketTabEarned("sellcar")) return bail("Sell Cars lingers after her car is gone");
@@ -1359,6 +1368,7 @@ const pass = (msg) => console.log("✓", msg);
     const t2 = setup(2, true, "sellcar");
     if (!/flip a build/i.test(t2) || !/list a build for sale/i.test(t2))
       return bail("season two did not restore the flipping business");
+    if (document.querySelector(".wife-lst")) return bail("her car is still listed after it was sold");
     // Safety valve outranks all of it: an empty garage always reaches the lot.
     const cars = state.cars; state.cars = []; state.seasonNumber = 1;
     const stranded = marketTabEarned("buy") && !marketTabLock("buy");
