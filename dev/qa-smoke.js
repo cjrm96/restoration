@@ -1792,6 +1792,58 @@ const pass = (msg) => console.log("✓", msg);
   if (flyerOk !== true) fail("the wall: " + flyerOk);
   pass("the wall: Dale's calendar, one poster, purses in the rows, today first");
 
+  // ── a running truck and no Compete tab. Compete opened only after a
+  // take-off part was listed, and nothing said so, so a player who just kept
+  // wrenching was locked out for the whole season while the Build tab told
+  // them "Time to compete". The banner tells the truth at each stage now, and
+  // the week after the Marketplace opens, Compete opens without a listing. ──
+  const unlockOk = await page.evaluate(() => {
+    const car = currentCar();
+    const stash = JSON.parse(JSON.stringify({
+      stage: state.onboardStage, inv: state.partsInventory, flw: state.firstListingWeek,
+      mow: state.marketOpenedWeek ?? null, pu: state.pendingUnlock, week: state.week,
+      hist: state.history, view: state.view, pre: state.preWeek, act: state.activeRestorations,
+      tc: state.tutorialComplete, e: car.engine, t: car.transmission, b: car.brakes, s: car.steering,
+    }));
+    const restore = () => {
+      Object.assign(state, { onboardStage: stash.stage, partsInventory: stash.inv,
+        firstListingWeek: stash.flw, marketOpenedWeek: stash.mow, pendingUnlock: stash.pu,
+        week: stash.week, history: stash.hist, preWeek: stash.pre, activeRestorations: stash.act,
+        tutorialComplete: stash.tc, noticeQueue: [] });
+      Object.assign(car, { engine: stash.e, transmission: stash.t, brakes: stash.b, steering: stash.s });
+      setView(stash.view); render("full");
+    };
+    const res = (() => {
+      state.tutorialComplete = true; state.preWeek = 0; state.history = []; state.activeRestorations = [];
+      state.onboardStage = 1; state.pendingUnlock = null; state.partsInventory = [];
+      state.firstListingWeek = null; delete state.marketOpenedWeek; state.week = 3;
+      car.engine = 70; car.transmission = 70; car.brakes = 70; car.steering = 70;
+      checkOnboardUnlocks();
+      if (state.onboardStage !== 2) return "a roadworthy truck did not open the Marketplace";
+      state.pendingUnlock = null;
+      setView("workshop"); render("full");
+      const txt = document.getElementById("appContent").innerText;
+      if (/Time to compete/.test(txt)) return "the Build tab says Time to compete with no Compete tab";
+      if (!/Marketplace/.test(txt)) return "the roadworthy banner does not point at what opens Compete";
+      // Nothing listed, a week goes by.
+      checkOnboardUnlocks();
+      if (state.onboardStage !== 2) return "Compete opened the same week as the Marketplace";
+      state.week += 1;
+      checkOnboardUnlocks();
+      if (state.onboardStage !== 3) return "Compete never opened for a player who did not list a part";
+      if (!/Nobody needed a listing/.test((state.pendingUnlock || {}).text || ""))
+        return "the Compete card credits listings the player never made";
+      state.pendingUnlock = null; render("full");
+      if (!/Time to compete/.test(document.getElementById("appContent").innerText))
+        return "Time to compete went missing once Compete was open";
+      return true;
+    })();
+    restore();
+    return res;
+  });
+  if (unlockOk !== true) fail("compete unlock: " + unlockOk);
+  pass("a running truck opens Compete a week later, listing or not, and the banner says what is next");
+
   // ── the two notes on the corkboard. They were 11px of mid-tan on tan cork
   // at 85% opacity, effectively invisible. They are paper slips now, and this
   // holds the ink to a real contrast ratio against the stock rather than

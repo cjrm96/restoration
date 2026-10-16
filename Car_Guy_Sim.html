@@ -12296,7 +12296,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.94.0";
+      const GAME_VERSION = "0.94.1";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -17542,7 +17542,7 @@
           if (state.youtubeCooldownUntil && state.youtubeCooldownUntil > state.week + 2) {
             state.youtubeCooldownUntil = null;
           }
-          ["creatorPostedWeek", "collabDoneWeek", "spouseScenarioWeek", "firstListingWeek", "fridayNightWeek", "buddyHangWeek"].forEach((k) => {
+          ["creatorPostedWeek", "collabDoneWeek", "spouseScenarioWeek", "firstListingWeek", "marketOpenedWeek", "fridayNightWeek", "buddyHangWeek"].forEach((k) => {
             if (typeof state[k] === "number" && state[k] > state.week) state[k] = null;
           });
           const ensureArray = (key) => {
@@ -24405,6 +24405,8 @@ addEventListener("DOMContentLoaded",function(){
              home: "The show calendar lives on the Compete tab from here on, top of the screen.",
              text: "The listings made the rounds and the build has a name now, time to see how she stacks up in person. Ease in at a Cars & Coffee morning, climb through Local and Regional shows, and chase the National title before the season ends. Shows burn fuel to attend, so keep the tank topped, and word around the scene is it takes a 90-plus build to take Nationals." },
       };
+      const ONBOARD_COMPETE_UNLISTED =
+        "Nobody needed a listing to hear about it. A truck that sat dead in a barn is running again, and the scene wants a look. Ease in at a Cars & Coffee morning, climb through Local and Regional shows, and chase the National title before the season ends. Shows burn fuel to attend, so keep the tank topped, and word around the scene is it takes a 90-plus build to take Nationals.";
       function checkOnboardUnlocks() {
         const s = onboardStageVal();
         if (s >= 3 || !state.tutorialComplete || state.pendingUnlock) return;
@@ -24416,9 +24418,17 @@ addEventListener("DOMContentLoaded",function(){
           if (inv.some((i) => i.listed) && state.firstListingWeek == null) {
             state.firstListingWeek = state.week;
           }
+          // Listing a part is the quick way to get the build talked about,
+          // but it was the only way, and nothing said so: a player who kept
+          // wrenching and never listed anything sat with a running truck and
+          // no Compete tab for the rest of the season. Now the week after the
+          // Marketplace opens, word gets around on its own. A save from
+          // before this field starts the clock today.
+          if (typeof state.marketOpenedWeek !== "number") state.marketOpenedWeek = state.week;
           if (
             inv.some((i) => i.sold) ||
-            (state.firstListingWeek != null && state.week > state.firstListingWeek)
+            (state.firstListingWeek != null && state.week > state.firstListingWeek) ||
+            state.week > state.marketOpenedWeek
           )
             next = 3;
         }
@@ -24427,7 +24437,13 @@ addEventListener("DOMContentLoaded",function(){
         // competitive calendar goes live (beginCompetitiveSeason re-checks).
         if (next === 3 && inPreSeason()) return;
         state.onboardStage = next;
+        if (next === 2) state.marketOpenedWeek = state.week;
         state.pendingUnlock = ONBOARD_UNLOCKS[next];
+        // The Compete card credits the listings with getting the build
+        // talked about. A player who never listed anything got there on the
+        // truck alone, and the card says that instead.
+        if (next === 3 && state.firstListingWeek == null && !(state.partsInventory || []).some((i) => i.sold))
+          state.pendingUnlock = { ...ONBOARD_UNLOCKS[3], text: ONBOARD_COMPETE_UNLISTED };
         // Buck used to text here, the moment show season opened, which put a
         // taunt from a stranger in the player's phone before they had laid
         // eyes on him. He meets you at your first Cars and Coffee now, and the
@@ -24822,6 +24838,12 @@ addEventListener("DOMContentLoaded",function(){
           if (el) {
             el.classList.remove("tab-arriving");
             el.classList.add("tab-landed");
+            // The repaint below waits out the landing bounce, and the
+            // "not visited yet" dot used to wait with it, popping in more
+            // than half a second after the icon arrived. It lands with the
+            // icon now, as the same span the next repaint would draw.
+            if (state.tabNew === tabId && !el.querySelector(".tab-new-dot"))
+              el.insertAdjacentHTML("beforeend", '<span class="tab-new-dot"></span>');
             tabArrivalTimers.push(
               setTimeout(() => {
                 el.classList.remove("tab-landed");
@@ -26348,7 +26370,18 @@ addEventListener("DOMContentLoaded",function(){
                   ? `<div class="coach-nudge">${ico("toolbox", "15px")} <span>This week:</span> ${nudge}</div>`
                   : "";
               }
-              return `<div style="display:flex;align-items:center;gap:10px;background:rgba(143,203,126,0.1);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span>${ico("warn", "17px")}</span><div><div class="small" style="color:var(--green-bright);font-weight:bold">Roadworthy</div><div class="tiny muted">The car can drive itself to a show. Time to compete.</div></div></div>`;
+              // "Time to compete" only once there is somewhere to compete.
+              // Before Compete opens it points at what does open it; in the
+              // off-season it says when the shows come back.
+              const rwLine = tabUnlocked("shows")
+                ? "The car can drive itself to a show. Time to compete."
+                : !tabEarned("shows")
+                  ? "She runs. Put a take-off part up on the Marketplace and word gets around the show scene."
+                  : "The car can drive itself to a show. Show season opens when the off-season ends.";
+              const rwGo = !tabEarned("shows") && tabEarned("dealership")
+                ? button("Open the Marketplace", "setView('dealership')", false, "", "margin-left:auto;padding:6px 12px;font-size:11px;white-space:nowrap")
+                : "";
+              return `<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;background:rgba(143,203,126,0.1);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span>${ico("warn", "17px")}</span><div style="flex:1 1 170px;min-width:0"><div class="small" style="color:var(--green-bright);font-weight:bold">Roadworthy</div><div class="tiny muted">${rwLine}</div></div>${rwGo}</div>`;
             }
             return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px"></span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " "} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " "} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " "} · Steering ${car.steering}/${ROADWORTHY_STEERING}${steerGap ? " (need +" + steerGap + ")" : " "}${onboardStageVal() <= 1 ?`<div class="tiny" style="color:var(--gold-soft);margin-top:4px"> Get her running and the Marketplace opens up.</div>` : ""}</div></div></div>`;
           })()}<div class="shop-subtabs">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts" || state.shopSub === "extras", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${spaceTabEarned() ? tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')") : ""}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span> Free Budget part ready, tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div onclick="installNextYardPull()" style="cursor:pointer;background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span> ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck, tap to install the next one, free.</span><span style="opacity:0.7">→</span></div>` : ""; })()}${subcontent}`,
