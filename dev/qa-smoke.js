@@ -901,9 +901,10 @@ const pass = (msg) => console.log("✓", msg);
   if (deferOk !== true) fail("beats must defer, not cancel: " + deferOk);
   pass("no beat throws away its week because the screen was busy (it queues instead)");
 
-  // ── and the birthday card as the measured case: a 30%/week roll live for ten
-  // weeks should reach almost every season. Behind the busy check it reached
-  // 41% of them. ──
+  // ── and the birthday card as the measured case. Behind the old busy check
+  // its 30%/week roll reached 41% of seasons. It is a date on Dale's calendar
+  // now, so through the real week advance it must reach every season, on
+  // every week it can fall on, busy screen or not. ──
   const bdayOk = await page.evaluate(() => {
     const snapshot = JSON.stringify(state);
     const car = state.cars[0];
@@ -922,6 +923,7 @@ const pass = (msg) => console.log("✓", msg);
       state.seasonNumber = 2; state.seasonLength = 22; state.money = 2000;
       state.history = [{ tier: "Local", place: 2, show: "Palomar Junction Local" }];
       state.gameOver = false; state.seasonWrap = false; state.birthdayReceived = false;
+      state.birthdayWeek = 13 + (s % 8);
       for (let w = 13; w <= 22; w++) {
         clear(); state.week = w - 1;
         advanceWeek("time");
@@ -931,11 +933,11 @@ const pass = (msg) => console.log("✓", msg);
     }
     const pct = (got / N) * 100;
     Object.assign(state, JSON.parse(snapshot));
-    if (pct < 80) return `the card reached only ${pct.toFixed(0)}% of seasons, it is being eaten by a busy screen again`;
+    if (got < N) return `the card reached only ${pct.toFixed(0)}% of seasons, it is being eaten by a busy screen again`;
     return true;
   });
   if (bdayOk !== true) fail("birthday card delivery: " + bdayOk);
-  pass("the birthday card reaches nearly every season, the way its odds read");
+  pass("the birthday card reaches every season through the real week advance");
 
   // ── who the money beats find. They were keyed to being poor, which is a
   // lagging read on decisions made eight weeks earlier, and measured across
@@ -1720,17 +1722,27 @@ const pass = (msg) => console.log("✓", msg);
         return "the old show card is still rendering";
       if (document.querySelector("#appContent .cat-pill-row"))
         return "the tier filter is back on the show board";
-      const cells = [...document.querySelectorAll(".wcal-cell")];
-      if (cells.length !== state.seasonLength)
-        return `the calendar has ${cells.length} Saturdays, the season has ${state.seasonLength}`;
-      if (!cells[3].classList.contains("today") || !cells[3].classList.contains("sel"))
+      // Dale's calendar is a month to a page. It opens on today's month with
+      // today circled and picked, and between them the pages carry every
+      // Saturday of the season exactly once.
+      const sat = (w) => document.querySelector(`.mcal-sat[data-week="${w}"]`);
+      if (!sat(4) || !sat(4).classList.contains("today") || !sat(4).classList.contains("sel"))
         return "the wall did not open on today";
-      if (!cells[state.seasonLength - 1].classList.contains("finale"))
-        return "the last Saturday is not marked apart from the other National weeks";
       // A finish written down this season is scribbled in; one from before
       // the calendar (no season on it) leaves the square blank.
-      if (!/2nd/.test(cells[1].textContent)) return "this season's finish is missing from its Saturday";
-      if (/1st/.test(cells[2].textContent)) return "a result with no season on it was written on the wall";
+      if (!sat(2) || !/2nd/.test(sat(2).textContent)) return "this season's finish is missing from its Saturday";
+      if (!sat(3) || /1st/.test(sat(3).textContent)) return "a result with no season on it was written on the wall";
+      const seen = [];
+      const pages = calMonths().length;
+      for (let i = 0; i < pages; i++) {
+        state.calPick = { ...calPick(), page: i }; render("full");
+        document.querySelectorAll(".mcal-sat").forEach((b) => seen.push(+b.dataset.week));
+        if (i === pages - 1 && !(sat(state.seasonLength) && sat(state.seasonLength).classList.contains("finale")))
+          return "the last Saturday is not marked apart from the other National weeks";
+      }
+      if (seen.sort((a, b) => a - b).join() !== Array.from({ length: state.seasonLength }, (_, i) => i + 1).join())
+        return "the month pages do not carry each Saturday of the season exactly once: " + seen.join();
+      state.calPick = null; render("full");
       const rows = [...document.querySelectorAll(".srow")];
       if (rows.length < 2) return "this Saturday lists fewer than two shows";
       if (!rows.every((r) => /to win|no purse/.test(r.textContent)))
@@ -1744,7 +1756,7 @@ const pass = (msg) => console.log("✓", msg);
         return "a line on the sheet does not pick its poster";
       // One board: the poster is pinned to the same cork as the paperwork.
       const board = document.querySelector(".hero-panel.corkboard");
-      if (!board || !board.contains(bills()[0]) || !board.contains(document.querySelector(".wcal")))
+      if (!board || !board.contains(bills()[0]) || !board.contains(document.querySelector(".mcal")))
         return "the poster and the calendar are on different boards again";
       // Both paper weights still exist, one at a time.
       const on = wallShowsForWeek(4);
@@ -1799,7 +1811,7 @@ const pass = (msg) => console.log("✓", msg);
         return "future rows should read 3 wks out: " + future.slice(0, 3).join(", ");
       // Advance the week and the wall is back on today.
       state.week = 5; render("full");
-      if (calPick().w !== 5 || !document.querySelector(".wcal-cell.today.sel"))
+      if (calPick().w !== 5 || !document.querySelector('.mcal-sat.today.sel[data-week="5"]'))
         return "the wall stayed on a picked Saturday after the week moved";
       // Her hand and Dale's marker ship in the file. The Deck has neither.
       const fams = [...document.fonts].map((f) => f.family.replace(/["']/g, ""));
@@ -1812,6 +1824,39 @@ const pass = (msg) => console.log("✓", msg);
   });
   if (flyerOk !== true) fail("the wall: " + flyerOk);
   pass("the wall: Dale's calendar, one poster, purses in the rows, today first");
+
+  // ── her card on the workbench. The $1,000 birthday card used to be a 30%
+  // roll every week from week 13, which a calendar could never show. It is a
+  // date now: written on Dale's calendar in her hand, and the card turns up
+  // the week it is written in, not before. ──
+  const bdayDateOk = await page.evaluate(() => {
+    const stash = { got: state.birthdayReceived, bw: state.birthdayWeek, week: state.week, money: state.money,
+                    view: state.view, pick: state.calPick, q: state.noticeQueue, stage: state.onboardStage,
+                    pre: state.preWeek, unlock: state.pendingUnlock };
+    const restore = () => {
+      Object.assign(state, { birthdayReceived: stash.got, birthdayWeek: stash.bw, week: stash.week,
+        money: stash.money, calPick: stash.pick, noticeQueue: stash.q || [], onboardStage: stash.stage,
+        preWeek: stash.pre, pendingUnlock: stash.unlock });
+      setView(stash.view); render("full");
+    };
+    const res = (() => {
+      state.birthdayReceived = false; state.birthdayWeek = 15; state.week = 15; state.calPick = null;
+      state.onboardStage = 3; state.preWeek = 0; state.pendingUnlock = null; clearTabArrival();
+      setView("shows"); render("full");
+      if (state.view !== "shows") return "could not open Compete to read the calendar";
+      const written = [...document.querySelectorAll(".mcal-her")].some((n) => /your bday/.test(n.textContent));
+      if (!written) return "the birthday is not written on its page";
+      state.week = 14; maybeTriggerBirthday();
+      if (state.birthdayReceived) return "the card arrived a week before the date on the calendar";
+      state.week = 15; maybeTriggerBirthday();
+      if (!state.birthdayReceived) return "the card never arrived on the week the calendar says";
+      return true;
+    })();
+    restore();
+    return res;
+  });
+  if (bdayDateOk !== true) fail("birthday: " + bdayDateOk);
+  pass("the birthday card turns up the week Dale's calendar says, not on a roll");
 
   // ── a running truck and no Compete tab. Compete opened only after a
   // take-off part was listed, and nothing said so, so a player who just kept
