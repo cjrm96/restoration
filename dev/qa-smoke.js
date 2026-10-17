@@ -1912,6 +1912,52 @@ const pass = (msg) => console.log("✓", msg);
   if (typeof noteOk !== "number") fail("corkboard notes: " + noteOk);
   pass(`corkboard notes readable: ${noteOk} slips, ink on paper rather than tan on tan`);
 
+  // ── ink on paper. The work space ladder sat on the legal pad in the dark
+  // theme's greys: an 11px grey caption, a charcoal disabled button and a
+  // grey line, 2:1 to 2.9:1 against the stock. Every line of text on the
+  // paper panels of Space & Storage holds 4.5:1 now, broke or flush. ──
+  const paperOk = await page.evaluate(() => {
+    const lum = ([r, g, b]) => {
+      const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const parse = (c) => (c.match(/[\d.]+/g) || []).map(Number);
+    const stash = { stage: state.onboardStage, money: state.money, view: state.view, sub: state.shopSub,
+                    level: state.workshopLevel, installs: state.installsDone };
+    const restore = () => {
+      Object.assign(state, { onboardStage: stash.stage, money: stash.money, workshopLevel: stash.level,
+        installsDone: stash.installs, shopSub: stash.sub });
+      setView(stash.view); render("full");
+    };
+    const PAPER = [236, 226, 203];
+    const worst = [];
+    for (const money of [300, 99999]) {
+      state.onboardStage = 3; state.installsDone = Math.max(8, state.installsDone || 0);
+      state.workshopLevel = "curb"; state.money = money;
+      setView("workshop"); state.shopSub = "workspace"; render("full");
+      const panels = [...document.querySelectorAll("#appContent .panel.clipboard, #appContent .panel.work-order")];
+      if (!document.querySelector("#appContent .ws-rung")) {
+        const why = `view ${state.view}, sub ${state.shopSub}, wrap ${!!state.seasonWrap}, over ${!!state.gameOver}`;
+        restore(); return "the work space ladder never rendered (" + why + ")";
+      }
+      for (const p of panels) for (const el of p.querySelectorAll("*")) {
+        const txt = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 1);
+        if (!txt || el.closest(".btn:not(:disabled)")) continue;
+        let a = 1; for (let e = el; e && e !== p; e = e.parentElement) a *= parseFloat(getComputedStyle(e).opacity);
+        const fg = parse(getComputedStyle(el).color);
+        a *= fg[3] === undefined ? 1 : fg[3];
+        const mix = fg.slice(0, 3).map((v, i) => v * a + PAPER[i] * (1 - a));
+        const L1 = lum(mix), L2 = lum(PAPER);
+        const r = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+        if (r < 4.5) worst.push(`"${el.textContent.trim().slice(0, 30)}" at ${r.toFixed(1)}:1`);
+      }
+    }
+    restore();
+    return worst.length ? worst.slice(0, 4).join(", ") : true;
+  });
+  if (paperOk !== true) fail("ink on paper: " + paperOk);
+  pass("Space & Storage reads: every line on the paper holds 4.5:1, broke or flush");
+
   // ── the named grid fills in over a season. Three of the four rivals run
   // Local, so an uncapped field put every face in the game plus Buck on the
   // lawn at the player's debut. ──

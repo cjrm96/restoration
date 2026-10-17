@@ -4544,6 +4544,37 @@
       .panel.clipboard .row-v, .panel.work-order .row-v { color: #1d1611; }
       .panel.work-order .panel-title { color: #1d1611 !important; }
       .panel.work-order .panel-sub { color: #5d503e; }
+      /* Anything the dark theme greys out reads as grey on dark. On paper
+         the same grey was 2:1 against the stock, so on paper it is ink. */
+      .panel.clipboard .muted,
+      .panel.work-order .muted { color: #5d503e; }
+      .panel.clipboard .btn:disabled,
+      .panel.work-order .btn:disabled {
+        background: transparent;
+        color: #5d503e;
+        border: 1px dashed rgba(60, 45, 30, 0.5);
+        box-shadow: none;
+        opacity: 1;
+      }
+      /* The work space ladder, written on the pad. */
+      .ws-rung {
+        margin-bottom: 8px;
+        padding: 9px 11px 10px 12px;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-left: 4px solid #c98a2e;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.4);
+      }
+      .ws-rung.here { border-left-color: #4f8f3a; }
+      .ws-top { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
+      .ws-top > :last-child { margin-left: auto; }
+      .ws-name { font-size: 14px; font-weight: bold; color: #1d1611; }
+      .ws-cap { font-size: 12px; color: #4a3f30; }
+      .ws-here { font-size: 12px; font-weight: bold; letter-spacing: 0.05em; text-transform: uppercase; color: #2f6b1f; }
+      .ws-short { font-size: 12px; font-weight: bold; color: #8a2a1c; }
+      .ws-desc { margin-top: 5px; font-size: 12px; line-height: 1.5; color: #3f3426; }
+      .ws-ahead { margin-top: 4px; font-size: 12px; line-height: 1.55; color: #3f3426; }
+      .ws-ahead b { color: #1d1611; }
 
       /* ── The settings sheet ───────────────────────────────────────────
          Six identical dark panels stacked in a modal, each with a coloured
@@ -12364,7 +12395,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.95.2";
+      const GAME_VERSION = "0.95.3";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -26537,25 +26568,30 @@ addEventListener("DOMContentLoaded",function(){
             "work-order",
           )}${panel(
             "Work Space Progression",
-            `<div class="dense-grid">${WORKSPACE_LEVELS.map((w, i) => {
+            // Ink on the pad, the way the rest of this sheet is written. It
+            // used to be the dark theme's expandable rows dropped onto cream
+            // paper: an 11px grey caption, a dead charcoal button for a step
+            // you could not afford yet, and a line of grey under it, all well
+            // under a readable contrast. Two rungs are on the page, so their
+            // descriptions just show, and a step you cannot afford says how
+            // far off it is instead of greying out.
+            `${WORKSPACE_LEVELS.map((w, i) => {
               const current = state.workshopLevel === w.id;
-              const unlocked = i <= workshopIdx();
               const upcoming = i === workshopIdx() + 1;
               // Where you are and where you can go next, nothing else. The
-              // spaces further up the ladder were three rows of "🔒 Locked"
-              // taking real estate to describe a purchase nobody can make;
-              // the line under the grid names what is up there instead.
-              if (unlocked && !current) return "";
+              // rest of the ladder is named in the line underneath.
               if (!current && !upcoming) return "";
-              const open = state.denseDetail === "ws_" + w.id;
-              const action = current
-                ? `<span class="tiny good" style="font-weight:bold;white-space:nowrap">CURRENT</span>`
-                : button(`Upgrade $${fmt(w.cost)}`, "event.stopPropagation();upgradeWorkspace()", state.money < w.cost, "", "padding:5px 10px;font-size:11px;white-space:nowrap");
-              return `<div class="dense-row ${open ? "open" : ""}" style="border-left:3px solid ${current ? "#9fd18e" : "#d8a24f"}"><div class="dense-head" onclick="toggleDense('ws_${w.id}')"><span class="dense-emoji"></span><span class="dense-name">${w.name}</span><span class="tiny muted" style="white-space:nowrap">${w.maxActive} job${w.maxActive === 1 ? "" : "s"}</span>${action}<span class="dense-chev">${open ? "▾" : "▸"}</span></div>${open ? `<div class="dense-body"><div class="tiny muted" style="margin-top:6px">${w.desc}</div></div>` : ""}</div>`;
-            }).join("")}</div>${(() => {
+              const short = Math.max(0, w.cost - state.money);
+              const act = current
+                ? `<span class="ws-here">You're here</span>`
+                : short > 0
+                  ? `<span class="ws-short">$${fmt(w.cost)} · $${fmt(short)} short</span>`
+                  : button(`Move up · $${fmt(w.cost)}`, "upgradeWorkspace()", false, "", "padding:6px 12px;font-size:12px;white-space:nowrap");
+              return `<div class="ws-rung${current ? " here" : ""}"><div class="ws-top"><span class="ws-name">${w.name}</span><span class="ws-cap">${w.maxActive} job${w.maxActive === 1 ? "" : "s"} at once</span>${act}</div><div class="ws-desc">${w.desc}</div></div>`;
+            }).join("")}${(() => {
               const ahead = WORKSPACE_LEVELS.slice(workshopIdx() + 2);
               if (!ahead.length) return "";
-              return `<div class="tiny muted" style="margin-top:8px;line-height:1.6">Further up the ladder: ${ahead.map((w) => `${w.name}`).join(", ")}. Each one buys you more jobs at once.</div>`;
+              return `<div class="ws-ahead">Further up the ladder: <b>${ahead.map((w) => w.name).join(", ")}</b>. Each one runs more jobs at once.</div>`;
             })()}`,
             "Where the work happens, and what it costs to move up",
             "#2a1d10",
