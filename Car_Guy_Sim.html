@@ -5606,6 +5606,18 @@
         from { transform: translateY(20px); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
       }
+      /* A chat window opens once. After that only the new message moves:
+         it rises into place the way a bubble does in any messenger. */
+      .mp-card .mp-in { animation: mp-bubble-in 0.18s ease-out both; }
+      @keyframes mp-bubble-in {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: none; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #mpPopupRoot .mp-card,
+        #carOfferRoot .mp-card,
+        .mp-card .mp-in { animation: none; }
+      }
       @media (max-width: 520px) {
         #mpPopupRoot,
         #carOfferRoot {
@@ -12453,7 +12465,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.96.0";
+      const GAME_VERSION = "0.96.1";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -16228,6 +16240,8 @@
           return;
         }
         if (action === "accept") {
+          // Nothing to take while he is still typing his answer.
+          if (offer.replyTyping) return;
           completeCarSale(offer.carId, offer.offer, offer.buyer);
           return;
         }
@@ -16244,10 +16258,13 @@
             offer.offer,
             Math.round(offer.baselineValue * (1.02 + Math.random() * 0.12)),
           );
+          // A counter is a message, not an edit: his first offer stays where
+          // it was, your ask goes out under it, and his answer is typed.
+          const thread = { countered: true, counterAsk: target, firstMessage: offer.message, firstOffer: offer.offer, replyTyping: true };
           if (target <= ceiling) {
             state.pendingCarOffer = {
               ...offer,
-              countered: true,
+              ...thread,
               offer: target,
               message: `deal, $${fmt(target)} it is. I will bring cash.`,
             };
@@ -16255,7 +16272,7 @@
             const meet = Math.round((offer.offer + Math.min(target, ceiling)) / 2);
             state.pendingCarOffer = {
               ...offer,
-              countered: true,
+              ...thread,
               offer: meet,
               message: `cannot do $${fmt(target)}. Meet me at $${fmt(meet)} and it is done.`,
             };
@@ -16271,9 +16288,9 @@
             requestRender("full");
             return;
           }
-          playSfx("ding");
           saveGame();
           requestRender("full");
+          startCarBuyerTyping();
           return;
         }
         // decline (or a stray counter after one already happened)
@@ -25674,6 +25691,44 @@ addEventListener("DOMContentLoaded",function(){
       }
 
       let renderedMpSignature = "";
+      // A chat window is one window. Both Marketplace chats used to rewrite
+      // the whole card on every reply, and the card carries its pop-in, so
+      // answering made the window blink out and slide back up like it had
+      // just arrived. Now the card is built once per conversation and after
+      // that its insides are swapped in place: the window never moves,
+      // anything already said stays exactly where it was, and only lines
+      // that were not there before (keyed by data-k) rise in. The thread
+      // then scrolls to the newest line the way a messenger does.
+      function paintChat(root, key, html) {
+        const card = root.querySelector(".mp-card");
+        if (!card || card.dataset.chat !== key) {
+          root.innerHTML = html;
+          const fresh = root.querySelector(".mp-card");
+          if (fresh) fresh.dataset.chat = key;
+          const convo = root.querySelector(".mp-conversation");
+          if (convo) convo.scrollTop = convo.scrollHeight;
+          return;
+        }
+        const seen = new Set([...card.querySelectorAll("[data-k]")].map((n) => n.dataset.k));
+        const was = card.querySelector(".mp-conversation");
+        const top = was ? was.scrollTop : 0;
+        const tmp = document.createElement("div");
+        tmp.innerHTML = html;
+        const next = tmp.querySelector(".mp-card");
+        if (!next) return;
+        card.innerHTML = next.innerHTML;
+        card.querySelectorAll("[data-k]").forEach((n) => {
+          if (!seen.has(n.dataset.k)) n.classList.add("mp-in");
+        });
+        const convo = card.querySelector(".mp-conversation");
+        if (!convo) return;
+        convo.scrollTop = top;
+        const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (convo.scrollHeight > convo.clientHeight + 2) {
+          if (reduced || typeof convo.scrollTo !== "function") convo.scrollTop = convo.scrollHeight;
+          else convo.scrollTo({ top: convo.scrollHeight, behavior: "smooth" });
+        }
+      }
       function renderMarketplacePopup() {
         const root = getEl("mpPopupRoot");
         if (!root) return;
@@ -25734,47 +25789,48 @@ addEventListener("DOMContentLoaded",function(){
           ? offer.scenario.steps
               .slice(0, offer.scenarioStep || 0)
               .map((st, i) => `
-    <div class="mp-buyer-name" style="margin-top:6px">${buyerName}</div>
-    <div class="mp-row">
+    <div class="mp-buyer-name" data-k="nq${i}" style="margin-top:6px">${buyerName}</div>
+    <div class="mp-row" data-k="q${i}">
       <div class="mp-avatar sm">${buyerInitial}</div>
       <div class="mp-bubble gray">${st.text}</div>
     </div>
-    <div class="mp-row right">
+    <div class="mp-row right" data-k="a${i}">
       <div class="mp-bubble sent">${(offer.scenarioSaid || [])[i] || "..."}</div>
     </div>`)
               .join("")
           : "";
         const step = scenarioActive ? mpScenarioStep(offer) : null;
+        const now = offer.scenarioStep || 0;
         const actionRows = scenarioActive
           ? `
-    <div class="mp-row right">
+    <div class="mp-row right" data-k="took">
       <div class="mp-bubble sent">Yeah, I'll take $${fmt(offerAmount)}.</div>
     </div>
     ${priorSteps}
-    <div class="mp-buyer-name" style="margin-top:6px">${buyerName}</div>
+    <div class="mp-buyer-name" data-k="nq${now}" style="margin-top:6px">${buyerName}</div>
     ${typing
-      ? `<div class="mp-row">
+      ? `<div class="mp-row" data-k="t${now}">
       <div class="mp-avatar sm">${buyerInitial}</div>
       <div class="mp-bubble gray mp-typing" aria-label="${buyerName} is typing"><span></span><span></span><span></span></div>
     </div>`
-      : `<div class="mp-row">
+      : `<div class="mp-row" data-k="q${now}">
       <div class="mp-avatar sm">${buyerInitial}</div>
       <div class="mp-bubble gray">${step.text}</div>
     </div>
     ${step.choices
       .map((choice, idx) => {
         const cls = idx === 0 ? "mp-bubble blue" : "mp-bubble outlined";
-        return `<div class="mp-row right"><button class="${cls}" onclick="respondMarketplaceScenario(${idx})">${choice.label}</button></div>`;
+        return `<div class="mp-row right" data-k="c${now}-${idx}"><button class="${cls}" onclick="respondMarketplaceScenario(${idx})">${choice.label}</button></div>`;
       })
       .join("")}`}`
           : `
-    <div class="mp-row right">
+    <div class="mp-row right" data-k="deal">
       <button class="mp-bubble blue" onclick="respondMarketplaceOffer(true)">Take the deal · $${fmt(offerAmount)}</button>
     </div>
-    <div class="mp-row right">
+    <div class="mp-row right" data-k="pass">
       <button class="mp-bubble outlined" onclick="respondMarketplaceOffer(false)">Pass for now</button>
     </div>`;
-        root.innerHTML = `
+        const html = `
 <div class="mp-card">
   <div class="mp-header">
     <div class="mp-avatar">${buyerInitial}</div>
@@ -25809,9 +25865,7 @@ addEventListener("DOMContentLoaded",function(){
     ${actionRows}
   </div>
 </div>`;
-        // The newest bubble is the one you have to read.
-        const convo = root.querySelector(".mp-conversation");
-        if (convo && scenarioActive) convo.scrollTop = convo.scrollHeight;
+        paintChat(root, `part:${buyerName}:${offer.itemId}`, html);
       }
 
       // Reputation the player already earns quietly nudges sale prices; this
@@ -25828,13 +25882,27 @@ addEventListener("DOMContentLoaded",function(){
         return `<div class="mp-rep-line"> ${line}</div>`;
       }
       let renderedCarOfferSig = "";
+      let carBuyerTypingTimer = null;
+      function startCarBuyerTyping() {
+        if (carBuyerTypingTimer) clearTimeout(carBuyerTypingTimer);
+        const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        carBuyerTypingTimer = setTimeout(() => {
+          carBuyerTypingTimer = null;
+          const o = state.pendingCarOffer;
+          if (!o || !o.replyTyping) return;
+          o.replyTyping = false;
+          playSfx("ding");
+          saveGame();
+          requestRender("full");
+        }, reduced ? 260 : 1300 + Math.random() * 1200);
+      }
       function renderCarOfferPopup() {
         const root = getEl("carOfferRoot");
         if (!root) return;
         const offer = state.pendingCarOffer;
         const car = offer ? getCarById(offer.carId) : null;
         const sig = offer && car
-          ? `${offer.buyerType}:${offer.carId}:${offer.offer}:${offer.countered ? "c" : "o"}`
+          ? `${offer.buyerType}:${offer.carId}:${offer.offer}:${offer.countered ? "c" : "o"}:${offer.replyTyping ? "t" : ""}`
           : "";
         if (sig === renderedCarOfferSig) return;
         renderedCarOfferSig = sig;
@@ -25845,7 +25913,8 @@ addEventListener("DOMContentLoaded",function(){
         const carName = `${car.year} ${car.make} ${car.model}`;
         const baseline = offer.baselineValue || 0;
         const asking = offer.askingPrice || 0;
-        const amt = offer.offer || 0;
+        // Until his reply lands, the numbers are still his first offer.
+        const amt = offer.replyTyping ? offer.firstOffer || offer.offer || 0 : offer.offer || 0;
         const pct = baseline > 0 ? (amt / baseline) * 100 : 100;
         const verdict = baseline <= 0
           ? { label: "No reference", tone: "", col: "#6b5840" }
@@ -25859,15 +25928,28 @@ addEventListener("DOMContentLoaded",function(){
         const initial = (offer.buyer || "?").replace(/^@/, "").charAt(0).toUpperCase() || "?";
         const counterAsk = Math.min(asking, Math.round(amt * 1.18));
         const canCounter = !offer.countered && amt < asking;
-        const actionRows = offer.countered
+        // A reload mid-reply loses the timer; restart it rather than leave
+        // him typing forever.
+        if (offer.replyTyping && !carBuyerTypingTimer) startCarBuyerTyping();
+        const said = offer.countered
           ? `
-    <div class="mp-row right"><button class="mp-bubble blue" onclick="respondCarOffer('accept')">Take $${fmt(amt)}</button></div>
-    <div class="mp-row right"><button class="mp-bubble outlined" onclick="respondCarOffer('decline')">Walk away</button></div>`
+    <div class="mp-row right" data-k="ask"><div class="mp-bubble sent">Could you do $${fmt(offer.counterAsk || amt)}?</div></div>
+    <div class="mp-buyer-name" data-k="nr" style="margin-top:6px">${offer.buyer}</div>
+    ${offer.replyTyping
+      ? `<div class="mp-row" data-k="rt"><div class="mp-avatar sm">${initial}</div><div class="mp-bubble gray mp-typing" aria-label="${offer.buyer} is typing"><span></span><span></span><span></span></div></div>`
+      : `<div class="mp-row" data-k="r"><div class="mp-avatar sm">${initial}</div><div class="mp-bubble gray">${offer.message}</div></div>`}`
+          : "";
+        const actionRows = offer.countered
+          ? offer.replyTyping
+            ? ""
+            : `
+    <div class="mp-row right" data-k="take"><button class="mp-bubble blue" onclick="respondCarOffer('accept')">Take $${fmt(amt)}</button></div>
+    <div class="mp-row right" data-k="walk"><button class="mp-bubble outlined" onclick="respondCarOffer('decline')">Walk away</button></div>`
           : `
-    <div class="mp-row right"><button class="mp-bubble blue" onclick="respondCarOffer('accept')">Sell · $${fmt(amt)}</button></div>
-    ${canCounter ? `<div class="mp-row right"><button class="mp-bubble outlined" onclick="respondCarOffer('counter')">Counter · ask $${fmt(counterAsk)}</button></div>` : ""}
-    <div class="mp-row right"><button class="mp-bubble outlined" onclick="respondCarOffer('decline')">Not now</button></div>`;
-        root.innerHTML = `
+    <div class="mp-row right" data-k="sell"><button class="mp-bubble blue" onclick="respondCarOffer('accept')">Sell · $${fmt(amt)}</button></div>
+    ${canCounter ? `<div class="mp-row right" data-k="counter"><button class="mp-bubble outlined" onclick="respondCarOffer('counter')">Counter · ask $${fmt(counterAsk)}</button></div>` : ""}
+    <div class="mp-row right" data-k="notnow"><button class="mp-bubble outlined" onclick="respondCarOffer('decline')">Not now</button></div>`;
+        const html = `
 <div class="mp-card">
   <div class="mp-header">
     <div class="mp-avatar">${initial}</div>
@@ -25889,7 +25971,7 @@ addEventListener("DOMContentLoaded",function(){
     <div class="mp-buyer-name">${offer.buyer}</div>
     <div class="mp-row">
       <div class="mp-avatar sm">${initial}</div>
-      <div class="mp-bubble gray">${offer.message}</div>
+      <div class="mp-bubble gray">${offer.countered ? offer.firstMessage || offer.message : offer.message}</div>
     </div>
     <div class="mp-numbers">
       <div class="mp-numbers-row"><span>Their offer</span><strong>$${fmt(amt)}</strong></div>
@@ -25899,9 +25981,11 @@ addEventListener("DOMContentLoaded",function(){
     </div>
     <div class="mp-buyer-tag">Buyer type · ${offer.buyerType}</div>
     ${reputationBuyerLine()}
+    ${said}
     ${actionRows}
   </div>
 </div>`;
+        paintChat(root, `car:${offer.buyer}:${offer.carId}`, html);
       }
       function renderSellBuildPanel(car) {
         if (!car) return "";

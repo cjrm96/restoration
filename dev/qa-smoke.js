@@ -2749,6 +2749,50 @@ const pass = (msg) => console.log("✓", msg);
   if (mpOk !== true) fail("marketplace dead ends: " + mpOk);
   pass("no Marketplace choice resolves in silence, and a trade closes the sale");
 
+  // ── a chat window is one window. Every reply in the buyer chat rewrote the
+  // whole card, and the card carries its pop-in, so answering blanked the
+  // window to nothing and slid it back up. Measured on the old build: 0%
+  // opacity mid-reply. Now the window stays and only the new lines rise. ──
+  const chatOk = await page.evaluate(() => new Promise((done) => {
+    const snap = JSON.stringify({ inv: state.partsInventory, offer: state.pendingMarketplaceOffer });
+    const finish = (r) => {
+      clearBuyerTyping();
+      const back = JSON.parse(snap);
+      state.partsInventory = back.inv; state.pendingMarketplaceOffer = back.offer;
+      render("full"); done(r);
+    };
+    const sc = MARKETPLACE_SCENARIOS.find((x) => x.steps && x.steps.length > 1 &&
+      x.steps[0].choices.some((c) => c.outcome === "next"));
+    if (!sc) return finish("no multi-step buyer chat to test");
+    state.partsInventory = [{ id: "qa_chat", name: "QA Carburetor", sourcePart: "QA", category: "fuel",
+      askingPrice: 300, baselineValue: 280, listed: true, sold: false }];
+    state.pendingMarketplaceOffer = { itemId: "qa_chat", offer: 290, buyer: "@qa_chat", message: "still available?",
+      buyerType: "hold", scenario: sc, scenarioActive: true, scenarioStep: 0, scenarioTyping: false, scenarioSaid: [] };
+    render("full");
+    const root = document.getElementById("mpPopupRoot");
+    const card0 = root.querySelector(".mp-card");
+    if (!card0) return finish("the buyer chat did not open");
+    setTimeout(() => {
+      respondMarketplaceScenario(sc.steps[0].choices.findIndex((c) => c.outcome === "next"));
+      render("full");
+      let minOp = 1, frames = 0;
+      const tick = () => {
+        const c = root.querySelector(".mp-card");
+        if (c !== card0) return finish("answering rebuilt the chat window instead of adding to it");
+        minOp = Math.min(minOp, parseFloat(getComputedStyle(c).opacity));
+        if (++frames < 18) return requestAnimationFrame(tick);
+        if (minOp < 0.999) return finish(`the window faded to ${Math.round(minOp * 100)}% while the reply went out`);
+        const risen = [...c.querySelectorAll("[data-k].mp-in")].map((n) => n.dataset.k);
+        if (!risen.includes("a0")) return finish("your reply did not come in as a new line");
+        if (risen.includes("q0") || risen.includes("took")) return finish("lines already on screen animated again");
+        finish(true);
+      };
+      requestAnimationFrame(tick);
+    }, 300);
+  }));
+  if (chatOk !== true) fail("chat window: " + chatOk);
+  pass("answering a buyer adds a line to the same window; it never blinks");
+
   // ── the bank has its own door, the shark still has to find you ──
   // Everything behind the Loans button used to wait on the loan shark, who
   // needs five shows, which needs a truck that runs, which needs money. A
