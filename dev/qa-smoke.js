@@ -3165,6 +3165,65 @@ const pass = (msg) => console.log("✓", msg);
     await deck.close();
   }
 
+  // ── Marketplace and Compete fit a laptop screen ───────────────────────────
+  // A 1366x768 laptop and a 13" MacBook, less the browser's own toolbar. The
+  // monitor sizes its glass to the room and the board tightens on short
+  // screens, so neither tab scrolls. Compete is measured on its heaviest
+  // Saturday, every show picked in turn, since a big show's bill is the
+  // tallest thing on the board.
+  for (const [lw, lh] of [[1366, 657], [1440, 789]]) {
+    const lap = await browser.newPage({ viewport: { width: lw, height: lh } });
+    await lap.goto(GAME);
+    await lap.waitForTimeout(700);
+    await lap.keyboard.press("Enter"); await lap.waitForTimeout(1100);
+    for (let i = 0; i < 9; i++) {
+      await lap.evaluate(() => {
+        if (state.cutscene) dismissCutscene(true);
+        state.noticeQueue = []; state.pendingScene = null; state.pendingUnlock = null;
+        state.pendingMarketplaceOffer = null; state.pendingCarOffer = null;
+        const cr = document.getElementById("cutsceneRoot"); if (cr) cr.innerHTML = "";
+        const mr = document.getElementById("modalRoot"); if (mr) mr.innerHTML = "";
+      });
+      await lap.waitForTimeout(110);
+    }
+    const lapFit = await lap.evaluate(() => {
+      state.tutorialComplete = true;
+      Object.keys(state.milestones).forEach((k) => (state.milestones[k] = true));
+      state.onboardStage = 3; state.preWeek = 0; state.seasonNumber = 1; state.money = 2600; state.followers = 4000;
+      const car = currentCar(); CATS.forEach((k) => (car[k] = 62));
+      state.history = Array.from({ length: 9 }, (_, i) => ({ week: 1 + i, showName: "x", tier: i < 3 ? "Cars & Coffee" : i < 6 ? "Local" : "Regional", place: 2, season: 1 }));
+      learnTrip("yard");
+      // Measure the frame players actually see: the news ticker on. It only
+      // comes on once the intro is off screen, which a fresh page may not
+      // have reached yet.
+      if (!document.body.classList.contains("ticker-active")) startWorldTicker();
+      if (!document.body.classList.contains("ticker-active")) return "the news ticker never came on, so this measured the wrong frame";
+      const over = () => { const a = document.querySelector(".app"); a.scrollTop = 0; return a.scrollHeight - a.clientHeight; };
+      const bad = [];
+      setView("dealership");
+      for (const t of ["sell", "listings", "sellcar"]) {
+        state.marketTab = t; render("full");
+        if (!document.querySelector(".crt-page")) return "the Marketplace monitor did not render";
+        if (over() > 0) bad.push(`Marketplace/${t} scrolls ${over()}px`);
+      }
+      setView("shows");
+      let shows = 0;
+      for (const wk of [4, 20]) {
+        state.week = wk;
+        for (const sh of showsForWeek(wk)) {
+          state.calPick = { at: wk, w: wk, show: sh.id, more: false, page: calPageOf(wk) }; render("full");
+          shows++;
+          if (over() > 0) { bad.push(`Compete week ${wk} (${sh.name}) scrolls ${over()}px`); break; }
+        }
+      }
+      if (!shows) return "no shows were picked, so Compete was never measured";
+      return bad.length ? bad.join("; ") : true;
+    });
+    if (lapFit !== true) fail(`laptop ${lw}x${lh}: ${lapFit}`);
+    pass(`Marketplace and Compete fit ${lw}x${lh} without a scroll`);
+    await lap.close();
+  }
+
   // ── the itch embed ────────────────────────────────────────────────────────
   // itch serves the game in an iframe and the host decides whether that frame
   // may scroll; its scrollbars option defaults off. A build that relies on
