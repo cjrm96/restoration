@@ -12465,7 +12465,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.96.1";
+      const GAME_VERSION = "0.96.2";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -28754,19 +28754,14 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
               )
               .join("")}</div>`
           : "";
-        // The footer is the original line and it is not going anywhere, but it
-        // is a claim about the player, so it has to be true. A man who has
-        // answered her four times has not "never texted back", and printing it
-        // at him anyway would be the game not paying attention. It is earned
-        // by the player who never uses the reply row, which is the whole
-        // point of the reply row existing.
-        const sent = state.wifeRepliesSent || 0;
-        const foot = !sent
-          ? "You never text back. You go downstairs."
-          : sent < 5
-            ? "You text back now. Not well, but you do it."
-            : "You text back. She still says more with less. You are learning.";
-        return `<div class="imsg">${rows}${typingRow}${replyRow}<div class="imsg-foot">${foot}</div></div>`;
+        // The footer is the original line, and it is a claim about the
+        // player, so it only shows while it is true: earned by the man who
+        // never uses the reply row. Once he has answered her, the thread
+        // speaks for itself. It used to swap in a line grading his texting
+        // ("Not well, but you do it"), which was the game narrating him over
+        // his own conversation.
+        const foot = (state.wifeRepliesSent || 0) ? "" : `<div class="imsg-foot">You never text back. You go downstairs.</div>`;
+        return `<div class="imsg">${rows}${typingRow}${replyRow}${foot}</div>`;
       }
       function renderPhoneHomeScreen() {
         const next = SPONSORS.find((s) => state.followers < s.req);
