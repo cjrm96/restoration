@@ -952,9 +952,11 @@
       .ptc-lift { display: flex; flex-direction: column; align-items: flex-end; line-height: 1; }
       .ptc-time { font: 9px Arial, sans-serif; color: #555; text-transform: none; }
       .ptc-xwrap { text-align: center; }
-      .ptc-xref { display: inline-block; margin: 6px 0 2px; padding: 4px 12px; border: 1.5px solid #111; border-radius: 2px; background: #f2c21b; color: #111; box-shadow: 2px 2px 0 #111; font: bold 11px/1.2 Arial, sans-serif; cursor: pointer; transition: transform .06s, box-shadow .06s; }
-      .ptc-xref:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 #111; background: #ffd23f; }
-      .ptc-xref:active { transform: translate(2px, 2px); box-shadow: none; }
+      /* Dale's sticky note pointing at the tool store: a yellow note with a
+         hard shadow is still a button, and it is in his hand, not print. */
+      .ptc-xref { display: inline-block; margin: 6px 0 2px; padding: 5px 12px 4px; border: 0; border-radius: 1px; background: #f7d84a; color: #1f3a66; box-shadow: 2px 2px 0 #111; font: 15px/1.1 "Dale Marker", "Segoe Print", cursive; cursor: pointer; transform: rotate(-1.5deg); transition: transform .06s, box-shadow .06s; }
+      .ptc-xref:hover { transform: rotate(-1.5deg) translate(-1px, -1px); box-shadow: 3px 3px 0 #111; background: #ffe066; }
+      .ptc-xref:active { transform: rotate(-1.5deg) translate(2px, 2px); box-shadow: none; }
       .ptc-promo { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 6px 0 2px; padding: 3px 10px; background: #c4261d; color: #fff; }
       .ptc-promo h4 { margin: 0; white-space: nowrap; font: italic 900 13px/1.1 "Arial Black", Arial, sans-serif; }
       .ptc-promo span { font: bold 10px Arial, sans-serif; white-space: nowrap; }
@@ -1022,6 +1024,64 @@
         .ptc-row .ptc-ob { grid-area: ob; }
         .ptc-note { position: static; display: block; margin-bottom: 6px; white-space: normal; }
         .ptc-pg.l .ptc-foot, .ptc-pg.r .ptc-foot { flex-direction: column; padding: 3px 0 46px; }
+      }
+      /* ── Harbor Fright (Build › Tools) ──────────────────────────────
+         One painted aisle, sized to fit the screen without a scroll, with
+         its buttons laid over it in percentages so they stay on their
+         shelves at any size. Sign text scales with the picture (cqw). */
+      .hero-panel.hfs-view { padding: 8px 0 0; }
+      .hfs-view .shop-subtabs { margin: 0 20px 2px; }
+      .hfs { position: relative; container-type: inline-size; width: min(calc(100% - 40px), calc((100vh - 300px) * 384 / 168)); aspect-ratio: 384 / 168; margin: 6px auto 12px; border-radius: 4px; overflow: hidden; background: #111; box-shadow: 0 0 0 1px #000, 0 10px 24px rgba(0, 0, 0, 0.6); }
+      .hfs-art { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; image-rendering: crisp-edges; user-select: none; -webkit-user-drag: none; }
+      .hfs-hit { position: absolute; z-index: 2; padding: 0; border: 0; border-radius: 2px; background: none; cursor: pointer; }
+      .hfs-hit:hover, .hfs-hit:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.85); outline-offset: 1px; }
+      .hfs-hit.here { cursor: default; }
+      .hfs-sp { position: absolute; z-index: 1; border-radius: 2px; }
+      .hfs-sp:hover { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55); }
+      /* the yellow shelf sign is the button */
+      .hfs-tag, .hfs-own { position: absolute; z-index: 4; transform: translateX(-50%); }
+      .hfs-tag { display: grid; grid-template-columns: auto auto; grid-template-rows: auto auto; column-gap: 0.4em; align-items: center; padding: 0.12em 0.4em 0.12em 0.35em; border: 2px solid #111; border-radius: 1px; background: #f2c21b; color: #111; box-shadow: 2px 2px 0 #111; cursor: pointer; font: 900 clamp(11px, 1.5cqw, 17px)/1 Arial, "Helvetica Neue", sans-serif; letter-spacing: -0.02em; text-align: left; transition: transform 0.06s, box-shadow 0.06s; }
+      .hfs-tag i, .hfs-own i { grid-column: 1; grid-row: 1; font: bold clamp(6.5px, 0.72cqw, 8px)/1.2 Arial, sans-serif; font-style: normal; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+      .hfs-tag small { grid-column: 1; grid-row: 2; font: bold clamp(6.5px, 0.75cqw, 8.5px)/1.1 Arial, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
+      .hfs-tag b { grid-column: 2; grid-row: 1 / span 2; font-weight: 900; }
+      .hfs-tag:hover:not(:disabled) { transform: translate(calc(-50% - 1px), -1px); box-shadow: 3px 3px 0 #111; background: #ffd23f; }
+      .hfs-tag:active:not(:disabled) { transform: translate(calc(-50% + 2px), 2px); box-shadow: none; }
+      .hfs-tag:focus-visible { outline: 2px solid #1f5fa8; outline-offset: 2px; }
+      .hfs-tag:disabled { background: #e2e0d9; color: #6f6c64; border-color: #9c988e; box-shadow: none; cursor: not-allowed; }
+      .hfs-own { display: flex; flex-direction: column; padding: 0.2em 0.5em; border: 2px solid #2f6b1f; border-radius: 1px; background: #f4f4ef; color: #2f6b1f; font: bold clamp(6.5px, 0.8cqw, 9px)/1.25 Arial, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+      .hfs-own i { color: #555; }
+      /* Dale's list, in your hand */
+      .hfs-list { position: absolute; z-index: 6; left: 1.2%; bottom: 3%; width: max(17.5%, 180px); padding: 8px 10px 9px; background: #fbfaf3; background-image: repeating-linear-gradient(180deg, transparent 0 17px, rgba(80, 120, 190, 0.25) 17px 18px); box-shadow: 0 7px 14px rgba(0, 0, 0, 0.5); transform: rotate(-2.5deg); }
+      .hfs-list::before { content: ""; position: absolute; left: 0; right: 0; top: -6px; height: 8px; background: radial-gradient(circle at 5px 8px, #fbfaf3 4px, transparent 4.5px) 0 0 / 10px 8px; }
+      .hfs-list h6 { margin: 0 0 1px; font: 17px/1 "Dale Marker", "Segoe Print", cursive; color: #1f3a66; }
+      .hfs-li { display: flex; width: 100%; justify-content: space-between; gap: 6px; padding: 0; border: 0; background: none; color: #1f3a66; font: 14px/18px "Dale Marker", "Segoe Print", cursive; text-align: left; cursor: pointer; }
+      div.hfs-li { cursor: default; }
+      button.hfs-li:hover span:first-child { text-decoration: underline; }
+      .hfs-li em { font-style: normal; opacity: 0.7; }
+      .hfs-foot { margin-top: 2px; font: 12px/1.1 "Dale Marker", "Segoe Print", cursive; color: #8a2a1c; }
+      .hfs-room { color: #8a2a1c; font-size: 12px; text-decoration: underline; }
+      .hfs-m-signs, .hfs-m { display: none; }
+      @media (prefers-reduced-motion: reduce) {
+        .hfs-tag { transition: none; }
+      }
+      /* A phone: the aisle is a picture; signs above it, shelf signs under it. */
+      @media (max-width: 760px) {
+        .hfs { width: calc(100% - 20px); margin: 6px auto 10px; }
+        .hfs-hit, .hfs-sp, .hfs > .hfs-tag, .hfs > .hfs-own, .hfs > .hfs-list { display: none; }
+        .hfs-m-signs { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 10px 0; }
+        .hfs-m-sign { display: flex; align-items: stretch; padding: 0; border: 0; background: #1f4fa3; color: #fff; cursor: pointer; }
+        .hfs-m-sign b { display: flex; align-items: center; padding: 0 6px; margin: 2px; background: #c8322a; font: 900 13px Arial, sans-serif; }
+        .hfs-m-sign span { display: flex; align-items: center; padding: 0 8px 0 4px; font: bold 10px Arial, sans-serif; letter-spacing: 0.08em; }
+        .hfs-m-sign.here { outline: 2px solid #fff; }
+        .hfs-m { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin: 0 10px 14px; }
+        .hfs-m .hfs-tag, .hfs-m .hfs-own { position: static; transform: none; min-width: 0; font-size: 15px; }
+        .hfs-m .hfs-tag i, .hfs-m .hfs-own i, .hfs-m .hfs-tag small, .hfs-m .hfs-own span { white-space: normal; }
+        .hfs-m .hfs-tag i, .hfs-m .hfs-own i { font-size: 8px; }
+        .hfs-m .hfs-tag small { font-size: 8.5px; }
+        .hfs-m .hfs-own { white-space: normal; font-size: 10px; }
+        .hfs-m .hfs-tag:hover:not(:disabled) { transform: translate(-1px, -1px); }
+        .hfs-m .hfs-tag:active:not(:disabled) { transform: translate(2px, 2px); }
+        .hfs-m .hfs-list { position: static; grid-column: 1 / -1; width: auto; margin-top: 6px; transform: rotate(-1deg); }
       }
       /* Notes pinned to the cork, not text lying on it. These two lines (what
          the next show tier needs, and how many events are still locked) were
@@ -7012,18 +7072,6 @@
       /* ═══════════════════════════════════════════
      DATA
   ═══════════════════════════════════════════ */
-      const TOOL_CATEGORIES = [
-        { id: "automotive", label: "Automotive" },
-        { id: "welding", label: "Welding" },
-        { id: "power", label: "Power Tools" },
-        { id: "air", label: "Air Compressor" },
-        { id: "hand", label: "Hand Tools" },
-        { id: "lighting", label: "Lighting" },
-        { id: "safety", label: "Safety" },
-        { id: "electrical", label: "Electrical" },
-        { id: "painting", label: "Painting" },
-      ];
-
       /* ═══════════════════════════════════════════
      CUT-SCENE ART, artist-made set pieces (see art/README.md).
      Embedded as WebP so the game stays a single file.
@@ -12655,7 +12703,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.97.2";
+      const GAME_VERSION = "0.98.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -12744,7 +12792,6 @@
           view: "workshop",
           shopCat: "engine",
           shopSub: "suggested",
-          toolCat: "all",
           marketTab: "sell",
           history: [],
           result: null,
@@ -21961,21 +22008,6 @@
         saveGame();
         requestRender("full");
       }
-      function toggleDense(id) {
-        state.denseDetail = state.denseDetail === id ? null : id;
-        requestRender("full");
-      }
-      // The shop used to shelve one tool under its own "Tool Storage" heading,
-      // which read as the storage upgrade and sold a fastener bin instead. The
-      // heading is gone; a save still parked on it lands back on All.
-      function toolCatFilter() {
-        const cat = state.toolCat || "all";
-        return TOOL_CATEGORIES.some((c) => c.id === cat) ? cat : "all";
-      }
-      function setToolCat(cat) {
-        state.toolCat = cat;
-        requestRender("full");
-      }
       function toggleSponsorWatch() {
         state.sponsorWatchExpanded = !state.sponsorWatchExpanded;
         requestRender("full");
@@ -22374,7 +22406,7 @@
           if (spare >= 40 && !ctx.xref) {
             ctx.xref = true;
             spare -= 40;
-            body += `<div class="ptc-xwrap"><button class="ptc-xref" onclick="setShopSub('tools')">Missing a tool? We carry those too. See TOOLS, page ${book.pages.length + PTC_FIRST_PAGE} &#8594;</button></div>`;
+            body += `<div class="ptc-xwrap"><button class="ptc-xref" onclick="setShopSub('tools')">missing a tool? harbor fright's open till 9 -D</button></div>`;
           }
           if (spare >= 34 && !ctx.promo) {
             ctx.promo = true;
@@ -22435,6 +22467,456 @@
         const showsPaint = [l, r].some((p) => p.secs.some((x) => x.id === "paint"));
         const banners = shopBannersMarkup(car);
         return `${gigBoardMarkup()}<div class="hero-panel ptc-view">${shopSubtabsMarkup(car)}${banners ? `<div class="ptc-banners">${banners}</div>` : ""}<div class="ptc-spread" data-spread="${s}">${left}${right}${ptcFlags(book, s, car)}</div>${showsPaint ? `<div class="ptc-after">${paintBoothPanel(car)}</div>` : ""}</div>`;
+      }
+      /* ═══════════════════════════════════════════
+         HARBOR FRIGHT (Build › Tools)
+      ═══════════════════════════════════════════ */
+      // The Tools tab is a Saturday run to Harbor Fright, drawn the way the
+      // cutscenes are drawn: one pixel grid (384x168, shown ~3x and crisp),
+      // outlined top-lit stock, fluorescent falloff with ordered dither, a
+      // polished floor that reflects the bay, and the main aisle running off
+      // to the front doors, where it is dusk and your car is parked under the
+      // lot light. Each aisle is painted once into an image and cached; the
+      // parts a player reads or presses (the aisle signs' hit areas, the
+      // yellow shelf signs, Dale's list) are HTML laid over it.
+      //
+      // Stock is merchandised like a real store, several facings of each,
+      // labels over the peg columns, the odd empty hook. Only the tools the
+      // game sells carry a yellow sign, and yellow is only ever a button.
+      // add(id, hotspot, sign anchor, draw) is how an aisle says "this one is
+      // for sale": the same planogram run with no canvas yields the hotspots.
+      const HFS = (() => {
+    let truck = "#d0702e";
+      const W = 384, H = 168;
+      // ── 3x5 pixel font ──
+      const G = { A: "010101111101101", B: "110101110101110", C: "011100100100011", D: "110101101101110", E: "111100110100111", F: "111100110100100", G: "011100101101011", H: "101101111101101", I: "111010010010111", J: "001001001101010", K: "101101110101101", L: "100100100100111", M: "101111111101101", N: "110101101101101", O: "010101101101010", P: "110101110100100", Q: "010101101110011", R: "110101110101101", S: "011100010001110", T: "111010010010010", U: "101101101101111", V: "101101101101010", W: "101101111111101", X: "101101010101101", Y: "101101010010010", Z: "111001010100111", 0: "111101101101111", 1: "010110010010111", 2: "110001010100111", 3: "110001010001110", 4: "101101111001001", 5: "111100110001110", 6: "011100111101111", 7: "111001010010010", 8: "111101111101111", 9: "111101111001110", "&": "010101010101011", "-": "000000111000000", ".": "000000000000010", "$": "011110010011110", "/": "001001010100100", " ": "000000000000000", "'": "010010000000000", '"': "101101000000000", "#": "101111101111101", ",": "000000000010100" };
+      // ── color helpers ──
+      const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+      const toHex = (r, g, b) => "#" + [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
+      const sh = (h, f) => { const [r, g, b] = hex(h); return f < 0 ? toHex(r * (1 + f), g * (1 + f), b * (1 + f)) : toHex(r + (255 - r) * f, g + (255 - g) * f, b + (255 - b) * f); };
+      const mix = (a, b, t) => { const A = hex(a), B = hex(b); return toHex(A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t, A[2] + (B[2] - A[2]) * t); };
+      const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
+      const C = {
+        blue: "#1f4fa3", red: "#c8322a", black: "#26272a", chrome: "#c4cbd2", orange: "#e0761e", white: "#f2f1ec", peg: "#d9d5ca", wall: "#e6e4dc", ceil: "#ecebe6",
+        floor: "#a7a8a4", green: "#2f7a3a", gold: "#d6a53a", navy: "#1b2c52", gray: "#7d8188",
+      };
+      const painter = (ctx) => {
+        const R = (x, y, w, h, c) => { if (!ctx || w <= 0 || h <= 0) return; ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
+        const P = (x, y, c) => R(x, y, 1, 1, c);
+        // vertical dithered gradient between colors in steps
+        const vgrad = (x, y, w, h, c0, c1) => { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const t = h <= 1 ? 0 : j / (h - 1); const q = Math.floor(t * 6) / 6, f = t * 6 - Math.floor(t * 6); const c = BAYER[((y + j) % 4) * 4 + ((x + i) % 4)] < f ? Math.min(1, q + 1 / 6) : q; P(x + i, y + j, mix(c0, c1, c)); } };
+        const dither = (x, y, w, h, c, amt) => { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) if (BAYER[((y + j) % 4) * 4 + ((x + i) % 4)] < amt) P(x + i, y + j, c); };
+        const line = (x0, y0, x1, y1, c, t = 1) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) || 1; for (let k = 0; k <= n; k++) R(Math.round(x0 + (x1 - x0) * k / n - (t - 1) / 2), Math.round(y0 + (y1 - y0) * k / n - (t - 1) / 2), t, t, c); };
+        const ell = (cx, cy, rx, ry, c) => { for (let j = -ry; j <= ry; j++) { const hw = Math.round(rx * Math.sqrt(Math.max(0, 1 - (j * j) / (ry * ry + 0.01)))); R(cx - hw, cy + j, hw * 2 + 1, 1, c); } };
+        const text = (s, x, y, c, scale = 1) => { let cx = x; for (const ch of String(s).toUpperCase()) { const g = G[ch] || G[" "]; for (let r = 0; r < 5; r++) for (let k = 0; k < 3; k++) if (g[r * 3 + k] === "1") R(cx + k * scale, y + r * scale, scale, scale, c); cx += 4 * scale; } return cx - x; };
+        const tw = (s, scale = 1) => String(s).length * 4 * scale - scale;
+        // an outlined, top-lit block: body, 1px highlight top/left, darker right/bottom, dark outline
+        const block = (x, y, w, h, c, o = {}) => {
+          R(x - 1, y - 1, w + 2, h + 2, o.ol || sh(c, -0.62));
+          R(x, y, w, h, c);
+          if (o.top) R(x, y, w, o.top, sh(c, 0.22));
+          R(x, y, w, 1, sh(c, 0.32)); R(x, y, 1, h, sh(c, 0.16));
+          R(x + w - 1, y + 1, 1, h - 1, sh(c, -0.22)); R(x + 1, y + h - 1, w - 1, 1, sh(c, -0.28));
+        };
+        // a cast shadow on whatever is under an item
+        const shadow = (x, y, w) => { dither(x, y, w, 1, "rgba(0,0,0,0.55)", 0.75); dither(x + 1, y + 1, w - 2, 1, "rgba(0,0,0,0.4)", 0.4); };
+        return { R, P, vgrad, dither, line, ell, text, tw, block, shadow, ctx };
+      };
+      // ── layout (logical px) ──
+      // ceiling 0-24 · header 28-34 · pegboard 35-80 (tags at 35, stock from 46)
+      // shelf A: stock stands on 96, lip 96-99, its tags hang 97-106
+      // base deck: stock stands on 126, lip 126-128, kick 128-134, its tags 128-137
+      // floor 134-168: floor models stand on ~158, their tags at their feet
+      const SHELF = 96, BASE = 126;
+      // ── product sprites (each draws at x,y = top-left) ──
+      // the little product photo printed on a box front
+      const photo = (p, x, y, w, h, kind) => {
+        const { R, line, ell } = p;
+        R(x, y, w, h, "#f3f2ec"); R(x, y + h - 1, w, 1, "#d9d7cf");
+        const cx = x + (w >> 1), cy = y + (h >> 1);
+        if (kind === "drill") { R(cx - 3, cy - 2, 6, 2, C.red); R(cx - 1, cy, 2, 3, "#2a2b2e"); R(cx + 3, cy - 2, 1, 1, "#8e959c"); }
+        else if (kind === "socket") { for (let k = 0; k < 4; k++) R(x + 1 + k * 2, cy - 1, 1, 2, "#8e959c"); }
+        else if (kind === "light") { R(x + 1, cy, w - 2, 1, "#c4cbd2"); R(x + 1, cy - 1, w - 2, 1, "#fffbe0"); }
+        else if (kind === "glove") { R(cx - 1, cy - 1, 3, 3, C.orange); R(cx - 1, cy - 2, 1, 1, C.orange); R(cx + 1, cy - 2, 1, 1, C.orange); }
+        else if (kind === "jack") { R(cx - 3, cy, 6, 1, C.red); line(cx + 2, cy, cx + 4, cy - 2, "#8e959c"); }
+        else if (kind === "helmet") { R(cx - 2, cy - 2, 4, 4, "#2a2b2e"); R(cx - 1, cy - 1, 2, 1, "#4f7f4f"); }
+        else if (kind === "hose") { ell(cx, cy, 2, 2, C.red); p.P(cx, cy, "#f3f2ec"); }
+        else { R(cx - 2, cy - 1, 4, 2, "#8e959c"); }
+      };
+      const SPR = {
+        // a retail box: brand face, top face catching the tube light, side in shadow, photo, brand bar
+        box(p, x, y, w, h, col, kind, acc) {
+          const { R, block } = p;
+          block(x, y, w, h, col, { top: 2 });
+          R(x + w - 2, y + 2, 1, h - 3, sh(col, -0.32));
+          const pw = Math.max(5, Math.round(w * 0.46)), ph = Math.max(4, h - 7);
+          photo(p, x + 2, y + 3, pw, ph, kind);
+          R(x + pw + 4, y + 4, Math.max(2, w - pw - 7), 1, acc || "#ffffff");
+          R(x + pw + 4, y + 6, Math.max(2, w - pw - 9), 1, sh(acc || "#ffffff", -0.15));
+          R(x + 1, y + h - 3, w - 2, 2, acc || sh(col, -0.35));
+        },
+        wrenchCard(p, x, y, col) { const { R, block, line } = p; block(x, y, 11, 15, col); R(x, y, 11, 3, col === C.black ? C.red : sh(C.red, -0.35)); R(x + 4, y + 1, 3, 1, "#3a3a3a"); for (let k = 0; k < 4; k++) { line(x + 2 + k * 2, y + 13, x + 3 + k * 2, y + 5 + k, C.chrome); p.P(x + 3 + k * 2, y + 4 + k, "#ffffff"); } },
+        blister(p, x, y, w, h, col, inner) { const { R, block } = p; block(x, y, w, h, col); R(x, y, w, 3, sh(col, -0.3)); R(x + (w >> 1) - 2, y + 1, 4, 1, "#2a2a2a"); R(x + 2, y + 4, w - 4, h - 7, sh(col, 0.5)); R(x + 2, y + 4, w - 4, 1, "#ffffff"); R(x + 2, y + 4, 1, h - 7, "#ffffff"); if (inner) inner(x + 3, y + 5, w - 6, h - 9); },
+        socketRail(p, x, y) { const { R, block, text } = p; block(x, y, 38, 14, C.black); R(x, y, 38, 7, C.red); R(x, y + 6, 38, 1, sh(C.red, -0.4)); text("IKON", x + 2, y + 1, "#ffffff"); R(x + 30, y + 2, 4, 1, "#2a2a2a"); R(x + 2, y + 12, 34, 1, "#8e959c"); for (let k = 0; k < 8; k++) { const hh = 2 + (k >> 1); R(x + 3 + k * 4, y + 12 - hh, 3, hh, C.chrome); R(x + 3 + k * 4, y + 12 - hh, 3, 1, "#ffffff"); R(x + 5 + k * 4, y + 12 - hh, 1, hh, "#7f878f"); } },
+        toolKit(p, x, y) { const { R, block } = p; R(x + 7, y - 2, 8, 2, "#2a2b2e"); R(x + 8, y - 3, 6, 1, "#2a2b2e"); block(x, y, 22, 14, C.red, { top: 1 }); R(x + 2, y + 2, 18, 9, sh(C.red, -0.3)); for (let k = 0; k < 3; k++) { R(x + 3, y + 3 + k * 3, 11 - k * 2, 1, C.chrome); R(x + 14 - k * 2, y + 3 + k * 3, 2, 2, "#e9eef2"); } R(x + 17, y + 3, 2, 7, "#2a2b2e"); R(x + 2, y + 12, 18, 1, sh(C.red, 0.25)); },
+        bigCase(p, x, y) { const { R, block } = p; R(x + 11, y - 2, 8, 2, "#4a4a4a"); block(x, y, 30, 15, C.black, { top: 1 }); R(x, y + 11, 30, 2, C.red); for (let r = 0; r < 2; r++) for (let k = 0; k < 7; k++) { R(x + 2 + k * 4, y + 3 + r * 4, 2, 3, C.chrome); R(x + 2 + k * 4, y + 3 + r * 4, 2, 1, "#ffffff"); } },
+        binStack(p, x, y) { const { R, block } = p; for (let k = 0; k < 3; k++) { const yy = y + k * 5; block(x, yy, 24, 4, "#c9d4dc"); R(x, yy, 24, 1, C.blue); for (let c = 0; c < 4; c++) R(x + 2 + c * 6, yy + 2, 4, 1, ["#c8322a", "#e0761e", "#2f7a3a", "#1f4fa3"][(c + k) % 4]); } },
+        goldCase(p, x, y) { const { R, block, dither, line } = p; block(x, y, 34, 15, "#3b3530"); R(x + 2, y + 2, 30, 11, "#a9bfcc"); dither(x + 2, y + 2, 30, 11, "#e2eef4", 0.3); R(x + 7, y + 7, 20, 2, C.gold); R(x + 4, y + 6, 5, 4, C.gold); R(x + 5, y + 7, 3, 2, "#8a6a20"); R(x + 9, y + 7, 18, 1, "#f6dc8a"); line(x + 3, y + 3, x + 12, y + 3, "#ffffff"); line(x + 24, y + 11, x + 30, y + 3, "rgba(255,255,255,.7)"); R(x + 29, y + 10, 2, 2, "#1a1a1a"); },
+        impact(p, x, y) { const { R, block } = p; block(x, y, 12, 6, C.red); R(x + 1, y + 1, 9, 1, sh(C.red, 0.35)); R(x + 12, y + 2, 3, 2, C.chrome); block(x + 3, y + 6, 4, 6, "#2a2b2e"); block(x + 1, y + 12, 8, 4, "#3a3d42"); R(x + 2, y + 13, 6, 1, C.red); },
+        grinder(p, x, y) { const { R, block } = p; block(x, y + 3, 15, 5, C.red); R(x + 1, y + 4, 12, 1, sh(C.red, 0.35)); block(x + 14, y + 1, 4, 8, "#8e959c"); R(x + 18, y - 1, 2, 12, "#2a2b2e"); R(x + 3, y + 8, 4, 2, "#2a2b2e"); },
+        buffer(p, x, y) { const { R, block, ell } = p; block(x, y, 13, 5, C.red); R(x + 1, y + 1, 10, 1, sh(C.red, 0.35)); block(x + 12, y + 1, 3, 3, "#8e959c"); ell(x + 15, y + 8, 6, 3, "#9a9890"); ell(x + 15, y + 7, 6, 3, "#f4f4f0"); R(x + 3, y + 5, 3, 5, "#2a2b2e"); },
+        multimeter(p, x, y) { const { R, block } = p; block(x, y, 7, 10, C.orange); R(x + 1, y + 1, 5, 3, "#2b2f2a"); R(x + 2, y + 2, 3, 1, "#9fd18e"); R(x + 2, y + 6, 3, 3, "#26272a"); },
+        headlamp(p, x, y) { for (let k = 0; k < 11; k++) { const a = (k / 10) * Math.PI; p.P(Math.round(x + 4 + 4 * Math.cos(a)), Math.round(y + 6 - 3 * Math.sin(a)), "#26272a"); } p.R(x + 2, y + 1, 5, 3, "#8e959c"); p.R(x + 3, y + 2, 2, 1, "#fffbe0"); },
+        glasses(p, x, y) { const { R } = p; R(x, y, 9, 1, "#26272a"); R(x, y + 1, 4, 3, "#4a7fd0"); R(x + 5, y + 1, 4, 3, "#4a7fd0"); R(x, y + 1, 1, 1, "#cfe2ff"); R(x + 5, y + 1, 1, 1, "#cfe2ff"); },
+        glove(p, x, y, col) { const { R } = p; R(x + 1, y + 3, 5, 5, col); for (let k = 0; k < 4; k++) R(x + 1 + Math.round(k * 1.3), y, 1, 4, col); R(x, y + 4, 1, 3, col); R(x + 1, y + 7, 5, 1, sh(col, -0.3)); R(x + 1, y + 3, 5, 1, sh(col, 0.25)); },
+        shopLightBox(p, x, y) { const { R, block } = p; block(x, y, 46, 5, C.black); R(x + 14, y + 2, 30, 1, "#f4f4f0"); R(x + 2, y + 1, 9, 3, "#f3f2ec"); R(x + 3, y + 2, 7, 1, "#c4cbd2"); },
+        paintGun(p, x, y) { const { R, block } = p; block(x + 3, y, 6, 5, "#b8c0c8"); R(x + 4, y + 1, 3, 1, "#ffffff"); block(x, y + 5, 14, 4, "#9aa2aa"); R(x + 14, y + 6, 2, 2, "#555"); block(x + 2, y + 9, 4, 6, "#26272a"); },
+        pancake(p, x, y) { const { R, ell, block } = p; ell(x + 9, y + 9, 9, 9, sh(C.red, -0.55)); ell(x + 9, y + 9, 8, 8, C.red); ell(x + 7, y + 6, 4, 3, sh(C.red, 0.25)); p.P(x + 5, y + 4, "#ffffff"); block(x + 4, y - 3, 10, 4, "#2a2b2e"); R(x + 7, y + 8, 4, 3, "#2a2b2e"); R(x + 2, y + 18, 3, 2, "#1a1a1a"); R(x + 13, y + 18, 3, 2, "#1a1a1a"); },
+        upright(p, x, y) { const { R, block } = p; block(x, y + 8, 14, 38, C.red); R(x + 2, y + 9, 2, 36, sh(C.red, 0.3)); R(x + 11, y + 9, 2, 36, sh(C.red, -0.25)); block(x - 2, y, 18, 8, "#2a2b2e", { top: 1 }); R(x, y + 2, 4, 4, "#8e959c"); R(x + 1, y + 3, 2, 1, "#ffffff"); R(x + 8, y + 2, 6, 3, "#55585e"); for (let k = 0; k < 3; k++) R(x + 5, y + 16 + k * 8, 4, 5, "#f4f4f0"); R(x + 1, y + 46, 3, 2, "#1a1a1a"); R(x + 10, y + 46, 3, 2, "#1a1a1a"); },
+        jackBox(p, x, y) { SPR.box(p, x, y, 26, 11, C.orange, "jack", C.black); },
+        floorJack(p, x, y) { const { R, block, line } = p; block(x, y + 4, 22, 4, C.red); R(x + 1, y + 5, 19, 1, sh(C.red, 0.35)); R(x + 1, y + 8, 3, 2, "#1a1a1a"); R(x + 18, y + 8, 3, 2, "#1a1a1a"); line(x + 20, y + 4, x + 30, y - 6, "#8e959c"); line(x + 21, y + 4, x + 31, y - 6, "#c4cbd2"); block(x + 1, y + 1, 5, 3, "#3a3d42"); },
+        hoist(p, x, y) { const { R, line, block } = p; line(x, y + 40, x + 44, y + 40, C.red, 3); line(x + 6, y + 40, x + 16, y + 30, C.red, 2); line(x + 40, y + 40, x + 28, y + 30, C.red, 2); block(x + 20, y + 6, 4, 34, C.red); R(x + 21, y + 7, 1, 32, sh(C.red, 0.35)); line(x + 22, y + 8, x + 44, y, C.red, 3); line(x + 22, y + 7, x + 44, y - 1, sh(C.red, 0.35)); line(x + 44, y + 1, x + 44, y + 12, "#55585e"); R(x + 42, y + 12, 4, 2, "#55585e"); block(x + 18, y + 22, 8, 8, "#2a2b2e"); R(x, y + 41, 3, 2, "#1a1a1a"); R(x + 42, y + 41, 3, 2, "#1a1a1a"); },
+        engStand(p, x, y) { const { R, line, block, ell } = p; line(x, y + 30, x + 26, y + 30, C.red, 2); block(x + 11, y + 8, 4, 22, C.red); R(x + 12, y + 9, 1, 20, sh(C.red, 0.35)); block(x + 13, y + 6, 12, 5, C.red); ell(x + 26, y + 8, 4, 4, "#6f767e"); ell(x + 25, y + 7, 2, 2, "#c4cbd2"); R(x, y + 31, 3, 2, "#1a1a1a"); R(x + 23, y + 31, 3, 2, "#1a1a1a"); },
+        welder(p, x, y, col) { const { R, block, ell } = p; R(x + 6, y - 2, 10, 2, "#333"); block(x, y, 22, 14, col, { top: 2 }); R(x + 2, y + 4, 9, 5, "#1d1e20"); R(x + 3, y + 5, 5, 2, "#9fd18e"); ell(x + 15, y + 6, 2, 2, "#e8e8e2"); ell(x + 19, y + 6, 1, 1, "#e8e8e2"); R(x + 2, y + 11, 18, 1, sh(col, 0.3)); },
+        helmet(p, x, y) { const { R, block } = p; block(x, y, 10, 12, "#2a2b2e"); R(x + 1, y + 1, 8, 1, "#45484d"); R(x + 2, y + 4, 6, 3, "#183018"); R(x + 2, y + 4, 6, 1, "#4f7f4f"); R(x + 1, y + 9, 2, 1, C.orange); R(x + 3, y + 8, 2, 1, C.orange); },
+        spool(p, x, y) { const { R } = p; R(x, y, 2, 11, "#3a3d42"); R(x + 9, y, 2, 11, "#3a3d42"); R(x, y, 2, 1, "#6f747b"); R(x + 9, y, 2, 1, "#6f747b"); R(x + 2, y + 1, 7, 9, "#b8763a"); for (let k = 0; k < 4; k++) R(x + 2, y + 2 + k * 2, 7, 1, "#d89a5a"); R(x + 2, y + 1, 7, 1, "#f0bf86"); R(x + 2, y + 9, 7, 1, "#7a4a20"); },
+        hoseCoil(p, x, y, col) { const { ell } = p; ell(x + 7, y + 7, 7, 7, sh(col, -0.45)); ell(x + 7, y + 7, 6, 6, col); ell(x + 6, y + 6, 4, 4, sh(col, 0.2)); ell(x + 7, y + 7, 3, 3, sh(col, -0.45)); ell(x + 7, y + 7, 2, 2, "#cbc7bc"); },
+        standee(p, x, y, kind) { const { R, block, text, line } = p; R(x + 13, y + 40, 4, 8, "#55585e"); R(x + 7, y + 47, 16, 2, "#3a3d42"); block(x, y, 30, 40, "#f4f4ef"); R(x, y, 30, 8, C.blue); text("SPECIAL", x + 2, y + 2, "#ffffff"); R(x + 2, y + 10, 26, 17, kind === "lift" ? "#dfe7ee" : "#ece6d8"); if (kind === "lift") { R(x + 5, y + 11, 2, 15, "#3a3d42"); R(x + 23, y + 11, 2, 15, "#3a3d42"); R(x + 5, y + 19, 20, 2, C.red); R(x + 9, y + 16, 12, 3, C.blue); R(x + 10, y + 16, 4, 1, "#cfe2ff"); } else { line(x + 4, y + 25, x + 4, y + 15, "#3a3d42"); line(x + 4, y + 15, x + 15, y + 11, "#3a3d42"); line(x + 15, y + 11, x + 26, y + 15, "#3a3d42"); line(x + 26, y + 15, x + 26, y + 25, "#3a3d42"); R(x + 11, y + 18, 8, 8, "#c9d4dc"); } text("ORDER", x + 5, y + 30, C.blue); },
+        basket(p, x, y) { const { R } = p; R(x - 1, y - 5, 18, 1, "#1a1a1a"); R(x - 1, y - 5, 1, 6, "#1a1a1a"); R(x + 16, y - 5, 1, 6, "#1a1a1a"); p.block(x, y, 16, 9, C.red); for (let k = 0; k < 4; k++) R(x + 2 + k * 4, y + 2, 2, 5, sh(C.red, -0.45)); },
+      };
+      // ── the room ──
+      const room = (p, aisle) => {
+        const { R, vgrad, dither, line, text, tw, block } = p;
+        // ceiling: open grid, white deck, long fluorescent runs with a soft bloom
+        vgrad(0, 0, W, 25, "#f2f1ec", "#d6d4cc");
+        for (let x = 10; x < W; x += 44) R(x, 0, 1, 24, "#c8c6be");
+        R(0, 24, W, 1, "#b8b6ae");
+        [[6, 118], [138, 118], [270, 30]].forEach(([x, w]) => { R(x - 1, 1, w + 2, 3, "#f8f7f2"); R(x, 1, w, 2, "#ffffff"); R(x + 2, 4, w - 4, 1, "#fbfaf3"); });
+        // the bay
+        vgrad(0, 25, 300, 3, "#e9e7e0", "#dcdad2");
+        R(6, 28, 290, 106, "#c4c0b5");
+        vgrad(9, 35, 284, 45, "#e4e0d5", "#cfcbc0");
+        for (let y = 37; y < 80; y += 3) for (let x = 11; x < 292; x += 3) R(x, y, 1, 1, "#a19c90");
+        vgrad(9, 80, 284, 16, "#b9b5aa", "#aaa69b");
+        vgrad(9, 99, 284, 27, "#b3afa4", "#9e9a8f");
+        block(6, 28, 3, 106, C.blue); block(293, 28, 3, 106, C.blue); block(149, 35, 3, 91, C.blue);
+        block(6, 28, 290, 7, C.blue);
+        const AN = ["HAND TOOLS", "POWER TOOLS", "SAFETY & LIGHTS", "AIR & PAINT", "JACKS & LIFTING", "WELDING"][aisle - 1];
+        text(AN, 151 - (tw(AN) >> 1), 29, "#ffffff");
+        // shelf A lip with its label channel, and the shadow it throws
+        block(6, SHELF, 290, 3, C.blue); R(9, SHELF + 1, 284, 1, sh(C.blue, 0.25));
+        dither(9, SHELF + 3, 284, 3, "#3a3830", 0.55); dither(9, SHELF + 6, 284, 2, "#3a3830", 0.25);
+        // base deck, kick plate
+        block(6, BASE, 290, 2, sh(C.blue, 0.1)); block(6, BASE + 2, 290, 6, sh(C.blue, -0.3));
+        // ── the main aisle, past the end of the bay, in one-point perspective ──
+        const vx = 342, vy = 66, fx0 = 318, fx1 = 366, fy0 = 46, fy1 = 92;
+        R(300, 25, W - 300, 110, "#d8d6cf");
+        // ceiling plane and its light runs converging
+        for (let y = 25; y < fy0; y++) { const t = (y - 25) / (fy0 - 25); R(300, y, W - 300, 1, mix("#d3d1ca", "#e6e4dd", t)); }
+        for (let k = 0; k < 4; k++) line(304 + k * 22, 25, vx - 9 + k * 6, fy0, "#ffffff");
+        // the far wall is the storefront: glass, and the lot outside at dusk
+        R(fx0, fy0, fx1 - fx0, fy1 - fy0, "#d9d7cf");
+        R(fx0 + 1, fy0 + 1, fx1 - fx0 - 2, 7, C.red); R(fx0 + 1, fy0 + 7, fx1 - fx0 - 2, 1, sh(C.red, -0.4)); text("THANK YOU", fx0 + 6, fy0 + 2, "#ffffff");
+        const gx = fx0 + 2, gy = fy0 + 10, gw = fx1 - fx0 - 4, gh = fy1 - fy0 - 12;
+        const hz = Math.round(gh * 0.6);
+        for (let j = 0; j < hz; j++) R(gx, gy + j, gw, 1, mix(mix("#4b3876", "#9a5a8a", Math.min(1, j / (hz * 0.6))), "#f2a35e", Math.max(0, (j - hz * 0.55) / (hz * 0.45))));
+        R(gx, gy + hz - 3, gw, 1, "#5a3e5e"); R(gx + 3, gy + hz - 5, 7, 2, "#3e2c4e"); R(gx + 24, gy + hz - 4, 10, 1, "#3e2c4e");
+        vgrad(gx, gy + hz, gw, gh - hz, "#3a3140", "#28232c");
+        R(gx, gy + Math.round(gh * 0.6), gw, 1, "#1d1a24");
+        // a lot light, and the truck parked under it
+        R(gx + gw - 7, gy + 4, 1, hz + 2, "#1d1a24"); R(gx + gw - 9, gy + 4, 5, 1, "#fff0c0"); R(gx + gw - 8, gy + 5, 3, 1, "#ffd890");
+        for (let j = 0; j < 7; j++) R(gx + gw - 9 - j, gy + hz + j, 5 + j * 2, 1, mix("#28232c", "#7a5a48", 0.55 - j * 0.07));
+        // your truck, parked under the lot light
+        const ty = gy + hz + 2;
+        R(gx + 8, ty, 16, 4, truck); R(gx + 8, ty, 16, 1, sh(truck, 0.3)); R(gx + 17, ty - 3, 6, 3, truck); R(gx + 18, ty - 2, 4, 2, "#8fb0d0"); R(gx + 8, ty + 3, 16, 1, sh(truck, -0.45));
+        R(gx + 10, ty + 4, 3, 2, "#111"); R(gx + 19, ty + 4, 3, 2, "#111"); R(gx + 23, ty + 1, 1, 1, "#fff2c0");
+        // door frames
+        R(gx, gy, 1, gh, "#5b5f66"); R(gx + gw - 1, gy, 1, gh, "#5b5f66"); R(gx + (gw >> 1), gy, 1, gh, "#5b5f66"); R(gx, gy, gw, 1, "#5b5f66");
+        R(gx + (gw >> 1) - 3, gy + hz + 2, 2, 1, "#9aa0a8"); R(gx + (gw >> 1) + 2, gy + hz + 2, 2, 1, "#9aa0a8");
+        // side runs of gondolas, slice by slice toward the vanishing point
+        const sideRun = (xa, xb, topA, botA, topB, botB, seed) => {
+          const n = Math.abs(xb - xa); const dir = Math.sign(xb - xa);
+          for (let i = 0; i <= n; i++) {
+            const t = i / n, x = xa + dir * i;
+            const top = Math.round(topA + (topB - topA) * t), bot = Math.round(botA + (botB - botA) * t);
+            R(x, top, 1, bot - top, "#c4c0b5");
+            const h = bot - top; const band = (seed + Math.floor(i / Math.max(2, 7 - t * 5))) % 4;
+            R(x, top, 1, Math.max(1, Math.round(h * 0.07)), C.blue);
+            const cols = [C.red, C.black, C.blue, C.orange];
+            R(x, top + Math.round(h * 0.12), 1, Math.round(h * 0.3), sh(cols[band], -0.05 - t * 0.2));
+            R(x, top + Math.round(h * 0.47), 1, Math.max(1, Math.round(h * 0.04)), C.blue);
+            R(x, top + Math.round(h * 0.55), 1, Math.round(h * 0.33), sh(cols[(band + 2) % 4], -0.1 - t * 0.2));
+            R(x, bot - Math.max(1, Math.round(h * 0.06)), 1, Math.max(1, Math.round(h * 0.06)), sh(C.blue, -0.3));
+            if (i % Math.max(3, Math.round(12 - t * 9)) === 0) R(x, top, 1, h, sh(C.blue, -0.1));
+          }
+        };
+        sideRun(301, fx0, 30, 134, fy0 + 4, fy1, 0);
+        sideRun(W - 1, fx1, 22, 150, fy0 + 4, fy1, 2);
+        // hanging aisle signs over the far aisles, smaller with distance
+        [[316, 33, 13, 4, "7"], [333, 40, 9, 3, "8"], [346, 45, 6, 2, "9"]].forEach(([x, y, w, h]) => { line(x + 2, 25, x + 2, y, "#9a9890"); line(x + w - 2, 25, x + w - 2, y, "#9a9890"); R(x, y, w, h, C.blue); R(x + 1, y + 1, Math.max(1, h - 1), Math.max(1, h - 2), C.red); });
+        // people, small with distance: an associate in his red vest, a shopper with a basket
+        const person = (x, y, vest, pants, s) => { R(x + 1, y, 2, 1, "#3a2a20"); R(x + 1, y + 1, 2, 2, "#d9a77e"); R(x, y + 3, 4, 4 * s, vest); R(x, y + 3, 1, 4 * s, sh(vest, -0.3)); R(x + 1, y + 3, 2, 1, "#e8e4dc"); R(x, y + 3 + 4 * s, 4, 1, sh(pants, 0.1)); R(x, y + 4 + 4 * s, 1, 3 * s, pants); R(x + 3, y + 4 + 4 * s, 1, 3 * s, pants); R(x, y + 4 + 7 * s, 2, 1, "#1a1a1a"); R(x + 3, y + 4 + 7 * s, 1, 1, "#1a1a1a"); };
+        person(316, 84, C.red, "#9c8a68", 1.5);
+        person(349, 80, "#3a5a7a", "#2a2e3a", 1);
+        R(353, 86, 3, 2, C.red);
+        // the floor of the main aisle, polished, seams to the vanishing point
+        for (let y = fy1; y < H; y++) { const t = (y - fy1) / (H - fy1); const xl = Math.round(fx0 + (300 - fx0) * Math.min(1, (y - fy1) / (134 - fy1))); R(Math.min(300, xl), y, W - Math.min(300, xl), 1, mix("#c9cac6", "#a3a4a0", t)); }
+        for (let k = -3; k <= 4; k++) line(vx + k * 3, fy1, vx + k * 34, H, "rgba(0,0,0,0.10)");
+        for (let y = fy1 + 1; y < H; y++) { const t = (y - fy1) / (H - fy1); const hw = Math.round(10 + t * 30); R(vx - hw, y, hw * 2, 1, `rgba(240,160,110,${(0.22 * (1 - t)).toFixed(3)})`); }
+        // the near end of our bay, edge on
+        block(296, 26, 5, 108, sh(C.blue, -0.15));
+        // our floor: polished concrete, seams to the same vanishing point, light reflected
+        for (let y = 134; y < H; y++) { const t = (y - 134) / (H - 134); R(0, y, 300, 1, mix("#b4b5b1", "#969793", t)); }
+        for (let k = -8; k <= 0; k++) line(vx + k * 26, 134, vx + k * 70, H, "rgba(0,0,0,0.08)");
+        dither(0, 135, 300, 3, "#ffffff", 0.22);
+      };
+      // A seeded pegboard run: mixed products, a white label over each column,
+      // the odd empty hook, and a red shelf talker now and then, like a real wall.
+      const rng = (seed) => () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+      const pegWall = (p, x0, x1, kinds, seed) => {
+        const r = rng(seed); let x = x0;
+        while (x < x1) {
+          const k = kinds[Math.floor(r() * kinds.length)];
+          if (x + k.w > x1) break;
+          label(p, x + (k.w >> 1) - 3, 36);
+          const rows = k.h > 16 ? [46] : [46, 63];
+          rows.forEach((y, i) => { if (i === 1 && r() < 0.12) { p.R(x + (k.w >> 1), y + 1, 1, 3, "#7f7a6e"); return; } k.draw(p, x, y, r); });
+          if (r() < 0.14) { p.R(x + k.w - 2, 39, 8, 6, C.red); p.R(x + k.w - 1, 40, 6, 1, "#ffffff"); p.R(x + k.w - 1, 42, 4, 1, "#ffd9cf"); p.R(x + k.w - 2, 45, 8, 1, sh(C.red, -0.4)); }
+          x += k.w + 2 + Math.floor(r() * 2);
+        }
+      };
+      const pick = (r, arr) => arr[Math.floor(r() * arr.length)];
+      const K = {
+        wrench: { w: 11, h: 15, draw: (p, x, y, r) => SPR.wrenchCard(p, x, y, pick(r, [C.black, C.red])) },
+        pliers: { w: 9, h: 15, draw: (p, x, y, r) => SPR.blister(p, x, y, 9, 15, pick(r, [C.red, C.black]), (a, b, w, h) => { p.line(a, b + h - 1, a + 1, b, "#8e959c"); p.line(a + 2, b + h - 1, a + 1, b, "#8e959c"); p.R(a, b + h - 3, 1, 3, C.red); p.R(a + 2, b + h - 3, 1, 3, C.red); }) },
+        drivers: { w: 16, h: 15, draw: (p, x, y, r) => SPR.blister(p, x, y, 16, 15, pick(r, [C.blue, C.black]), (a, b, w, h) => { for (let k = 0; k < 4; k++) { p.R(a + k * 3, b + 2, 2, 3, pick(r, [C.red, C.orange, C.blue])); p.R(a + k * 3 + 1, b + 5, 1, h - 6, "#c4cbd2"); } }) },
+        tape: { w: 11, h: 13, draw: (p, x, y) => SPR.blister(p, x, y, 11, 13, C.black, (a, b) => { p.ell(a + 2, b + 2, 2, 2, C.orange); p.P(a + 2, b + 2, "#1a1a1a"); }) },
+        blade: { w: 17, h: 15, draw: (p, x, y, r) => SPR.blister(p, x, y, 17, 15, pick(r, [C.red, C.black, C.blue]), (a, b, w, h) => { p.ell(a + (w >> 1), b + (h >> 1), 4, 4, "#8e959c"); p.ell(a + (w >> 1) - 1, b + (h >> 1) - 1, 1, 1, "#ffffff"); p.P(a + (w >> 1), b + (h >> 1), "#333"); }) },
+        bits: { w: 14, h: 10, draw: (p, x, y) => { p.block(x, y + 2, 14, 9, C.black); p.R(x + 1, y + 3, 12, 1, C.orange); for (let k = 0; k < 5; k++) p.R(x + 2 + k * 2, y + 5, 1, 4, "#c4cbd2"); } },
+        battery: { w: 10, h: 14, draw: (p, x, y) => SPR.blister(p, x, y, 10, 14, C.red, (a, b) => { p.R(a, b + 1, 4, 4, "#2a2b2e"); p.R(a, b + 1, 4, 1, C.red); }) },
+        gloves: { w: 10, h: 15, draw: (p, x, y, r) => SPR.blister(p, x, y, 10, 15, pick(r, [C.black, C.blue, C.gray]), (a, b) => SPR.glove(p, a, b - 1, pick(r, [C.orange, "#c4cbd2", "#5a5d62", "#c9a46a"]))) },
+        flashlight: { w: 8, h: 15, draw: (p, x, y) => SPR.blister(p, x, y, 8, 15, C.black, (a, b, w, h) => { p.R(a, b, 2, h - 1, "#5a5d62"); p.R(a, b, 2, 1, "#fffbe0"); }) },
+        muffs: { w: 12, h: 12, draw: (p, x, y) => { p.ell(x + 6, y + 3, 5, 3, "#2a2b2e"); p.ell(x + 6, y + 3, 4, 2, "#d9d5ca"); p.block(x, y + 4, 3, 6, C.orange); p.block(x + 9, y + 4, 3, 6, C.orange); } },
+        hose: { w: 15, h: 15, draw: (p, x, y, r) => SPR.hoseCoil(p, x, y - 1, pick(r, [C.red, C.blue, "#2a2b2e"])) },
+        fitting: { w: 12, h: 15, draw: (p, x, y, r) => SPR.blister(p, x, y, 12, 15, pick(r, [C.blue, C.black]), (a, b, w) => { p.R(a, b + 2, w, 2, C.chrome); p.R(a, b + 2, w, 1, "#ffffff"); p.R(a + 2, b + 4, 2, 2, "#8e959c"); }) },
+        gauge: { w: 12, h: 15, draw: (p, x, y) => SPR.blister(p, x, y, 12, 15, C.red, (a, b) => { p.ell(a + 3, b + 2, 2, 2, "#f4f4f0"); p.P(a + 3, b + 2, C.red); p.R(a + 2, b + 5, 2, 2, "#2a2b2e"); }) },
+        strap: { w: 14, h: 15, draw: (p, x, y, r) => SPR.blister(p, x, y, 14, 15, C.black, (a, b) => { const c = pick(r, [C.orange, C.red, C.blue]); p.ell(a + 3, b + 3, 3, 3, sh(c, -0.35)); p.ell(a + 3, b + 3, 2, 2, c); p.P(a + 3, b + 3, "#1a1a1a"); p.R(a + 6, b + 1, 3, 3, "#c4cbd2"); p.R(a + 6, b + 1, 3, 1, "#ffffff"); p.R(a + 7, b + 4, 1, 2, "#1a1a1a"); p.R(a + 3, b + 3, 3, 1, c); }) },
+        tray: { w: 12, h: 12, draw: (p, x, y) => { p.R(x + 5, y, 2, 2, "#7f7a6e"); p.ell(x + 6, y + 7, 5, 4, "#6f767e"); p.ell(x + 6, y + 6, 5, 4, "#c4cbd2"); p.ell(x + 6, y + 7, 3, 2, "#9aa2aa"); p.R(x + 3, y + 4, 2, 1, "#ffffff"); } },
+        worklight: { w: 8, h: 15, draw: (p, x, y) => { p.R(x + 3, y, 2, 2, "#7f7a6e"); p.block(x + 1, y + 2, 6, 10, C.orange); p.R(x + 2, y + 4, 4, 5, "#fff6cf"); for (let k = 0; k < 3; k++) p.R(x + 2, y + 4 + k * 2, 4, 1, sh(C.orange, -0.2)); p.block(x + 2, y + 12, 4, 3, "#2a2b2e"); } },
+        chock: { w: 12, h: 10, draw: (p, x, y) => { p.R(x + 5, y, 2, 2, "#7f7a6e"); p.R(x + 1, y + 8, 10, 2, "#2a2b2e"); p.line(x + 1, y + 8, x + 9, y + 3, "#2a2b2e", 2); p.R(x + 2, y + 9, 8, 1, C.orange); } },
+        bungee: { w: 10, h: 15, draw: (p, x, y) => SPR.blister(p, x, y, 10, 15, C.black, (a, b, w, h) => { [C.red, C.blue, C.orange].forEach((c, k) => p.R(a + k * 1.5, b, 1, h - 1, c)); }) },
+        creeper: { w: 12, h: 31, draw: (p, x, y) => { p.R(x + 5, y - 1, 2, 2, "#7f7a6e"); p.block(x, y + 1, 12, 30, "#2a2b2e"); p.R(x + 2, y + 3, 8, 26, C.red); p.R(x + 2, y + 3, 8, 1, sh(C.red, 0.3)); [y + 4, y + 26].forEach((yy) => { p.R(x - 1, yy, 2, 2, "#55585e"); p.R(x + 11, yy, 2, 2, "#55585e"); }); } },
+        helmet: { w: 10, h: 12, draw: (p, x, y) => SPR.helmet(p, x, y) },
+        wgloves: { w: 10, h: 15, draw: (p, x, y) => SPR.blister(p, x, y, 10, 15, C.blue, (a, b) => SPR.glove(p, a, b - 1, "#c9a46a")) },
+        spool: { w: 11, h: 11, draw: (p, x, y) => SPR.spool(p, x, y) },
+        clamp: { w: 10, h: 13, draw: (p, x, y) => { p.R(x + 4, y, 2, 2, "#7f7a6e"); p.R(x + 1, y + 2, 2, 10, C.red); p.R(x + 7, y + 2, 2, 10, C.red); p.R(x + 1, y + 2, 8, 2, "#8e959c"); } },
+      };
+      // little white shelf labels (store dressing, never buttons)
+      const label = (p, x, y) => { p.R(x, y, 7, 3, "#f6f6f2"); p.R(x + 1, y + 1, 3, 1, C.red); p.R(x + 5, y + 1, 1, 1, "#333"); };
+      // ── what is on each aisle. add(id, hotspot, tag anchor [x, top], draw) marks a tool for sale ──
+      const AISLE = {
+        1(p, add) {
+          for (let c = 0; c < 6; c++) { label(p, 14 + c * 13, 36); for (let r = 0; r < 2; r++) SPR.wrenchCard(p, 12 + c * 13, 46 + r * 17, c % 2 ? C.red : C.black); }
+          add("t2", [92, 46, 38, 31], [111, 35], () => { for (let r = 0; r < 2; r++) SPR.socketRail(p, 92, 46 + r * 16); });
+          pegWall(p, 155, 292, [K.pliers, K.drivers, K.tape, K.wrench, K.pliers], 11);
+          add("t1", [12, 80, 70, 16], [47, SHELF + 1], () => { for (let k = 0; k < 3; k++) { SPR.toolKit(p, 12 + k * 24, 82); p.shadow(12 + k * 24, SHELF, 22); } });
+          add("t16", [92, 81, 52, 15], [118, SHELF + 1], () => { for (let k = 0; k < 2; k++) SPR.binStack(p, 92 + k * 27, 82); });
+          for (let k = 0; k < 6; k++) SPR.box(p, 156 + k * 23, 82, 21, 14, k % 2 ? C.black : C.red, "socket", k % 2 ? C.red : "#ffffff");
+          for (let k = 0; k < 3; k++) SPR.box(p, 12 + k * 23, 112, 21, 14, k % 2 ? C.red : C.black, "socket");
+          add("t20", [82, 108, 96, 18], [130, BASE + 2], () => { for (let k = 0; k < 3; k++) SPR.bigCase(p, 82 + k * 32, 111); });
+          for (let k = 0; k < 3; k++) SPR.box(p, 182 + k * 23, 112, 21, 14, k % 2 ? C.black : C.red, "socket");
+          add("t_gold", [254, 109, 34, 17], [271, BASE + 2], () => SPR.goldCase(p, 254, 111));
+        },
+        2(p, add) {
+          pegWall(p, 12, 147, [K.blade, K.bits, K.battery, K.blade], 23); pegWall(p, 155, 292, [K.bits, K.blade, K.battery, K.drivers], 29);
+          add("t8", [12, 80, 70, 16], [47, SHELF + 1], () => { for (let k = 0; k < 4; k++) { SPR.impact(p, 14 + k * 17, 80); p.shadow(14 + k * 17, SHELF, 14); } });
+          add("t7", [92, 82, 70, 14], [126, SHELF + 1], () => { for (let k = 0; k < 3; k++) { SPR.grinder(p, 92 + k * 23, 86); p.shadow(92 + k * 23, SHELF, 20); } });
+          add("t17", [172, 82, 52, 14], [198, SHELF + 1], () => { for (let k = 0; k < 2; k++) { SPR.buffer(p, 172 + k * 26, 84); p.shadow(172 + k * 26, SHELF, 22); } });
+          for (let k = 0; k < 3; k++) SPR.box(p, 230 + k * 21, 83, 19, 13, k % 2 ? C.red : C.black, "drill");
+          for (let k = 0; k < 12; k++) SPR.box(p, 12 + k * 23, 112, 21, 14, k % 3 ? C.black : C.red, "drill", k % 2 ? C.red : "#ffffff");
+        },
+        3(p, add) {
+          add("t13", [12, 46, 40, 33], [32, 35], () => { for (let c = 0; c < 3; c++) for (let r = 0; r < 2; r++) SPR.blister(p, 12 + c * 13, 46 + r * 17, 11, 15, C.black, (x, y) => SPR.multimeter(p, x - 1, y - 1)); });
+          add("t14", [62, 46, 40, 33], [82, 35], () => { for (let c = 0; c < 3; c++) for (let r = 0; r < 2; r++) SPR.blister(p, 62 + c * 13, 46 + r * 17, 11, 15, C.blue, (x, y) => SPR.headlamp(p, x - 2, y)); });
+          add("t15", [112, 46, 34, 33], [129, 35], () => { for (let c = 0; c < 2; c++) for (let r = 0; r < 2; r++) SPR.blister(p, 112 + c * 17, 46 + r * 17, 15, 15, C.green, (x, y) => { SPR.glasses(p, x - 1, y - 1); SPR.glove(p, x + 2, y + 3, C.orange); }); });
+          pegWall(p, 155, 292, [K.gloves, K.gloves, K.flashlight, K.muffs], 37);
+          // a lit shop light hung for show
+          p.R(28, 79, 1, 3, "#555"); p.R(80, 79, 1, 3, "#555"); p.block(20, 82, 68, 2, "#edede6"); p.R(21, 82, 66, 1, "#ffffff"); p.dither(18, 84, 72, 3, "#fffbe6", 0.6);
+          add("t19", [20, 85, 96, 11], [68, SHELF + 1], () => { for (let k = 0; k < 2; k++) SPR.shopLightBox(p, 20 + k * 48, 90); });
+          for (let k = 0; k < 7; k++) SPR.box(p, 124 + k * 24, 83, 22, 13, [C.black, C.blue][k % 2], "glove", C.orange);
+          for (let k = 0; k < 12; k++) SPR.box(p, 12 + k * 23, 112, 21, 14, [C.blue, C.black, C.red][k % 3], "light", C.orange);
+        },
+        4(p, add) {
+          pegWall(p, 12, 147, [K.hose, K.hose, K.gauge], 41); pegWall(p, 155, 292, [K.fitting, K.gauge, K.fitting, K.hose], 43);
+          add("t11", [12, 80, 76, 16], [50, SHELF + 1], () => { SPR.paintGun(p, 14, 81); for (let k = 0; k < 3; k++) SPR.box(p, 34 + k * 19, 83, 17, 13, C.blue, "drill", "#ffffff"); });
+          for (let k = 0; k < 8; k++) SPR.box(p, 96 + k * 24, 83, 22, 13, k % 2 ? C.blue : C.black, "hose", C.red);
+          for (let k = 0; k < 12; k++) SPR.box(p, 12 + k * 23, 112, 21, 14, k % 2 ? C.red : C.black, "hose");
+          // a row of pancakes on a low riser, and the big upright on the floor
+          p.block(76, 153, 84, 4, sh(C.blue, -0.2)); p.R(77, 153, 82, 1, sh(C.blue, 0.2));
+          add("t9", [78, 130, 80, 23], [117, 155], () => { for (let k = 0; k < 4; k++) SPR.pancake(p, 79 + k * 20, 133); });
+          add("t10", [190, 108, 18, 50], [199, 156], () => SPR.upright(p, 192, 110));
+          add("t12", [316, 102, 30, 49], [331, 150], () => SPR.standee(p, 316, 102, "booth"));
+        },
+        5(p, add) {
+          pegWall(p, 12, 147, [K.strap, K.tray, K.bungee, K.creeper, K.strap, K.worklight], 53); pegWall(p, 155, 292, [K.creeper, K.strap, K.worklight, K.bungee, K.tray], 59);
+          for (let k = 0; k < 10; k++) SPR.jackBox(p, 12 + k * 28, 85);
+          for (let k = 0; k < 12; k++) SPR.box(p, 12 + k * 23, 112, 21, 14, k % 2 ? C.orange : C.black, "jack", C.black);
+          add("t18", [76, 117, 58, 41], [104, 154], () => { for (let s = 0; s < 3; s++) for (let k = 0; k < 2; k++) SPR.jackBox(p, 78 + k * 28 + s, 146 - s * 12); SPR.floorJack(p, 90, 112); });
+          add("t3", [150, 111, 46, 44], [173, 154], () => SPR.hoist(p, 150, 113));
+          add("t4", [214, 121, 30, 34], [229, 154], () => SPR.engStand(p, 214, 122));
+          add("t_lift", [316, 102, 30, 49], [331, 150], () => SPR.standee(p, 316, 102, "lift"));
+        },
+        6(p, add) {
+          pegWall(p, 12, 147, [K.helmet, K.helmet, K.wgloves, K.clamp], 61); pegWall(p, 155, 292, [K.spool, K.clamp, K.wgloves, K.spool], 67);
+          add("t5", [12, 80, 72, 16], [48, SHELF + 1], () => { for (let k = 0; k < 3; k++) { SPR.welder(p, 12 + k * 24, 82, C.blue); p.shadow(12 + k * 24, SHELF, 22); } });
+          add("t6", [96, 80, 48, 16], [120, SHELF + 1], () => { for (let k = 0; k < 2; k++) { SPR.welder(p, 96 + k * 24, 82, "#3a3d42"); p.shadow(96 + k * 24, SHELF, 22); } });
+          for (let k = 0; k < 6; k++) SPR.box(p, 156 + k * 23, 83, 21, 13, k % 2 ? C.blue : C.black, "helmet", C.orange);
+          for (let k = 0; k < 12; k++) SPR.box(p, 12 + k * 23, 112, 21, 14, k % 2 ? C.blue : C.black, "helmet", C.orange);
+        },
+      };
+      // ── light: tube falloff, a little vignette, the floor's reflection; quantized with dither ──
+      const post = (ctx) => {
+        ctx.save(); ctx.globalAlpha = 0.2; ctx.translate(0, 268); ctx.scale(1, -1); ctx.drawImage(ctx.canvas, 0, 100, 300, 34, 0, 100, 300, 34); ctx.restore();
+        const img = ctx.getImageData(0, 0, W, H), d = img.data;
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+          const i = (y * W + x) * 4;
+          const nx = x / W - 0.42, ny = y / H - 0.38;
+          let L = 1.04 - Math.max(0, (y - 28) / H) * 0.26 - (nx * nx * 1.2 + ny * ny * 1.0) * 0.78;
+          if (y >= 134) L += 0.05 - (y - 134) / (H - 134) * 0.14;
+          const s = L * 40, q = (Math.floor(s) + (BAYER[(y % 4) * 4 + (x % 4)] < s - Math.floor(s) ? 1 : 0)) / 40;
+          let r = d[i] * q, g = d[i + 1] * q, b = d[i + 2] * q;
+          const lum = (r * 0.3 + g * 0.59 + b * 0.11) / 255;
+          const sh0 = Math.max(0, Math.min(1, (0.5 - lum) / 0.5));
+          r *= 1 - sh0 * 0.16; g *= 1 - sh0 * 0.18; b *= 1 + sh0 * 0.05;
+          if (lum > 0.78) { r *= 1.02; b *= 0.98; }
+          d[i] = Math.min(255, r); d[i + 1] = Math.min(255, g); d[i + 2] = Math.min(255, b);
+        }
+        ctx.putImageData(img, 0, 0);
+      };
+    const SIGNS = ["HAND TOOLS", "POWER TOOLS", "SAFETY", "AIR & PAINT", "JACKS", "WELDING"];
+    const SIGN_BOXES = [];
+    let sx = 8;
+    SIGNS.forEach((s) => { const w = 12 + s.length * 4 + 3; SIGN_BOXES.push([sx, 9, w, 11]); sx += w + 6; });
+    const spotCache = {}, artCache = {};
+    const spots = (a) => {
+      if (!spotCache[a]) {
+        const out = [];
+        AISLE[a](painter(null), (id, box, anchor) => out.push({ id, box, anchor }));
+        spotCache[a] = out;
+      }
+      return spotCache[a];
+    };
+    const art = (a, truckHex) => {
+      const key = a + ":" + truckHex;
+      if (artCache[key]) return artCache[key];
+      const cv = document.createElement("canvas");
+      cv.width = W; cv.height = H;
+      const ctx = cv.getContext("2d");
+      if (!ctx) return "";
+      ctx.imageSmoothingEnabled = false;
+      truck = truckHex;
+      const p = painter(ctx);
+      room(p, a);
+      SIGNS.forEach((s, i) => {
+        const [x, y, w, h] = SIGN_BOXES[i];
+        const here = i + 1 === a;
+        p.line(x + 4, 1, x + 4, y, "#8f8d86"); p.line(x + w - 4, 1, x + w - 4, y, "#8f8d86");
+        if (here) p.R(x - 1, y - 1, w + 2, h + 2, "#ffffff");
+        p.block(x, y, w, h, here ? "#2860c0" : C.blue); p.block(x + 1, y + 1, 9, 9, C.red);
+        p.text(String(i + 1), x + 4, y + 3, "#ffffff"); p.text(s, x + 12, y + 3, "#ffffff");
+      });
+      const draws = [];
+      AISLE[a](p, (id, box, anchor, draw) => draws.push(draw));
+      draws.forEach((f) => f && f());
+      post(ctx);
+      artCache[key] = cv.toDataURL("image/png");
+      return artCache[key];
+    };
+    const aisleOf = (id) => { for (let a = 1; a <= 6; a++) if (spots(a).some((s) => s.id === id)) return a; return 0; };
+    return { W, H, SIGNS, SIGN_BOXES, spots, art, aisleOf };
+      })();
+      const HFS_AISLE_NAMES = ["Hand Tools", "Power Tools", "Safety & Lights", "Air & Paint", "Jacks & Lifting", "Welding"];
+      // What the yellow shelf sign calls it, and what Dale calls it on his list.
+      const HFS_NAME = { t1: "Mechanic's Kit", t2: '3/8" Socket Rail', t20: "Master Socket Set", t16: "Trim & Fastener Bins", t_gold: "14K Gold Ratchet", t8: '1/2" Impact Gun', t7: "Angle Grinder", t17: '7" Buffer', t13: "Multimeter", t14: "LED Headlamp", t15: "Glasses & Gloves", t19: "4 ft Shop Light", t11: "HVLP Paint Gun", t9: "3 Gal Pancake", t10: "60 Gal Upright", t12: "Paint Booth", t18: "3 Ton Jack & Stands", t3: "2 Ton Hoist", t4: "Engine Stand", t_lift: "4-Post Lift", t5: "MIG Welder", t6: "TIG Welder" };
+      const HFS_SHORT = { t1: "hand tools", t2: "sockets", t20: "big socket set", t13: "multimeter", t14: "headlamp", t19: "shop light", t15: "gloves & glasses", t18: "jack & stands", t7: "grinder", t8: "impact gun", t11: "paint gun", t16: "trim bins", t9: "compressor", t17: "buffer", t3: "engine hoist", t4: "engine stand", t5: "MIG welder", t10: "big compressor", t6: "TIG welder", t12: "paint booth" };
+      const HFS_ROOM = { carport: "a carport", storage: "a storage unit", garage: "a garage", warehouse: "a warehouse" };
+      function hfsReach(t) {
+        return getWorkspaceIndex(t.workshop) <= getWorkspaceIndex(state.workshopLevel);
+      }
+      function hfsJobs(car, id) {
+        return PARTS.filter((p) => (p.tools || []).includes(id) && !car.installedParts.includes(p.id) && car[p.category] < 100).length;
+      }
+      // Dale's list: the three tools that would open the most work on the car
+      // in the garage right now, among the ones the shop has room for.
+      function hfsWants(car) {
+        return TOOLS_LIST.filter((t) => !hasToolFor(t.id) && hfsReach(t) && HFS.aisleOf(t.id))
+          .map((t) => ({ t, n: hfsJobs(car, t.id), a: HFS.aisleOf(t.id) }))
+          .filter((w) => w.n > 0)
+          .sort((a, b) => b.n - a.n)
+          .slice(0, 3);
+      }
+      // The store opens on the aisle with the first thing on Dale's list.
+      function hfsAisle(car) {
+        const a = state.toolAisle;
+        if (Number.isInteger(a) && a >= 1 && a <= HFS.SIGNS.length) return a;
+        const top = hfsWants(car)[0];
+        return top ? top.a : 1;
+      }
+      function hfsGo(a) {
+        state.toolAisle = a;
+        playSfx("click");
+        requestRender("full");
+      }
+      // The shelf sign. Yellow and pressable when the tool can come home today;
+      // otherwise it grays out and says why, and an owned tool gets a sticker.
+      function hfsTag(t, car, style) {
+        const storage = toolStorageData();
+        const full = state.ownedTools.length >= storage.maxTools;
+        const nm = `<i>${HFS_NAME[t.id] || t.name}</i>`;
+        if (hasToolFor(t.id)) {
+          const better = state.ownedTools.includes(t.id) ? null : TOOLS_LIST.find((q) => (TOOL_SUPERSEDES[t.id] || []).includes(q.id) && state.ownedTools.includes(q.id));
+          return `<span class="hfs-own" style="${style}">${nm}<span>&#10003; ${better ? `your ${(HFS_NAME[better.id] || better.name).toLowerCase()} covers it` : "in your box"}</span></span>`;
+        }
+        if (!hfsReach(t))
+          return `<button class="hfs-tag" style="${style}" disabled title="Too big for the ${(workspaceData() || {}).name || "shop"}.">${nm}<small>needs ${HFS_ROOM[t.workshop] || "more room"}</small><b>$${fmt(t.cost)}</b></button>`;
+        const broke = state.money < t.cost;
+        const n = hfsJobs(car, t.id);
+        const why = n ? `Opens ${n} job${n === 1 ? "" : "s"} on the ${car.model}.` : `Nothing on the ${car.model} needs it.`;
+        const block = full ? ` ${storage.name} is full.` : broke ? " Not enough cash." : "";
+        return `<button class="hfs-tag" style="${style}" onclick="buyTool('${t.id}')" ${full || broke ? "disabled" : ""} title="${why}${block}">${nm}<small>${full ? "no room at home" : broke ? `short $${fmt(t.cost - state.money)}` : "buy it"}</small><b>$${fmt(t.cost)}</b></button>`;
+      }
+      function hfsListMarkup(car) {
+        const storage = toolStorageData();
+        const full = state.ownedTools.length >= storage.maxTools;
+        const want = hfsWants(car);
+        const home = storage.id === "crate" ? "the crate" : storage.name.toLowerCase();
+        const lines = want.length
+          ? want.map((w) => `<button class="hfs-li" onclick="hfsGo(${w.a})" title="Aisle ${w.a}, ${HFS_AISLE_NAMES[w.a - 1]}"><span>${HFS_SHORT[w.t.id] || w.t.name.toLowerCase()} <em>aisle ${w.a}</em></span><span>${w.n} job${w.n === 1 ? "" : "s"}</span></button>`).join("")
+          : `<div class="hfs-li">nothing the ${car.model} needs</div>`;
+        const room = full && spaceTabEarned() ? `<button class="hfs-li hfs-room" onclick="setShopSub('workspace')">no room. see about space</button>` : "";
+        return `<div class="hfs-list"><h6>pick up:</h6>${lines}<div class="hfs-foot">${home} holds ${storage.maxTools}. you got ${state.ownedTools.length}.</div>${room}</div>`;
+      }
+      function renderToolStore(car) {
+        const a = hfsAisle(car);
+        const paint = (PAINT_SWATCHES.find((s) => s.id === car.palette) || {}).hex || "#d0702e";
+        const url = HFS.art(a, paint);
+        const pct = (v, of) => ((v / of) * 100).toFixed(2) + "%";
+        const spots = HFS.spots(a)
+          .map((s) => ({ ...s, t: TOOLS_LIST.find((q) => q.id === s.id) }))
+          .filter((s) => s.t);
+        const over = spots
+          .map((s) => {
+            const [bx, by, bw, bh] = s.box, [ax, ay] = s.anchor;
+            return `<span class="hfs-sp" style="left:${pct(bx, HFS.W)};top:${pct(by, HFS.H)};width:${pct(bw, HFS.W)};height:${pct(bh, HFS.H)}" title="${s.t.name}: ${s.t.desc.replaceAll('"', "&quot;")}"></span>${hfsTag(s.t, car, `left:${pct(ax, HFS.W)};top:${pct(ay, HFS.H)}`)}`;
+          })
+          .join("");
+        const hits = HFS.SIGN_BOXES.map(([x, y, w, h], i) => `<button class="hfs-hit${i + 1 === a ? " here" : ""}" style="left:${pct(x, HFS.W)};top:${pct(y, HFS.H)};width:${pct(w, HFS.W)};height:${pct(h, HFS.H)}" onclick="hfsGo(${i + 1})" title="Aisle ${i + 1}, ${HFS_AISLE_NAMES[i]}" aria-label="Aisle ${i + 1}, ${HFS_AISLE_NAMES[i]}"></button>`).join("");
+        // On a phone the art is a picture of the aisle: the signs become a row
+        // above it and the shelf signs a stack under it.
+        const mSigns = `<div class="hfs-m-signs">${HFS.SIGNS.map((n, i) => `<button class="hfs-m-sign${i + 1 === a ? " here" : ""}" onclick="hfsGo(${i + 1})"><b>${i + 1}</b><span>${n}</span></button>`).join("")}</div>`;
+        const mTags = `<div class="hfs-m">${spots.map((s) => hfsTag(s.t, car, "")).join("")}${hfsListMarkup(car)}</div>`;
+        const banners = shopBannersMarkup(car);
+        return `${gigBoardMarkup()}<div class="hero-panel hfs-view">${shopSubtabsMarkup(car)}${banners ? `<div class="ptc-banners">${banners}</div>` : ""}${mSigns}<div class="hfs" data-aisle="${a}"><img class="hfs-art" src="${url}" alt="Harbor Fright, aisle ${a}, ${HFS_AISLE_NAMES[a - 1]}">${hits}${over}${hfsListMarkup(car)}</div>${mTags}</div>`;
       }
       // The Sell Cars tab is locked when there's nothing there to sell without
       // stranding the player: one project car and no wife's daily driver left
@@ -27048,6 +27530,7 @@ addEventListener("DOMContentLoaded",function(){
         if (!["suggested", "parts", "tools", "workspace", "extras"].includes(state.shopSub))
           state.shopSub = "suggested";
         if (state.shopSub === "parts" || state.shopSub === "extras") return renderPartsCatalog(car);
+        if (state.shopSub === "tools") return renderToolStore(car);
         let subcontent = "";
 
         if (state.shopSub === "suggested") {
@@ -27169,46 +27652,6 @@ addEventListener("DOMContentLoaded",function(){
             "",
             "#d8a24f",
           )}`;
-        }
-
-        if (state.shopSub === "tools") {
-          const wsIdxNow = getWorkspaceIndex(state.workshopLevel);
-          const inCat = TOOLS_LIST.filter(
-            (t) =>
-              (toolCatFilter() === "all" || t.cat === toolCatFilter()) &&
-              !state.ownedTools.includes(t.id),
-          );
-          const reachable = (t) =>
-            WORKSPACE_LEVELS.findIndex((w) => w.id === t.workshop) <= wsIdxNow;
-          const lockedTools = inCat.filter((t) => !reachable(t));
-          const availableTools = state.showLockedTools ? inCat : inCat.filter(reachable);
-          const lockedToggle = lockedTools.length
-            ? `<div style="text-align:center;margin-top:10px">${button(state.showLockedTools ? "Hide tools that need a bigger space ▴" : `${lockedTools.length} more tool${lockedTools.length === 1 ? "" : "s"} need a bigger space ▾`, "state.showLockedTools=!state.showLockedTools;requestRender('full')", false, "", "padding:6px 14px;font-size:11px;background:transparent;color:var(--gold-soft);border:1px solid rgba(217,162,79,0.4)")}</div>`
-            : "";
-          const storage = toolStorageData();
-          const storageHint = state.ownedTools.length >= storage.maxTools - 1
-            ? '<div class="tiny muted">Need more space or a faster shop? See the Space &amp; Storage tab.</div>'
-            : "";
-          subcontent = `<div class="info-box" style="margin-bottom:12px"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:4px">Capacity: ${state.ownedTools.length} / ${storage.maxTools} tools</div>${storageHint}</div><div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">${tab("All", toolCatFilter() === "all", "setToolCat('all')")}${TOOL_CATEGORIES.map((cat) => tab(`${cat.label}`, toolCatFilter() === cat.id, `setToolCat('${cat.id}')`)).join("")}</div>${
-            availableTools.length
-              ? `<div class="dense-grid">${availableTools
-                  .map((t) => {
-                    const can = canOwnTool(t);
-                    const open = state.denseDetail === "tool_" + t.id;
-                    const rw = WORKSPACE_LEVELS.find((w) => w.id === t.workshop);
-                    const parts = open
-                      ? PARTS.filter((p) => (p.tools || []).includes(t.id)).map((p) => p.name)
-                      : [];
-                    return `<div class="dense-row ${open ? "open" : ""} ${can.ok ? "" : "blocked"}"><div class="dense-head" onclick="toggleDense('tool_${t.id}')"><span class="dense-emoji"></span><span class="dense-name">${t.name}</span><span class="dense-cost">$${fmt(t.cost)}</span>${button("Buy", `event.stopPropagation();buyTool('${t.id}')`, !can.ok || state.money < t.cost, "", "padding:5px 12px;font-size:11px")}<span class="dense-chev">${open ? "▾" : "▸"}</span></div>${open ? `<div class="dense-body"><div class="tiny muted" style="margin-bottom:6px">${t.desc}</div>${parts.length ? `<div class="tiny" style="color:#8e8473;margin-bottom:4px">Enables: ${parts.slice(0, 4).join(", ")}${parts.length > 4 ? ` +${parts.length - 4} more` : ""}</div>` : ""}<div class="tiny" style="color:var(--gold)">Requires: ${rw?.name}</div>${!can.ok ? `<div class="tiny warn" style="margin-top:4px;font-weight:bold"> ${can.msg}</div>` : ""}</div>` : ""}</div>`;
-                  })
-                  .join("")}</div>`
-              : panel(
-                  "Sold Out",
-                  `<div class="small muted">Everything currently available here has already been hauled back to the shop.</div>`,
-                  "",
-                  "#87c77b",
-                )
-          }${lockedToggle}`;
         }
 
         // A save written on Space & Storage must not reload onto a pill the
@@ -30720,9 +31163,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           state.shopSub,
           state.catalogSpread == null ? "" : state.catalogSpread,
           (currentCar() && currentCar().extras || []).length,
-          state.toolCat,
-          state.denseDetail || "",
-          state.showLockedTools ? 1 : 0,
+          state.toolAisle || 0,
           state.marketTab,
           // What the Marketplace pill row is built from. These are covered
           // transitively today (a season rolls the week over, selling her car

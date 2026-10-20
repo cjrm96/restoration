@@ -2288,6 +2288,44 @@ const pass = (msg) => console.log("✓", msg);
   if (catOk !== true) fail("parts catalog: " + catOk);
   pass("parts catalog prints every part once, names missing tools, keeps yellow for buttons, ORDER works");
 
+  // ── Tools is an aisle at Harbor Fright. Every tool is stocked on exactly
+  // one aisle, the art paints, the six aisle signs walk the store, a yellow
+  // shelf sign buys the tool and turns into an owned sticker, and nothing
+  // that is not a button is yellow. ──
+  const storeOk = await page.evaluate(() => {
+    const car = currentCar();
+    const keep = { money: state.money, tools: state.ownedTools.slice(), ws: state.workshopLevel, st: state.toolStorageLevel, sub: state.shopSub, aisle: state.toolAisle, first: state.firstToolPurchased };
+    const back = (m) => { Object.assign(state, { money: keep.money, ownedTools: keep.tools, workshopLevel: keep.ws, toolStorageLevel: keep.st, shopSub: keep.sub, toolAisle: keep.aisle, firstToolPurchased: keep.first }); render("full"); return m; };
+    for (const t of TOOLS_LIST) {
+      let n = 0;
+      for (let a = 1; a <= HFS.SIGNS.length; a++) n += HFS.spots(a).filter((s) => s.id === t.id).length;
+      if (n !== 1) return back(`${t.name} is stocked ${n} times`);
+    }
+    state.money = 5000; state.ownedTools = []; state.workshopLevel = "carport"; state.toolStorageLevel = "crate";
+    setView("workshop"); setShopSub("tools"); state.toolAisle = 3; render("full");
+    const img = document.querySelector(".hfs .hfs-art");
+    if (!img || !/^data:image\/png;base64,.{2000}/.test(img.getAttribute("src") || "")) return back("the aisle art did not paint");
+    const hits = document.querySelectorAll(".hfs .hfs-hit");
+    if (hits.length !== HFS.SIGNS.length) return back(`${hits.length} aisle signs, the store has ${HFS.SIGNS.length}`);
+    hits[0].click(); render("full");
+    if (state.toolAisle !== 1) return back("an aisle sign did not walk to its aisle");
+    state.toolAisle = 3; render("full");
+    const sign = [...document.querySelectorAll(".hfs > .hfs-tag")].find((b) => /multimeter/i.test(b.textContent));
+    if (!sign || sign.disabled) return back("the multimeter's shelf sign is missing or dead");
+    sign.click(); render("full");
+    if (!state.ownedTools.includes("t13")) return back("the shelf sign did not buy the tool");
+    if (![...document.querySelectorAll(".hfs > .hfs-own")].some((b) => /multimeter/i.test(b.textContent))) return back("a bought tool did not get its sticker");
+    const yellow = (c) => { const m = c.match(/rgba?\(([\d.]+), ([\d.]+), ([\d.]+)(?:, ([\d.]+))?/); if (!m) return false; const a = m[4] === undefined ? 1 : +m[4]; return a > 0.15 && +m[1] > 190 && +m[2] > 140 && +m[3] < 120 && +m[1] - +m[3] > 110; };
+    for (let a = 1; a <= HFS.SIGNS.length; a++) {
+      state.toolAisle = a; render("full");
+      const bad = [...document.querySelectorAll(".hfs-view *")].find((el) => !el.closest("button") && (yellow(getComputedStyle(el).backgroundColor) || (yellow(getComputedStyle(el).color) && el.textContent.trim())));
+      if (bad) return back(`aisle ${a}: yellow on ${bad.className || bad.tagName}, which is not a button`);
+    }
+    return back(true);
+  });
+  if (storeOk !== true) fail("tool store: " + storeOk);
+  pass("Harbor Fright stocks every tool once, its signs walk the aisles, a shelf sign buys, yellow stays on buttons");
+
   // ── offers do not ambush a screen the player has never opened. ──
   const quietOk = await page.evaluate(() => {
     state.tabsVisited = {}; state.pendingMarketplaceOffer = null; state.pendingCarOffer = null;
@@ -3162,6 +3200,23 @@ const pass = (msg) => console.log("✓", msg);
     if (!fit.spreads) fail("catalog fit check found no spreads, so it proved nothing");
     if (fit.out.length) fail("catalog on Deck: " + fit.out.join("; "));
     pass(`the catalog fits a Deck screen on all ${fit.spreads} spreads`);
+    const storeFit = await deck.evaluate(() => {
+      if (!document.body.classList.contains("ticker-active")) startWorldTicker();
+      setShopSub("tools");
+      const out = [];
+      for (let a = 1; a <= HFS.SIGNS.length; a++) {
+        state.toolAisle = a; render("full");
+        const app = document.querySelector(".app"); app.scrollTop = 0;
+        if (app.scrollHeight - app.clientHeight > 0) out.push(`aisle ${a} scrolls ${app.scrollHeight - app.clientHeight}px`);
+        const box = document.querySelector(".hfs").getBoundingClientRect();
+        const tags = [...document.querySelectorAll(".hfs > .hfs-tag, .hfs > .hfs-own")].map((t) => t.getBoundingClientRect());
+        if (!tags.length) out.push(`aisle ${a} has no shelf signs`);
+        tags.forEach((r, i) => { if (r.right > box.right + 1 || r.left < box.left - 1 || r.bottom > box.bottom + 1) out.push(`aisle ${a} sign ${i} hangs off the picture`); tags.slice(i + 1).forEach((q) => { if (r.left < q.right && q.left < r.right && r.top < q.bottom && q.top < r.bottom) out.push(`aisle ${a} has two signs on top of each other`); }); });
+      }
+      return out;
+    });
+    if (storeFit.length) fail("tool store on Deck: " + storeFit.join("; "));
+    pass("Harbor Fright fits a Deck screen on every aisle, signs on their shelves");
     await deck.close();
   }
 
@@ -3217,10 +3272,12 @@ const pass = (msg) => console.log("✓", msg);
         }
       }
       if (!shows) return "no shows were picked, so Compete was never measured";
+      setView("workshop"); setShopSub("tools");
+      for (let a = 1; a <= HFS.SIGNS.length; a++) { state.toolAisle = a; render("full"); if (over() > 0) { bad.push(`Tools aisle ${a} scrolls ${over()}px`); break; } }
       return bad.length ? bad.join("; ") : true;
     });
     if (lapFit !== true) fail(`laptop ${lw}x${lh}: ${lapFit}`);
-    pass(`Marketplace and Compete fit ${lw}x${lh} without a scroll`);
+    pass(`Marketplace, Compete and the tool store fit ${lw}x${lh} without a scroll`);
     await lap.close();
   }
 
