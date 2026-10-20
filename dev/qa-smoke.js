@@ -1889,7 +1889,7 @@ const pass = (msg) => console.log("✓", msg);
       state.pendingUnlock = null;
       setView("workshop"); render("full");
       const txt = document.getElementById("appContent").innerText;
-      if (/Time to compete/.test(txt)) return "the Build tab says Time to compete with no Compete tab";
+      if (/time to compete/i.test(txt)) return "the Build tab says Time to compete with no Compete tab";
       if (!/Marketplace/.test(txt)) return "the roadworthy banner does not point at what opens Compete";
       // Nothing listed, a week goes by.
       checkOnboardUnlocks();
@@ -1900,7 +1900,7 @@ const pass = (msg) => console.log("✓", msg);
       if (!/Nobody needed a listing/.test((state.pendingUnlock || {}).text || ""))
         return "the Compete card credits listings the player never made";
       state.pendingUnlock = null; render("full");
-      if (!/Time to compete/.test(document.getElementById("appContent").innerText))
+      if (!/time to compete/i.test(document.getElementById("appContent").innerText))
         return "Time to compete went missing once Compete was open";
       return true;
     })();
@@ -2288,7 +2288,7 @@ const pass = (msg) => console.log("✓", msg);
   if (catOk !== true) fail("parts catalog: " + catOk);
   pass("parts catalog prints every part once, names missing tools, keeps yellow for buttons, ORDER works");
 
-  // ── Tools is an aisle at Harbor Fright. Every tool is stocked on exactly
+  // ── Tools is an aisle at Bay Freight. Every tool is stocked on exactly
   // one aisle, the art paints, the six aisle signs walk the store, a yellow
   // shelf sign buys the tool and turns into an owned sticker, and nothing
   // that is not a button is yellow. ──
@@ -2324,7 +2324,49 @@ const pass = (msg) => console.log("✓", msg);
     return back(true);
   });
   if (storeOk !== true) fail("tool store: " + storeOk);
-  pass("Harbor Fright stocks every tool once, its signs walk the aisles, a shelf sign buys, yellow stays on buttons");
+
+  // ── Next Jobs is Dale's ticket rail: one repair order per suggested job,
+  // parts-only starts it yourself, parts-and-labor sends it to Dale, a
+  // missing tool walks to its aisle at Bay Freight, the shop-floor banner is
+  // written on the rail instead of repeated over the car, and nothing that
+  // is not a button is yellow. ──
+  const railOk = await page.evaluate(() => {
+    const car = currentCar();
+    const keep = { money: state.money, tools: state.ownedTools.slice(), tasks: state.activeRestorations.slice(), parts: car.installedParts.slice(), sub: state.shopSub, aisle: state.toolAisle, ws: state.workshopLevel, cats: CATS.map((k) => car[k]) };
+    const back = (m) => { Object.assign(state, { money: keep.money, ownedTools: keep.tools, activeRestorations: keep.tasks, shopSub: keep.sub, toolAisle: keep.aisle, workshopLevel: keep.ws }); car.installedParts = keep.parts; CATS.forEach((k, i) => (car[k] = keep.cats[i])); render("full"); return m; };
+    CATS.forEach((k) => (car[k] = 18)); car.installedParts = []; state.activeRestorations = [];
+    state.money = 6000; state.ownedTools = ["t1", "t14", "t18", "t2"]; state.workshopLevel = "carport";
+    setView("workshop"); setShopSub("suggested"); render("full");
+    const want = getSuggestedRestorations(car).slice(0, isPhoneWidth() ? 2 : 3).map((x) => String(x.part.id));
+    const got = [...document.querySelectorAll(".ro-row .ro")].map((t) => t.dataset.part);
+    if (!got.length) return back("the rail hung no repair orders");
+    if (got.join() !== want.join()) return back(`the rail shows ${got.join()} but the suggestions are ${want.join()}`);
+    if (/Not roadworthy yet/.test(document.querySelector(".grid-main .hero-panel").innerText)) return back("the roadworthy banner is on the shop floor and the rail both");
+    if (!/not roadworthy yet/.test((document.querySelector(".ro-tape") || {}).textContent || "")) return back("the rail's tape does not say what keeps her off the road");
+    const diy = document.querySelector(".ro .ro-box.diy:not([disabled])");
+    if (!diy) return back("no parts-only box to press");
+    const pid = +diy.closest(".ro").dataset.part;
+    diy.click(); render("full");
+    if ((findActiveTask(car.id, pid) || {}).method !== "diy") return back("parts-only did not start the job yourself");
+    state.activeRestorations = []; render("full");
+    const shop = document.querySelector(".ro .ro-box.shop:not([disabled])");
+    const sid = +shop.closest(".ro").dataset.part;
+    shop.click(); render("full");
+    if ((findActiveTask(car.id, sid) || {}).method !== "shop") return back("parts-and-labor did not send it to Dale");
+    state.activeRestorations = []; state.ownedTools = []; render("full");
+    const go = document.querySelector(".ro .ro-go");
+    if (!go) return back("a job missing its tool did not point at Bay Freight");
+    go.click(); render("full");
+    if (state.shopSub !== "tools" || !state.toolAisle) return back("the Bay Freight note did not walk to the store");
+    state.ownedTools = ["t1", "t14", "t18", "t2"]; setShopSub("suggested"); render("full");
+    const yellow = (c) => { const m = c.match(/rgba?\(([\d.]+), ([\d.]+), ([\d.]+)(?:, ([\d.]+))?/); if (!m) return false; const a = m[4] === undefined ? 1 : +m[4]; return a > 0.15 && +m[1] > 190 && +m[2] > 140 && +m[3] < 120 && +m[1] - +m[3] > 110; };
+    const bad = [...document.querySelectorAll(".ro-row *")].find((el) => !el.closest("button") && (yellow(getComputedStyle(el).backgroundColor) || (yellow(getComputedStyle(el).color) && el.textContent.trim())));
+    if (bad) return back(`yellow on ${bad.className || bad.tagName} on the rail, which is not a button`);
+    return back(true);
+  });
+  if (railOk !== true) fail("ticket rail: " + railOk);
+  pass("Next Jobs hangs a repair order per suggestion; both boxes start the job; a missing tool walks to Bay Freight");
+  pass("Bay Freight stocks every tool once, its signs walk the aisles, a shelf sign buys, yellow stays on buttons");
 
   // ── offers do not ambush a screen the player has never opened. ──
   const quietOk = await page.evaluate(() => {
@@ -3064,16 +3106,16 @@ const pass = (msg) => console.log("✓", msg);
       ),
       vp: window.innerWidth,
       h: document.getElementById("appContent").scrollHeight, vh: window.innerHeight,
-      cards: [...document.querySelectorAll("#appContent .job-card")].length,
+      cards: [...document.querySelectorAll("#appContent .ro")].length,
       wrap: (() => { const el = document.querySelector(".shop-subtabs");
         return el ? getComputedStyle(el).flexWrap : "missing"; })(),
     }));
     if (m.doc > m.vp + 2) fail(`phone: first screen scrolls sideways (doc ${m.doc} > vp ${m.vp})`);
     if (m.wrap !== "nowrap") fail(`phone: sub-tab strip flex-wrap is '${m.wrap}', expected nowrap (media block order regressed)`);
-    if (m.cards > 2) fail(`phone: ${m.cards} suggested job cards on the first screen, expected at most 2`);
+    if (m.cards > 2) fail(`phone: ${m.cards} repair orders on the rail, expected at most 2`);
     if (m.h > m.vh * 2) fail(`phone: first playable screen is ${m.h}px (${(m.h / m.vh).toFixed(2)} screens), budget is 2.0`);
     if (perrs.length) fail("phone: " + perrs.join(" | "));
-    pass(`phone 390x844: no sideways scroll, ${m.cards} job cards, ${(m.h / m.vh).toFixed(2)} screens tall`);
+    pass(`phone 390x844: no sideways scroll, ${m.cards} repair orders, ${(m.h / m.vh).toFixed(2)} screens tall`);
     await phone.close();
   }
 
@@ -3216,7 +3258,7 @@ const pass = (msg) => console.log("✓", msg);
       return out;
     });
     if (storeFit.length) fail("tool store on Deck: " + storeFit.join("; "));
-    pass("Harbor Fright fits a Deck screen on every aisle, signs on their shelves");
+    pass("Bay Freight fits a Deck screen on every aisle, signs on their shelves");
     await deck.close();
   }
 

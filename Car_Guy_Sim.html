@@ -1025,7 +1025,7 @@
         .ptc-note { position: static; display: block; margin-bottom: 6px; white-space: normal; }
         .ptc-pg.l .ptc-foot, .ptc-pg.r .ptc-foot { flex-direction: column; padding: 3px 0 46px; }
       }
-      /* ── Harbor Fright (Build › Tools) ──────────────────────────────
+      /* ── Bay Freight (Build › Tools) ──────────────────────────────
          One painted aisle, sized to fit the screen without a scroll, with
          its buttons laid over it in percentages so they stay on their
          shelves at any size. Sign text scales with the picture (cqw). */
@@ -1082,6 +1082,113 @@
         .hfs-m .hfs-tag:hover:not(:disabled) { transform: translate(-1px, -1px); }
         .hfs-m .hfs-tag:active:not(:disabled) { transform: translate(2px, 2px); }
         .hfs-m .hfs-list { position: static; grid-column: 1 / -1; width: auto; margin-top: 6px; transform: rotate(-1deg); }
+      }
+      /* ── Dale's ticket rail (Build › Next Jobs) ─────────────────────
+         Carbon-copy repair orders hung from a stainless rail on the
+         pegboard over the bench. Printed form in red-brown ink, typed
+         fields, Dale's notes in his blue marker. The two boxes at the foot
+         are the buttons: yellow parts-only, blue parts-and-labor. */
+      .grid-main > .ro-row { grid-column: 1 / -1; min-width: 0; }
+      .ro-board { position: relative; margin: 0 0 6px; padding: 10px 14px 13px; border-radius: 4px;
+        background: radial-gradient(circle at 6px 6px, rgba(30, 18, 8, 0.75) 1.4px, transparent 2px) 0 0 / 12px 12px, linear-gradient(180deg, #9a7650 0%, #8a6844 100%);
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45), inset 0 10px 18px rgba(0, 0, 0, 0.25), 0 8px 18px rgba(0, 0, 0, 0.4); }
+      .ro-rail { position: relative; z-index: 3; height: 13px; margin: 0 -4px; border-radius: 2px; background: linear-gradient(180deg, #f2f5f7 0%, #c9d0d6 35%, #8d969e 70%, #b9c1c8 100%); box-shadow: 0 3px 4px rgba(0, 0, 0, 0.45), inset 0 -2px 0 rgba(0, 0, 0, 0.25); }
+      .ro-rail::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: 3px; height: 2px; background: rgba(40, 46, 52, 0.55); }
+      .ro-tape { position: absolute; z-index: 1; left: 18px; top: -7px; display: flex; align-items: center; gap: 10px; max-width: calc(100% - 36px); min-height: 18px; padding: 1px 12px 0; background: rgba(236, 224, 184, 0.96); color: #1f3a66; font: 14px/1.1 "Dale Marker", "Segoe Print", cursive; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transform: rotate(-0.5deg); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+        -webkit-mask: linear-gradient(90deg, transparent 0, #000 4px, #000 calc(100% - 4px), transparent 100%); mask: linear-gradient(90deg, transparent 0, #000 4px, #000 calc(100% - 4px), transparent 100%); }
+      .ro-tape.warn { color: #a4241b; }
+      .ro-tape .ro-go { padding: 1px 6px; font-size: 8.5px; box-shadow: 1px 1px 0 #111; }
+      .ro-tickets { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; margin-top: -4px; }
+      .ro-board.has-coupons .ro-tickets { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(190px, 0.6fr); }
+      .ro-cell { container-type: inline-size; min-width: 0; }
+      .ro-auth { margin-top: 2px; }
+      /* A wide ticket: the form on the left, the two sign-off boxes stacked on the right. */
+
+      .ro { position: relative; padding: 11px 10px 8px; background: #fbf8ef; color: #1a1a1a; text-align: left; font-family: Arial, "Helvetica Neue", sans-serif; transform: rotate(var(--r, 0deg)); transform-origin: 50% 0;
+        box-shadow: 2px 2px 0 #f0d3da, 4px 4px 0 #f1e5a6, 0 9px 14px rgba(0, 0, 0, 0.4); }
+      .ro-head { display: flex; justify-content: space-between; align-items: baseline; }
+      .ro-shop { font: bold 9.5px/1 Arial, sans-serif; letter-spacing: 0.14em; color: #8a2a1c; }
+      .ro-shop small { display: block; margin-top: 2px; font: bold 7px/1 Arial, sans-serif; letter-spacing: 0.24em; }
+      .ro-head { padding-bottom: 3px; margin-bottom: 1px; border-bottom: 1.5px solid #8a2a1c; }
+      .ro-veh { display: flex; justify-content: space-between; gap: 4px; }
+      .ro-no { font: bold 12px/1 "Courier New", Courier, monospace; color: #c4261d; text-align: right; }
+      .ro-no small { display: block; margin-top: 2px; font: bold 9px/1 "Courier New", Courier, monospace; color: #1a1a1a; text-transform: uppercase; white-space: nowrap; }
+      .ro-f { display: grid; grid-template-columns: 52px minmax(0, 1fr); column-gap: 4px; align-items: baseline; padding: 2px 0; border-bottom: 1px solid rgba(138, 42, 28, 0.32); }
+      .ro-l { font: bold 7px/1.3 Arial, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: #8a2a1c; }
+      .ro-t { font: 10px/1.22 "Courier New", Courier, monospace; text-transform: uppercase; color: #1a1a1a; }
+      .ro-fix { font-weight: bold; }
+      .ro .ptc-tg { margin-left: 4px; }
+      .ro-sum { display: grid; grid-template-columns: 1fr 1fr 1.25fr; margin: 4px 0 2px; border: 1px solid rgba(138, 42, 28, 0.45); }
+      .ro-sum > span { padding: 1px 4px; font: bold 10.5px/1.15 "Courier New", Courier, monospace; color: #1a1a1a; }
+      .ro-sum > span + span { border-left: 1px solid rgba(138, 42, 28, 0.45); }
+      .ro-sum i { display: block; font: bold 6.5px/1.2 Arial, sans-serif; font-style: normal; letter-spacing: 0.12em; text-transform: uppercase; color: #8a2a1c; }
+      .ro-sum .ro-adds { color: #2f6b1f; }
+      .ro-note { margin: 2px 0 4px; font: 15px/1.05 "Dale Marker", "Segoe Print", cursive; color: #1f3a66; transform: rotate(-1.5deg); transform-origin: left; }
+      .ro-stamp { position: absolute; top: 9px; left: 50%; margin-left: -12px; padding: 0 4px; border: 2px solid #c4261d; border-radius: 3px; color: #c4261d; font: 900 11px/1.15 Arial, sans-serif; letter-spacing: 0.16em; transform: rotate(-11deg); opacity: 0.82; mix-blend-mode: multiply; pointer-events: none; }
+      .ro-auth { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+      .ro-auth .ro-need { grid-column: 1; }
+      .ro-box { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; width: 100%; padding: 3px 6px 3px; border: 1.5px solid #111; border-radius: 2px; box-shadow: 2px 2px 0 #111; cursor: pointer; text-align: left; transition: transform 0.06s, box-shadow 0.06s; }
+      .ro-box.diy { background: #f2c21b; color: #111; }
+      .ro-box.shop { background: #1f3a66; color: #fff; }
+      .ro-box:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 #111; }
+      .ro-box.diy:hover:not(:disabled) { background: #ffd23f; }
+      .ro-box.shop:hover:not(:disabled) { background: #2b4e86; }
+      .ro-box:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: none; }
+      .ro-box:focus-visible, .ro-go:focus-visible, .ro-more:focus-visible, .bf-c-buy:focus-visible { outline: 2px solid #1f5fa8; outline-offset: 2px; }
+      .ro-box:disabled { background: #e2e0d9; color: #77746c; border-color: #a9a59a; box-shadow: none; cursor: not-allowed; }
+      .ro-chk { display: inline-block; width: 8px; height: 8px; margin-right: 4px; vertical-align: -1px; border: 1.5px solid currentColor; background: rgba(255, 255, 255, 0.85); }
+      .ro-box.shop .ro-chk { background: rgba(255, 255, 255, 0.15); }
+      .ro-box-l { font: bold 8px/1.2 Arial, sans-serif; letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap; }
+      .ro-box small { font: 8px/1.15 Arial, sans-serif; opacity: 0.85; white-space: nowrap; }
+      .ro-box b { margin: 1px 0; font: 900 16px/1 Arial, sans-serif; }
+      .ro-box.shop b { font: 18px/1 "Dale Marker", "Segoe Print", cursive; }
+      .ro-box:disabled.shop b { font-family: Arial, sans-serif; font-weight: 900; font-size: 15px; }
+      /* A wide ticket: the form on the left, the two sign-off boxes stacked on the right. */
+      @container (min-width: 280px) {
+        .ro .ro-body { display: grid; grid-template-columns: minmax(0, 1fr) 98px; column-gap: 9px; align-items: end; }
+        .ro .ro-auth { grid-template-columns: 1fr; margin-top: 0; gap: 5px; }
+      }
+      /* Nothing under the tabs on Next Jobs: the rail is the next thing down. */
+      .grid-main .hero-panel .shop-subtabs:last-child { margin-bottom: 0; }
+      .ro-need { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 4px; }
+      .ro-ink { font: 14px/1 "Dale Marker", "Segoe Print", cursive; color: #1f3a66; }
+      .ro-go { flex: none; padding: 3px 7px; border: 1.5px solid #111; border-radius: 2px; background: #f2c21b; color: #111; box-shadow: 2px 2px 0 #111; font: bold 9px/1.1 Arial, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: transform 0.06s, box-shadow 0.06s; }
+      .ro-go:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 #111; background: #ffd23f; }
+      .ro-go:active { transform: translate(2px, 2px); box-shadow: none; }
+      .ro-more { position: absolute; right: 16px; bottom: -10px; z-index: 4; padding: 5px 11px 4px; border: 0; border-radius: 1px; background: #f7d84a; color: #1f3a66; box-shadow: 2px 2px 0 #111; font: 15px/1.1 "Dale Marker", "Segoe Print", cursive; cursor: pointer; transform: rotate(-2deg); }
+      .ro-more:hover { background: #ffe066; transform: rotate(-2deg) translate(-1px, -1px); box-shadow: 3px 3px 0 #111; }
+      .ro-empty { grid-column: 1 / -1; justify-self: center; margin: 10px 0 4px; padding: 10px 16px; background: #fbfaf3; color: #1f3a66; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4); font: 17px/1.2 "Dale Marker", "Segoe Print", cursive; transform: rotate(-1.5deg); }
+      /* Bay Freight's coupon, clipped up in the first weeks */
+      .ro-coupons { display: grid; gap: 8px; align-content: start; padding-top: 8px; }
+      .bf-coupon { transform: rotate(var(--r, 1deg)); }
+      .ro-coupons .bf-coupon:nth-child(2) { --r: -1.2deg; }
+      .bf-coupon { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "brand brand" "body buy"; align-items: center; gap: 4px 8px; padding: 5px 7px; background: #fffdf6; border: 2px dashed #c8322a; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.35); color: #1a1a1a; }
+      .bf-c-brand { grid-area: brand; display: flex; justify-content: space-between; align-items: baseline; padding: 2px 6px; background: #c8322a; color: #fff; font: 900 italic 11px/1 Arial, sans-serif; letter-spacing: 0.02em; text-align: center; }
+      .bf-c-brand small { margin-top: 0; font: bold 7.5px/1 Arial, sans-serif; font-style: normal; letter-spacing: 0.2em; text-transform: uppercase; }
+      .bf-c-body { grid-area: body; min-width: 0; }
+      .bf-c-buy { grid-area: buy; }
+      .bf-c-body b { display: block; font: bold 11.5px/1.15 Arial, sans-serif; }
+      .bf-c-body span { display: block; font: 9.5px/1.2 Arial, sans-serif; color: #555; }
+      .bf-c-buy { display: flex; flex-direction: column; align-items: center; padding: 3px 9px; border: 1.5px solid #111; border-radius: 2px; background: #f2c21b; color: #111; box-shadow: 2px 2px 0 #111; font: 900 15px/1 Arial, sans-serif; cursor: pointer; transition: transform 0.06s, box-shadow 0.06s; }
+      .bf-c-buy small { font: bold 7.5px/1.3 Arial, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; }
+      .bf-c-buy:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 #111; background: #ffd23f; }
+      .bf-c-buy:active { transform: translate(2px, 2px); box-shadow: none; }
+      @media (prefers-reduced-motion: reduce) {
+        .ro-box, .ro-go, .bf-c-buy { transition: none; }
+      }
+      @media (max-width: 880px) {
+        .grid-main > div:first-child { order: 0; }
+        .grid-main > .ro-row { order: 1; }
+        .grid-main > div:nth-child(2) { order: 2; }
+      }
+      @media (max-width: 760px) {
+        .ro-board { padding: 10px 10px 16px; }
+        .ro-rail { height: auto; min-height: 13px; }
+        .ro-tape { position: relative; left: 0; top: 0; max-width: none; margin: 0 4px 6px; padding: 3px 10px; white-space: normal; flex-wrap: wrap; -webkit-mask: none; mask: none; }
+        .ro-tickets, .ro-board.has-coupons .ro-tickets { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+        .ro-coupons { padding-top: 0; }
+        .ro { transform: rotate(calc(var(--r, 0deg) / 2)); }
+        .ro-box { padding: 5px 7px; }
       }
       /* Notes pinned to the cork, not text lying on it. These two lines (what
          the next show tier needs, and how many events are still locked) were
@@ -3869,30 +3976,6 @@
           flex: 0 0 auto;
           padding: 9px 14px;
           font-size: 12px;
-        }
-        .suggest-meta {
-          gap: 6px !important;
-          margin-bottom: 9px !important;
-        }
-        .suggest-meta .smart-tag {
-          font-size: 10px;
-          padding: 2px 7px;
-        }
-        .job-card {
-          padding: 12px 13px 13px !important;
-          margin-bottom: 10px !important;
-        }
-        .job-card .panel-header {
-          margin-bottom: 7px !important;
-        }
-        .job-card .panel-title {
-          font-size: 15px;
-        }
-        .job-card .btn-row {
-          gap: 6px;
-        }
-        .job-card .btn {
-          padding: 10px 8px;
         }
       }
 
@@ -11120,7 +11203,7 @@
         "Shop radio says someone traded a jet ski for a primered Nova in El Cajon. Honestly? Feels fair.",
         "The morning host is arguing that primer gray is a lifestyle, not a paint color.",
         "Caller says his project is basically done and then mentions it has no floor. Classic.",
-        "The radio ad swears a Harbor Fright coupon can save a marriage. Nobody believes him.",
+        "The radio ad swears a Bay Freight coupon can save a marriage. Nobody believes him.",
         "Traffic report says there is a stalled Chevelle on the shoulder and three guys standing around pointing at it.",
         "Someone on air just called bondo Italian metal. That is going to start a fight somewhere.",
         "Radio caller says his Stallion 'just got loose' leaving Cars & Coffee. Sure it did.",
@@ -11257,7 +11340,7 @@
         "Buck told someone your bumper is held on by hopes and three good bolts.",
         "Buck says the only thing keeping your title clean is the loose definition of 'restored.'",
         "Buck says your daily driver is in better shape than your show car.",
-        "Buck says he's seen better welds at Harbor Fright demos.",
+        "Buck says he's seen better welds at Bay Freight demos.",
         "Buck claims he could pick out your build in a parking lot just by the panel waves.",
         "Buck says your idle sounds like a coffee maker with a grudge.",
         "Buck told the group chat your build has 'potential,' which is car-guy for 'not yet.'",
@@ -12293,7 +12376,7 @@
       // the stage the interview cuts into.
       const RADIO_ADS = [
         { source: "EDDIE'S USED PARTS", line: "If it starts, it's a deal. If it doesn't, that's a feature. Eddie's, out by the railroad tracks, past the third pothole." },
-        { source: "HARBOR FRIGHT", line: "This week only, a complete socket set with only four missing sizes. Forty-nine dollars and hope." },
+        { source: "BAY FREIGHT", line: "This week only, a complete socket set with only four missing sizes. Forty-nine dollars and hope." },
         { source: "RUST-OFF ANONYMOUS", line: "Is your project more Bondo than metal? You're not alone. Wednesday nights, community center, coffee and regrets." },
         { source: "GASKET GODS", line: "Why pay for a new gasket when you can pay us to cut one from a cereal box? Gasket Gods. We improvise." },
       ];
@@ -12703,7 +12786,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.98.0";
+      const GAME_VERSION = "0.99.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -22406,7 +22489,7 @@
           if (spare >= 40 && !ctx.xref) {
             ctx.xref = true;
             spare -= 40;
-            body += `<div class="ptc-xwrap"><button class="ptc-xref" onclick="setShopSub('tools')">missing a tool? harbor fright's open till 9 -D</button></div>`;
+            body += `<div class="ptc-xwrap"><button class="ptc-xref" onclick="setShopSub('tools')">missing a tool? bay freight's open till 9 -D</button></div>`;
           }
           if (spare >= 34 && !ctx.promo) {
             ctx.promo = true;
@@ -22469,9 +22552,9 @@
         return `${gigBoardMarkup()}<div class="hero-panel ptc-view">${shopSubtabsMarkup(car)}${banners ? `<div class="ptc-banners">${banners}</div>` : ""}<div class="ptc-spread" data-spread="${s}">${left}${right}${ptcFlags(book, s, car)}</div>${showsPaint ? `<div class="ptc-after">${paintBoothPanel(car)}</div>` : ""}</div>`;
       }
       /* ═══════════════════════════════════════════
-         HARBOR FRIGHT (Build › Tools)
+         BAY FREIGHT (Build › Tools)
       ═══════════════════════════════════════════ */
-      // The Tools tab is a Saturday run to Harbor Fright, drawn the way the
+      // The Tools tab is a Saturday run to Bay Freight, drawn the way the
       // cutscenes are drawn: one pixel grid (384x168, shown ~3x and crisp),
       // outlined top-lit stock, fluorescent falloff with ordered dither, a
       // polished floor that reflects the bay, and the main aisle running off
@@ -22616,7 +22699,7 @@
         for (let k = 0; k < 4; k++) line(304 + k * 22, 25, vx - 9 + k * 6, fy0, "#ffffff");
         // the far wall is the storefront: glass, and the lot outside at dusk
         R(fx0, fy0, fx1 - fx0, fy1 - fy0, "#d9d7cf");
-        R(fx0 + 1, fy0 + 1, fx1 - fx0 - 2, 7, C.red); R(fx0 + 1, fy0 + 7, fx1 - fx0 - 2, 1, sh(C.red, -0.4)); text("THANK YOU", fx0 + 6, fy0 + 2, "#ffffff");
+        R(fx0 + 1, fy0 + 1, fx1 - fx0 - 2, 7, C.red); R(fx0 + 1, fy0 + 7, fx1 - fx0 - 2, 1, sh(C.red, -0.4)); text("BAY FREIGHT", fx0 + ((fx1 - fx0 - tw("BAY FREIGHT")) >> 1), fy0 + 2, "#ffffff");
         const gx = fx0 + 2, gy = fy0 + 10, gw = fx1 - fx0 - 4, gh = fy1 - fy0 - 12;
         const hz = Math.round(gh * 0.6);
         for (let j = 0; j < hz; j++) R(gx, gy + j, gw, 1, mix(mix("#4b3876", "#9a5a8a", Math.min(1, j / (hz * 0.6))), "#f2a35e", Math.max(0, (j - hz * 0.55) / (hz * 0.45))));
@@ -22916,7 +22999,146 @@
         const mSigns = `<div class="hfs-m-signs">${HFS.SIGNS.map((n, i) => `<button class="hfs-m-sign${i + 1 === a ? " here" : ""}" onclick="hfsGo(${i + 1})"><b>${i + 1}</b><span>${n}</span></button>`).join("")}</div>`;
         const mTags = `<div class="hfs-m">${spots.map((s) => hfsTag(s.t, car, "")).join("")}${hfsListMarkup(car)}</div>`;
         const banners = shopBannersMarkup(car);
-        return `${gigBoardMarkup()}<div class="hero-panel hfs-view">${shopSubtabsMarkup(car)}${banners ? `<div class="ptc-banners">${banners}</div>` : ""}${mSigns}<div class="hfs" data-aisle="${a}"><img class="hfs-art" src="${url}" alt="Harbor Fright, aisle ${a}, ${HFS_AISLE_NAMES[a - 1]}">${hits}${over}${hfsListMarkup(car)}</div>${mTags}</div>`;
+        return `${gigBoardMarkup()}<div class="hero-panel hfs-view">${shopSubtabsMarkup(car)}${banners ? `<div class="ptc-banners">${banners}</div>` : ""}${mSigns}<div class="hfs" data-aisle="${a}"><img class="hfs-art" src="${url}" alt="Bay Freight, aisle ${a}, ${HFS_AISLE_NAMES[a - 1]}">${hits}${over}${hfsListMarkup(car)}</div>${mTags}</div>`;
+      }
+      /* ═══════════════════════════════════════════
+         DALE'S TICKET RAIL (Build › Next Jobs)
+      ═══════════════════════════════════════════ */
+      // Next Jobs is the rail over Dale's bench, where the repair orders hang.
+      // A real shop writes every job up the same way: the customer's concern,
+      // the correction, parts and labor, and a line to sign for the work. The
+      // ranking is still getSuggestedRestorations; this is how it reads.
+      //
+      // The two ways to do a job are the two boxes at the foot of the form:
+      // parts only (you put it in, yellow like every button) or parts and
+      // labor (Dale's price, in his blue). Everything about why this job and
+      // not another is in his handwriting, and a missing tool sends you down
+      // to the right aisle at Bay Freight.
+      const RO_CONCERN = {
+        engine: ["won't start without a fight", "stumbles off idle"],
+        cooling: ["boils over in traffic", "runs warm in the show line"],
+        fuel: ["smells like gas, dies in third", "gauge reads full, tank isn't"],
+        exhaust: ["loud, ticks cold, fumes in the cab", "sounds tired"],
+        transmission: ["slips, won't hold third", "shifts lazy"],
+        differential: ["whines at fifty", "clunks pulling away"],
+        brakes: ["pedal sinks at the lights", "pulls left stopping"],
+        suspension: ["rides like a hay wagon", "wallows in the corners"],
+        steering: ["wanders all over the lane", "loose on center"],
+        wheels: ["rusty mismatched steelies", "wheels look tired"],
+        tires: ["dry-rotted and flat-spotted", "tires getting old"],
+        electrical: ["dead battery every morning", "gauges flicker"],
+        body: ["rust coming through the rockers", "dings and a wavy panel"],
+        paint: ["faded, chalky, primer spots", "paint's dull up close"],
+        interior: ["torn seat, smells like mice", "interior's worn out"],
+        chrome: ["pitted bumpers, dull trim", "chrome's lost its shine"],
+      };
+      const RO_NOTE = {
+        "Fastest path to roadworthy": "road first. she can't drive yet",
+        "Show-focused upgrade": "points for the next show",
+        "Crowd pleaser": "the crowd'll see this one",
+        "Best ROI": "most bang for the buck",
+      };
+      function roToStore(toolId) {
+        const a = HFS.aisleOf(toolId);
+        if (a) state.toolAisle = a;
+        setShopSub("tools");
+      }
+      function roTicket(item, i, car) {
+        const p = item.part;
+        const starterFree = state.starterHelpReceived && p.id === 2 && !state.starterCarbUsed;
+        const diyCost = starterFree ? 0 : partCost(p, "diy");
+        const shopCost = starterFree ? 0 : partCost(p, "shop");
+        const labor = Math.max(0, shopCost - diyCost);
+        const disc = getDiscount(p);
+        const missing = (p.tools || []).filter((tid) => !hasToolFor(tid));
+        const atShop = activeTasksByMethod(car.id, "shop").length > 0;
+        const atHome = activeTasksByMethod(car.id, "diy").length > 0;
+        const baysFull = activeTasksForCar(car.id).length >= workspaceData().maxActive;
+        const tier = { Budget: ["good", "GOOD"], Quality: ["better", "BETTER"], "Show Grade": ["best", "BEST"] }[p.tier] || ["good", "GOOD"];
+        const concern = (RO_CONCERN[p.category] || ["needs work", "needs work"])[car[p.category] < 40 ? 0 : 1];
+        const note = starterFree ? "on the house, from next door" : RO_NOTE[item.tag] || "worth doing";
+        const stamp = starterFree ? `<span class="ro-stamp">NO CHARGE</span>` : i === 0 && item.tag === "Fastest path to roadworthy" ? `<span class="ro-stamp">RUSH</span>` : "";
+        const no = 4180 + (state.installsDone || 0) * 3 + i;
+        const d = inPreSeason() ? null : calSatDate(Math.max(1, state.week || 1));
+        const date = d ? `${d.getUTCMonth() + 1}/${d.getUTCDate()}` : "";
+        const why = (cost) => (state.money < cost ? `short $${fmt(cost - state.money)}` : "");
+        let diy;
+        if (missing.length) {
+          const t = TOOLS_LIST.find((x) => x.id === missing[0]);
+          const more = missing.length > 1 ? ` +${missing.length - 1}` : "";
+          diy = `<div class="ro-need"><span class="ro-ink">need ${PTC_TOOL_SHORT[missing[0]] || (t ? t.name.toLowerCase() : "a tool")}${more}</span><button class="ro-go" onclick="roToStore('${missing[0]}')" title="Walk to the aisle at Bay Freight that stocks it.">Bay Freight &#8594;</button></div>`;
+        } else {
+          const blocked = state.money < diyCost || atShop || baysFull;
+          const title = atShop ? "She's at Dale's. Wait for his work to finish." : baysFull ? "Every bay is full." : state.money < diyCost ? "Not enough cash." : "Buy the parts and put them in yourself.";
+          diy = `<button class="ro-box diy" onclick="installPart(${p.id},'diy',false)" ${blocked ? "disabled" : ""} title="${title}"><span class="ro-box-l"><span class="ro-chk"></span>Parts only</span><b>$${fmt(diyCost)}</b><small>${blocked && why(diyCost) ? why(diyCost) : "I'll put it in"}</small></button>`;
+        }
+        const shopBlocked = state.money < shopCost || atHome;
+        const shopTitle = atHome ? "Finish your own work on her first." : state.money < shopCost ? "Not enough cash." : "Dale puts it in. Parts and labor.";
+        const shop = `<button class="ro-box shop" onclick="installPart(${p.id},'shop',false)" ${shopBlocked ? "disabled" : ""} title="${shopTitle}"><span class="ro-box-l"><span class="ro-chk"></span>Parts &amp; labor</span><b>$${fmt(shopCost)}</b><small>${shopBlocked && why(shopCost) ? why(shopCost) : "in Dale's bay"}</small></button>`;
+        return `<div class="ro-cell"><div class="ro" data-part="${p.id}" style="--r:${[-0.9, 0.6, -0.4, 0.8][i % 4]}deg">
+          <div class="ro-head"><span class="ro-shop">DALE'S GARAGE<small>REPAIR ORDER</small></span><span class="ro-no">No. ${no}<small>${String(car.year).slice(2)} ${car.make} ${car.model}${date ? ` &middot; ${date}` : ""}</small></span></div>
+          <div class="ro-body"><div class="ro-fields">
+          <div class="ro-f"><span class="ro-l">Concern</span><span class="ro-t">${concern}</span></div>
+          <div class="ro-f"><span class="ro-l">Correction</span><span class="ro-t ro-fix">${p.name}<em class="ptc-tg t-${tier[0]}">${tier[1]}</em></span></div>
+          <div class="ro-sum"><span><i>Parts</i>$${fmt(diyCost)}${disc > 0 ? `<em class="ptc-tg t-off">-${Math.round(disc * 100)}%</em>` : ""}</span><span><i>Labor</i>$${fmt(labor)}</span><span class="ro-adds"><i>${CAT_LABELS[p.category]}</i>+${p.imp}</span></div>
+          <div class="ro-note">${note}</div>
+          </div><div class="ro-auth">${diy}${shop}</div></div>
+          ${stamp}
+        </div></div>`;
+      }
+      // Bay Freight's coupon, clipped to the rail in the first weeks: the
+      // cheap tool that opens the most of the early work, a buy away.
+      function roCoupons(car) {
+        if ((state.installsDone || 0) >= 5 || roadworthy(car)) return "";
+        const need = Object.create(null);
+        const installed = new Set(car.installedParts || []);
+        PARTS.forEach((p) => {
+          if (installed.has(p.id) || p.tier !== "Budget") return;
+          if (p.category !== "engine" && p.category !== "transmission" && p.category !== "brakes") return;
+          (p.tools || []).forEach((tid) => { need[tid] = (need[tid] || 0) + 1; });
+        });
+        const wsIdx = getWorkspaceIndex(state.workshopLevel);
+        const picks = TOOLS_LIST.filter((t) => !state.ownedTools.includes(t.id) && getWorkspaceIndex(t.workshop) <= wsIdx && state.money >= t.cost && (need[t.id] || 0) > 0)
+          .map((t) => ({ t, n: need[t.id] }))
+          .sort((a, b) => b.n - a.n)
+          .slice(0, 2);
+        if (!picks.length) return "";
+        return `<div class="ro-coupons">${picks.map(({ t, n }) => `<div class="bf-coupon"><div class="bf-c-brand">BAY FREIGHT<small>coupon</small></div><div class="bf-c-body"><b>${(HFS_NAME[t.id] || t.name)}</b><span>opens ${n} job${n === 1 ? "" : "s"} you can do</span></div><button class="bf-c-buy" onclick="buyTool('${t.id}')" title="Buy the ${t.name}.">$${fmt(t.cost)}<small>buy it</small></button></div>`).join("")}</div>`;
+      }
+      // What the banner over the shop floor says, written by Dale on a strip
+      // of masking tape stuck to the rail: the week's job, or what is still
+      // keeping her off the road.
+      function roTape(car) {
+        if (!roadworthy(car)) {
+          const gaps = [["engine", ROADWORTHY_ENGINE], ["trans", ROADWORTHY_TRANSMISSION, "transmission"], ["brakes", ROADWORTHY_BRAKES], ["steering", ROADWORTHY_STEERING]]
+            .map(([label, need, key]) => ({ label, gap: Math.max(0, need - car[key || label]) }))
+            .filter((g) => g.gap > 0)
+            .map((g) => `${g.label} +${g.gap}`);
+          return `<div class="ro-tape warn" title="Engine ${car.engine}/${ROADWORTHY_ENGINE}, transmission ${car.transmission}/${ROADWORTHY_TRANSMISSION}, brakes ${car.brakes}/${ROADWORTHY_BRAKES}, steering ${car.steering}/${ROADWORTHY_STEERING}.">not roadworthy yet. she needs ${gaps.join(", ")}</div>`;
+        }
+        if ((state.history || []).length > 0) {
+          const nudge = thisWeekNudge(car);
+          return nudge ? `<div class="ro-tape">this week: ${nudge}</div>` : "";
+        }
+        const line = tabUnlocked("shows")
+          ? "she runs. time to compete"
+          : !tabEarned("shows")
+            ? "she runs. put a take-off part on the Marketplace and word gets around"
+            : "she runs. show season opens when the off-season ends";
+        const go = !tabEarned("shows") && tabEarned("dealership") ? `<button class="ro-go" onclick="setView('dealership')">Marketplace &#8594;</button>` : "";
+        return `<div class="ro-tape good">${line}${go}</div>`;
+      }
+      function renderJobRail(car) {
+        const suggested = getSuggestedRestorations(car);
+        // Two on a phone: enough to choose, and the rest are in the catalog.
+        const cap = isPhoneWidth() ? 2 : 3;
+        const shown = suggested.slice(0, cap);
+        const tickets = shown.length
+          ? shown.map((item, i) => roTicket(item, i, car)).join("")
+          : `<div class="ro-empty">nothing on the rail. she's maxed out, or it's all in the bay. -D</div>`;
+        const more = suggested.length > cap ? `<button class="ro-more" onclick="setShopSub('parts')">${suggested.length - cap} more in the catalog &#8594;</button>` : "";
+        const coupons = roCoupons(car);
+        return `<div class="ro-board${coupons ? " has-coupons" : ""}"><div class="ro-rail">${roTape(car)}</div><div class="ro-tickets">${tickets}${coupons}</div>${more}</div>`;
       }
       // The Sell Cars tab is locked when there's nothing there to sell without
       // stranding the player: one project car and no wife's daily driver left
@@ -27533,126 +27755,6 @@ addEventListener("DOMContentLoaded",function(){
         if (state.shopSub === "tools") return renderToolStore(car);
         let subcontent = "";
 
-        if (state.shopSub === "suggested") {
-          const suggested = getSuggestedRestorations(car);
-          // Early-game starter-tool nudge: if the player has done few installs and there
-          // are affordable basic tools that would unlock more DIY work, surface them.
-          const earlyGame = (state.installsDone || 0) < 5 && !roadworthy(car);
-          let starterToolMarkup = "";
-          if (earlyGame) {
-            const need = Object.create(null);
-            const installed = new Set(car.installedParts || []);
-            PARTS.forEach((p) => {
-              if (installed.has(p.id)) return;
-              if (p.tier !== "Budget") return;
-              if (
-                p.category !== "engine" &&
-                p.category !== "transmission" &&
-                p.category !== "brakes"
-              )
-                return;
-              (p.tools || []).forEach((tid) => {
-                need[tid] = (need[tid] || 0) + 1;
-              });
-            });
-            const wsIdx = getWorkspaceIndex(state.workshopLevel);
-            const candidates = TOOLS_LIST.filter(
-              (t) =>
-                !state.ownedTools.includes(t.id) &&
-                getWorkspaceIndex(t.workshop) <= wsIdx &&
-                state.money >= t.cost &&
-                (need[t.id] || 0) > 0,
-            )
-              .map((t) => ({ tool: t, score: need[t.id] || 0 }))
-              .sort((a, b) => b.score - a.score)
-              .slice(0, 2);
-            if (candidates.length) {
-              starterToolMarkup = mobileFold(
-                "starterTools",
-                "Starter tools",
-                `${candidates.length} pick${candidates.length === 1 ? "" : "s"}`,
-                `<div class="starter-tools info-box" style="margin-bottom:12px;background:rgba(125,160,194,0.08);border-color:rgba(125,160,194,0.4)"><div class="small" style="color:var(--blue-bright);font-weight:bold;margin-bottom:6px"> Pick up a starter tool first?</div><div class="tiny muted" style="margin-bottom:8px">DIY is cheaper than shop work, but needs the right tools. These would unlock the most jobs you have left:</div>${candidates
-                .map(
-                  ({ tool, score }) =>
-                    `<div class="flex between center" style="margin-bottom:6px;gap:10px"><div><div class="small" style="color:var(--text)">${tool.name}</div><div class="tiny muted">Unlocks ${score} more DIY ${score === 1 ? "option" : "options"}</div></div>${button(`Buy · $${fmt(tool.cost)}`, `buyTool('${tool.id}')`, false, "", "padding:6px 10px;font-size:11px")}</div>`,
-                )
-                .join("")}</div>`,
-              );
-            }
-          }
-          // On a phone each of these cards runs ~340px, so four of them are
-          // four screens of scrolling before the player has done anything.
-          // Two is enough to make a choice; the rest are one tap away in All
-          // Builds, which the line under the list points at.
-          const phoneNow = isPhoneWidth();
-          const suggestCap = phoneNow ? 2 : 4;
-          // At this stage every card's reason is the same sentence with one
-          // word changed ("clears the engine requirement", "the steering
-          // requirement"). Said once above the list it is guidance; repeated
-          // on every card it is 56px of noise per card.
-          const sharedWhy =
-            phoneNow && suggested.length > 1
-              ? `<div class="small muted" style="margin:-2px 0 12px;line-height:1.55">${suggested[0].why}</div>`
-              : "";
-          subcontent = `${starterToolMarkup}${panel(
-            "Suggested Next Moves",
-            `${sharedWhy}${
-              suggested.length
-                ? suggested
-                    .slice(0, suggestCap)
-                    .map((item) => {
-                      const p = item.part;
-                      const activeTask = findActiveTask(car.id, p.id);
-                      const starterFree =
-                        state.starterHelpReceived &&
-                        p.id === 2 &&
-                        !state.starterCarbUsed;
-                      const diyCost = starterFree ? 0 : partCost(p, "diy");
-                      const shopCost = starterFree ? 0 : partCost(p, "shop");
-                      const missing = (p.tools || [])
-                        .filter((tid) => !hasToolFor(tid))
-                        .map(
-                          (tid) => TOOLS_LIST.find((t) => t.id === tid)?.name,
-                        )
-                        .filter(Boolean);
-                      const diyBlocked =
-                        state.money < diyCost ||
-                        activeTasksByMethod(car.id, "shop").length ||
-                        missing.length;
-                      const shopBlocked =
-                        state.money < shopCost ||
-                        activeTasksByMethod(car.id, "diy").length;
-                      const diyLabel = `${item.recommendedMethod === "diy" ? " " : ""}Start DIY · $${fmt(diyCost)}`;
-                      const shopLabel = `${item.recommendedMethod === "shop" ? " " : ""}Send to Shop · $${fmt(shopCost)}`;
-                      const blockNote =
-                        !activeTasksByMethod(car.id, "shop").length &&
-                        !activeTasksByMethod(car.id, "diy").length &&
-                        state.money < Math.min(diyCost, shopCost)
-                          ? "Save a little more cash to start the next move."
-                          : "";
-                      return panel(
-                        `${p.name}${starterFree ? ` <span class="badge" style="color:var(--green)">NEIGHBOR GIFT</span>` : ""}`,
-                        `${sharedWhy ? "" : `<div class="small muted" style="margin-bottom:10px;line-height:1.55">${item.why}</div>`}
-                         <div class="suggest-meta" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px"><span class="smart-tag">${item.tag}</span><span class="tiny good" style="font-weight:bold">+${p.imp} ${CAT_LABELS[p.category]}</span></div>
-                         ${missing.length ? `<div class="tiny warn" style="margin-bottom:10px">Missing tools for DIY: ${missing.join(", ")}</div>` : ""}
-                         ${activeTask
-                           ? `<div class="info-box" data-task-id="${activeTask.id}"><div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:6px">In progress</div>${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>`
-                           : `<div class="btn-row two">${button(diyLabel, `installPart(${p.id},'diy',false)`, diyBlocked, "", "width:100%;")}${button(shopLabel, `installPart(${p.id},'shop',false)`, shopBlocked, "", "width:100%;background:#7da0c2;border-color:var(--blue-bright);")}</div>${blockNote ? `<div class="tiny muted" style="margin-top:8px">${blockNote}</div>` : ""}`
-                         }`,
-                        `${p.tier} · ${CAT_LABELS[p.category]}`,
-                        item.recommendedMethod === "diy"
-                          ? "#87c77b"
-                          : "#7da0c2",
-                        "job-card",
-                      );
-                    })
-                    .join("")
-                : `<div class="small muted">Nothing left to suggest right now. Either the car is maxed out or everything is already in progress.</div>`
-            }${suggested.length > suggestCap ? `<div class="tiny muted" style="margin-top:8px;text-align:center;cursor:pointer" onclick="setShopSub('parts')">+${suggested.length - suggestCap} more job${suggested.length - suggestCap === 1 ? "" : "s"} waiting in All Builds →</div>` : ""}`,
-            "",
-            "#d8a24f",
-          )}`;
-        }
 
         // A save written on Space & Storage must not reload onto a pill the
         // strip is no longer drawing. Fall back to the tab that always works
@@ -27713,6 +27815,7 @@ addEventListener("DOMContentLoaded",function(){
           onboardStageVal() >= 3 ? "" : "Every bolt, every part, one at a time",
           "",
           `${carPreview(car)}${(() => {
+            if (state.shopSub === "suggested") return "";
             const rw = roadworthy(car);
             const engineGap = Math.max(0, ROADWORTHY_ENGINE - car.engine);
             const transGap = Math.max(0, ROADWORTHY_TRANSMISSION - car.transmission);
@@ -27743,7 +27846,7 @@ addEventListener("DOMContentLoaded",function(){
             }
             return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px"></span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " "} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " "} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " "} · Steering ${car.steering}/${ROADWORTHY_STEERING}${steerGap ? " (need +" + steerGap + ")" : " "}${onboardStageVal() <= 1 ?`<div class="tiny" style="color:var(--gold-soft);margin-top:4px"> Get her running and the Marketplace opens up.</div>` : ""}</div></div></div>`;
           })()}${shopSubtabsMarkup(car)}${shopBannersMarkup(car)}${subcontent}`,
-        )}</div><div>${sideCol}</div></div>`;
+        )}</div><div>${sideCol}</div>${state.shopSub === "suggested" ? `<div class="ro-row">${renderJobRail(car)}</div>` : ""}</div>`;
       }
 
       // How many years each show has been running, and where it happens. A
