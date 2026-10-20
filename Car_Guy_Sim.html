@@ -379,7 +379,6 @@
       .dense-emoji { font-size: 16px; }
       .dense-name { flex: 1; min-width: 110px; font-size: 12.5px; font-weight: bold; color: var(--text-bright); }
       .dense-cost { font-size: 12px; color: var(--gold-soft); font-weight: bold; white-space: nowrap; }
-      .dense-imp { font-size: 12px; font-weight: bold; white-space: nowrap; }
       .dense-chev { color: var(--text-dim); font-size: 11px; }
       /* Keep the DIY/Shop button pair (and chev) as one unit: they wrap to the
          next line together instead of splitting, so every card lines up the
@@ -545,27 +544,6 @@
         fill: currentColor;
         shape-rendering: crispEdges;
         flex: 0 0 auto;
-      }
-      .cat-groups {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 7px 16px;
-        margin-bottom: 11px;
-      }
-      .cat-group { min-width: 0; }
-      .cat-group-h {
-        font-size: 8.5px;
-        letter-spacing: 0.13em;
-        text-transform: uppercase;
-        color: #857a6c;
-        margin-bottom: 3px;
-      }
-      .cat-group-row { display: flex; flex-wrap: wrap; gap: 4px; }
-      /* The strip is browsing, not the main road: Next Jobs is the default
-         screen. So the pills sit a shade smaller here than a nav pill does. */
-      .cat-groups .cat-pill { padding: 5px 11px; font-size: 11.5px; }
-      @media (max-width: 640px) {
-        .cat-groups { gap: 6px 11px; }
       }
       .cat-pill {
         appearance: none;
@@ -900,6 +878,151 @@
         gap: 8px;
         margin-bottom: 14px;
         flex-wrap: wrap;
+      }
+      /* ── The parts catalog (Build › All Builds) ─────────────────────
+         An open mail-order catalog on the bench. Printed things are black,
+         white and red; Dale's marker is blue; yellow with a hard shadow is
+         a button and nothing else is yellow. The page block is stacked
+         box-shadows under each outer edge, the gutter is two gradients
+         meeting in the middle. */
+      .hero-panel.ptc-view { padding: 8px 0 0; }
+      .ptc-view .shop-subtabs { margin: 0 20px 2px; }
+      .ptc-banners { margin: 6px 20px 0; }
+      .ptc-after { margin: 0 20px 14px; }
+      .ptc-spread { position: relative; display: grid; grid-template-columns: 1fr 1fr; margin: 6px 102px 12px 20px; filter: drop-shadow(0 12px 14px rgba(0,0,0,.6)); }
+      .ptc-spread::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: linear-gradient(90deg, rgba(0,0,0,.35), rgba(255,255,255,.4)); pointer-events: none; }
+      .ptc-pg { position: relative; isolation: isolate; display: flex; flex-direction: column; min-width: 0; min-height: 504px; padding: 20px 20px 4px; color: #111; font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; text-align: left; }
+      .ptc-pg.l { border-radius: 4px 0 0 5px; padding-right: 26px; background: linear-gradient(90deg, #f3f2ec 0%, #f7f6f1 40%, #f2f1eb 82%, #dddbd2 95%, #b9b6ac 100%);
+        box-shadow: -1px 1px 0 #d9d6cc, -2px 2px 0 #f1efe8, -3px 3px 0 #d3cfc4, -4px 4px 0 #eeebe3, -5px 5px 0 #cdc8bc, -6px 6px 0 #e9e6dd, -7px 7px 0 #c5c0b3, -8px 8px 0 #e4e0d6, -9px 9px 0 #bdb7a9; }
+      .ptc-pg.r { border-radius: 0 4px 5px 0; padding-left: 26px; background: linear-gradient(270deg, #f3f2ec 0%, #f7f6f1 40%, #f2f1eb 82%, #dddbd2 95%, #b9b6ac 100%);
+        box-shadow: 1px 1px 0 #d9d6cc, 2px 2px 0 #f1efe8, 3px 3px 0 #d3cfc4, 4px 4px 0 #eeebe3, 5px 5px 0 #cdc8bc, 6px 6px 0 #e9e6dd, 7px 7px 0 #c5c0b3, 8px 8px 0 #e4e0d6, 9px 9px 0 #bdb7a9; }
+      .ptc-body { flex: 1; }
+      .ptc-ghost { position: absolute; z-index: -1; transform: scaleX(-1); opacity: .045; font: bold 10px/1.35 "Lucida Console", Consolas, "DejaVu Sans Mono", monospace; white-space: pre; pointer-events: none; }
+      .ptc-ghost b { display: block; font: bold 17px/1.3 Arial, sans-serif; }
+      .ptc-note { position: absolute; z-index: 2; top: 3px; right: 30px; font: 15px/1 "Dale Marker", "Segoe Print", cursive; color: #1f3a66; white-space: nowrap; transform: rotate(-1.5deg); }
+      .ptc-head { display: flex; align-items: flex-start; margin-bottom: 2px; }
+      .ptc-pno { flex: none; position: relative; z-index: 1; padding: 0 9px; background: #fff; border: 2.5px solid #111; font: 900 16px/1.15 "Arial Black", Arial, sans-serif; }
+      .ptc-bar { flex: 1; position: relative; height: 15px; margin-top: 4px; background: #111; }
+      .ptc-bar span { position: absolute; top: 8px; right: 26px; padding: 1px 20px 2px; background: #111; color: #fff; font: italic 900 14px/1.15 "Arial Black", Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; clip-path: polygon(9px 0, 100% 0, calc(100% - 9px) 100%, 0 100%); }
+      .ptc-pg.r .ptc-bar span { right: 30px; }
+      .ptc-pg.r .ptc-pno { margin-left: -1px; }
+      .ptc-blk { position: relative; padding: 4px 0 2px; border-bottom: 1.5px solid #111; }
+      .ptc-blk:last-of-type { border-bottom: 0; }
+      .ptc-blk.opens { margin-top: 2px; border-top: 3px solid #111; }
+      .ptc-top { display: grid; grid-template-columns: 140px minmax(0,1fr); column-gap: 14px; align-items: start; }
+      .ptc-top.sm { grid-template-columns: 110px minmax(0,1fr); }
+      .ptc-fig svg { display: block; width: 100%; height: auto; }
+      .ptc-blk h3 { margin: 0; color: #111; font: bold 16px/1.05 Arial, Helvetica, sans-serif; letter-spacing: -.01em; }
+      .ptc-fit { margin: 1px 0 3px; font: 11px Arial, sans-serif; color: #222; word-spacing: .2em; }
+      .ptc-blk p { margin: 0; font: 10.5px/1.28 Arial, sans-serif; color: #1a1a1a; }
+      .ptc-blk p.ptc-tip { margin-top: 3px; }
+      .ptc-tb { margin-top: 3px; font: 10px/1.2 "Lucida Console", Consolas, "DejaVu Sans Mono", "Liberation Mono", monospace; text-transform: uppercase; }
+      .ptc-th, .ptc-row { display: grid; grid-template-columns: 52px 26px minmax(0,1fr) 26px 64px 142px; column-gap: 5px; align-items: center; }
+      .ptc-tb.x .ptc-th, .ptc-tb.x .ptc-row { grid-template-columns: 52px 26px minmax(0,1fr) 30px 46px 64px 64px; }
+      .ptc-th { position: relative; padding-bottom: 1px; font-size: 8.5px; color: #333; }
+      .ptc-th .r { text-align: right; }
+      .ptc-oh { display: flex; justify-content: flex-end; align-items: baseline; gap: 7px; }
+      .ptc-oh b { width: 58px; text-align: center; font-weight: normal; }
+      .ptc-oh i { width: 60px; text-align: center; font: 13px/1 "Dale Marker", "Segoe Print", cursive; color: #1f3a66; text-transform: none; }
+      .ptc-row { position: relative; min-height: 22px; color: #111; }
+      .ptc-row.can:hover { background: linear-gradient(90deg, rgba(17,17,17,0), rgba(17,17,17,.07) 10%, rgba(17,17,17,.07) 90%, rgba(17,17,17,0)); }
+      .ptc-d { min-width: 0; padding: 1px 0; line-height: 1.15; }
+      .ptc-tg { display: inline-block; margin-left: 5px; vertical-align: 1px; padding: 0 3px; border: 1px solid #111; background: #fff; color: #111; font: normal bold 7.5px/1.4 Arial, sans-serif; letter-spacing: .06em; }
+      .ptc-tg.t-better { background: #111; color: #fff; }
+      .ptc-tg.t-best { background: #c4261d; border-color: #c4261d; color: #fff; }
+      .ptc-tg.t-off { border-color: #c4261d; color: #c4261d; }
+      .ptc-ad { color: #2f6b1f; font-weight: bold; text-align: right; }
+      .ptc-pr { text-align: right; }
+      .ptc-row.done > span:not(.ptc-ob) { color: #8a867c; }
+      .ptc-row.done .ptc-pr:last-of-type { text-decoration: line-through; text-decoration-color: #1f3a66; text-decoration-thickness: 2px; }
+      .ptc-ck { position: absolute; left: -22px; top: 50%; width: 20px; height: 16px; margin-top: -9px; }
+      .ptc-row.lift .ptc-il { position: relative; }
+      .ptc-row.lift .ptc-il::before { content: ""; position: absolute; left: -7px; top: -5px; width: 30px; height: 24px; border: 2px solid #1f3a66; border-radius: 48% 52% 46% 54%/55% 45% 55% 45%; transform: rotate(-6deg); }
+      .ptc-ob { display: flex; gap: 7px; justify-content: flex-end; align-items: center; text-transform: none; }
+      .ptc-ob button { height: 20px; padding: 0 8px; border: 1.5px solid #111; border-radius: 2px; box-shadow: 2px 2px 0 #111; cursor: pointer; white-space: nowrap; transition: transform .06s, box-shadow .06s; }
+      .ptc-ob button:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 #111; }
+      .ptc-ob button:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: none; }
+      .ptc-ob button:disabled { background: #e7e5de !important; color: #a3a097 !important; border-color: #bdb9ae; box-shadow: none; cursor: not-allowed; }
+      .ptc-ob button:focus-visible, .ptc-xref:focus-visible, .ptc-tab:focus-visible, .ptc-flag:focus-visible, .ptc-turn:focus-visible { outline: 2px solid #1f5fa8; outline-offset: 2px; }
+      .ptc-order { min-width: 58px; background: #f2c21b; color: #111; font: bold 10px Arial, sans-serif; letter-spacing: .1em; text-transform: uppercase; }
+      .ptc-order:hover:not(:disabled) { background: #ffd23f; }
+      .ptc-dale { min-width: 60px; padding-top: 1px !important; background: #1f3a66; color: #fff; font: 15px/1 "Dale Marker", "Segoe Print", cursive; }
+      .ptc-dale:hover:not(:disabled) { background: #2b4e86; }
+      .ptc-ink { font: 15px/1 "Dale Marker", "Segoe Print", cursive; color: #1f3a66; white-space: nowrap; transform: rotate(-3deg); text-transform: none; }
+      .ptc-ink.sm { font-size: 12.5px; white-space: normal; max-width: 74px; line-height: .95; text-align: right; }
+      .ptc-lift { display: flex; flex-direction: column; align-items: flex-end; line-height: 1; }
+      .ptc-time { font: 9px Arial, sans-serif; color: #555; text-transform: none; }
+      .ptc-xwrap { text-align: center; }
+      .ptc-xref { display: inline-block; margin: 6px 0 2px; padding: 4px 12px; border: 1.5px solid #111; border-radius: 2px; background: #f2c21b; color: #111; box-shadow: 2px 2px 0 #111; font: bold 11px/1.2 Arial, sans-serif; cursor: pointer; transition: transform .06s, box-shadow .06s; }
+      .ptc-xref:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 #111; background: #ffd23f; }
+      .ptc-xref:active { transform: translate(2px, 2px); box-shadow: none; }
+      .ptc-promo { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 6px 0 2px; padding: 3px 10px; background: #c4261d; color: #fff; }
+      .ptc-promo h4 { margin: 0; white-space: nowrap; font: italic 900 13px/1.1 "Arial Black", Arial, sans-serif; }
+      .ptc-promo span { font: bold 10px Arial, sans-serif; white-space: nowrap; }
+      .ptc-form h3 { margin: 18px 0 4px; font: bold 18px Arial, sans-serif; }
+      .ptc-form p { margin: 0 0 14px; font: 11px/1.3 Arial, sans-serif; }
+      .ptc-line { height: 28px; border-bottom: 1px solid #999; }
+      .ptc-foot { display: flex; justify-content: space-between; align-items: baseline; margin-top: 5px; padding-top: 3px; border-top: 3px solid #111; font: bold 10.5px Arial, sans-serif; }
+      .ptc-foot i { font-style: italic; }
+      .ptc-foot big { font: 900 12px "Arial Black", Arial, sans-serif; }
+      .ptc-pg.l .ptc-foot { padding-left: 150px; }
+      .ptc-pg.r .ptc-foot { padding-right: 150px; }
+      .ptc-stain { position: absolute; z-index: 2; width: 150px; height: 150px; pointer-events: none; mix-blend-mode: multiply; }
+      /* Sticky flags, the index. The ones for other sections tuck behind
+         the page; the one for the pages that are open is stuck on top, and
+         you can see the paper through the part that is stuck down. */
+      .ptc-idx { position: absolute; z-index: -1; left: 100%; top: 0; }
+      .ptc-tab.on { display: none; }
+      .ptc-tab, .ptc-flag { --f: #ffd84d; --ft: rgba(255,216,77,.55); position: absolute; width: 74px; height: 25px; padding: 0 0 0 9px; border: 0; border-radius: 0 3px 3px 0; color: #1f3a66; font: 14px/1 "Dale Marker", "Segoe Print", cursive; text-align: left; white-space: nowrap; cursor: pointer; transform: rotate(var(--r, 0deg)); }
+      .ptc-tab { left: 0; background: var(--f); box-shadow: 1px 1.5px 1.5px rgba(0,0,0,.45), inset 9px 0 7px -5px rgba(0,0,0,.32); filter: saturate(.8) brightness(.95); transition: transform .08s, filter .08s; }
+      .ptc-tab:hover { transform: translateX(5px) rotate(var(--r, 0deg)); filter: none; }
+      .ptc-tab b, .ptc-flag b { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font: 11px/1 "Dale Marker", "Segoe Print", cursive; opacity: .8; }
+      .ptc-flag { z-index: 4; right: -100px; width: 134px; padding-left: 46px; font-size: 15px; background: linear-gradient(90deg, var(--ft) 0 34px, var(--f) 34px); box-shadow: 0 2px 5px rgba(0,0,0,.5); }
+      .ptc-g-hood { --f: #ff8fb4; --ft: rgba(255,143,180,.55); }
+      .ptc-g-under { --f: #8fdf6a; --ft: rgba(143,223,106,.55); }
+      .ptc-g-top { --f: #8ccfff; --ft: rgba(140,207,255,.55); }
+      .ptc-g-extra { --f: #ffd84d; --ft: rgba(255,216,77,.55); }
+      /* Turning pages from the corner: next bottom-right, back bottom-left. */
+      .ptc-turn { position: absolute; z-index: 5; bottom: 0; display: flex; align-items: flex-end; gap: 6px; padding: 0; border: 0; background: none; cursor: pointer; }
+      .ptc-turn.next { right: 0; }
+      .ptc-turn.prev { left: 0; flex-direction: row-reverse; }
+      .ptc-lbl { margin-bottom: 9px; padding: 2px 7px; border: 1.5px solid #111; border-radius: 2px; background: #f2c21b; color: #111; font: bold 9.5px/1.2 Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; box-shadow: 2px 2px 0 #111; transition: transform .06s, box-shadow .06s; }
+      .ptc-curl { display: block; width: 40px; height: 40px; transform-origin: 100% 100%; transition: transform .12s; filter: drop-shadow(-2px -2px 2px rgba(0,0,0,.28)); }
+      .ptc-turn.prev .ptc-curl { transform-origin: 0 100%; filter: drop-shadow(2px -2px 2px rgba(0,0,0,.28)); }
+      .ptc-turn:hover .ptc-curl { transform: scale(1.3); }
+      .ptc-turn:hover .ptc-lbl { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 #111; }
+      .ptc-turn:active .ptc-lbl { transform: translate(2px, 2px); box-shadow: none; }
+      @media (prefers-reduced-motion: reduce) {
+        .ptc-ob button, .ptc-xref, .ptc-tab, .ptc-curl, .ptc-lbl { transition: none; }
+      }
+      /* Too narrow for two pages side by side: the pages stack, and the
+         flags come off the edge into a row above the book. */
+      @media (max-width: 1080px) {
+        .ptc-spread { grid-template-columns: 1fr; margin: 6px 12px 12px; }
+        .ptc-spread::after { display: none; }
+        .ptc-pg { min-height: 0; }
+        .ptc-pg.l, .ptc-pg.r { border-radius: 3px; padding: 20px 16px 4px 26px; }
+        .ptc-pg.r { margin-top: 10px; }
+        .ptc-idx { position: static; order: -1; display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 8px; z-index: auto; }
+        .ptc-tab { position: static; width: auto; height: auto; padding: 4px 8px; transform: none; border-radius: 3px; }
+        .ptc-tab.on { display: inline-block; filter: none; box-shadow: 0 0 0 2px #111; }
+        .ptc-tab b { position: static; transform: none; margin-left: 5px; }
+        .ptc-flag { display: none; }
+        .ptc-th, .ptc-row { grid-template-columns: 48px 24px minmax(0,1fr) 24px 58px 132px; }
+      }
+      @media (max-width: 560px) {
+        .ptc-pg.l, .ptc-pg.r { padding: 16px 12px 4px 24px; }
+        .ptc-top, .ptc-top.sm { grid-template-columns: 96px minmax(0,1fr); column-gap: 10px; }
+        .ptc-th { display: none; }
+        .ptc-row { grid-template-columns: 26px 40px 74px minmax(0,1fr); grid-template-areas: "il d d d" "il ad pr ob"; row-gap: 3px; padding: 5px 0; }
+        .ptc-row > span:first-of-type, .ptc-row .ptc-rs { display: none; }
+        .ptc-row .ptc-il { grid-area: il; align-self: start; }
+        .ptc-row .ptc-d { grid-area: d; }
+        .ptc-row .ptc-ad { grid-area: ad; text-align: left; }
+        .ptc-row .ptc-pr { grid-area: pr; text-align: left; }
+        .ptc-row .ptc-ob { grid-area: ob; }
+        .ptc-note { position: static; display: block; margin-bottom: 6px; white-space: normal; }
+        .ptc-pg.l .ptc-foot, .ptc-pg.r .ptc-foot { flex-direction: column; padding: 3px 0 46px; }
       }
       /* Notes pinned to the cork, not text lying on it. These two lines (what
          the next show tier needs, and how many events are still locked) were
@@ -12465,7 +12588,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.96.2";
+      const GAME_VERSION = "0.97.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -12775,12 +12898,6 @@
       };
       const scoreCol = (s) =>
         s >= 80 ? "#8fbf75" : s >= 50 ? "#c99842" : "#b85b4f";
-      const tierCol = (t) =>
-        t === "Show Grade"
-          ? "#d19a3f"
-          : t === "Quality"
-            ? "#7da0c2"
-            : "#8d8878";
       const placeLabel = (p) =>
         ["1st", "2nd", "3rd", "4th", "5th"][p - 1] || `${p}th`;
       const getOverall = (c) => {
@@ -21737,6 +21854,7 @@
       }
       function setShopCat(cat) {
         state.shopCat = cat;
+        state.catalogSpread = null;
         // Picking a system from the strip always means the parts list, so
         // coming back from Extras lands where the player expects.
         state.shopSub = "parts";
@@ -21746,6 +21864,7 @@
         // Never navigate to a pill that is not on the strip.
         if (sub === "workspace" && !spaceTabEarned()) return;
         state.shopSub = sub;
+        state.catalogSpread = null;
         requestRender("full");
       }
       // Buy a lifestyle extra for the current car: cash out, followers in, and
@@ -21794,49 +21913,467 @@
         state.sponsorWatchExpanded = !state.sponsorWatchExpanded;
         requestRender("full");
       }
-      // The Sell Cars tab is locked when there's nothing there to sell without
-      // stranding the player: one project car and no wife's daily driver left
-      // to move. The wife's-car beat is a separate car, so while it's still
-      // available the tab opens even with a single project (the project itself
-      // still can't be listed as your last car).
-      // The category strip inside All Builds. Extras used to be its own
-      // top-level tab beside All Builds and Tools, which put finishing touches
-      // at the same level as the whole build. It belongs with the systems it
-      // sits alongside, so it is the last pill in this row: every judged
-      // category first, then the comforts that are not judged at all.
-      // Seventeen chips in one flat wall, three rows deep, and the eye bounces
-      // off it. A playtester asked for manila folders; what he was actually
-      // reading was seventeen of anything with no order to it. They group the
-      // way a shop groups them: what you reach through the hood, what you
-      // reach on a lift, and what you can see without opening anything. Same
-      // pills, same clicks, three headings.
+      // The systems, grouped the way a shop groups them: what you reach
+      // through the hood, what you reach on a lift, and what you can see
+      // without opening anything. Seventeen of anything with no order to it
+      // reads as a wall, so the catalog runs its sections in this order and
+      // colors its sticky flags by group. Extras is not judged and comes last.
       const CAT_GROUPS = [
         ["Under the hood", ["engine", "cooling", "fuel", "exhaust", "electrical"]],
         ["Underneath", ["transmission", "differential", "brakes", "suspension", "steering", "wheels", "tires"]],
         ["Body and inside", ["body", "paint", "interior", "chrome"]],
       ];
-      function buildCatPillRow() {
-        const grouped = CAT_GROUPS.flatMap(([, ids]) => ids);
-        // Anything new in CATS that nobody has filed yet still gets a pill.
-        const orphans = CATS.filter((c) => !grouped.includes(c));
-        const pill = (cat) =>
-          `<button class="cat-pill ${state.shopSub === "parts" && state.shopCat === cat ? "active" : ""}" onclick="setShopCat('${cat}')">${CAT_LABELS[cat]}</button>`;
-        // Each group keeps its own block. Inline dividers packed tighter but
-        // let a group straddle a wrap, so Wheels and Tires ended up sitting
-        // under the next heading, and a strip that files a part in the wrong
-        // place is worse than one that files nothing.
-        const cats = CAT_GROUPS.map(
-          ([label, ids]) =>
-            `<div class="cat-group"><div class="cat-group-h">${label}</div><div class="cat-group-row">${ids
-              .filter((c) => CATS.includes(c))
-              .map(pill)
-              .join("")}</div></div>`,
-        ).join("") + (orphans.length ? `<div class="cat-group"><div class="cat-group-row">${orphans.map(pill).join("")}</div></div>` : "");
-        const extras = `<button class="cat-pill ${state.shopSub === "extras" ? "active" : ""}" title="Creature comforts and finishing touches. Not judged, but they win over the scene and add real resale." onclick="setShopSub('extras')">Extras</button>`;
-        // Extras is not a judged system, so it sits under its own heading
-        // rather than trailing off the end of the trim row pretending to be one.
-        return `<div class="cat-groups">${cats}<div class="cat-group"><div class="cat-group-h">Not judged</div><div class="cat-group-row">${extras}</div></div></div>`;
+      // The catalog's line drawings, one per product block, drawn the way the
+      // real books draw them: black line art on the page, parts pulled apart
+      // a little, and a bare number on a leader for each line of the table
+      // under it. `at` lists the callouts in table order, [labelX, labelY,
+      // targetX, targetY], so ILL# 3 in the table is the third leader here.
+      const PTC_PAPER = "#f6f5f0";
+      const ptcDeg = (a) => (a * Math.PI) / 180;
+      const ptcG = (cx, cy, s, ox, oy, body) => `<g transform="translate(${ox} ${oy}) scale(${s}) translate(${-cx} ${-cy})">${body}</g>`;
+      const ptcZig = (x1, y, x2, h = 4) => {
+        let d = `M${x1} ${y}`;
+        for (let x = x1 + h, up = true; x <= x2; x += h, up = !up) d += ` L${x} ${y + (up ? -h : h)}`;
+        return d;
+      };
+      // A hose or pipe: a fat dark stroke with a paper core, so it reads hollow.
+      const ptcTube = (d, w = 10) => `<path d="${d}" stroke-width="${w}"/><path d="${d}" stroke="${PTC_PAPER}" stroke-width="${w - 4.5}"/>`;
+      const ptcRing = (cx, cy, r, n, rr = 2.6) => Array.from({ length: n }, (_, i) => `<circle cx="${(cx + r * Math.cos(ptcDeg((360 / n) * i))).toFixed(1)}" cy="${(cy + r * Math.sin(ptcDeg((360 / n) * i))).toFixed(1)}" r="${rr}"/>`).join("");
+      const ptcSpokes = (cx, cy, r1, r2, n, w = 2, a0 = 0) => Array.from({ length: n }, (_, i) => { const a = ptcDeg(a0 + (360 / n) * i); return `<line x1="${(cx + r1 * Math.cos(a)).toFixed(1)}" y1="${(cy + r1 * Math.sin(a)).toFixed(1)}" x2="${(cx + r2 * Math.cos(a)).toFixed(1)}" y2="${(cy + r2 * Math.sin(a)).toFixed(1)}" stroke-width="${w}"/>`; }).join("");
+      const ptcKitBox = (x, y, s = 1) => ptcG(0, 0, s, x, y, `<path d="M0 14 L52 14 L52 50 L0 50 Z M0 14 L12 2 L64 2 L52 14 M52 50 L64 38 L64 2" fill="${PTC_PAPER}"/><text x="26" y="38" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="13" fill="#111" stroke="none">KIT</text>`);
+      const PTC_FIGS = {
+        drum: { vb: "0 0 300 172", at: [[150, 16, 128, 54], [90, 15, 90, 31], [22, 40, 58, 54]], art: ptcG(110, 128, 0.95, 90, 92, `<circle cx="110" cy="128" r="72"/><circle cx="110" cy="128" r="15"/>${ptcRing(110, 128, 26, 5)}<path d="M72 82 A58 58 0 0 0 72 174" stroke-width="9"/><path d="M148 82 A58 58 0 0 1 148 174" stroke-width="9"/><rect x="96" y="66" width="28" height="11" rx="2"/><path d="${ptcZig(80, 92, 140)}" stroke-width="1.6"/><path d="${ptcZig(80, 166, 140)}" stroke-width="1.6"/>`) + ptcG(248, 128, 0.95, 230, 92, `<ellipse cx="248" cy="128" rx="44" ry="74"/><ellipse cx="248" cy="128" rx="34" ry="60"/><ellipse cx="248" cy="128" rx="10" ry="17"/><path d="M248 54 L292 54 M248 202 L292 202" stroke-dasharray="4 4" stroke-width="1.4"/><ellipse cx="292" cy="128" rx="10" ry="74" stroke-width="1.6"/>`) },
+        hyd: { vb: "0 0 300 158", at: [[68, 16, 100, 30], [284, 16, 252, 30], [182, 132, 152, 116], [80, 66, 119, 70], [22, 112, 28, 145]], art: ptcG(276, 30, 1.15, 14, 12, `<rect x="350" y="40" width="70" height="30" rx="3"/><rect x="358" y="30" width="18" height="10"/><rect x="392" y="30" width="18" height="10"/><circle cx="458" cy="55" r="28"/><circle cx="458" cy="55" r="20" stroke-width="1.4"/><line x1="420" y1="55" x2="430" y2="55"/><rect x="372" y="108" width="28" height="16" rx="2"/><path d="M368 70 L368 108 M402 70 L402 108"/><path d="M372 116 L330 116 L330 150 L300 150"/><path d="M400 116 L470 116 L470 150"/><path d="M300 150 q -6 -6 -12 0 t -12 0" stroke-width="4"/>`) },
+        disc: { vb: "0 0 300 150", at: [[170, 134, 138, 121], [182, 16, 154, 27], [182, 58, 142, 52], [286, 58, 262, 84]], art: ptcG(520, 188, 1.15, 90, 82, `<circle cx="520" cy="188" r="52"/><circle cx="520" cy="188" r="40" stroke-width="1.4"/><circle cx="520" cy="188" r="16"/>${ptcSpokes(520, 188, 18, 38, 6, 1)}<path d="M548 130 L578 140 L578 176 L556 172 Z" fill="${PTC_PAPER}"/><rect x="560" y="146" width="6" height="22" fill="#111"/><rect x="570" y="148" width="5" height="20" fill="#111"/>`) + ptcG(400, 200, 1.15, 222, 92, `<circle cx="400" cy="200" r="34"/><circle cx="400" cy="200" r="11"/><path d="M420 172 L440 180 L440 204 L424 202 Z" fill="${PTC_PAPER}"/>`) },
+        cable: { vb: "0 0 160 78", at: [[88, 22, 84, 58]], art: `<path d="M8 14 L42 14" stroke-width="8"/><path d="M25 14 L25 34" stroke-width="5"/>${ptcTube("M25 34 C 25 58, 70 64, 108 52 S 146 34, 150 24", 7)}<circle cx="151" cy="22" r="4"/>` },
+        kit: { vb: "0 0 160 82", at: [[140, 18, 112, 30]], art: ptcKitBox(40, 18, 1) },
+        ignition: { vb: "0 0 300 150", at: [[20, 22, 38, 62], [150, 16, 150, 44], [286, 30, 268, 58]], art: `<circle cx="50" cy="86" r="26"/><circle cx="50" cy="86" r="10"/><path d="M76 78 L94 78 M76 94 L94 94" stroke-width="4"/><rect x="22" y="110" width="56" height="10" rx="2"/><path d="M50 120 L50 138 L66 144"/><rect x="104" y="70" width="18" height="26" rx="3"/><rect x="122" y="56" width="56" height="44" rx="4"/><ellipse cx="150" cy="54" rx="30" ry="9" fill="${PTC_PAPER}"/><rect x="114" y="100" width="72" height="16" rx="2"/><path d="M178 80 L198 80 L198 94"/><circle cx="198" cy="96" r="3"/><path d="M226 72 Q250 40 274 72 Z" fill="${PTC_PAPER}"/><rect x="232" y="72" width="36" height="30" rx="2"/><rect x="245" y="102" width="10" height="34"/><rect x="235" y="58" width="6" height="10"/><rect x="247" y="50" width="6" height="10"/><rect x="259" y="58" width="6" height="10"/><path d="M238 58 Q232 30 210 22 M250 50 Q252 24 236 12 M262 58 Q280 36 298 40" stroke-width="2"/>` },
+        pumprad: { vb: "0 0 300 150", at: [[24, 22, 50, 56], [130, 140, 160, 116]], art: `<circle cx="70" cy="84" r="32"/><circle cx="70" cy="84" r="18"/><circle cx="70" cy="84" r="5"/>${ptcRing(70, 84, 26, 6, 2.2)}${ptcTube("M40 104 C 28 116, 22 128, 14 140", 9)}<rect x="140" y="26" width="146" height="98"/><rect x="140" y="14" width="146" height="14" rx="3"/><rect x="140" y="122" width="146" height="12" rx="3"/>${Array.from({ length: 17 }, (_, i) => `<line x1="${148 + i * 8}" y1="30" x2="${148 + i * 8}" y2="120" stroke-width="1.2"/>`).join("")}<rect x="262" y="4" width="14" height="10"/><ellipse cx="269" cy="4" rx="11" ry="3" fill="${PTC_PAPER}"/>` },
+        topend: { vb: "0 0 300 150", at: [[18, 98, 40, 70], [214, 96, 214, 70], [290, 144, 264, 128]], art: `<rect x="18" y="22" width="114" height="26" rx="8"/><rect x="58" y="10" width="34" height="12" rx="2"/>${[30, 58, 92, 120].map((x, i) => `<path d="M${x} 48 Q${x} 66 ${x + (i < 2 ? -8 : 8)} 78" stroke-width="7"/><path d="M${x} 48 Q${x} 66 ${x + (i < 2 ? -8 : 8)} 78" stroke="${PTC_PAPER}" stroke-width="2.6"/>`).join("")}<rect x="150" y="22" width="134" height="48" rx="3"/>${[166, 188, 210, 232, 254, 272].map((x) => `<circle cx="${x}" cy="46" r="7"/><line x1="${x}" y1="39" x2="${x}" y2="30" stroke-width="2"/>`).join("")}<line x1="20" y1="118" x2="284" y2="118" stroke-width="7"/><circle cx="20" cy="118" r="15"/>${ptcRing(20, 118, 10, 8, 1.6)}${[60, 86, 112, 138, 164, 190, 216, 242, 268].map((x, i) => `<ellipse cx="${x}" cy="118" rx="6" ry="12" transform="rotate(${i * 40} ${x} 118)" fill="${PTC_PAPER}"/>`).join("")}` },
+        block: { vb: "0 0 300 150", at: [[28, 92, 62, 98], [272, 22, 186, 30]], art: `<path d="M62 126 L62 76 L104 46 L150 64 L196 46 L238 76 L238 126 Z" fill="${PTC_PAPER}"/><ellipse cx="100" cy="66" rx="20" ry="9" transform="rotate(-36 100 66)"/><ellipse cx="200" cy="66" rx="20" ry="9" transform="rotate(36 200 66)"/><circle cx="150" cy="108" r="16"/><circle cx="150" cy="108" r="6"/><path d="M72 126 L228 126 L214 146 L86 146 Z"/><rect x="116" y="34" width="68" height="18" rx="3"/><rect x="134" y="16" width="32" height="18" rx="2"/><ellipse cx="150" cy="14" rx="36" ry="7" fill="${PTC_PAPER}"/>${ptcRing(150, 108, 22, 6, 1.8)}` },
+        hosefan: { vb: "0 0 300 150", at: [[16, 124, 30, 104], [290, 20, 228, 70], [178, 146, 178, 128], [56, 10, 80, 26]], art: `${ptcTube("M14 52 C 56 52, 40 130, 122 126", 12)}<rect x="10" y="46" width="8" height="12"/><rect x="118" y="120" width="8" height="12"/><rect x="66" y="20" width="36" height="54" rx="6"/><rect x="76" y="12" width="16" height="8"/><line x1="66" y1="44" x2="102" y2="44" stroke-dasharray="4 3" stroke-width="1.2"/><rect x="150" y="14" width="136" height="122" rx="10"/><circle cx="218" cy="75" r="52"/><ellipse cx="218" cy="75" rx="44" ry="10" transform="rotate(25 218 75)" fill="${PTC_PAPER}"/><ellipse cx="218" cy="75" rx="44" ry="10" transform="rotate(115 218 75)" fill="${PTC_PAPER}"/><circle cx="218" cy="75" r="15" fill="${PTC_PAPER}"/>${ptcSpokes(218, 75, 6, 14, 10, 1.2)}` },
+        coolup: { vb: "0 0 300 152", at: [[290, 16, 266, 36], [98, 146, 98, 130]], art: `<rect x="22" y="20" width="148" height="110"/><rect x="12" y="20" width="12" height="110" rx="3"/><rect x="168" y="20" width="12" height="110" rx="3"/>${Array.from({ length: 28 }, (_, i) => `<line x1="${27 + i * 5}" y1="24" x2="${27 + i * 5}" y2="126" stroke-width="1"/>`).join("")}<path d="M34 30 L60 30" stroke-width="3" stroke="${PTC_PAPER}"/><rect x="194" y="24" width="102" height="102" rx="8"/><circle cx="245" cy="75" r="44"/>${[0, 72, 144, 216, 288].map((a) => `<path d="M245 75 Q${(245 + 30 * Math.cos(ptcDeg(a))).toFixed(1)} ${(75 + 30 * Math.sin(ptcDeg(a))).toFixed(1)} ${(245 + 40 * Math.cos(ptcDeg(a + 30))).toFixed(1)} ${(75 + 40 * Math.sin(ptcDeg(a + 30))).toFixed(1)}" stroke-width="5"/>`).join("")}<circle cx="245" cy="75" r="12" fill="${PTC_PAPER}"/><path d="M257 80 C 276 96, 286 112, 292 140" stroke-width="2"/>` },
+        fuellines: { vb: "0 0 300 152", at: [[18, 14, 40, 30], [124, 26, 112, 58], [28, 146, 48, 124], [190, 132, 190, 92], [290, 66, 272, 46]], art: `<rect x="26" y="30" width="50" height="22" rx="9"/><path d="M14 41 L26 41 M76 41 L84 41" stroke-width="4"/><path d="M42 36 L58 41 L42 46" stroke-width="1.6"/>${ptcTube("M84 41 C 124 41, 112 84, 160 84", 9)}<circle cx="62" cy="112" r="20"/><circle cx="62" cy="112" r="8"/><path d="M62 112 L118 136" stroke-width="3"/><ellipse cx="126" cy="138" rx="13" ry="7" fill="${PTC_PAPER}"/><rect x="164" y="62" width="44" height="32" rx="3"/><path d="M160 84 L164 84 M186 62 L186 52 M208 78 L218 78" stroke-width="4"/><path d="M218 78 L250 78 Q262 78 262 66 L262 34 Q262 22 274 22 L298 22" stroke-width="8"/><path d="M218 78 L250 78 Q262 78 262 66 L262 34 Q262 22 274 22 L298 22" stroke="${PTC_PAPER}" stroke-width="3.5"/>` },
+        tank: { vb: "0 0 300 150", at: [[110, 10, 96, 36], [16, 68, 40, 32], [186, 146, 186, 126]], art: `<rect x="86" y="56" width="200" height="70" rx="14" fill="${PTC_PAPER}"/><path d="M86 90 L286 90" stroke-width="1.4"/><path d="M136 52 Q132 92 136 130 M236 52 Q232 92 236 130" stroke-width="4"/>${ptcTube("M112 56 C 108 36, 92 26, 70 24", 16)}<path d="M62 14 L62 34" stroke-dasharray="3 3" stroke-width="1.2"/><circle cx="46" cy="24" r="15" fill="${PTC_PAPER}"/><circle cx="46" cy="24" r="7"/>${ptcSpokes(46, 24, 11, 15, 16, 1.2)}` },
+        efi: { vb: "0 0 160 82", at: [[146, 14, 118, 28]], art: `<rect x="34" y="22" width="84" height="50" rx="6" fill="${PTC_PAPER}"/><circle cx="60" cy="47" r="15"/><circle cx="92" cy="47" r="15"/><circle cx="60" cy="47" r="5"/><circle cx="92" cy="47" r="5"/><rect x="52" y="10" width="8" height="12"/><rect x="92" y="10" width="8" height="12"/><path d="M118 60 C 136 60, 132 76, 154 76" stroke-width="3"/><rect x="26" y="72" width="100" height="6" rx="2"/>` },
+        manifold: { vb: "0 0 300 152", at: [[18, 14, 34, 32], [292, 64, 270, 84], [84, 148, 84, 124]], art: `<rect x="18" y="34" width="124" height="26" rx="12" fill="${PTC_PAPER}"/>${[34, 64, 94, 124].map((x) => `<rect x="${x - 8}" y="22" width="16" height="12" rx="2"/>`).join("")}<path d="M124 60 L124 82" stroke-width="10"/><path d="M124 60 L124 82" stroke="${PTC_PAPER}" stroke-width="5"/><rect x="164" y="16" width="112" height="14" rx="2"/>${[176, 204, 232, 262].map((x, i) => `<path d="M${x} 30 C ${x} 70, ${222 + i * 4} 84, 236 116" stroke-width="7"/><path d="M${x} 30 C ${x} 70, ${222 + i * 4} 84, 236 116" stroke="${PTC_PAPER}" stroke-width="3"/>`).join("")}<path d="M228 112 L250 112 L256 140 L232 140 Z" fill="${PTC_PAPER}"/><path d="M18 108 Q80 88 146 108 L146 126 Q80 106 18 126 Z" fill="${PTC_PAPER}"/>${[40, 70, 100, 126].map((x) => `<circle cx="${x}" cy="${x < 90 ? 108 - (x - 18) * 0.15 : 100 + (x - 90) * 0.2}" r="2"/>`).join("")}` },
+        muffler: { vb: "0 0 300 150", at: [[80, 10, 80, 20], [24, 146, 40, 128], [210, 10, 210, 30], [290, 92, 278, 112]], art: `<rect x="24" y="20" width="112" height="46" rx="22" fill="${PTC_PAPER}"/><path d="M50 22 L50 64 M110 22 L110 64" stroke-width="1.4"/><path d="M8 43 L24 43 M136 43 L150 43" stroke-width="8"/><rect x="166" y="30" width="94" height="22" rx="11" fill="${PTC_PAPER}"/>${Array.from({ length: 12 }, (_, i) => `<circle cx="${178 + i * 6.5}" cy="41" r="1.4"/>`).join("")}<path d="M150 41 L166 41 M260 41 L276 41" stroke-width="6"/>${ptcTube("M14 104 L196 104 Q214 104 214 116", 10)}${ptcTube("M14 126 L188 126 Q204 126 220 124", 10)}<path d="M232 110 L276 102 L282 128 L238 134 Z" fill="${PTC_PAPER}"/><path d="M240 116 L272 110" stroke-width="1.4"/>` },
+        trans: { vb: "0 0 300 150", at: [[140, 146, 140, 124], [214, 12, 194, 20], [28, 10, 28, 48], [288, 72, 268, 54]], art: `<circle cx="28" cy="78" r="24" fill="${PTC_PAPER}"/><circle cx="28" cy="78" r="9"/>${ptcRing(28, 78, 17, 6, 1.8)}<path d="M64 40 Q46 78 64 112 L198 112 L226 100 L226 70 L198 52 L120 46 Z" fill="${PTC_PAPER}"/><path d="M110 48 L110 110 M160 50 L160 112" stroke-width="1.4"/><rect x="88" y="112" width="104" height="14" rx="3"/>${[98, 120, 142, 164, 184].map((x) => `<circle cx="${x}" cy="119" r="2"/>`).join("")}<path d="M172 52 L192 22" stroke-width="4"/><circle cx="194" cy="18" r="6" fill="${PTC_PAPER}"/><rect x="204" y="112" width="26" height="12" rx="2"/><rect x="244" y="22" width="48" height="34" rx="3"/>${Array.from({ length: 7 }, (_, i) => `<line x1="${250 + i * 6}" y1="24" x2="${250 + i * 6}" y2="54" stroke-width="1.2"/>`).join("")}<path d="M226 80 C 240 80, 240 60, 252 56" stroke-width="2.4"/>` },
+        clutch: { vb: "0 0 300 150", at: [[30, 146, 44, 112], [210, 30, 210, 62]], art: `<path d="M92 26 A46 46 0 0 1 92 118" stroke-width="5"/><circle cx="62" cy="72" r="42" fill="${PTC_PAPER}"/><circle cx="62" cy="72" r="30" stroke-width="1.4"/><circle cx="62" cy="72" r="11"/>${ptcSpokes(62, 72, 3, 9, 10, 1)}${[0, 60, 120, 180, 240, 300].map((a) => `<rect x="${(62 + 20 * Math.cos(ptcDeg(a)) - 4).toFixed(1)}" y="${(72 + 20 * Math.sin(ptcDeg(a)) - 3).toFixed(1)}" width="8" height="6" transform="rotate(${a} ${(62 + 20 * Math.cos(ptcDeg(a))).toFixed(1)} ${(72 + 20 * Math.sin(ptcDeg(a))).toFixed(1)})"/>`).join("")}${ptcTube("M150 72 L272 72", 16)}<path d="M138 60 L150 60 L150 84 L138 84 M284 60 L272 60 L272 84 L284 84" stroke-width="3"/><path d="M130 66 L142 78 M130 78 L142 66 M282 66 L294 78 M282 78 L294 66" stroke-width="2.4"/>` },
+        diff: { vb: "0 0 300 150", at: [[288, 20, 266, 40], [112, 12, 112, 48], [56, 146, 100, 90]], art: `<rect x="8" y="64" width="58" height="20" rx="3"/><rect x="156" y="64" width="44" height="20" rx="3"/><circle cx="110" cy="74" r="48" fill="${PTC_PAPER}"/><circle cx="110" cy="74" r="30" stroke-dasharray="3 2" stroke-width="2.4"/><circle cx="110" cy="74" r="13"/><path d="M104 74 L116 74 M110 68 L110 80" stroke-width="2"/><circle cx="244" cy="74" r="40" fill="${PTC_PAPER}"/><circle cx="244" cy="74" r="30" stroke-width="1.4"/>${ptcRing(244, 74, 35, 10, 2)}<rect x="238" y="96" width="12" height="8" rx="1"/>` },
+        shock: { vb: "0 0 300 152", at: [[40, 146, 40, 106], [184, 40, 150, 74], [290, 146, 262, 110]], art: `<rect x="20" y="62" width="40" height="34" rx="4" fill="${PTC_PAPER}"/><circle cx="40" cy="79" r="13"/><circle cx="40" cy="79" r="6"/><circle cx="140" cy="18" r="8"/><line x1="140" y1="26" x2="140" y2="58" stroke-width="3"/><rect x="128" y="58" width="24" height="66" rx="4" fill="${PTC_PAPER}"/><circle cx="140" cy="132" r="8"/><circle cx="240" cy="16" r="8"/><rect x="230" y="34" width="20" height="90" rx="3" fill="${PTC_PAPER}"/><rect x="220" y="30" width="40" height="6" rx="2"/><rect x="220" y="114" width="40" height="6" rx="2"/>${Array.from({ length: 8 }, (_, i) => `<line x1="${i % 2 ? 262 : 218}" y1="${38 + i * 10}" x2="${i % 2 ? 218 : 262}" y2="${48 + i * 10}" stroke-width="3.4"/>`).join("")}<circle cx="240" cy="134" r="8"/>` },
+        linkage: { vb: "0 0 300 150", at: [[24, 146, 40, 112], [102, 16, 64, 36], [198, 16, 236, 36], [150, 108, 150, 76]], art: `<rect x="44" y="8" width="32" height="20" rx="3" fill="${PTC_PAPER}"/><path d="M60 28 L60 70" stroke-width="7"/><path d="M240 28 L240 70" stroke-width="7"/><path d="M226 22 L254 22" stroke-width="5"/><path d="M60 70 L240 70" stroke-width="8"/><path d="M60 70 L240 70" stroke="${PTC_PAPER}" stroke-width="3"/><circle cx="60" cy="70" r="6" fill="${PTC_PAPER}"/><circle cx="240" cy="70" r="6" fill="${PTC_PAPER}"/><path d="M100 76 L22 122 M200 76 L278 122" stroke-width="5"/><rect x="48" y="96" width="24" height="10" rx="2" transform="rotate(-30 60 101)" fill="${PTC_PAPER}"/><rect x="228" y="96" width="24" height="10" rx="2" transform="rotate(30 240 101)" fill="${PTC_PAPER}"/><circle cx="100" cy="76" r="5" fill="${PTC_PAPER}"/><circle cx="200" cy="76" r="5" fill="${PTC_PAPER}"/><circle cx="20" cy="124" r="6" fill="${PTC_PAPER}"/><circle cx="280" cy="124" r="6" fill="${PTC_PAPER}"/>` },
+        steerbox: { vb: "0 0 300 150", at: [[22, 14, 58, 30], [284, 22, 252, 44]], art: `<path d="M50 40 L100 40 L110 70 L100 100 L50 100 Z" fill="${PTC_PAPER}"/><rect x="62" y="14" width="10" height="122" rx="2" fill="${PTC_PAPER}"/><rect x="58" y="34" width="18" height="8" rx="2"/><rect x="58" y="98" width="18" height="8" rx="2"/><path d="M110 70 L150 70" stroke-width="9"/><circle cx="150" cy="70" r="7" fill="${PTC_PAPER}"/><rect x="176" y="44" width="80" height="62" rx="9" fill="${PTC_PAPER}"/><circle cx="234" cy="104" r="15"/><circle cx="234" cy="104" r="6"/><path d="M176 62 L146 30" stroke-width="7"/>${[186, 246].map((x) => `<circle cx="${x}" cy="54" r="3"/>`).join("")}` },
+        pspump: { vb: "0 0 300 150", at: [[176, 46, 158, 74], [24, 24, 50, 58], [292, 68, 270, 96]], art: `<rect x="70" y="26" width="54" height="44" rx="10" fill="${PTC_PAPER}"/><rect x="88" y="16" width="18" height="10" rx="2"/><circle cx="70" cy="86" r="32" fill="${PTC_PAPER}"/><circle cx="70" cy="86" r="26" stroke-width="1.4"/><circle cx="70" cy="86" r="7"/>${ptcTube("M124 56 C 176 56, 166 118, 214 118", 10)}<rect x="214" y="96" width="76" height="46" rx="7" fill="${PTC_PAPER}"/><circle cx="268" cy="132" r="9"/><path d="M226 106 L260 106" stroke-width="1.4"/>` },
+        wheels: { vb: "0 0 300 158", at: [[55, 156, 55, 118], [150, 156, 150, 118], [245, 156, 245, 118]], art: `<circle cx="55" cy="74" r="42"/><circle cx="55" cy="74" r="36" stroke-width="1.4"/><circle cx="55" cy="74" r="25"/>${[0, 60, 120, 180, 240, 300].map((a) => `<ellipse cx="${(55 + 30 * Math.cos(ptcDeg(a))).toFixed(1)}" cy="${(74 + 30 * Math.sin(ptcDeg(a))).toFixed(1)}" rx="4.5" ry="2.6" transform="rotate(${a + 90} ${(55 + 30 * Math.cos(ptcDeg(a))).toFixed(1)} ${(74 + 30 * Math.sin(ptcDeg(a))).toFixed(1)})"/>`).join("")}<circle cx="55" cy="74" r="10"/>${ptcRing(55, 74, 16, 5, 2.2)}<circle cx="150" cy="74" r="42"/><circle cx="150" cy="74" r="36" stroke-width="1.4"/>${ptcSpokes(150, 74, 11, 35, 5, 8)}${ptcSpokes(150, 74, 11, 35, 5, 3.6)}<circle cx="150" cy="74" r="11" fill="${PTC_PAPER}"/><circle cx="245" cy="74" r="42"/><circle cx="245" cy="74" r="37" stroke-width="1.4"/>${ptcSpokes(245, 74, 9, 37, 10, 2.2, 8)}${ptcSpokes(245, 74, 9, 37, 10, 2.2, -8)}<circle cx="245" cy="74" r="9" fill="${PTC_PAPER}"/><path d="M216 50 A36 36 0 0 1 238 38" stroke-width="2.4" stroke="${PTC_PAPER}"/>` },
+        tires: { vb: "0 0 300 158", at: [[55, 156, 55, 118], [150, 156, 150, 118], [245, 156, 245, 118]], art: [55, 150, 245].map((x, k) => `<circle cx="${x}" cy="74" r="42"/><circle cx="${x}" cy="74" r="24"/><circle cx="${x}" cy="74" r="8"/>${ptcSpokes(x, 74, 38, 42, 28, k === 0 ? 1 : 2.2)}${k === 2 ? Array.from({ length: 9 }, (_, i) => { const a = ptcDeg(200 + i * 16); return `<rect x="${(x + 32 * Math.cos(a) - 2.4).toFixed(1)}" y="${(74 + 32 * Math.sin(a) - 3.4).toFixed(1)}" width="4.8" height="6.8" transform="rotate(${200 + i * 16 + 90} ${(x + 32 * Math.cos(a)).toFixed(1)} ${(74 + 32 * Math.sin(a)).toFixed(1)})" fill="#111"/>`; }).join("") : ""}`).join("") },
+        elec: { vb: "0 0 300 150", at: [[60, 22, 60, 48], [160, 146, 160, 98], [290, 100, 270, 70]], art: `<rect x="20" y="52" width="82" height="60" rx="4" fill="${PTC_PAPER}"/><rect x="32" y="42" width="14" height="10"/><rect x="76" y="42" width="14" height="10"/><path d="M36 64 L42 64 M39 61 L39 67 M80 64 L86 64" stroke-width="2"/><path d="M39 42 C 34 22, 12 22, 8 38 M83 42 C 92 20, 116 26, 122 44" stroke-width="4"/>${[0, 8, 16].map((o) => `<path d="M122 ${44 + o} C 160 ${44 + o}, 150 ${92 + o}, 214 ${66 + o}" stroke-width="2"/>`).join("")}<rect x="150" y="84" width="16" height="10" rx="1" fill="${PTC_PAPER}"/><rect x="214" y="24" width="76" height="52" rx="4" fill="${PTC_PAPER}"/>${Array.from({ length: 10 }, (_, i) => `<rect x="${224 + (i % 5) * 12}" y="${34 + Math.floor(i / 5) * 18}" width="6" height="12" rx="1"/>`).join("")}` },
+        rust: { vb: "0 0 300 150", at: [[288, 16, 262, 34], [26, 146, 54, 118], [244, 146, 244, 128]], art: `<path d="M16 30 L164 18 L172 124 L26 134 Z" fill="${PTC_PAPER}"/><ellipse cx="112" cy="66" rx="20" ry="12" stroke-dasharray="4 3" stroke-width="1.6"/><path d="${ptcZig(40, 104, 104, 4)} L104 124 L40 126 Z" stroke-dasharray="3 3" stroke-width="1.6"/><path d="M112 66 L272 26" stroke-width="4"/><rect x="170" y="38" width="44" height="18" rx="4" transform="rotate(-14 192 47)" fill="${PTC_PAPER}"/><rect x="262" y="12" width="26" height="12" rx="4" transform="rotate(-14 275 18)"/><path d="M200 84 L290 84 L290 140 L200 140 Z" fill="${PTC_PAPER}"/>${[96, 108, 120].map((y) => `<path d="M206 ${y} L284 ${y}" stroke-width="1.4"/>`).join("")}` },
+        sheet: { vb: "0 0 300 150", at: [[20, 14, 40, 44], [290, 146, 262, 112], [150, 10, 150, 26]], art: `<path d="M14 120 L14 70 Q20 48 60 44 L96 44 L104 120 Z" fill="${PTC_PAPER}"/><path d="M28 120 A28 28 0 0 1 84 120" fill="${PTC_PAPER}"/><path d="M110 34 L190 34 L180 74 L120 74 Z" fill="${PTC_PAPER}"/><path d="M104 28 L196 28 L184 80 L116 80 Z" stroke-width="1.6"/><path d="M196 120 L196 64 L266 60 Q290 64 292 90 L292 120 Z" fill="${PTC_PAPER}"/><path d="M216 120 A26 26 0 0 1 268 120" fill="${PTC_PAPER}"/>` },
+        frame: { vb: "0 0 300 150", at: [[22, 146, 40, 128], [156, 10, 156, 28]], art: `<path d="M40 82 L62 54 L112 50 L130 30 L196 30 L214 50 L268 54 L282 82 Z" stroke-dasharray="5 4" fill="${PTC_PAPER}"/><circle cx="84" cy="84" r="0"/><path d="M14 104 L120 104 L140 112 L292 112 M14 128 L120 128 L140 120 L292 120" stroke-width="4"/>${[30, 76, 160, 214, 268].map((x) => `<line x1="${x}" y1="${x < 130 ? 104 : 112}" x2="${x}" y2="${x < 130 ? 128 : 120}" stroke-width="5"/>`).join("")}` },
+        paint: { vb: "0 0 300 150", at: [[34, 20, 38, 50], [150, 10, 150, 36], [284, 30, 262, 52]], art: `<rect x="22" y="70" width="34" height="56" rx="5" fill="${PTC_PAPER}"/><rect x="28" y="52" width="22" height="18" rx="3"/><line x1="39" y1="70" x2="39" y2="112" stroke-width="1.4" stroke-dasharray="3 3"/><path d="M110 64 L176 64 L186 76 L176 88 L128 88 L118 124 L104 124 L110 88 Z" fill="${PTC_PAPER}"/><path d="M128 64 L122 40 L150 36 L156 64" fill="${PTC_PAPER}"/><path d="M186 76 L204 76" stroke-width="4"/>${[0, 1, 2, 3, 4, 5, 6].map((i) => `<circle cx="${214 + i * 4}" cy="${76 + (i % 3 - 1) * (4 + i)}" r="1.4"/>`).join("")}<rect x="238" y="56" width="52" height="70" rx="4" fill="${PTC_PAPER}"/><ellipse cx="264" cy="56" rx="26" ry="6" fill="${PTC_PAPER}"/><rect x="244" y="78" width="40" height="22" stroke-width="1.4"/><path d="M252 62 Q252 72 254 74 M276 62 Q278 70 276 76" stroke-width="2"/>` },
+        seat: { vb: "0 0 300 150", at: [[40, 14, 60, 36], [116, 146, 116, 122], [290, 18, 270, 40], [210, 146, 210, 126]], art: `<path d="M30 40 Q30 28 44 28 L150 28 Q164 28 164 42 L160 96 L36 96 Z" stroke-dasharray="5 4" stroke-width="1.6"/><path d="M40 48 Q40 38 52 38 L144 38 Q156 38 156 50 L152 98 L44 98 Z" fill="${PTC_PAPER}"/><path d="M36 98 L180 98 Q192 98 192 110 L192 118 L36 118 Z" fill="${PTC_PAPER}"/>${[62, 84, 106, 128].map((x) => `<line x1="${x}" y1="42" x2="${x - 2}" y2="94" stroke-width="1.4"/>`).join("")}<rect x="232" y="26" width="58" height="96" rx="5" fill="${PTC_PAPER}"/>${[46, 58, 70, 82].map((y) => `<line x1="240" y1="${y}" x2="282" y2="${y}" stroke-width="1.4"/>`).join("")}<rect x="238" y="96" width="46" height="10" rx="4"/>${ptcKitBox(184, 104, 0.6)}` },
+        carpet: { vb: "0 0 300 150", at: [[24, 14, 46, 40], [290, 20, 260, 44]], art: `<ellipse cx="46" cy="76" rx="20" ry="36" fill="${PTC_PAPER}"/><path d="M46 40 L150 40 M46 112 L150 112" /><path d="M150 40 C 166 40, 172 112, 150 112" /><path d="M46 60 A10 16 0 1 1 46 92 A6 10 0 1 1 46 72" stroke-width="1.6"/><path d="M174 36 Q236 24 296 36 L296 110 Q236 98 174 110 Z" fill="${PTC_PAPER}"/>${[196, 222, 248, 274].map((x) => `<path d="M${x} ${30 - (x === 222 || x === 248 ? 2 : 0)} L${x} ${104 - (x === 222 || x === 248 ? 2 : 0)}" stroke-width="1.4" stroke-dasharray="3 3"/>`).join("")}` },
+        dash: { vb: "0 0 300 150", at: [[30, 12, 50, 28], [150, 140, 150, 106], [290, 140, 264, 120]], art: `<path d="M14 30 Q150 6 286 30 L282 46 Q150 24 18 46 Z" fill="${PTC_PAPER}"/><rect x="84" y="58" width="132" height="48" rx="12" fill="${PTC_PAPER}"/>${[112, 150, 188].map((x) => `<circle cx="${x}" cy="82" r="17"/>${ptcSpokes(x, 82, 12, 16, 9, 1, 135)}<line x1="${x}" y1="82" x2="${x + 9}" y2="${82 - 9}" stroke-width="2"/>`).join("")}<circle cx="250" cy="110" r="36"/><circle cx="250" cy="110" r="30" stroke-width="1.4"/><circle cx="250" cy="110" r="9"/><path d="M241 110 L216 110 M259 110 L284 110 M250 119 L250 142" stroke-width="5"/>` },
+        chrome: { vb: "0 0 300 150", at: [[24, 14, 38, 40], [150, 12, 150, 42], [290, 146, 262, 122]], art: `<rect x="22" y="52" width="32" height="62" rx="6" fill="${PTC_PAPER}"/><rect x="30" y="40" width="16" height="12" rx="2"/><path d="M60 100 C 76 90, 86 120, 104 108 C 110 124, 92 132, 70 124 Z" stroke-width="1.6"/>${[46, 60].map((y) => `<path d="M100 ${y} L230 ${y - 6}" stroke-width="5"/><path d="M104 ${y - 1} L226 ${y - 7}" stroke="${PTC_PAPER}" stroke-width="1.4"/>`).join("")}<path d="M110 104 Q200 92 290 104 L290 126 Q200 140 110 126 Z" fill="${PTC_PAPER}"/><path d="M122 110 Q200 100 278 110" stroke-width="1.4"/><rect x="152" y="96" width="14" height="34" rx="5" fill="${PTC_PAPER}"/><rect x="234" y="96" width="14" height="34" rx="5" fill="${PTC_PAPER}"/>` },
+        hvac: { vb: "0 0 300 152", at: [[22, 14, 40, 40], [112, 14, 112, 40], [196, 14, 196, 40], [288, 22, 270, 44], [36, 148, 50, 128], [150, 148, 160, 124]], art: `<rect x="22" y="42" width="44" height="40" rx="10" fill="${PTC_PAPER}"/><circle cx="44" cy="62" r="13"/><circle cx="44" cy="62" r="5"/><rect x="88" y="42" width="48" height="36" fill="${PTC_PAPER}"/>${Array.from({ length: 7 }, (_, i) => `<line x1="${92 + i * 6.5}" y1="44" x2="${92 + i * 6.5}" y2="76" stroke-width="1"/>`).join("")}<circle cx="196" cy="62" r="20" fill="${PTC_PAPER}"/>${ptcSpokes(196, 62, 6, 18, 12, 1.2)}<circle cx="196" cy="62" r="6"/><rect x="236" y="44" width="54" height="30" rx="3" fill="${PTC_PAPER}"/>${[50, 56, 62, 68].map((y) => `<line x1="242" y1="${y}" x2="284" y2="${y}" stroke-width="2"/>`).join("")}${ptcKitBox(24, 92, 0.62)}<rect x="110" y="98" width="100" height="28" rx="4" fill="${PTC_PAPER}"/>${[130, 160, 190].map((x) => `<line x1="${x}" y1="104" x2="${x}" y2="120" stroke-width="1.4"/><rect x="${x - 4}" y="${x === 160 ? 106 : 110}" width="8" height="6" fill="#111"/>`).join("")}` },
+        audio: { vb: "0 0 300 152", at: [[22, 14, 40, 36], [144, 14, 132, 40], [214, 14, 214, 44], [96, 148, 96, 132], [290, 148, 266, 130]], art: `<rect x="18" y="38" width="96" height="34" rx="4" fill="${PTC_PAPER}"/><circle cx="32" cy="55" r="7"/><circle cx="100" cy="55" r="7"/><rect x="46" y="46" width="40" height="18" stroke-width="1.4"/><line x1="62" y1="46" x2="62" y2="64" stroke-width="2"/><circle cx="148" cy="64" r="22" fill="${PTC_PAPER}"/><circle cx="148" cy="64" r="12"/><circle cx="148" cy="64" r="4"/><rect x="190" y="48" width="52" height="18" rx="2" fill="${PTC_PAPER}"/><rect x="198" y="52" width="20" height="10" stroke-width="1.2"/><rect x="52" y="90" width="96" height="40" rx="4" fill="${PTC_PAPER}"/><circle cx="100" cy="110" r="16"/><circle cx="100" cy="110" r="6"/><rect x="190" y="92" width="96" height="40" rx="3" fill="${PTC_PAPER}"/>${Array.from({ length: 10 }, (_, i) => `<line x1="${198 + i * 9}" y1="96" x2="${198 + i * 9}" y2="128" stroke-width="1.6"/>`).join("")}` },
+        bed: { vb: "0 0 300 150", at: [[24, 146, 60, 112], [150, 146, 150, 118], [150, 12, 150, 26], [290, 14, 268, 32]], art: `<rect x="20" y="26" width="260" height="96" rx="4" fill="${PTC_PAPER}"/>${[42, 58, 74, 90, 106].map((y) => `<line x1="24" y1="${y}" x2="276" y2="${y}" stroke-width="1.2"/>`).join("")}${[50, 66, 82, 98].map((y) => `<line x1="24" y1="${y}" x2="276" y2="${y}" stroke-width="3"/>`).join("")}<rect x="14" y="20" width="272" height="8" rx="3"/><rect x="14" y="120" width="272" height="8" rx="3"/><path d="M196 30 L276 30 L276 118 L196 118" stroke-dasharray="5 4" stroke-width="1.6"/>${[214, 236, 258].map((x) => `<circle cx="${x}" cy="36" r="2"/><circle cx="${x}" cy="112" r="2"/>`).join("")}` },
+        tow: { vb: "0 0 300 150", at: [[34, 18, 70, 56], [270, 22, 244, 52]], art: `<rect x="20" y="62" width="150" height="26" fill="${PTC_PAPER}"/><rect x="24" y="66" width="142" height="18" stroke-width="1.4"/><rect x="170" y="66" width="44" height="18" fill="${PTC_PAPER}"/><path d="M214 70 L232 70 L232 52 L250 52 L250 70" stroke-width="5"/><circle cx="241" cy="44" r="12" fill="${PTC_PAPER}"/><circle cx="196" cy="76" r="4"/><rect x="60" y="102" width="44" height="22" rx="3" fill="${PTC_PAPER}"/>${[68, 78, 88, 98].map((x) => `<circle cx="${x}" cy="113" r="2.4"/>`).join("")}<path d="M104 113 C 140 113, 136 136, 180 136" stroke-width="2.4"/>` },
+        hardware: { vb: "0 0 300 150", at: [[24, 14, 44, 44], [150, 12, 150, 40], [290, 146, 262, 120]], art: `${[[36, 60], [64, 60], [36, 96], [64, 96]].map(([x, y]) => `<path d="M${x - 10} ${y} L${x - 5} ${y - 9} L${x + 5} ${y - 9} L${x + 10} ${y} L${x + 5} ${y + 9} L${x - 5} ${y + 9} Z" fill="${PTC_PAPER}"/><circle cx="${x}" cy="${y}" r="4"/>`).join("")}<path d="M104 44 Q150 34 196 44 L196 54 Q150 44 104 54 Z" fill="${PTC_PAPER}"/><path d="M104 66 Q150 56 196 66" stroke-width="5"/><rect x="218" y="78" width="72" height="46" rx="3" fill="${PTC_PAPER}"/>${[[224, 84], [284, 84], [224, 118], [284, 118]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.2"/>`).join("")}${[92, 102, 112].map((y) => `<line x1="232" y1="${y}" x2="${276 - (y - 92)}" y2="${y}" stroke-width="2"/>`).join("")}` },
+      };
+      function ptcFig(key, n) {
+        const f = PTC_FIGS[key] || PTC_FIGS.kit;
+        // A block can carry more lines than its drawing has leaders (an
+        // orphan part that nobody filed yet). Those just go without a number
+        // on the art, the way a catalog prints an accessory with no callout.
+        const pts = f.at.slice(0, n);
+        const callouts = pts.map(([x, y, tx, ty], i) => `<line x1="${x}" y1="${y}" x2="${tx}" y2="${ty}" stroke-width="1.4"/><text x="${x}" y="${y}" dy="${y < ty ? -3 : 15}" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="20" fill="#111" stroke="none">${i + 1}</text>`).join("");
+        return `<svg viewBox="${f.vb}" fill="none" stroke="#111" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${f.art}${callouts}</svg>`;
       }
+      /* ═══════════════════════════════════════════
+         THE PARTS CATALOG (Build › All Builds)
+      ═══════════════════════════════════════════ */
+      // All Builds is the Prairie Truck Parts catalog lying open on the bench.
+      // It used to be a list of rows with two price buttons each, and it read
+      // like a menu because it was one. A car guy shops this stuff out of a
+      // mailed catalog: product blocks with a line drawing, a parts table with
+      // ILL# numbers that match the drawing, page numbers, a phone number at
+      // the bottom. Dale has gone through this copy with his marker, so
+      // everything that is about YOUR truck (what is bolted on, what is on the
+      // lift, what you are missing, what he would charge) is in his hand, and
+      // everything printed is the same for every reader.
+      //
+      // One rule holds the page together: yellow with a hard shadow is a
+      // button, and nothing printed is yellow. Dale's blue boxes are his price
+      // to put it in. The sticky flags down the edge are the index.
+      //
+      // The whole open book has to fit between the nav and the news ticker on
+      // a Deck, so pages are packed against a fixed height. Sections start on
+      // a fresh page and two pages make a spread, so short systems share a
+      // spread the way they would in print.
+      const PTC_SECTIONS = [
+        { id: "engine", blocks: [
+          { t: "Ignition & Fuel Delivery", fig: "ignition", ids: [1, 2, 3], copy: "Pumps, carb kits and tune-up parts to get her starting on the first crank and idling without a fight.", tip: "Set the timing with the vacuum advance unplugged, then plug it back in." },
+          { t: "Engine Cooling Service", fig: "pumprad", ids: [4, 5], copy: "Water pumps and radiator service for the engine you already have. Keep the needle in the middle." },
+          { t: "Top End Performance", fig: "topend", ids: [6, 7, 8], copy: "Intakes, heads and cams. Where a stock motor starts to sound like it has opinions." },
+          { t: "Engine Rebuilds", fig: "block", ids: [9, 10], copy: "Short blocks and complete rebuilds, machined, balanced and assembled. Plan on an engine stand and a long winter." },
+        ] },
+        { id: "cooling", blocks: [
+          { t: "Hoses, Fans & Shrouds", fig: "hosefan", ids: [138, 139, 140, 141], copy: "The small stuff that keeps a forty-year-old cooling system from stranding you on the shoulder.", tip: "Squeeze the upper hose cold. If it crunches, it goes." },
+          { t: "Cooling Upgrades", fig: "coolup", ids: [142, 143], copy: "Electric fans and aluminum radiators for the truck that idles in show lines all summer." },
+        ] },
+        { id: "fuel", blocks: [
+          { t: "Fuel Lines, Filters & Senders", fig: "fuellines", ids: [144, 145, 149, 150, 151], copy: "Everything between the tank and the carb. Fresh lines, clean filters and a gauge that tells the truth.", tip: "If you cannot remember when the rubber hose was changed, change it." },
+          { t: "Tanks, Necks & Caps", fig: "tank", ids: [146, 147, 148], copy: "Reproduction tanks, filler necks and caps. No more sediment, no more pinholes." },
+          { t: "Fuel Injection", fig: "efi", sm: true, ids: [152], copy: "Self-learning throttle body injection that bolts on where the carb sat." },
+        ] },
+        { id: "exhaust", blocks: [
+          { t: "Manifolds, Headers & Shields", fig: "manifold", ids: [154, 159, 153], copy: "Cast manifolds for quiet, headers for the other thing, and shields so you do not cook the floor." },
+          { t: "Mufflers, Pipes & Tips", fig: "muffler", ids: [155, 156, 157, 158], copy: "Everything behind the manifolds. Pick a voice: factory quiet, mellow burble, or two aisles over." },
+        ] },
+        { id: "electrical", blocks: [
+          { t: "Batteries, Wiring & Fuse Panels", fig: "elec", ids: [110, 111, 112], copy: "Clean grounds, new harnesses and a fuse panel you would show off.", tip: "Disconnect the negative cable first. Every time." },
+        ] },
+        { id: "transmission", blocks: [
+          { t: "Transmission Service", fig: "trans", ids: [11, 12, 14, 130], copy: "Fluid, filters, linkage, converters and coolers to keep her shifting crisp.", tip: "Check the fluid warm, running, in park." },
+          { t: "Clutch & Driveline", fig: "clutch", ids: [13, 129], copy: "Clutch kits, driveshafts and U-joints. If it shudders at 55, it is in here." },
+          { t: "Transmission Rebuild", fig: "kit", sm: true, ids: [15], copy: "A complete rebuild with every seal, band and clutch pack in one box." },
+        ] },
+        { id: "differential", blocks: [
+          { t: "Rear Axle & Differential", fig: "diff", ids: [113, 114, 115], copy: "Gear oil, carrier rebuilds and posi setups. Quiet on the highway, both tires on the pavement.", tip: "Pull the fill plug before the drain plug, so you know you can fill it back up." },
+        ] },
+        { id: "brakes", blocks: [
+          { t: "Drum Brake Service Parts", fig: "drum", ids: [16, 131, 133], copy: "Reproduction shoes, wheel cylinders and hardware built to the factory drawings, boxed by the wheel.", tip: "Do one side at a time. The other side is your picture of how it goes back together." },
+          { t: "Brake Hydraulics", fig: "hyd", ids: [17, 127, 136, 18, 132], copy: "Master cylinders, boosters, valves, hard lines and hoses. If the pedal sinks at a red light, start here." },
+          { t: "Disc Brake Conversions", fig: "disc", ids: [19, 135, 128, 137], copy: "Bolt-on discs for drum-brake trucks. Stops straighter, fades less, and works the same on the fifth stop as the first." },
+          { t: "Parking Brake Cable & Handle", fig: "cable", sm: true, ids: [134], copy: "Factory-style T-handle and cable. Holds on a hill, so the block of wood can go back to the woodpile." },
+          { t: "Complete Brake System Kit", fig: "kit", sm: true, ids: [20], copy: "Every brake part your truck has, in one box. Shoes, cylinders, lines, hoses and hardware, matched to each other." },
+        ] },
+        { id: "suspension", blocks: [
+          { t: "Bushings, Shocks & Coilovers", fig: "shock", ids: [101, 102, 103], copy: "From fresh rubber to fully adjustable. Ride, stance, and the way she sits at a show." },
+        ] },
+        { id: "steering", blocks: [
+          { t: "Steering Linkage", fig: "linkage", ids: [160, 161, 162, 164], copy: "Tie rods, pitman and idler arms, and drag links. Takes the wander out of the wheel.", tip: "Set the toe with the truck on the ground, not on stands." },
+          { t: "Steering Boxes & King Pins", fig: "steerbox", ids: [165, 167], copy: "Rebuilt boxes and king pin sets for a front end that holds a line." },
+          { t: "Power Steering", fig: "pspump", ids: [163, 166, 168], copy: "Pumps, hoses and full conversions. One-finger parking with a period look under the hood." },
+        ] },
+        { id: "wheels", blocks: [
+          { t: "Wheels", fig: "wheels", ids: [104, 105, 106], copy: "Stamped steel to forged aluminum. The first thing a crowd notices after the paint." },
+        ] },
+        { id: "tires", blocks: [
+          { t: "Tires", fig: "tires", ids: [107, 108, 109], copy: "Honest used tread, modern radials with a period sidewall, and raised white letters for the show field." },
+        ] },
+        { id: "body", blocks: [
+          { t: "Rust & Dent Repair", fig: "rust", ids: [21, 116, 117], copy: "Pullers, patches and floor pans. Stop the spread before it becomes the whole truck." },
+          { t: "Sheet Metal & Glass", fig: "sheet", ids: [22, 118, 119], copy: "Reproduction panels, quarters and glass with fresh weatherstrip." },
+          { t: "Frame & Full Restoration", fig: "frame", ids: [120, 23], copy: "Get the bones straight, then do all of it. The long road to panel gaps you can brag about." },
+        ] },
+        { id: "paint", blocks: [
+          { t: "Paint & Refinishing", fig: "paint", ids: [24, 25, 26], copy: "Touch-up to show quality, matched to the factory codes and shipped in quarts and gallons.", tip: "Spray a test panel before you spray the truck." },
+        ] },
+        { id: "interior", blocks: [
+          { t: "Seats, Upholstery & Door Panels", fig: "seat", ids: [27, 28, 126, 29], copy: "Covers, kits and complete interiors in the factory patterns and colors." },
+          { t: "Carpet & Headliners", fig: "carpet", ids: [121, 122], copy: "Molded carpet and headliners. Forty years of coffee and fast food, gone." },
+          { t: "Dash, Gauges & Steering Wheels", fig: "dash", ids: [123, 124, 125], copy: "Dash pads, gauge clusters and steering wheels. Where your hands and eyes live." },
+        ] },
+        { id: "chrome", blocks: [
+          { t: "Chrome & Trim", fig: "chrome", ids: [30, 31, 32], copy: "Polish, trim sets and the full package. The shine people take pictures of." },
+        ] },
+      ];
+      const PTC_EXTRA_FIGS = { hvac: "hvac", audio: "audio", bed: "bed", towing: "tow", hardware: "hardware" };
+      const PTC_PRE = { engine: "EN", cooling: "CL", fuel: "FU", exhaust: "EX", electrical: "EL", transmission: "TR", differential: "DF", brakes: "BR", suspension: "SU", steering: "ST", wheels: "WH", tires: "TI", body: "BD", paint: "PT", interior: "IN", chrome: "CH" };
+      // What Dale writes when a tool is missing. The full tool names are
+      // printed on the Tools pages; in a margin nobody writes "Floor Jack &
+      // Stands", they write "jack & stands".
+      const PTC_TOOL_SHORT = { t1: "hand tools", t2: "sockets", t20: "big sockets", t13: "multimeter", t14: "a headlamp", t19: "shop light", t15: "safety gear", t18: "jack & stands", t7: "a grinder", t8: "impact gun", t11: "paint gun", t16: "trim bins", t9: "compressor", t17: "a buffer", t3: "engine hoist", t4: "engine stand", t5: "MIG welder", t10: "big compressor", t6: "TIG welder", t12: "paint booth" };
+      // Page budget, in px of body between the header bar and the footer.
+      // The estimates below are calibrated against the rendered page at Deck
+      // width; the smoke suite checks every spread still fits.
+      const PTC_BODY = 432;
+      const PTC_FIRST_PAGE = 4;
+
+      // Every section the book carries, in the flags' order. Anything in
+      // PARTS that nobody filed into a block still gets printed, in a block
+      // of its own at the end of its section, so a new part can never go
+      // missing from the catalog.
+      function ptcSections() {
+        const order = CAT_GROUPS.flatMap(([, ids]) => ids).filter((c) => CATS.includes(c));
+        CATS.forEach((c) => { if (!order.includes(c)) order.push(c); });
+        const out = order.map((id) => {
+          const def = PTC_SECTIONS.find((s) => s.id === id);
+          const blocks = def ? def.blocks.map((b) => ({ ...b, ids: b.ids.filter((pid) => PARTS.some((p) => p.id === pid && p.category === id)) })).filter((b) => b.ids.length) : [];
+          const filed = new Set(blocks.flatMap((b) => b.ids));
+          const loose = PARTS.filter((p) => p.category === id && !filed.has(p.id)).sort((a, b) => (TIER_ORDER[a.tier] ?? 99) - (TIER_ORDER[b.tier] ?? 99) || a.id - b.id);
+          if (loose.length) blocks.push({ t: `More ${CAT_LABELS[id]} Parts`, fig: "kit", sm: true, ids: loose.map((p) => p.id), copy: "New in this edition." });
+          return { id, name: CAT_LABELS[id], blocks };
+        });
+        out.push({
+          id: "extras", name: "Extras", extras: true,
+          blocks: EXTRAS_SYSTEMS.map((sys) => ({ t: sys.label, fig: PTC_EXTRA_FIGS[sys.id] || "kit", sm: false, ids: EXTRAS.filter((e) => e.system === sys.id).map((e) => e.id), copy: sys.blurb })).filter((b) => b.ids.length),
+        });
+        return out;
+      }
+      // How tall a block will print. Rows are 22px, 2px more when the name
+      // wraps to a second line, and a few px more for work in progress.
+      function ptcBlockHeight(b, sec, car) {
+        const fig = PTC_FIGS[b.fig] || PTC_FIGS.kit;
+        const [, , vw, vh] = fig.vb.split(" ").map(Number);
+        const figW = b.sm ? 110 : 140;
+        const figH = (vh / vw) * figW;
+        const lines = (s, per) => Math.max(1, Math.ceil(s.length / per));
+        const per = b.sm ? 74 : 66;
+        const textH = 20 + 15 + lines(b.copy, per) * 13.5 + (b.tip ? lines("Installation Tip: " + b.tip, per) * 13.5 + 3 : 0);
+        let rows = 0;
+        b.ids.forEach((id) => {
+          if (sec.extras) {
+            const e = EXTRAS.find((x) => x.id === id);
+            rows += e && e.name.length + 7 > 25 ? 25 : 22;
+          } else {
+            const p = PARTS.find((x) => x.id === id);
+            const long = p && p.name.length + 8 > 27;
+            const busy = p && findActiveTask(car.id, p.id);
+            rows += (long ? 25 : 22) + (busy ? 6 : 0);
+          }
+        });
+        return Math.max(figH, textH) + 16 + rows + 9;
+      }
+      // Flow the whole book into pages, section after section, the way print
+      // does it: a section starts wherever the last one ended if its first
+      // block fits, and the page header names every section on the page.
+      function ptcBook(car) {
+        const secs = ptcSections();
+        const pages = [];
+        let cur = null;
+        secs.forEach((sec) => sec.blocks.forEach((b, bi) => {
+          const h = ptcBlockHeight(b, sec, car) + (bi === 0 ? 3 : 0);
+          if (!cur || (cur.used + h > PTC_BODY && cur.items.length)) {
+            cur = { items: [], used: 0 };
+            pages.push(cur);
+          }
+          cur.items.push({ b, sec, opens: bi === 0 });
+          cur.used += h;
+        }));
+        if (pages.length % 2) pages.push({ items: [], used: 0, filler: true });
+        pages.forEach((p, i) => {
+          p.no = PTC_FIRST_PAGE + i;
+          p.idx = i;
+          p.secs = [...new Set(p.items.map((it) => it.sec))];
+        });
+        return { secs, pages, spreads: pages.length / 2 };
+      }
+      // The short names Dale wrote on his flags, used on the page corners too.
+      const PTC_SHORT = { electrical: "electric", transmission: "trans", differential: "diff", suspension: "susp" };
+      const ptcShort = (sec) => PTC_SHORT[sec.id] || sec.id;
+      function ptcSpreadIndex(book) {
+        const s = state.catalogSpread;
+        if (Number.isInteger(s) && s >= 0 && s < book.spreads) return s;
+        const want = state.shopSub === "extras" ? "extras" : state.shopCat;
+        const i = book.pages.findIndex((p) => p.items.some((it) => it.sec.id === want && it.opens));
+        return Math.max(0, Math.floor((i < 0 ? 0 : i) / 2));
+      }
+      // The section a spread is "about": the first one that opens on it, or
+      // failing that the one carried over from the page before.
+      function ptcSpreadSection(book, s) {
+        const items = [book.pages[s * 2], book.pages[s * 2 + 1]].flatMap((p) => p.items);
+        const it = items.find((x) => x.opens) || items[0];
+        return it ? it.sec : null;
+      }
+      // Flags and page corners. A flag opens its section's first spread; a
+      // corner turns one spread and keeps the Build state pointing at what
+      // is on the open pages.
+      function catalogGo(id) {
+        state.catalogSpread = null;
+        if (id === "extras") state.shopSub = "extras";
+        else { state.shopSub = "parts"; state.shopCat = id; }
+        requestRender("full");
+      }
+      function catalogTurn(dir) {
+        const car = currentCar();
+        if (!car) return;
+        const book = ptcBook(car);
+        const s = (ptcSpreadIndex(book) + dir + book.spreads) % book.spreads;
+        state.catalogSpread = s;
+        const sec = ptcSpreadSection(book, s);
+        if (sec) {
+          if (sec.id === "extras") state.shopSub = "extras";
+          else { state.shopSub = "parts"; state.shopCat = sec.id; }
+        }
+        playSfx("swoosh");
+        requestRender("full");
+      }
+
+      function ptcFit(car) {
+        // The fitment line a parts book prints under every product title:
+        // the run of years the part fits, and the model.
+        return `${car.year - 4}-${String(car.year + 1).slice(2)} ${car.model}`;
+      }
+      const PTC_CHECK = `<svg class="ptc-ck" viewBox="0 0 22 18" aria-hidden="true"><path d="M2 10 L8 16 L20 2" stroke="#1f3a66" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      function ptcPartRow(p, ill, car, ctx) {
+        const done = car.installedParts.includes(p.id);
+        const task = findActiveTask(car.id, p.id);
+        const miss = (p.tools || []).filter((t) => !hasToolFor(t));
+        const hasAll = miss.length === 0;
+        const starterFree = state.starterHelpReceived && p.id === 2 && !state.starterCarbUsed;
+        const dc = starterFree ? 0 : partCost(p, "diy");
+        const sc = starterFree ? 0 : partCost(p, "shop");
+        const disc = getDiscount(p);
+        const yardPull = findYardPull(car.id, p.id);
+        const maxed = car[p.category] >= 100;
+        const locked = p.tier === "Show Grade" && !ctx.gateOpen;
+        const atShop = activeTasksByMethod(car.id, "shop").length > 0;
+        const atHome = activeTasksByMethod(car.id, "diy").length > 0;
+        const tierCls = { Budget: "good", Quality: "better", "Show Grade": "best" }[p.tier] || "good";
+        const tierTxt = { Budget: "GOOD", Quality: "BETTER", "Show Grade": "BEST" }[p.tier] || "GOOD";
+        let tags = `<em class="ptc-tg t-${tierCls}">${tierTxt}</em>`;
+        if (starterFree) tags += `<em class="ptc-tg t-best">GIFT</em>`;
+        else if (disc > 0) tags += `<em class="ptc-tg t-off">-${Math.round(disc * 100)}%</em>`;
+        let ob;
+        if (done) ob = `<span class="ptc-ink">bolted on</span>`;
+        else if (task) ob = `<span class="ptc-lift" data-task-id="${task.id}"><span class="ptc-ink">${task.method === "shop" ? "at Dale's" : "on the lift"}</span><span class="ptc-time task-time">${Date.now() >= task.finishTime ? "ready now" : formatRemaining(task.finishTime - Date.now())}</span></span>`;
+        else if (maxed) ob = `<span class="ptc-ink sm">maxed out</span>`;
+        else if (locked) ob = `<span class="ptc-ink sm">${ctx.saidBasics++ ? "not yet" : "not yet, basics first"}</span>`;
+        else if (yardPull) {
+          const full = activeTasksForCar(car.id).length >= workspaceData().maxActive;
+          ob = hasAll
+            ? `<button class="ptc-order" onclick="installYardPull('${yardPull.id}')" ${atShop || full ? "disabled" : ""} title="${atShop ? "The truck is at Dale's." : full ? "Every bay is full." : "Bolt on the part you pulled at the yard. Free."}">Yard pull</button>`
+            : `<span class="ptc-ink sm">need ${PTC_TOOL_SHORT[miss[0]] || "a tool"}</span>`;
+        } else {
+          const why = (cost) => (state.money < cost ? "Not enough cash." : "");
+          const order = hasAll
+            ? `<button class="ptc-order" onclick="installPart(${p.id},'diy',false)" ${state.money < dc || atShop ? "disabled" : ""} title="${atShop ? "The truck is at Dale's." : why(dc) || "Order the part. You bolt it on."}">Order</button>`
+            : `<span class="ptc-ink sm">need ${PTC_TOOL_SHORT[miss[0]] || "a tool"}</span>`;
+          const dale = `<button class="ptc-dale" onclick="installPart(${p.id},'shop',false)" ${state.money < sc || atHome ? "disabled" : ""} title="${atHome ? "Finish your own work on her first." : why(sc) || "Dale puts it in. Parts and labor."}">$${fmt(sc)}</button>`;
+          ob = order + dale;
+        }
+        const can = !done && !task && !maxed && !locked;
+        return `<div class="ptc-row${done ? " done" : ""}${task ? " lift" : ""}${can ? " can" : ""}" data-part="${p.id}">${done ? PTC_CHECK : ""}<span>${PTC_PRE[p.category] || "PT"}-${String(p.id).padStart(4, "0")}</span><span class="ptc-il">(${ill})</span><span class="ptc-d" title="${p.desc.replace(/"/g, "&quot;")}">${p.name}${tags}</span><span class="ptc-ad">+${p.imp}</span><span class="ptc-pr">$${fmt(dc)}.00</span><span class="ptc-ob">${ob}</span></div>`;
+      }
+      function ptcExtraRow(e, ill, car) {
+        if (!Array.isArray(car.extras)) car.extras = [];
+        const owned = car.extras.includes(e.id);
+        const n = EXTRAS.indexOf(e) + 1;
+        const ob = owned
+          ? `<span class="ptc-ink">bolted on</span>`
+          : `<button class="ptc-order" onclick="buyExtra('${e.id}')" ${state.money < e.cost ? "disabled" : ""} title="${state.money < e.cost ? "Not enough cash." : "Order it. You bolt it on."}">Order</button>`;
+        return `<div class="ptc-row x${owned ? " done" : " can"}" data-extra="${e.id}">${owned ? PTC_CHECK : ""}<span>XT-${String(n).padStart(4, "0")}</span><span class="ptc-il">(${ill})</span><span class="ptc-d" title="${e.desc.replace(/"/g, "&quot;")}">${e.name}</span><span class="ptc-ad">+${fmtF(e.followers)}</span><span class="ptc-pr ptc-rs">+$${fmt(e.value)}</span><span class="ptc-pr">$${fmt(e.cost)}.00</span><span class="ptc-ob">${ob}</span></div>`;
+      }
+      function ptcBlock(b, sec, car, ctx, opensMid) {
+        ctx.gateOpen = sec.extras ? true : showTierUnlocked(car, sec.id);
+        const head = sec.extras
+          ? `<span>Part</span><span>Ill#</span><span>Description</span><span class="r">Fans</span><span class="r">Resale</span><span class="r">Price</span><span class="r">Order</span>`
+          : `<span>Part</span><span>Ill#</span><span>Description</span><span class="r">Adds</span><span class="r">Price</span><span class="ptc-oh"><b>Order</b><i>put in</i></span>`;
+        const rows = b.ids.map((id, i) => sec.extras
+          ? ptcExtraRow(EXTRAS.find((x) => x.id === id), i + 1, car)
+          : ptcPartRow(PARTS.find((x) => x.id === id), i + 1, car, ctx)).join("");
+        return `<div class="ptc-blk${opensMid ? " opens" : ""}" data-sec="${sec.id}"><div class="ptc-top${b.sm ? " sm" : ""}"><div class="ptc-fig">${ptcFig(b.fig, b.ids.length)}</div><div><h3>${b.t}</h3><div class="ptc-fit">${ptcFit(car)}</div><p>${b.copy}</p>${b.tip ? `<p class="ptc-tip"><b>Installation Tip:</b> ${b.tip}</p>` : ""}</div></div><div class="ptc-tb${sec.extras ? " x" : ""}"><div class="ptc-th">${head}</div>${rows}</div></div>`;
+      }
+      // Seeded per page, so a page always looks the way it did last time.
+      function ptcSeed(str) {
+        let x = 2166136261;
+        for (const ch of str) { x ^= ch.charCodeAt(0); x = Math.imul(x, 16777619) >>> 0; }
+        return x;
+      }
+      function ptcCoffee(pageNo) {
+        const h = ptcSeed("ring:" + pageNo);
+        if (h % 6 !== 0) return "";
+        return `<svg class="ptc-stain" style="left:${60 + ((h >>> 4) % 280)}px;top:${110 + ((h >>> 12) % 240)}px" viewBox="0 0 170 170" aria-hidden="true"><defs><filter id="ptcf${pageNo}" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".03" numOctaves="3" seed="${h % 50}"/><feDisplacementMap in="SourceGraphic" scale="10"/></filter></defs><g filter="url(#ptcf${pageNo})"><circle cx="85" cy="85" r="56" fill="rgba(150,96,40,.08)"/><circle cx="85" cy="85" r="56" fill="none" stroke="rgba(112,62,20,.55)" stroke-width="2.2"/><circle cx="85" cy="85" r="53" fill="none" stroke="rgba(130,80,30,.18)" stroke-width="5"/><path d="M44 122 A56 56 0 0 1 36 52" fill="none" stroke="rgba(112,62,20,.4)" stroke-width="1.8" transform="translate(11 -9)"/></g><g fill="rgba(112,62,20,.38)"><circle cx="150" cy="128" r="3.2"/><circle cx="158" cy="118" r="1.6"/></g></svg>`;
+      }
+      // Thin catalog paper: the page behind shows through, mirrored.
+      function ptcGhost(pageNo) {
+        const h = ptcSeed("ghost:" + pageNo);
+        const pre = ["BR", "EN", "IN", "BD", "ST"][h % 5];
+        const lines = [0, 1, 2, 3].map((i) => `${pre}-0${400 + ((h >>> (i * 3)) % 90)}  ${["PEDAL PAD-RIBBED   ", "GASKET SET-UPPER   ", "CLIP SET-DOOR      ", "BRACKET-LH PAINTED ", "BOLT KIT-FENDER    "][(h + i) % 5]} F-SERIES 61-66 (${1 + (i % 2)}) $${6 + ((h >>> i) % 40)}.00`).join("\n");
+        return `<div class="ptc-ghost" style="top:${130 + (h % 220)}px;left:${20 + ((h >>> 8) % 200)}px" aria-hidden="true"><b>${["Pedal Pads", "Gasket Sets", "Door Clips", "Brackets"][h % 4]}</b>${lines}</div>`;
+      }
+      const PTC_CURL = (flip) => `<svg class="ptc-curl" viewBox="0 0 40 40" aria-hidden="true"><g${flip ? ' transform="translate(40 0) scale(-1 1)"' : ""}><defs><linearGradient id="ptcflap${flip ? "l" : "r"}" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fbfaf5"/><stop offset=".55" stop-color="#e9e6dc"/><stop offset="1" stop-color="#bdb8a8"/></linearGradient></defs><path d="M40 0 L40 40 L0 40 Z" fill="#dcd8cb"/><path d="M40 4 L40 40 L4 40 Z" fill="rgba(0,0,0,.12)"/><path d="M40 0 L0 40 L7 7 Z" fill="url(#ptcflap${flip ? "l" : "r"})"/><path d="M40 0 L0 40" stroke="rgba(0,0,0,.2)" stroke-width="1"/></g></svg>`;
+      function ptcTurnMarkup(book, s, dir) {
+        const t = (s + dir + book.spreads) % book.spreads;
+        const sec = ptcSpreadSection(book, t);
+        const name = sec ? ptcShort(sec) : "turn";
+        return `<button class="ptc-turn ${dir > 0 ? "next" : "prev"}" onclick="catalogTurn(${dir})" title="Turn to ${sec ? sec.name : "the next page"}"><span class="ptc-lbl">${dir > 0 ? `${name} &#9656;` : `&#9666; ${name}`}</span>${PTC_CURL(dir < 0)}</button>`;
+      }
+      function ptcPage(page, side, book, s, car, ctx) {
+        const title = page.secs.map((x) => x.name).join(" / ");
+        const bar = `<div class="ptc-bar">${title ? `<span>${title}</span>` : ""}</div>`;
+        const pno = `<div class="ptc-pno">${page.no}</div>`;
+        const head = `<div class="ptc-head">${side === "l" ? pno + bar : bar + pno}</div>`;
+        let body;
+        if (page.filler) {
+          body = `<div class="ptc-form"><h3>Mail-In Order Form</h3><p>Fill in part numbers and quantities. Orders received by Thursday ship the same week.</p>${Array.from({ length: 9 }, () => `<div class="ptc-line"></div>`).join("")}<div class="ptc-promo"><h4>Gift Certificates Now Available</h4><span>$25 · $50 · $100</span></div></div>`;
+        } else {
+          body = page.items.map((it, i) => ptcBlock(it.b, it.sec, car, ctx, it.opens && i > 0)).join("");
+          let spare = PTC_BODY - page.used;
+          if (spare >= 40 && !ctx.xref) {
+            ctx.xref = true;
+            spare -= 40;
+            body += `<div class="ptc-xwrap"><button class="ptc-xref" onclick="setShopSub('tools')">Missing a tool? We carry those too. See TOOLS, page ${book.pages.length + PTC_FIRST_PAGE} &#8594;</button></div>`;
+          }
+          if (spare >= 34 && !ctx.promo) {
+            ctx.promo = true;
+            body += `<div class="ptc-promo"><h4>${ctx.priceLine}</h4><span>Ships same day</span></div>`;
+          }
+        }
+        const foot = side === "l"
+          ? `<div class="ptc-foot"><span>(800) 555-0143 Customer Service</span><span><i>¿Habla Español?</i> (800) 555-0199</span></div>${ptcTurnMarkup(book, s, -1)}`
+          : `<div class="ptc-foot"><span>${ctx.brand}</span><big>To Order Call (800) 555-0144</big></div>${ptcTurnMarkup(book, s, 1)}`;
+        // Dale's note up top explains his blue prices, and when they are all
+        // greyed out it says why instead of leaving the player to hover.
+        const note = side === "l" && ctx.dale ? `<span class="ptc-note">${ctx.dale}</span>` : "";
+        return `<div class="ptc-pg ${side}">${ptcGhost(page.no)}${note}${head}<div class="ptc-body">${body}</div>${foot}${ptcCoffee(page.no)}</div>`;
+      }
+      function ptcFlags(book, s, car) {
+        const onSpread = new Set([book.pages[s * 2], book.pages[s * 2 + 1]].flatMap((p) => p.items.map((it) => it.sec.id)));
+        const groupOf = (id) => {
+          if (id === "extras") return "extra";
+          const g = CAT_GROUPS.findIndex(([, ids]) => ids.includes(id));
+          return g === 0 ? "hood" : g === 1 ? "under" : "top";
+        };
+        const TILT = [-1.2, 0.6, -0.3, 1, -0.8, 0.4, -1.4, 0.9, -0.2, 0.7, -1, 0.3, -0.6, 1.1, -0.4, 0.5, -0.9, 0.2];
+        let y = 26, prev = null, tabs = "", stuck = "";
+        book.secs.forEach((sec, i) => {
+          const g = groupOf(sec.id);
+          if (prev && g !== prev) y += 10;
+          prev = g;
+          const on = onSpread.has(sec.id);
+          const inner = `${ptcShort(sec)}${sec.extras ? "" : `<b>${car[sec.id]}</b>`}`;
+          const attrs = `style="top:${y}px;--r:${TILT[i % TILT.length]}deg" onclick="catalogGo('${sec.id}')" title="${sec.name}${sec.extras ? "" : `, ${car[sec.id]} of 100`}"`;
+          tabs += `<button class="ptc-tab ptc-g-${g}${on ? " on" : ""}" ${attrs}>${inner}</button>`;
+          if (on) stuck += `<button class="ptc-flag ptc-g-${g}" ${attrs}>${inner}</button>`;
+          y += 28;
+        });
+        return `<div class="ptc-idx">${tabs}</div>${stuck}`;
+      }
+      function renderPartsCatalog(car) {
+        const book = ptcBook(car);
+        const s = ptcSpreadIndex(book);
+        const l = book.pages[s * 2], r = book.pages[s * 2 + 1];
+        const truck = /truck|c10|f250/.test(car.style || "");
+        const a = calSatDate(1), z = calSatDate(state.seasonLength || 22);
+        const md = (d) => `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getUTCMonth()]} ${d.getUTCDate()}`;
+        const ctx = {
+          saidBasics: 0,
+          gateOpen: true,
+          brand: truck ? "PRAIRIE TRUCK PARTS" : "PRAIRIE CLASSIC PARTS",
+          priceLine: `Spring Prices Good ${md(a)} Through ${md(z)}, ${z.getUTCFullYear()}`,
+        };
+        const partsOpen = [l, r].some((p) => p.items.some((it) => !it.sec.extras));
+        ctx.dale = !partsOpen ? ""
+          : activeTasksByMethod(car.id, "diy").length ? "she's on your lift. bring her by when you're done. -D"
+          : activeTasksByMethod(car.id, "shop").length ? "she's in my bay, order the rest after. -D"
+          : "blue ones are my price, labor in. -D";
+        const pageHtml = (p, side) => ptcPage(p, side, book, s, car, ctx);
+        const left = pageHtml(l, "l");
+        const right = pageHtml(r, "r");
+        const showsPaint = [l, r].some((p) => p.secs.some((x) => x.id === "paint"));
+        const banners = shopBannersMarkup(car);
+        return `${gigBoardMarkup()}<div class="hero-panel ptc-view">${shopSubtabsMarkup(car)}${banners ? `<div class="ptc-banners">${banners}</div>` : ""}<div class="ptc-spread" data-spread="${s}">${left}${right}${ptcFlags(book, s, car)}</div>${showsPaint ? `<div class="ptc-after">${paintBoothPanel(car)}</div>` : ""}</div>`;
+      }
+      // The Sell Cars tab is locked when there's nothing there to sell without
+      // stranding the player: one project car and no wife's daily driver left
+      // to move. The wife's-car beat is a separate car, so while it's still
+      // available the tab opens even with a single project (the project itself
+      // still can't be listed as your last car).
       function sellCarTabLocked() {
         const wifeCarAvailable = !state.wifeCarSold && !!currentCar();
         return (state.cars || []).length <= 1 && !wifeCarAvailable;
@@ -26428,6 +26965,14 @@ addEventListener("DOMContentLoaded",function(){
           "gold",
         )}</div>`;
       }
+      // The Build tab's sub-tab row and its two claim banners, shared by the
+      // shop floor and the catalog so both views carry the same strip.
+      function shopSubtabsMarkup(car) {
+        return `<div class="shop-subtabs">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts" || state.shopSub === "extras", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${spaceTabEarned() ? tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')") : ""}</div>`;
+      }
+      function shopBannersMarkup(car) {
+        return `${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span> Free Budget part ready, tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div onclick="installNextYardPull()" style="cursor:pointer;background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span> ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck, tap to install the next one, free.</span><span style="opacity:0.7">→</span></div>` : ""; })()}`;
+      }
       function renderWorkshop() {
         const car = currentCar();
         if (!car) return renderNoCar();
@@ -26435,6 +26980,7 @@ addEventListener("DOMContentLoaded",function(){
         // fall back to the suggested board instead.
         if (!["suggested", "parts", "tools", "workspace", "extras"].includes(state.shopSub))
           state.shopSub = "suggested";
+        if (state.shopSub === "parts" || state.shopSub === "extras") return renderPartsCatalog(car);
         let subcontent = "";
 
         if (state.shopSub === "suggested") {
@@ -26556,102 +27102,6 @@ addEventListener("DOMContentLoaded",function(){
             "",
             "#d8a24f",
           )}`;
-        }
-
-        if (state.shopSub === "parts") {
-          // Show Grade work is hidden until this category's Budget basics are
-          // done, no dangling an $8k show job before the primer's on.
-          const showGateOpen = showTierUnlocked(car, state.shopCat);
-          const avail = PARTS.filter(
-            (p) =>
-              p.category === state.shopCat &&
-              !car.installedParts.includes(p.id) &&
-              (p.tier !== "Show Grade" || showGateOpen),
-          ).sort((a, b) => {
-            const t =
-              (TIER_ORDER[a.tier] ?? 99) - (TIER_ORDER[b.tier] ?? 99);
-            return t !== 0 ? t : a.id - b.id;
-          });
-          // If Show Grade parts exist for this category but the basics aren't
-          // done yet, tell the player they open up rather than hiding silently.
-          const lockedShowParts =
-            !showGateOpen &&
-            PARTS.some(
-              (p) =>
-                p.category === state.shopCat &&
-                p.tier === "Show Grade" &&
-                !car.installedParts.includes(p.id),
-            );
-          const showLockHint = lockedShowParts
-            ? `<div class="tiny muted" style="margin:0 0 12px;padding:8px 10px;background:rgba(217,162,79,0.05);border:1px dashed rgba(217,162,79,0.3);border-radius:8px"> Show Grade ${CAT_LABELS[state.shopCat].toLowerCase()} work opens up once the Budget basics here are done.</div>`
-            : "";
-          subcontent = `${buildCatPillRow()}<div class="small muted" style="margin-bottom:10px">${CAT_LABELS[state.shopCat]} score: <span style="color:#f0d4a0;font-weight:bold">${car[state.shopCat]}</span></div>${state.diyTried && state.shopTried ? "" : `<div class="tiny muted" style="margin-bottom:12px">DIY requires the listed tools. Sending it to the shop skips tool ownership, but costs more.</div>`}${showLockHint}${state.shopCat === "paint" ? paintBoothPanel(car) : ""}${avail.length === 0 ? panel("Completed", `<div class="small muted">Every ${CAT_LABELS[state.shopCat].toLowerCase()} service is done on this car.</div>`, "", "#87c77b") : ""}<div class="dense-grid">${avail
-            .map((p) => {
-              const rq = p.tools || [];
-              const miss = rq.filter((tid) => !hasToolFor(tid));
-              const activeTask = findActiveTask(car.id, p.id);
-              const hasAll = miss.length === 0;
-              const dc = partCost(p, "diy");
-              const sc = partCost(p, "shop");
-              const disc = getDiscount(p);
-              const maxed = car[p.category] >= 100;
-              const starterFree =
-                state.starterHelpReceived &&
-                p.id === 2 &&
-                !state.starterCarbUsed;
-              const yardPull = findYardPull(car.id, p.id);
-              const yardImp = yardPull
-                ? Math.max(1, Math.round(p.imp * yardPull.conditionMult))
-                : 0;
-              const open = state.denseDetail === "part_" + p.id;
-              const badge = disc > 0 ? `<span class="badge" style="color:var(--gold)">-${Math.round(disc * 100)}%</span>` : starterFree ? `<span class="badge" style="color:var(--green)">GIFT</span>` : yardPull ? `<span class="badge" style="color:var(--purple-bright)">YARD</span>` : "";
-              const headBtns = activeTask
-                ? `<span class="tiny good task-time" style="font-weight:bold;white-space:nowrap">${Date.now() >= activeTask.finishTime ? "Finishing…" : formatRemaining(activeTask.finishTime - Date.now())}</span>`
-                : maxed
-                  ? `<span class="tiny muted">Maxed</span>`
-                  : yardPull
-                  ? button(`Install Pull · FREE`, `event.stopPropagation();installYardPull('${yardPull.id}')`, !hasAll || activeTasksByMethod(car.id, "shop").length || activeTasksForCar(car.id).length >= workspaceData().maxActive, "", "padding:5px 10px;font-size:11px;white-space:nowrap;background:#a47ed4;border-color:var(--purple-bright)")
-                  : `${(() => {
-                      // A greyed price with no reason is a small mystery, and
-                      // this list repeats it. When the blocker is a tool the
-                      // player does not own, the button says so and names it,
-                      // instead of making them expand the row to find out.
-                      const t0 = miss.length ? TOOLS_LIST.find((t) => t.id === miss[0]) : null;
-                      const diyLabel = t0
-                        ? `${ico("lock", "11px")} Needs ${t0.name}`
-                        : `DIY $${fmt(starterFree ? 0 : dc)}`;
-                      return button(diyLabel, `event.stopPropagation();installPart(${p.id},'diy',false)`, !hasAll || state.money < (starterFree ? 0 : dc) || activeTasksByMethod(car.id, "shop").length, "", "padding:5px 10px;font-size:11px;white-space:nowrap");
-                    })()}${button(`Shop $${fmt(starterFree ? 0 : sc)}`, `event.stopPropagation();installPart(${p.id},'shop',false)`, state.money < (starterFree ? 0 : sc) || activeTasksByMethod(car.id, "diy").length, "", "padding:5px 10px;font-size:11px;white-space:nowrap;background:#7da0c2;border-color:var(--blue-bright)")}`;
-              return `<div class="dense-row ${open ? "open" : ""}" style="border-left:3px solid ${tierCol(p.tier)}"><div class="dense-head" onclick="toggleDense('part_${p.id}')"><span class="dense-name">${p.name} ${badge}</span><span class="dense-imp good">+${p.imp}</span><span class="dense-actions">${headBtns}<span class="dense-chev">${open ? "▾" : "▸"}</span></span></div>${open ? `<div class="dense-body"><div class="tiny muted" style="margin:6px 0 8px">${p.tier} · ${p.desc}</div>${rq.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${rq.map((tid) => { const t = TOOLS_LIST.find((x) => x.id === tid); const owned = hasToolFor(tid); const can2 = canOwnTool(t); return `<span class="tool-chip ${owned ? "owned" : ""}">${t?.emoji} ${t?.name}${owned ? " " : ` ${button(`$${fmt(t.cost)}`, `event.stopPropagation();buyTool('${tid}')`, !can2.ok || state.money < t.cost, "", "padding:2px 8px;font-size:10px;margin-left:5px")}`}</span>`; }).join("")}</div>` : ""}${activeTask ? `<div class="info-box" data-task-id="${activeTask.id}">${gauge("", Math.round(getRestorationProgress(activeTask) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${Date.now() >= activeTask.finishTime ? "Completing now…" : `${formatRemaining(activeTask.finishTime - Date.now())} remaining`}</div></div>` : ""}${yardPull && !activeTask ? button(`Install yard pull · +${yardImp} (vs +${p.imp} new)`, `installYardPull('${yardPull.id}')`, !hasAll || maxed || activeTasksByMethod(car.id, "shop").length, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright);margin-top:4px") : ""}${state.freePart && p.tier === "Budget" && !maxed && !activeTask ? button("Sponsored · FREE", `installPart(${p.id},'shop',true)`, false, "", "width:100%;background:#a47ed4;border-color:var(--purple-bright);margin-top:6px") : ""}</div>` : ""}</div>`;
-            })
-            .join("")}</div>`;
-        }
-
-        if (state.shopSub === "extras") {
-          if (!Array.isArray(car.extras)) car.extras = [];
-          const ownedCount = car.extras.length;
-          const totalVal = extrasValue(car);
-          const groups = EXTRAS_SYSTEMS.map((sys) => {
-            const items = EXTRAS.filter((e) => e.system === sys.id);
-            const rows = items
-              .map((e) => {
-                const owned = car.extras.includes(e.id);
-                return `<div class="feed-item" style="${owned ? "opacity:0.72;border-left:3px solid #87c77b" : ""}">
-                <div class="feed-text">${e.name}${owned ? '<span class="tiny good">· done </span>' : ""}</div>
-                <div class="tiny muted" style="margin:3px 0 6px;line-height:1.45">${e.desc}</div>
-                <div class="feed-meta">+${fmtF(e.followers)} followers · +$${fmt(e.value)} resale</div>
-                ${owned ? "" : button(state.money < e.cost ? `Need $${fmt(e.cost)}` : `Add · $${fmt(e.cost)}`, `buyExtra('${e.id}')`, state.money < e.cost, "", "width:100%;margin-top:8px;font-size:12px")}
-              </div>`;
-              })
-              .join("");
-            return panel(
-              `${sys.label}`,
-              `<div class="tiny muted" style="margin-bottom:10px">${sys.blurb}</div>${rows}`,
-              "",
-              "#c2a37d",
-            );
-          }).join("");
-          subcontent = `${buildCatPillRow()}<div class="small muted" style="margin-bottom:12px;line-height:1.5">Creature comforts and finishing touches. These don't change your show score, they make her a truck you'd actually drive, win over the scene, and add real money to her resale.${ownedCount ? ` <span style="color:var(--gold-soft)">${ownedCount} added, +$${fmt(totalVal)} resale so far.</span>` : ""}</div>${groups}`;
         }
 
         if (state.shopSub === "tools") {
@@ -26782,7 +27232,7 @@ addEventListener("DOMContentLoaded",function(){
               return `<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;background:rgba(143,203,126,0.1);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span>${ico("warn", "17px")}</span><div style="flex:1 1 170px;min-width:0"><div class="small" style="color:var(--green-bright);font-weight:bold">Roadworthy</div><div class="tiny muted">${rwLine}</div></div>${rwGo}</div>`;
             }
             return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px"></span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " "} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " "} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " "} · Steering ${car.steering}/${ROADWORTHY_STEERING}${steerGap ? " (need +" + steerGap + ")" : " "}${onboardStageVal() <= 1 ?`<div class="tiny" style="color:var(--gold-soft);margin-top:4px"> Get her running and the Marketplace opens up.</div>` : ""}</div></div></div>`;
-          })()}<div class="shop-subtabs">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts" || state.shopSub === "extras", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${spaceTabEarned() ? tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')") : ""}</div>${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span> Free Budget part ready, tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div onclick="installNextYardPull()" style="cursor:pointer;background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span> ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck, tap to install the next one, free.</span><span style="opacity:0.7">→</span></div>` : ""; })()}${subcontent}`,
+          })()}${shopSubtabsMarkup(car)}${shopBannersMarkup(car)}${subcontent}`,
         )}</div><div>${sideCol}</div></div>`;
       }
 
@@ -30201,6 +30651,8 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           !!state.result,
           state.shopCat,
           state.shopSub,
+          state.catalogSpread == null ? "" : state.catalogSpread,
+          (currentCar() && currentCar().extras || []).length,
           state.toolCat,
           state.denseDetail || "",
           state.showLockedTools ? 1 : 0,

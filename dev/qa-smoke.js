@@ -2239,26 +2239,54 @@ const pass = (msg) => console.log("✓", msg);
   if (shopUiOk !== true) fail("locked pills: " + shopUiOk);
   pass("hide-don't-lock holds inside Marketplace, Compete and the workspace ladder");
 
-  // ── a blocked DIY button names the tool it wants instead of showing a
-  // greyed price with no reason. ──
-  const diyOk = await page.evaluate(() => {
-    setView("workshop"); setShopSub("parts");
+  // ── All Builds is the parts catalog. Every part and every extra is
+  // printed exactly once, a missing tool is named in Dale's hand where the
+  // ORDER button would be, nothing printed is yellow (yellow is a button),
+  // ORDER starts the job, and the page corners wrap around the book. ──
+  const catOk = await page.evaluate(() => {
     const car = currentCar();
-    const p = PARTS.find((x) => (x.tools || []).some((t) => !state.ownedTools.includes(t)) && x.category === state.shopCat && !car.installedParts.includes(x.id));
-    if (!p) { const any = PARTS.find((x) => (x.tools || []).some((t) => !state.ownedTools.includes(t))); if (!any) return true; state.shopCat = any.category; }
-    render("full");
-    const txt = document.getElementById("appContent").innerText;
-    // The lock is a drawn icon now, not an OS emoji, so match the words and
-    // assert the icon rode along beside them.
-    if (!/Needs /.test(txt)) return "no blocked DIY button names its missing tool";
-    const lockIco = [...document.querySelectorAll("button")].some(
-      (b) => /Needs /.test(b.textContent) && b.querySelector("svg.ui-ico"),
-    );
-    if (!lockIco) return "the blocked DIY button lost its lock icon";
-    return true;
+    const keep = { money: state.money, tasks: state.activeRestorations.slice(), parts: car.installedParts.slice(), tools: state.ownedTools.slice(), sub: state.shopSub, cat: state.shopCat, spread: state.catalogSpread };
+    const back = (m) => { state.money = keep.money; state.activeRestorations = keep.tasks; car.installedParts = keep.parts; state.ownedTools = keep.tools; state.shopSub = keep.sub; state.shopCat = keep.cat; state.catalogSpread = keep.spread; render("full"); return m; };
+    const book = ptcBook(car);
+    const printed = book.pages.flatMap((p) => p.items.flatMap((it) => it.sec.extras ? [] : it.b.ids));
+    const extras = book.pages.flatMap((p) => p.items.flatMap((it) => it.sec.extras ? it.b.ids : []));
+    for (const p of PARTS) if (printed.filter((id) => id === p.id).length !== 1) return back(`part ${p.id} (${p.name}) is printed ${printed.filter((id) => id === p.id).length} times`);
+    for (const e of EXTRAS) if (extras.filter((id) => id === e.id).length !== 1) return back(`extra ${e.id} is printed ${extras.filter((id) => id === e.id).length} times`);
+    // A part whose tool is missing: Dale writes it in, and there is no ORDER.
+    state.ownedTools = ["t1"]; car.installedParts = []; state.activeRestorations = []; state.money = 50000;
+    const p = PARTS.find((x) => x.tier === "Budget" && (x.tools || []).some((t) => !hasToolFor(t)));
+    setView("workshop"); catalogGo(p.category); render("full");
+    const row = document.querySelector(`.ptc-row[data-part="${p.id}"]`);
+    if (!row) return back(`part ${p.id} is not on the spread its flag opens`);
+    if (row.querySelector(".ptc-order")) return back("a row with a missing tool still offers ORDER");
+    const ink = row.querySelector(".ptc-ink");
+    if (!ink || !/^need /.test(ink.textContent)) return back("a missing tool is not named on its row");
+    // Yellow means press me. Anything yellow that is not a button is a lie.
+    const yellow = (c) => { const m = c.match(/rgba?\(([\d.]+), ([\d.]+), ([\d.]+)(?:, ([\d.]+))?/); if (!m) return false; const a = m[4] === undefined ? 1 : +m[4]; return a > 0.15 && +m[1] > 190 && +m[2] > 140 && +m[3] < 120 && +m[1] - +m[3] > 110; };
+    for (let i = 0; i < book.spreads; i++) {
+      state.catalogSpread = i; render("full");
+      const bad = [...document.querySelectorAll(".ptc-spread *")].find((el) => {
+        if (el.closest("button")) return false;
+        const cs = getComputedStyle(el);
+        return yellow(cs.backgroundColor) || (yellow(cs.color) && el.textContent.trim());
+      });
+      if (bad) return back(`spread ${i}: printed yellow on ${bad.className || bad.tagName} "${bad.textContent.trim().slice(0, 24)}"`);
+    }
+    // ORDER starts your own job and the row goes on the lift.
+    state.ownedTools = TOOLS_LIST.map((t) => t.id); catalogGo("brakes"); render("full");
+    const btn = document.querySelector('.ptc-row[data-part="132"] .ptc-order');
+    if (!btn || btn.disabled) return back("ORDER is missing or dead on a part you can afford and do");
+    btn.click(); render("full");
+    const t = findActiveTask(car.id, 132);
+    if (!t || t.method !== "diy") return back("ORDER did not start a DIY job");
+    if (!document.querySelector('.ptc-row[data-part="132"].lift')) return back("the row did not go on the lift");
+    // The corners wrap: back from the first spread is the last one.
+    state.catalogSpread = 0; catalogTurn(-1);
+    if (state.catalogSpread !== book.spreads - 1 || state.shopSub !== "extras") return back("turning back from page one did not wrap to Extras");
+    return back(true);
   });
-  if (diyOk !== true) fail("diy reason: " + diyOk);
-  pass("blocked DIY buttons name the tool they need");
+  if (catOk !== true) fail("parts catalog: " + catOk);
+  pass("parts catalog prints every part once, names missing tools, keeps yellow for buttons, ORDER works");
 
   // ── offers do not ambush a screen the player has never opened. ──
   const quietOk = await page.evaluate(() => {
@@ -3087,6 +3115,54 @@ const pass = (msg) => console.log("✓", msg);
       fail(`doubled-scrollbar check never found the phone thread at 1280x${vh}; the setup did not take`);
     pass(`no doubled scrollbars at 1280x${vh} (${nested.count} scroll regions checked)`);
     await ns.close();
+  }
+
+  // ── the catalog fits a Deck screen ─────────────────────────────────────────
+  // The open book has to sit between the nav and the news ticker at 1280x800,
+  // on every spread, with no page grown past the height it was packed for.
+  // The ticker is taller on an On Air line, so the check uses the taller one.
+  {
+    const deck = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    await deck.goto(GAME);
+    await deck.waitForTimeout(700);
+    await deck.keyboard.press("Enter"); await deck.waitForTimeout(1100);
+    for (let i = 0; i < 9; i++) {
+      await deck.evaluate(() => {
+        if (state.cutscene) dismissCutscene(true);
+        state.noticeQueue = []; state.pendingScene = null; state.pendingUnlock = null;
+        const cr = document.getElementById("cutsceneRoot"); if (cr) cr.innerHTML = "";
+        const mr = document.getElementById("modalRoot"); if (mr) mr.innerHTML = "";
+      });
+      await deck.waitForTimeout(110);
+    }
+    const fit = await deck.evaluate(() => {
+      state.tutorialComplete = true;
+      Object.keys(state.milestones).forEach((k) => (state.milestones[k] = true));
+      state.onboardStage = 3; state.preWeek = 0; state.money = 5000;
+      const car = currentCar(); car.installedParts = []; state.activeRestorations = [];
+      setView("workshop"); setShopSub("parts"); state.shopCat = "engine";
+      // Work on the lift adds a line to its row, so put a job on every page's
+      // worst case: the biggest system with something in progress.
+      state.ownedTools = TOOLS_LIST.map((t) => t.id);
+      installPart(131, "diy");
+      const book = ptcBook(car);
+      const out = [];
+      for (let i = 0; i < book.spreads; i++) {
+        state.catalogSpread = i; render("full");
+        document.querySelector(".app").scrollTop = 0;
+        const sp = document.querySelector(".ptc-spread").getBoundingClientRect();
+        const pages = [...document.querySelectorAll(".ptc-pg")];
+        const grown = pages.filter((pg) => pg.getBoundingClientRect().height > parseFloat(getComputedStyle(pg).minHeight) + 1);
+        if (grown.length) out.push(`spread ${i} (pages ${pages.map((pg) => pg.querySelector(".ptc-pno").textContent).join("-")}) grew past its packed height`);
+        // 800 minus the On Air ticker (69px) and the page block under the book.
+        if (sp.bottom > 800 - 69 - 10) out.push(`spread ${i} runs under the ticker (bottom ${Math.round(sp.bottom)})`);
+      }
+      return { out, spreads: book.spreads };
+    });
+    if (!fit.spreads) fail("catalog fit check found no spreads, so it proved nothing");
+    if (fit.out.length) fail("catalog on Deck: " + fit.out.join("; "));
+    pass(`the catalog fits a Deck screen on all ${fit.spreads} spreads`);
+    await deck.close();
   }
 
   // ── the itch embed ────────────────────────────────────────────────────────
