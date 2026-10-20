@@ -192,6 +192,41 @@ const META_TERMS = [
   }
 }
 
+// ── Check 2b: five typefaces ──────────────────────────────────────────────
+// The game uses five typefaces, defined once on :root as --font-ui (Georgia),
+// --font-print (Arial), --font-type (Courier New), --font-dale and --font-her
+// (the two embedded hands). Every font declaration names one of those
+// variables (or inherits), so a new screen cannot quietly bring in a sixth
+// face. SVG font-family attributes cannot read CSS variables and are allowed
+// to name Georgia or Arial directly.
+{
+  const allowed = new Set(["--font-ui", "--font-print", "--font-type", "--font-dale", "--font-her"]);
+  const rootStart = src.indexOf(":root {");
+  const rootEnd = src.indexOf("}", rootStart);
+  const rootBlock = rootStart >= 0 ? src.slice(rootStart, rootEnd) : "";
+  const defined = [...rootBlock.matchAll(/(--font-[a-z]+)\s*:/g)].map((m) => m[1]);
+  const bad = [];
+  if (defined.length !== allowed.size || defined.some((d) => !allowed.has(d)))
+    bad.push(`      :root defines ${defined.join(", ") || "no typefaces"}; expected the five --font-* variables`);
+  codeLines.forEach((line, i) => {
+    if (i >= src.slice(0, rootStart).split("\n").length - 1 && i <= src.slice(0, rootEnd).split("\n").length - 1) return;
+    const rx = /(?:font-family\s*:|(?<![\w-])font\s*:)\s*([^;}`]*)/g;
+    let m;
+    while ((m = rx.exec(line)) !== null) {
+      const v = m[1].trim();
+      if (!v || /^(inherit|initial|unset)\b/.test(v)) continue;
+      // An @font-face names the family it defines; that is the definition, not a use.
+      if (/^"(Dale Marker|Her Hand)"$/.test(v.replace(/;$/, "")) && /^\s*font-family/.test(line)) continue;
+      if (/var\(--font-(ui|print|type|dale|her)\)/.test(v)) continue;
+      bad.push(`      Car_Guy_Sim.html:${i + 1}  ${line.trim().slice(0, 90)}`);
+    }
+  });
+  const svg = [...src.matchAll(/font-family="([^"]*)"/g)].map((m) => m[1]).filter((f) => !/^(Arial|Georgia, serif)$/.test(f));
+  svg.forEach((f) => bad.push(`      SVG font-family="${f}" (SVG text may name Arial or Georgia only)`));
+  if (bad.length === 0) ok("five typefaces, every font names one of them");
+  else err(`a font outside the five typefaces (${bad.length}):\n` + bad.slice(0, 12).join("\n") + (bad.length > 12 ? `\n      ...and ${bad.length - 12} more` : ""));
+}
+
 // ── Check 3: GAME_VERSION well-formed + bumped past live ───────────────────
 function readVersion(text) {
   const m = text && text.match(/const\s+GAME_VERSION\s*=\s*["'](\d+\.\d+\.\d+)["']/);
