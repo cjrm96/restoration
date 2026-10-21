@@ -2880,6 +2880,77 @@
         padding: 12px 14px;
       }
       /* The results, taped to the registration table. */
+      /* The realty office window on Main Street: a painted storefront frame,
+         gold-leaf lettering on the glass, the listings taped up inside. */
+      .re-view { padding-bottom: 18px; }
+      .re-front { margin-top: 12px; padding: 14px 14px 0; border-radius: 4px; background: linear-gradient(180deg, #2b4a39, #1f3729); box-shadow: inset 0 0 0 2px #15261c, 0 8px 20px rgba(0, 0, 0, 0.45); }
+      .re-window {
+        position: relative;
+        padding: 14px 18px 22px;
+        border: 3px solid #13221a;
+        background:
+          linear-gradient(115deg, transparent 0 18%, rgba(255, 255, 255, 0.07) 18% 24%, transparent 24% 61%, rgba(255, 255, 255, 0.05) 61% 64%, transparent 64%),
+          radial-gradient(ellipse at 50% 0%, rgba(255, 214, 150, 0.16), transparent 60%),
+          linear-gradient(180deg, #1c2730, #121a20);
+      }
+      .re-gild { display: flex; justify-content: center; align-items: baseline; gap: 0.4em; font: bold 30px/1 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: #e8c46a; text-shadow: 0 1px 0 #6b4c12, 0 2px 0 #3a290a, 0 0 14px rgba(232, 196, 106, 0.25); }
+      .re-gild b { font-style: italic; text-transform: none; letter-spacing: 0.02em; }
+      .re-gild-sub { margin: 4px 0 14px; text-align: center; font: italic 13px var(--font-ui); letter-spacing: 0.12em; color: #c9a75a; }
+      .re-sheets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; align-items: start; }
+      .re-sheet { position: relative; padding: 0 0 12px; background: #fbfaf5; color: #1f1b16; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5); transform: rotate(var(--r, 0deg)); font-family: var(--font-print); }
+      .re-sheet::before { content: ""; position: absolute; top: -9px; left: 50%; width: 58px; height: 18px; margin-left: -29px; background: rgba(232, 220, 182, 0.85); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); z-index: 2; }
+      .re-band { padding: 5px 10px; background: #8e1f1a; color: #fff; font: 900 12px var(--font-print); letter-spacing: 0.16em; text-transform: uppercase; }
+      .re-sheet.next .re-band { background: #1f4f9e; }
+      .re-photo { position: relative; margin: 8px 8px 0; aspect-ratio: 16 / 9; overflow: hidden; background: #2a2622; }
+      .re-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+      .re-sash { position: absolute; top: 14px; right: -34px; width: 140px; padding: 3px 0; background: #c8281e; color: #fff; font: 900 13px var(--font-print); letter-spacing: 0.2em; text-align: center; text-transform: uppercase; transform: rotate(32deg); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); }
+      .re-price { margin: 8px 10px 0; font: 900 22px/1 var(--font-print); }
+      .re-name { margin: 4px 10px 0; font: bold 14px var(--font-ui); }
+      .re-addr { margin: 1px 10px 0; font: 12px var(--font-type); color: #4d473c; }
+      .re-has { display: flex; flex-wrap: wrap; gap: 3px 10px; margin: 7px 10px 0; padding-top: 6px; border-top: 1px solid #d8d2c2; font: 11.5px var(--font-print); color: #3b362d; }
+      .re-has b { flex-basis: 100%; font-size: 12.5px; color: #1f1b16; }
+      .re-has span::before { content: "\2022  "; color: #8e1f1a; }
+      .re-sheet .re-call { display: block; width: calc(100% - 20px); margin: 10px 10px 0; padding: 8px 10px; font-size: 13px; }
+      /* A rung you can't reach yet says why in ink, not in a faded button. */
+      .re-sheet .re-call:disabled { background: transparent; color: #5d503e; border: 1px dashed rgba(60, 45, 30, 0.55); box-shadow: none; opacity: 1; cursor: default; }
+      .re-yours { margin: 10px 10px 0; font: 22px/1 var(--font-dale); color: #c8281e; transform: rotate(-3deg); }
+      .re-sill { height: 14px; margin: 0 -14px; border-radius: 0 0 4px 4px; background: linear-gradient(180deg, #3b5f4a, #1a2e22); }
+      /* A short laptop: wider, shorter photos and less air on the glass. */
+      @media (min-width: 981px) and (max-height: 760px) {
+        .re-front { margin-top: 8px; padding: 10px 12px 0; }
+        .re-window { padding: 10px 16px 14px; }
+        .re-gild { font-size: 22px; }
+        .re-gild-sub { margin: 2px 0 10px; font-size: 11.5px; }
+        .re-photo { aspect-ratio: 2.5 / 1; margin-top: 6px; }
+        .re-price { margin-top: 6px; font-size: 19px; }
+        .re-has { margin-top: 5px; padding-top: 4px; }
+        .re-sheet { padding-bottom: 10px; }
+        .re-sheet .re-call { margin-top: 7px; padding: 6px 10px; }
+        .re-yours { margin-top: 7px; }
+        .re-sill { height: 10px; }
+      }
+      @media (min-width: 981px) and (max-height: 700px) {
+        .re-view { padding-bottom: 8px; }
+        .re-gild-sub { display: none; }
+        .re-gild { margin-bottom: 10px; }
+        .re-photo { aspect-ratio: 3.2 / 1; }
+      }
+      @media (max-width: 980px) { .re-sheets { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 26px; } }
+      /* A phone: one listing per row, the photo beside the details. */
+      @media (max-width: 640px) {
+        .re-front { padding: 10px 10px 0; }
+        .re-window { padding: 12px 10px 18px; }
+        .re-gild { font-size: 19px; flex-wrap: wrap; gap: 0 0.3em; }
+        .re-sheets { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+        .re-sheet { display: grid; grid-template-columns: 42% minmax(0, 1fr); column-gap: 10px; padding-bottom: 10px; }
+        .re-band { grid-column: 1 / -1; }
+        .re-photo { grid-row: 2 / span 5; margin: 8px 0 0 8px; aspect-ratio: auto; min-height: 96px; }
+        .re-price, .re-name, .re-addr, .re-has { margin-left: 0; margin-right: 8px; }
+        .re-price { font-size: 18px; }
+        .re-has span { display: none; }
+        .re-sheet .re-call, .re-yours { grid-column: 1 / -1; }
+      }
+
       /* The shop log: a spiral book off the bench, ruled in blue with a red
          margin, printed column labels and the week filled in by pen. */
       .modal-card.log-page {
@@ -3037,6 +3108,13 @@
         .res-photo .art-backdrop-shell { height: 108px; min-height: 108px; }
         .res-photo-cap { padding: 5px 4px 7px; }
         .res-env { padding-top: 18px; padding-bottom: 10px; }
+        .res-sheet { padding-top: 18px; padding-bottom: 16px; }
+        .res-row { padding: 3px 4px; }
+        .res-notes { margin-top: 10px; gap: 5px; }
+        .res-clip { padding-top: 22px; }
+        .res-clip-paper { padding: 9px 12px; }
+        .res-js { padding: 1px 0; }
+        .res-js-v { font-size: 17px; }
       }
       @media (max-width: 1120px) {
         .res-table, .res-table.no-clip { grid-template-columns: 248px minmax(0, 1fr); grid-template-areas: "side sheet" "side clip"; justify-content: stretch; }
@@ -5055,26 +5133,6 @@
         box-shadow: none;
         opacity: 1;
       }
-      /* The work space ladder, written on the pad. */
-      .ws-rung {
-        margin-bottom: 8px;
-        padding: 9px 11px 10px 12px;
-        border: 1px solid rgba(0, 0, 0, 0.2);
-        border-left: 4px solid #c98a2e;
-        border-radius: 4px;
-        background: rgba(255, 255, 255, 0.4);
-      }
-      .ws-rung.here { border-left-color: #4f8f3a; }
-      .ws-top { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
-      .ws-top > :last-child { margin-left: auto; }
-      .ws-name { font-size: 14px; font-weight: bold; color: #1d1611; }
-      .ws-cap { font-size: 12px; color: #4a3f30; }
-      .ws-here { font-size: 12px; font-weight: bold; letter-spacing: 0.05em; text-transform: uppercase; color: #2f6b1f; }
-      .ws-short { font-size: 12px; font-weight: bold; color: #8a2a1c; }
-      .ws-desc { margin-top: 5px; font-size: 12px; line-height: 1.5; color: #3f3426; }
-      .ws-ahead { margin-top: 4px; font-size: 12px; line-height: 1.55; color: #3f3426; }
-      .ws-ahead b { color: #1d1611; }
-
       /* ── The settings sheet ───────────────────────────────────────────
          Six identical dark panels stacked in a modal, each with a coloured
          heading. That is a settings screen from any web app, and it was the
@@ -13678,20 +13736,17 @@
       function nextToolStorage() {
         return TOOL_STORAGE_LEVELS[toolStorageIdx() + 1];
       }
-      // Space & Storage holds two very different things. Tool Storage is a
-      // two hundred dollar upgrade a player genuinely needs the moment the
-      // milk crate fills up. Work Space Progression is a twenty-five hundred
-      // dollar carport, against a five thousand dollar bankroll, that buys
-      // two jobs at once while the whole road to roadworthy is eight jobs
-      // done one at a time for under nine hundred. Offering that in week one
-      // is the same trap the loans desk used to be, so the tab waits until it
-      // has something worth showing: a full tool crate, or a running truck.
+      // Space is the work space ladder. The first rung is a twenty-five hundred
+      // dollar carport, against a five thousand dollar bankroll, that buys two
+      // jobs at once while the whole road to roadworthy is eight jobs done one
+      // at a time for under nine hundred. Offering that in week one is the
+      // same trap the loans desk used to be, so the tab waits for a running
+      // truck. Tool storage, the upgrade a full crate needs, is down aisle 7
+      // at Bay Freight from day one.
       function spaceTabEarned() {
         if (onboardStageVal() >= 2) return true;
         const car = currentCar();
         if (car && roadworthy(car)) return true;
-        const storage = toolStorageData();
-        if (storage && (state.ownedTools || []).length >= storage.maxTools) return true;
         // Safety valve: a save that somehow moved past the first workspace
         // must always be able to reach its own upgrade path.
         return workshopIdx() > 0;
@@ -17609,7 +17664,7 @@
           // Either fully upgraded, or the only upgrade left is a top-tier box
           // the swap doesn't carry.
           return nextToolStorage()
-            ? toast("That box is new-only, no swap-meet copies. Buy it new from Space & Storage.", "err")
+            ? toast("That box is new-only, no swap-meet copies. Bay Freight has it, aisle 7.", "err")
             : toast("Your tool storage is already maxed out.", "err");
         }
         const price = swapToolStoragePrice();
@@ -22739,6 +22794,7 @@
         else if (kind === "jack") { R(cx - 3, cy, 6, 1, C.red); line(cx + 2, cy, cx + 4, cy - 2, "#8e959c"); }
         else if (kind === "helmet") { R(cx - 2, cy - 2, 4, 4, "#2a2b2e"); R(cx - 1, cy - 1, 2, 1, "#4f7f4f"); }
         else if (kind === "hose") { ell(cx, cy, 2, 2, C.red); p.P(cx, cy, "#f3f2ec"); }
+        else if (kind === "chest") { R(cx - 3, cy - 2, 6, 5, C.red); R(cx - 2, cy - 1, 4, 1, "#c4cbd2"); R(cx - 2, cy + 1, 4, 1, "#c4cbd2"); }
         else { R(cx - 2, cy - 1, 4, 2, "#8e959c"); }
       };
       const SPR = {
@@ -22780,6 +22836,50 @@
         spool(p, x, y) { const { R } = p; R(x, y, 2, 11, "#3a3d42"); R(x + 9, y, 2, 11, "#3a3d42"); R(x, y, 2, 1, "#6f747b"); R(x + 9, y, 2, 1, "#6f747b"); R(x + 2, y + 1, 7, 9, "#b8763a"); for (let k = 0; k < 4; k++) R(x + 2, y + 2 + k * 2, 7, 1, "#d89a5a"); R(x + 2, y + 1, 7, 1, "#f0bf86"); R(x + 2, y + 9, 7, 1, "#7a4a20"); },
         hoseCoil(p, x, y, col) { const { ell } = p; ell(x + 7, y + 7, 7, 7, sh(col, -0.45)); ell(x + 7, y + 7, 6, 6, col); ell(x + 6, y + 6, 4, 4, sh(col, 0.2)); ell(x + 7, y + 7, 3, 3, sh(col, -0.45)); ell(x + 7, y + 7, 2, 2, "#cbc7bc"); },
         standee(p, x, y, kind) { const { R, block, text, line } = p; R(x + 13, y + 40, 4, 8, "#55585e"); R(x + 7, y + 47, 16, 2, "#3a3d42"); block(x, y, 30, 40, "#f4f4ef"); R(x, y, 30, 8, C.blue); text("SPECIAL", x + 2, y + 2, "#ffffff"); R(x + 2, y + 10, 26, 17, kind === "lift" ? "#dfe7ee" : "#ece6d8"); if (kind === "lift") { R(x + 5, y + 11, 2, 15, "#3a3d42"); R(x + 23, y + 11, 2, 15, "#3a3d42"); R(x + 5, y + 19, 20, 2, C.red); R(x + 9, y + 16, 12, 3, C.blue); R(x + 10, y + 16, 4, 1, "#cfe2ff"); } else { line(x + 4, y + 25, x + 4, y + 15, "#3a3d42"); line(x + 4, y + 15, x + 15, y + 11, "#3a3d42"); line(x + 15, y + 11, x + 26, y + 15, "#3a3d42"); line(x + 26, y + 15, x + 26, y + 25, "#3a3d42"); R(x + 11, y + 18, 8, 8, "#c9d4dc"); } text("ORDER", x + 5, y + 30, C.blue); },
+        // a three-tray utility cart on casters, a push handle on one end
+        cart(p, x, y) {
+          const { R, block, line } = p;
+          R(x + 26, y, 2, 12, "#2a2b2e"); R(x + 20, y, 8, 2, "#2a2b2e");
+          [6, 18, 29].forEach((t, k) => { block(x, y + t, 28, k ? 5 : 6, C.red, { top: 1 }); R(x + 1, y + t + 1, 26, 1, sh(C.red, 0.35)); });
+          R(x + 1, y + 6, 2, 28, sh(C.red, -0.3)); R(x + 25, y + 6, 2, 28, sh(C.red, -0.3));
+          R(x + 4, y + 4, 7, 2, "#8e959c"); R(x + 13, y + 3, 3, 3, "#c4cbd2"); line(x + 18, y + 5, x + 23, y + 3, "#8e959c");
+          R(x + 5, y + 16, 9, 2, "#2a2b2e"); R(x + 16, y + 15, 6, 3, C.orange);
+          [x + 1, x + 22].forEach((cx) => { R(cx, y + 34, 5, 2, "#3a3d42"); R(cx + 1, y + 36, 3, 2, "#111"); });
+        },
+        // a roll cab: the top chest on a wide base cabinet, chrome pulls
+        // across every drawer, a side handle and four casters
+        rollCab(p, x, y, col) {
+          const { R, block } = p;
+          block(x + 2, y, 40, 19, col, { top: 2 });
+          R(x + 3, y + 3, 38, 1, sh(col, -0.45));
+          for (let k = 0; k < 3; k++) { R(x + 4, y + 6 + k * 4, 36, 1, sh(col, -0.35)); R(x + 8, y + 7 + k * 4, 28, 1, C.chrome); }
+          R(x + 2, y + 19, 40, 1, "#1a1a1a");
+          block(x, y + 20, 44, 34, col, { top: 1 });
+          for (let k = 0; k < 6; k++) { const yy = y + 23 + k * 5; R(x + 2, yy + 4, 40, 1, sh(col, -0.35)); R(x + 5, yy + 1, 34, 1, C.chrome); R(x + 5, yy + 2, 34, 1, sh(C.chrome, -0.35)); }
+          R(x + 44, y + 25, 2, 12, C.chrome); R(x + 43, y + 25, 1, 1, "#555"); R(x + 43, y + 36, 1, 1, "#555");
+          [x + 1, x + 13, x + 27, x + 38].forEach((cx) => { R(cx, y + 54, 5, 2, "#3a3d42"); R(cx + 1, y + 56, 3, 2, "#111"); });
+        },
+        // an index card thumbtacked to cork: a sketch of the box for sale and
+        // a few lines of ballpoint
+        card(p, x, y) {
+          const { R, line } = p;
+          R(x + 1, y + 1, 30, 20, "rgba(0,0,0,0.35)");
+          R(x, y, 30, 20, "#f6f4ec"); R(x, y + 3, 30, 1, "#e4a0a0");
+          for (let k = 0; k < 3; k++) R(x, y + 7 + k * 4, 30, 1, "#bcd0e8");
+          R(x + 3, y + 6, 9, 6, C.red); R(x + 4, y + 7, 7, 1, "#c4cbd2"); R(x + 4, y + 9, 7, 1, "#c4cbd2"); R(x + 4, y + 12, 2, 1, "#111"); R(x + 9, y + 12, 2, 1, "#111");
+          line(x + 15, y + 6, x + 26, y + 6, "#1f3d9a"); line(x + 15, y + 10, x + 24, y + 10, "#1f3d9a"); line(x + 4, y + 15, x + 22, y + 15, "#1f3d9a");
+          R(x + 14, y - 1, 3, 3, C.blue); R(x + 15, y, 1, 1, "#9ec0ff");
+        },
+        // the tool truck's flyer, with its tear-off phone tabs
+        flyer(p, x, y) {
+          const { R, text } = p;
+          R(x + 1, y + 1, 34, 24, "rgba(0,0,0,0.35)");
+          R(x, y, 34, 24, "#f4f4ef"); R(x, y, 34, 8, C.red); text("SNAP IT", x + 4, y + 2, "#ffffff");
+          R(x + 4, y + 11, 15, 6, "#e9ebee"); R(x + 4, y + 11, 15, 1, "#ffffff"); R(x + 19, y + 13, 6, 4, C.red); R(x + 21, y + 14, 3, 1, "#9ec0ff");
+          R(x + 6, y + 17, 3, 2, "#111"); R(x + 20, y + 17, 3, 2, "#111"); R(x + 27, y + 12, 4, 1, "#555"); R(x + 27, y + 14, 3, 1, "#555");
+          for (let k = 0; k < 6; k++) { R(x + 2 + k * 5, y + 20, 4, 4, "#f4f4ef"); R(x + 2 + k * 5, y + 20, 1, 4, "#c9c6bc"); R(x + 3 + k * 5, y + 21, 2, 1, "#555"); }
+          R(x + 16, y - 1, 3, 3, C.red); R(x + 17, y, 1, 1, "#ffb0a8");
+        },
         basket(p, x, y) { const { R } = p; R(x - 1, y - 5, 18, 1, "#1a1a1a"); R(x - 1, y - 5, 1, 6, "#1a1a1a"); R(x + 16, y - 5, 1, 6, "#1a1a1a"); p.block(x, y, 16, 9, C.red); for (let k = 0; k < 4; k++) R(x + 2 + k * 4, y + 2, 2, 5, sh(C.red, -0.45)); },
       };
       // ── the room ──
@@ -22799,7 +22899,7 @@
         vgrad(9, 99, 284, 27, "#b3afa4", "#9e9a8f");
         block(6, 28, 3, 106, C.blue); block(293, 28, 3, 106, C.blue); block(149, 35, 3, 91, C.blue);
         block(6, 28, 290, 7, C.blue);
-        const AN = ["HAND TOOLS", "POWER TOOLS", "SAFETY & LIGHTS", "AIR & PAINT", "JACKS & LIFTING", "WELDING"][aisle - 1];
+        const AN = ["HAND TOOLS", "POWER TOOLS", "SAFETY & LIGHTS", "AIR & PAINT", "JACKS & LIFTING", "WELDING", "TOOL STORAGE"][aisle - 1];
         text(AN, 151 - (tw(AN) >> 1), 29, "#ffffff");
         // shelf A lip with its label channel, and the shadow it throws
         block(6, SHELF, 290, 3, C.blue); R(9, SHELF + 1, 284, 1, sh(C.blue, 0.25));
@@ -22971,6 +23071,32 @@
           for (let k = 0; k < 6; k++) SPR.box(p, 156 + k * 23, 83, 21, 13, k % 2 ? C.blue : C.black, "helmet", C.orange);
           for (let k = 0; k < 12; k++) SPR.box(p, 12 + k * 23, 112, 21, 14, k % 2 ? C.blue : C.black, "helmet", C.orange);
         },
+        // Tool storage. The boxes Bay Freight sells stand on the floor; the
+        // two it doesn't are on the community board by the door: a card for
+        // a used rolling box, and the tool truck's flyer. Their spots are
+        // "box:" ids, not tools.
+        7(p, add) {
+          const { R, block, text, tw } = p;
+          // the community board, framed in pine, cork inside, hung across the
+          // bay's middle post
+          block(12, 37, 216, 42, "#9c7a4e");
+          R(15, 40, 210, 36, "#b88a58"); p.dither(15, 40, 210, 36, "#8f6638", 0.35); p.dither(15, 40, 210, 36, "#d2a774", 0.12);
+          R(15, 40, 210, 7, "#f4f4ef"); text("COMMUNITY BOARD", 120 - (tw("COMMUNITY BOARD") >> 1), 41, C.blue);
+          const note = (x, y, w, h, c, ink, pin) => { R(x + 1, y + 1, w, h, "rgba(0,0,0,0.3)"); R(x, y, w, h, c); for (let k = 2; k < h - 1; k += 2) R(x + 1, y + k, w - 3 - (k % 4), 1, ink); R(x + (w >> 1) - 1, y - 1, 2, 2, pin); };
+          note(72, 50, 15, 11, "#cfe0f2", "#7f8fa0", C.green); note(92, 54, 17, 13, "#f2d2dc", "#9a7f88", C.blue);
+          note(176, 49, 14, 12, "#e6eef8", "#7f8fa0", C.red); note(196, 53, 19, 11, "#cfe0f2", "#7f8fa0", C.green);
+          note(18, 66, 10, 8, "#f2d2dc", "#9a7f88", C.red); note(112, 64, 13, 9, "#e6eef8", "#7f8fa0", C.blue);
+          add("box:mobile", [30, 48, 30, 20], [45, 67], () => SPR.card(p, 30, 48));
+          add("box:snapon72", [134, 47, 34, 24], [151, 67], () => SPR.flyer(p, 134, 47));
+          pegWall(p, 236, 292, [K.tray, K.bungee, K.worklight, K.tray, K.strap], 71);
+          for (let k = 0; k < 12; k++) SPR.box(p, 12 + k * 23, 83, 21, 13, k % 3 ? C.red : C.black, "chest", k % 3 ? C.black : C.red);
+          for (let k = 0; k < 12; k++) SPR.box(p, 12 + k * 23, 112, 21, 14, k % 2 ? C.black : C.red, "chest", k % 2 ? C.red : "#ffffff");
+          // floor models, on a low riser like the compressors in aisle 4
+          p.block(84, 153, 196, 4, sh(C.blue, -0.2)); R(85, 153, 194, 1, sh(C.blue, 0.2));
+          add("box:cart", [90, 115, 30, 38], [105, 158], () => { SPR.cart(p, 90, 115); p.shadow(90, 153, 30); });
+          add("box:fullbank", [172, 95, 46, 58], [195, 158], () => { SPR.rollCab(p, 172, 95, C.red); p.shadow(172, 153, 46); });
+          SPR.rollCab(p, 228, 95, C.black); p.shadow(228, 153, 46);
+        },
       };
       // ── light: tube falloff, a little vignette, the floor's reflection; quantized with dither ──
       const post = (ctx) => {
@@ -22991,7 +23117,7 @@
         }
         ctx.putImageData(img, 0, 0);
       };
-    const SIGNS = ["HAND TOOLS", "POWER TOOLS", "SAFETY", "AIR & PAINT", "JACKS", "WELDING"];
+    const SIGNS = ["HAND TOOLS", "POWER TOOLS", "SAFETY", "AIR & PAINT", "JACKS", "WELDING", "STORAGE"];
     const SIGN_BOXES = [];
     let sx = 8;
     SIGNS.forEach((s) => { const w = 12 + s.length * 4 + 3; SIGN_BOXES.push([sx, 9, w, 11]); sx += w + 6; });
@@ -23033,7 +23159,11 @@
     const aisleOf = (id) => { for (let a = 1; a <= 6; a++) if (spots(a).some((s) => s.id === id)) return a; return 0; };
     return { W, H, SIGNS, SIGN_BOXES, spots, art, aisleOf };
       })();
-      const HFS_AISLE_NAMES = ["Hand Tools", "Power Tools", "Safety & Lights", "Air & Paint", "Jacks & Lifting", "Welding"];
+      const HFS_AISLE_NAMES = ["Hand Tools", "Power Tools", "Safety & Lights", "Air & Paint", "Jacks & Lifting", "Welding", "Tool Storage"];
+      // The storage aisle's own names: Bay Freight's cart and roll cab, the
+      // card on the board, and the truck's flyer.
+      const HFS_BOX = { mobile: ["Used Rolling Box", "call Ray", "rolling box"], cart: ["Rolling Tool Cart", "buy it", "cart"], fullbank: ["Roll Cab", "buy it", "roll cab"], snapon72: ['Snap-it 72" Bank', "call the truck", "snap-it bank"] };
+      const HFS_STORAGE_AISLE = 7;
       // What the yellow shelf sign calls it, and what Dale calls it on his list.
       const HFS_NAME = { t1: "Mechanic's Kit", t2: '3/8" Socket Rail', t20: "Master Socket Set", t16: "Trim & Fastener Bins", t_gold: "14K Gold Ratchet", t8: '1/2" Impact Gun', t7: "Angle Grinder", t17: '7" Buffer', t13: "Multimeter", t14: "LED Headlamp", t15: "Glasses & Gloves", t19: "4 ft Shop Light", t11: "HVLP Paint Gun", t9: "3 Gal Pancake", t10: "60 Gal Upright", t12: "Paint Booth", t18: "3 Ton Jack & Stands", t3: "2 Ton Hoist", t4: "Engine Stand", t_lift: "4-Post Lift", t5: "MIG Welder", t6: "TIG Welder" };
       const HFS_SHORT = { t1: "hand tools", t2: "sockets", t20: "big socket set", t13: "multimeter", t14: "headlamp", t19: "shop light", t15: "gloves & glasses", t18: "jack & stands", t7: "grinder", t8: "impact gun", t11: "paint gun", t16: "trim bins", t9: "compressor", t17: "buffer", t3: "engine hoist", t4: "engine stand", t5: "MIG welder", t10: "big compressor", t6: "TIG welder", t12: "paint booth" };
@@ -23083,15 +23213,35 @@
         const block = full ? ` ${storage.name} is full.` : broke ? " Not enough cash." : "";
         return `<button class="hfs-tag" style="${style}" onclick="buyTool('${t.id}')" ${full || broke ? "disabled" : ""} title="${why}${block}">${nm}<small>${full ? "no room at home" : broke ? `short $${fmt(t.cost - state.money)}` : "buy it"}</small><b>$${fmt(t.cost)}</b></button>`;
       }
-      function hfsListMarkup(car) {
+      // The storage aisle's signs. A box only ever comes home in order, so the
+      // next one up is the yellow sign you can press; the one you own gets
+      // the sticker, and the ones past it say what has to come first.
+      function hfsBoxTag(id, style) {
+        const i = TOOL_STORAGE_LEVELS.findIndex((t) => t.id === id);
+        const b = TOOL_STORAGE_LEVELS[i];
+        if (!b) return "";
+        const [name, act] = HFS_BOX[id] || [b.name, "buy it"];
+        const nm = `<i>${name}</i>`;
+        const cur = toolStorageIdx();
+        const tip = `${b.name}. Holds ${b.maxTools} tools${b.speedBonus ? `, jobs ${Math.round(b.speedBonus * 100)}% faster` : ""}.`;
+        if (i <= cur)
+          return `<span class="hfs-own" style="${style}" title="${tip}">${nm}<span>&#10003; ${i === cur ? "in your garage" : "outgrown"}</span></span>`;
+        if (i > cur + 1) {
+          const prev = TOOL_STORAGE_LEVELS[i - 1];
+          return `<button class="hfs-tag" style="${style}" disabled title="${tip}">${nm}<small>after the ${(HFS_BOX[prev.id] || [0, 0, prev.name.toLowerCase()])[2]}</small><b>$${fmt(b.cost)}</b></button>`;
+        }
+        const broke = state.money < b.cost;
+        return `<button class="hfs-tag" style="${style}" onclick="upgradeToolStorage()" ${broke ? "disabled" : ""} title="${tip}${broke ? " Not enough cash." : ""}">${nm}<small>${broke ? `short $${fmt(b.cost - state.money)}` : `holds ${b.maxTools} &middot; ${act}`}</small><b>$${fmt(b.cost)}</b></button>`;
+      }
+      function hfsListMarkup(car, aisle) {
         const storage = toolStorageData();
         const full = state.ownedTools.length >= storage.maxTools;
         const want = hfsWants(car);
-        const home = storage.id === "crate" ? "the crate" : storage.name.toLowerCase();
+        const home = storage.id === "crate" ? "the crate" : `the ${(HFS_BOX[storage.id] || [0, 0, storage.name.toLowerCase()])[2]}`;
         const lines = want.length
           ? want.map((w) => `<button class="hfs-li" onclick="hfsGo(${w.a})" title="Aisle ${w.a}, ${HFS_AISLE_NAMES[w.a - 1]}"><span>${HFS_SHORT[w.t.id] || w.t.name.toLowerCase()} <em>aisle ${w.a}</em></span><span>${w.n} job${w.n === 1 ? "" : "s"}</span></button>`).join("")
           : `<div class="hfs-li">nothing the ${car.model} needs</div>`;
-        const room = full && spaceTabEarned() ? `<button class="hfs-li hfs-room" onclick="setShopSub('workspace')">no room. see about space</button>` : "";
+        const room = full && nextToolStorage() && aisle !== HFS_STORAGE_AISLE ? `<button class="hfs-li hfs-room" onclick="hfsGo(${HFS_STORAGE_AISLE})">no room. bigger box, aisle ${HFS_STORAGE_AISLE}</button>` : "";
         return `<div class="hfs-list"><h6>pick up:</h6>${lines}<div class="hfs-foot">${home} holds ${storage.maxTools}. you got ${state.ownedTools.length}.</div>${room}</div>`;
       }
       function renderToolStore(car) {
@@ -23102,7 +23252,15 @@
         const spots = HFS.spots(a)
           .map((s) => ({ ...s, t: TOOLS_LIST.find((q) => q.id === s.id) }))
           .filter((s) => s.t);
-        const over = spots
+        const boxes = HFS.spots(a).filter((s) => s.id.startsWith("box:")).map((s) => ({ ...s, b: s.id.slice(4) }));
+        const overBoxes = boxes
+          .map((s) => {
+            const [bx, by, bw, bh] = s.box, [ax, ay] = s.anchor;
+            const lv = TOOL_STORAGE_LEVELS.find((t) => t.id === s.b) || {};
+            return `<span class="hfs-sp" style="left:${pct(bx, HFS.W)};top:${pct(by, HFS.H)};width:${pct(bw, HFS.W)};height:${pct(bh, HFS.H)}" title="${(lv.desc || "").replaceAll('"', "&quot;")}"></span>${hfsBoxTag(s.b, `left:${pct(ax, HFS.W)};top:${pct(ay, HFS.H)}`)}`;
+          })
+          .join("");
+        const over = overBoxes + spots
           .map((s) => {
             const [bx, by, bw, bh] = s.box, [ax, ay] = s.anchor;
             return `<span class="hfs-sp" style="left:${pct(bx, HFS.W)};top:${pct(by, HFS.H)};width:${pct(bw, HFS.W)};height:${pct(bh, HFS.H)}" title="${s.t.name}: ${s.t.desc.replaceAll('"', "&quot;")}"></span>${hfsTag(s.t, car, `left:${pct(ax, HFS.W)};top:${pct(ay, HFS.H)}`)}`;
@@ -23112,9 +23270,57 @@
         // On a phone the art is a picture of the aisle: the signs become a row
         // above it and the shelf signs a stack under it.
         const mSigns = `<div class="hfs-m-signs">${HFS.SIGNS.map((n, i) => `<button class="hfs-m-sign${i + 1 === a ? " here" : ""}" onclick="hfsGo(${i + 1})"><b>${i + 1}</b><span>${n}</span></button>`).join("")}</div>`;
-        const mTags = `<div class="hfs-m">${spots.map((s) => hfsTag(s.t, car, "")).join("")}${hfsListMarkup(car)}</div>`;
+        const mTags = `<div class="hfs-m">${boxes.map((s) => hfsBoxTag(s.b, "")).join("")}${spots.map((s) => hfsTag(s.t, car, "")).join("")}${hfsListMarkup(car, a)}</div>`;
         const banners = shopBannersMarkup(car);
-        return `${gigBoardMarkup()}<div class="hero-panel hfs-view">${shopSubtabsMarkup(car)}${banners ? `<div class="ptc-banners">${banners}</div>` : ""}${mSigns}<div class="hfs" data-aisle="${a}"><img class="hfs-art" src="${url}" alt="Bay Freight, aisle ${a}, ${HFS_AISLE_NAMES[a - 1]}">${hits}${over}${hfsListMarkup(car)}</div>${mTags}</div>`;
+        return `${gigBoardMarkup()}<div class="hero-panel hfs-view">${shopSubtabsMarkup(car)}${banners ? `<div class="ptc-banners">${banners}</div>` : ""}${mSigns}<div class="hfs" data-aisle="${a}"><img class="hfs-art" src="${url}" alt="Bay Freight, aisle ${a}, ${HFS_AISLE_NAMES[a - 1]}">${hits}${over}${hfsListMarkup(car, a)}</div>${mTags}</div>`;
+      }
+      /* ═══════════════════════════════════════════
+         THE REALTY WINDOW (Build › Space)
+      ═══════════════════════════════════════════ */
+      // Where the work happens is a listing in the window of the realty office
+      // on Main Street: a sheet per place, its photo, the price, how many jobs
+      // it runs at once and what comes with it. The one you have is marked
+      // SOLD; the next one up is the one you can call about. Moving up is one
+      // rung at a time, so the sheets past it say what has to come first.
+      const RE_LISTING = {
+        carport: { band: "For sale", addr: "Your driveway, installed", has: ["covered", "work light"] },
+        storage: { band: "For rent", addr: "Unit 4B, Palomar Self Storage", has: ["locks up", "power"] },
+        garage: { band: "For sale", addr: "1418 Orchard Ln", has: ["a door that closes", "pegboard & bench"] },
+        warehouse: { band: "For lease", addr: "22 Cannery Rd", has: ["roll-up doors", "two-post lift"] },
+      };
+      function renderSpaceWindow(car) {
+        const cur = workshopIdx();
+        const sheets = WORKSPACE_LEVELS.map((w, i) => {
+          const L = RE_LISTING[w.id];
+          if (!L) return "";
+          const art = CUTSCENE_ART[WS_CS_ART[w.id]] || "";
+          const jobs = `${w.maxActive} job${w.maxActive === 1 ? "" : "s"} at once`;
+          let act;
+          if (i <= cur) act = `<div class="re-yours">${i === cur ? "yours" : "moved on"}</div>`;
+          else if (i > cur + 1) act = `<button class="btn re-call" disabled>after the ${WORKSPACE_LEVELS[i - 1].name.toLowerCase()}</button>`;
+          else {
+            const short = Math.max(0, w.cost - state.money);
+            act = `<button class="btn re-call" onclick="upgradeWorkspace()" ${short ? "disabled" : ""} title="${w.desc.replaceAll('"', "&quot;")}">${short ? `$${fmt(short)} short` : "Call the office"}</button>`;
+          }
+          return `<div class="re-sheet${i <= cur ? " sold" : ""}${i === cur + 1 ? " next" : ""}" style="--r:${[-1.4, 0.9, -0.6, 1.2][i % 4]}deg">
+            <div class="re-band">${L.band}</div>
+            <div class="re-photo">${art ? `<img src="${art}" alt="${w.name}" loading="lazy">` : ""}${i <= cur ? `<span class="re-sash">Sold</span>` : ""}</div>
+            <div class="re-price">$${fmt(w.cost)}</div>
+            <div class="re-name">${w.name}</div>
+            <div class="re-addr">${L.addr}</div>
+            <div class="re-has"><b>${jobs}</b>${L.has.map((h) => `<span>${h}</span>`).join("")}</div>
+            ${act}
+          </div>`;
+        }).join("");
+        const banners = shopBannersMarkup(car);
+        return `${gigBoardMarkup()}<div class="hero-panel re-view">${shopSubtabsMarkup(car)}${banners ? `<div class="ptc-banners">${banners}</div>` : ""}<div class="re-front">
+          <div class="re-window">
+            <div class="re-gild"><span>Palomar Junction</span><b>Realty</b></div>
+            <div class="re-gild-sub">Main St &middot; Est. 1961</div>
+            <div class="re-sheets">${sheets}</div>
+          </div>
+          <div class="re-sill"></div>
+        </div></div>`;
       }
       /* ═══════════════════════════════════════════
          DALE'S TICKET RAIL (Build › Next Jobs)
@@ -27868,7 +28074,7 @@ addEventListener("DOMContentLoaded",function(){
       // The Build tab's sub-tab row and its two claim banners, shared by the
       // shop floor and the catalog so both views carry the same strip.
       function shopSubtabsMarkup(car) {
-        return `<div class="shop-subtabs">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts" || state.shopSub === "extras", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${spaceTabEarned() ? tab("Space & Storage", state.shopSub === "workspace", "setShopSub('workspace')") : ""}</div>`;
+        return `<div class="shop-subtabs">${tab(roadworthy(car) ? "Next Jobs" : "Let's Get Roadworthy", state.shopSub === "suggested", "setShopSub('suggested')")}${tab("All Builds", state.shopSub === "parts" || state.shopSub === "extras", "setShopSub('parts')")}${tab("Tools", state.shopSub === "tools", "setShopSub('tools')")}${spaceTabEarned() ? tab("Space", state.shopSub === "workspace", "setShopSub('workspace')") : ""}</div>`;
       }
       function shopBannersMarkup(car) {
         return `${state.freePart ? `<div onclick="claimFreePart()" style="cursor:pointer;background:#291b36;border:1px solid #6f4d91;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span> Free Budget part ready, tap to send the next eligible Budget job to the shop.</span><span style="opacity:0.7">→</span></div>` : ""}${(() => { const pulls = (state.yardPulls || []).filter((y) => y.carId === car.id); return pulls.length ? `<div onclick="installNextYardPull()" style="cursor:pointer;background:rgba(168,132,221,0.08);border:1px solid rgba(168,132,221,0.45);border-radius:8px;padding:10px 12px;margin-bottom:12px;color:var(--purple-bright);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px"><span> ${pulls.length} yard pull${pulls.length === 1 ? "" : "s"} waiting in the truck, tap to install the next one, free.</span><span style="opacity:0.7">→</span></div>` : ""; })()}`;
@@ -27882,54 +28088,12 @@ addEventListener("DOMContentLoaded",function(){
           state.shopSub = "suggested";
         if (state.shopSub === "parts" || state.shopSub === "extras") return renderPartsCatalog(car);
         if (state.shopSub === "tools") return renderToolStore(car);
-        let subcontent = "";
-
-
-        // A save written on Space & Storage must not reload onto a pill the
-        // strip is no longer drawing. Fall back to the tab that always works
-        // and is the actual next step anyway.
+        // A save written on Space must not reload onto a pill the strip is
+        // no longer drawing. Fall back to the tab that always works and is
+        // the actual next step anyway.
         if (state.shopSub === "workspace" && !spaceTabEarned()) state.shopSub = "suggested";
-        if (state.shopSub === "workspace") {
-          const storage = toolStorageData();
-          const nextStorage = nextToolStorage();
-          subcontent = `${panel(
-            "Tool Storage",
-            `${chalkRow("Current Storage", storage.name)}${chalkRow("Capacity", `${state.ownedTools.length} / ${storage.maxTools}`)}${chalkRow("Speed Bonus", `${Math.round(storage.speedBonus * 100)}% faster restorations`)}${nextStorage ? button(`Upgrade Storage · $${fmt(nextStorage.cost)}`, "upgradeToolStorage()", state.money < nextStorage.cost, "", "width:100%;margin-top:10px;background:#7da0c2;border-color:var(--blue-bright)") : "<div class='good small'>Top shelf storage installed.</div>"}`,
-            storage.desc,
-            "#2a1d10",
-            "work-order",
-          )}${panel(
-            "Work Space Progression",
-            // Ink on the pad, the way the rest of this sheet is written. It
-            // used to be the dark theme's expandable rows dropped onto cream
-            // paper: an 11px grey caption, a dead charcoal button for a step
-            // you could not afford yet, and a line of grey under it, all well
-            // under a readable contrast. Two rungs are on the page, so their
-            // descriptions just show, and a step you cannot afford says how
-            // far off it is instead of greying out.
-            `${WORKSPACE_LEVELS.map((w, i) => {
-              const current = state.workshopLevel === w.id;
-              const upcoming = i === workshopIdx() + 1;
-              // Where you are and where you can go next, nothing else. The
-              // rest of the ladder is named in the line underneath.
-              if (!current && !upcoming) return "";
-              const short = Math.max(0, w.cost - state.money);
-              const act = current
-                ? `<span class="ws-here">You're here</span>`
-                : short > 0
-                  ? `<span class="ws-short">$${fmt(w.cost)} · $${fmt(short)} short</span>`
-                  : button(`Move up · $${fmt(w.cost)}`, "upgradeWorkspace()", false, "", "padding:6px 12px;font-size:12px;white-space:nowrap");
-              return `<div class="ws-rung${current ? " here" : ""}"><div class="ws-top"><span class="ws-name">${w.name}</span><span class="ws-cap">${w.maxActive} job${w.maxActive === 1 ? "" : "s"} at once</span>${act}</div><div class="ws-desc">${w.desc}</div></div>`;
-            }).join("")}${(() => {
-              const ahead = WORKSPACE_LEVELS.slice(workshopIdx() + 2);
-              if (!ahead.length) return "";
-              return `<div class="ws-ahead">Further up the ladder: <b>${ahead.map((w) => w.name).join(", ")}</b>. Each one runs more jobs at once.</div>`;
-            })()}`,
-            "Where the work happens, and what it costs to move up",
-            "#2a1d10",
-            "clipboard",
-          )}`;
-        }
+        if (state.shopSub === "workspace") return renderSpaceWindow(car);
+
 
         // The right-hand column is three staged reveals and every one of them is
         // correctly empty on the first screen: the calendar waits for week two, the
@@ -27974,7 +28138,7 @@ addEventListener("DOMContentLoaded",function(){
               return `<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;background:rgba(143,203,126,0.1);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span>${ico("warn", "17px")}</span><div style="flex:1 1 170px;min-width:0"><div class="small" style="color:var(--green-bright);font-weight:bold">Roadworthy</div><div class="tiny muted">${rwLine}</div></div>${rwGo}</div>`;
             }
             return `<div style="display:flex;align-items:center;gap:10px;background:rgba(196,109,96,0.08);border:1px solid rgba(196,109,96,0.4);border-radius:8px;padding:9px 12px;margin-bottom:12px"><span style="font-size:18px"></span><div style="flex:1"><div class="small" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px">Not roadworthy yet</div><div class="tiny muted">Engine ${car.engine}/${ROADWORTHY_ENGINE}${engineGap ? " (need +" + engineGap + ")" : " "} · Trans ${car.transmission}/${ROADWORTHY_TRANSMISSION}${transGap ? " (need +" + transGap + ")" : " "} · Brakes ${car.brakes}/${ROADWORTHY_BRAKES}${brakeGap ? " (need +" + brakeGap + ")" : " "} · Steering ${car.steering}/${ROADWORTHY_STEERING}${steerGap ? " (need +" + steerGap + ")" : " "}${onboardStageVal() <= 1 ?`<div class="tiny" style="color:var(--gold-soft);margin-top:4px"> Get her running and the Marketplace opens up.</div>` : ""}</div></div></div>`;
-          })()}${shopSubtabsMarkup(car)}${shopBannersMarkup(car)}${subcontent}`,
+          })()}${shopSubtabsMarkup(car)}${shopBannersMarkup(car)}`,
         )}</div><div>${sideCol}</div>${state.shopSub === "suggested" ? `<div class="ro-row">${renderJobRail(car)}</div>` : ""}</div>`;
       }
 

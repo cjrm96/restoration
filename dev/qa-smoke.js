@@ -266,17 +266,17 @@ const pass = (msg) => console.log("✓", msg);
   if (typeof weekOneOk === "string") fail("week one length: " + weekOneOk);
   pass(`week one: ${weekOneOk.jobs} jobs, ${weekOneOk.weeks} weeks of 22, $${weekOneOk.spent} to roadworthy`);
 
-  // ── Space & Storage is two things in one tab: a $200 tool-storage upgrade a
-  // player needs the moment the milk crate fills, and a $2,500 carport against
-  // a $5,000 bankroll that buys parallel jobs while the whole road to
-  // roadworthy is eight sequential ones under $900. The tab waits until it has
-  // something worth showing, and both ways of earning it must work or a player
-  // who buys tools gets walled off from the storage they now need. ──
+  // ── Space is the work space ladder: a $2,500 carport against a $5,000
+  // bankroll that buys parallel jobs while the whole road to roadworthy is
+  // eight sequential ones under $900, so the tab waits for a running truck.
+  // Tool storage, the $200 upgrade a full crate needs right away, lives down
+  // aisle 7 at Bay Freight from day one, and a full crate's list points there.
   const spaceOk = await page.evaluate(() => {
     const strip = () => [...document.querySelectorAll(".shop-subtabs .tab")].map((t) => t.textContent);
     const hasSpace = () => strip().some((t) => /Space/.test(t));
+    const keep = { tools: state.ownedTools.slice(), box: state.toolStorageLevel, money: state.money, aisle: state.toolAisle };
     setView("workshop"); setShopSub("suggested"); render("full");
-    if (hasSpace()) return "Space & Storage is on the strip in week one";
+    if (hasSpace()) return "Space is on the strip in week one";
     if (strip().length !== 3) return "week one strip should be 3 pills, got " + strip().length;
     // Cannot be navigated to while it is off the strip.
     setShopSub("workspace");
@@ -286,21 +286,31 @@ const pass = (msg) => console.log("✓", msg);
     if (state.shopSub !== "suggested") return "a save written on the hidden tab stranded there";
     if (/Covered Carport/.test(document.getElementById("appContent").innerText))
       return "the carport is still reachable in week one";
-    // Path 1: the crate fills up, so the upgrade the player now needs appears.
-    const tools0 = state.ownedTools.slice();
+    // A full crate: Space stays shut, and Bay Freight sells the next box.
     const cap = toolStorageData().maxTools;
     while (state.ownedTools.length < cap) {
       const t = TOOLS_LIST.find((x) => !state.ownedTools.includes(x.id));
       if (!t) break;
       state.ownedTools.push(t.id);
     }
-    render("full");
-    if (!hasSpace()) return "a full tool crate did not open Space & Storage";
-    setShopSub("workspace"); render("full");
-    if (!/Upgrade Storage/.test(document.getElementById("appContent").innerText))
-      return "the tool storage upgrade is not reachable once the crate is full";
-    // Path 2: roadworthy opens it whatever the tools look like.
-    state.ownedTools = tools0; state.shopSub = "suggested";
+    state.money = Math.max(state.money, 1000);
+    setShopSub("tools"); state.toolAisle = 1; render("full");
+    if (hasSpace()) return "a full tool crate opened Space, which holds no storage now";
+    const room = document.querySelector(".hfs .hfs-room");
+    if (!room) return "a full crate's list does not point at the storage aisle";
+    room.click(); render("full");
+    if (state.toolAisle !== 7) return "the list's storage line did not walk to aisle 7";
+    const next = nextToolStorage();
+    const buy = [...document.querySelectorAll(".hfs > .hfs-tag")].find((b) => !b.disabled && /upgradeToolStorage/.test(b.getAttribute("onclick") || ""));
+    if (!buy) return "aisle 7 has no box you can buy with a full crate and cash in hand";
+    buy.click(); render("full");
+    if (state.toolStorageLevel !== next.id) return "the storage sign did not bring the next box home";
+    if (![...document.querySelectorAll(".hfs > .hfs-own")].some((b) => /in your garage/i.test(b.textContent))) return "the box you own has no sticker";
+    const ahead = [...document.querySelectorAll(".hfs > .hfs-tag")].filter((b) => b.disabled && /after the/i.test(b.textContent));
+    if (nextToolStorage() && TOOL_STORAGE_LEVELS.indexOf(nextToolStorage()) + 1 < TOOL_STORAGE_LEVELS.length && !ahead.length) return "a box two rungs up does not say what comes first";
+    state.ownedTools = keep.tools; state.toolStorageLevel = keep.box; state.money = keep.money; state.toolAisle = keep.aisle;
+    // A roadworthy car opens Space.
+    state.shopSub = "suggested";
     const car = currentCar();
     const before = { e: car.engine, t: car.transmission, b: car.brakes, s: car.steering };
     car.engine = 60; car.transmission = 50; car.brakes = 50; car.steering = 50;
@@ -308,11 +318,11 @@ const pass = (msg) => console.log("✓", msg);
     const rwOpens = hasSpace();
     car.engine = before.e; car.transmission = before.t; car.brakes = before.b; car.steering = before.s;
     state.noticeQueue = []; state.pendingUnlock = null; setShopSub("suggested"); render("full");
-    if (!rwOpens) return "a roadworthy car did not open Space & Storage";
+    if (!rwOpens) return "a roadworthy car did not open Space";
     return true;
   });
-  if (spaceOk !== true) fail("Space & Storage gate: " + spaceOk);
-  pass("Space & Storage waits for a full tool crate or a running truck");
+  if (spaceOk !== true) fail("Space gate: " + spaceOk);
+  pass("Space waits for a running truck; a full crate buys its next box down aisle 7");
 
   // ── the loans desk is introduced by a person, not by a button appearing.
   // It stays shut until the shark works the row at a show and finds somebody
@@ -1964,10 +1974,10 @@ const pass = (msg) => console.log("✓", msg);
   if (typeof noteOk !== "number") fail("corkboard notes: " + noteOk);
   pass(`corkboard notes readable: ${noteOk} slips, ink on paper rather than tan on tan`);
 
-  // ── ink on paper. The work space ladder sat on the legal pad in the dark
-  // theme's greys: an 11px grey caption, a charcoal disabled button and a
-  // grey line, 2:1 to 2.9:1 against the stock. Every line of text on the
-  // paper panels of Space & Storage holds 4.5:1 now, broke or flush. ──
+  // ── Space is the realty office window on Main St: a listing sheet per
+  // work space, the one you have marked SOLD, the next one up the only one
+  // you can call about, and every line of ink on the sheets 4.5:1 against
+  // what it sits on, broke or flush. ──
   const paperOk = await page.evaluate(() => {
     const lum = ([r, g, b]) => {
       const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
@@ -1981,25 +1991,28 @@ const pass = (msg) => console.log("✓", msg);
         installsDone: stash.installs, shopSub: stash.sub });
       setView(stash.view); render("full");
     };
-    const PAPER = [236, 226, 203];
     const worst = [];
     for (const money of [300, 99999]) {
       state.onboardStage = 3; state.installsDone = Math.max(8, state.installsDone || 0);
-      state.workshopLevel = "curb"; state.money = money;
+      state.workshopLevel = "carport"; state.money = money;
       setView("workshop"); state.shopSub = "workspace"; render("full");
-      const panels = [...document.querySelectorAll("#appContent .panel.clipboard, #appContent .panel.work-order")];
-      if (!document.querySelector("#appContent .ws-rung")) {
-        const why = `view ${state.view}, sub ${state.shopSub}, wrap ${!!state.seasonWrap}, over ${!!state.gameOver}`;
-        restore(); return "the work space ladder never rendered (" + why + ")";
-      }
-      for (const p of panels) for (const el of p.querySelectorAll("*")) {
+      const sheets = [...document.querySelectorAll("#appContent .re-window .re-sheet")];
+      if (sheets.length !== WORKSPACE_LEVELS.length - 1) { restore(); return `the window holds ${sheets.length} listings, the ladder has ${WORKSPACE_LEVELS.length - 1}`; }
+      if (!sheets[0].classList.contains("sold") || !/sold/i.test(sheets[0].textContent)) { restore(); return "the carport you own is not marked SOLD"; }
+      const calls = sheets.map((sh) => sh.querySelector('button[onclick="upgradeWorkspace()"]')).filter(Boolean);
+      if (calls.length !== 1 || calls[0].closest(".re-sheet") !== sheets[1]) { restore(); return "the storage unit is not the one listing you can call about"; }
+      if (money > 9000 && calls[0].disabled) { restore(); return "a flush player cannot call about the next listing"; }
+      for (const sh of sheets) for (const el of sh.querySelectorAll("*")) {
         const txt = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 1);
         if (!txt || el.closest(".btn:not(:disabled)")) continue;
-        let a = 1; for (let e = el; e && e !== p; e = e.parentElement) a *= parseFloat(getComputedStyle(e).opacity);
+        let bgEl = el, bg = null;
+        for (; bgEl && bgEl !== document.body; bgEl = bgEl.parentElement) { const c = parse(getComputedStyle(bgEl).backgroundColor); if (c.length >= 3 && (c[3] === undefined || c[3] > 0.5)) { bg = c.slice(0, 3); break; } }
+        if (!bg) continue;
+        let a = 1; for (let e = el; e && e !== sh.parentElement; e = e.parentElement) a *= parseFloat(getComputedStyle(e).opacity);
         const fg = parse(getComputedStyle(el).color);
         a *= fg[3] === undefined ? 1 : fg[3];
-        const mix = fg.slice(0, 3).map((v, i) => v * a + PAPER[i] * (1 - a));
-        const L1 = lum(mix), L2 = lum(PAPER);
+        const mix = fg.slice(0, 3).map((v, i) => v * a + bg[i] * (1 - a));
+        const L1 = lum(mix), L2 = lum(bg);
         const r = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
         if (r < 4.5) worst.push(`"${el.textContent.trim().slice(0, 30)}" at ${r.toFixed(1)}:1`);
       }
@@ -2007,8 +2020,8 @@ const pass = (msg) => console.log("✓", msg);
     restore();
     return worst.length ? worst.slice(0, 4).join(", ") : true;
   });
-  if (paperOk !== true) fail("ink on paper: " + paperOk);
-  pass("Space & Storage reads: every line on the paper holds 4.5:1, broke or flush");
+  if (paperOk !== true) fail("realty window: " + paperOk);
+  pass("Space is the realty window: SOLD on yours, one listing to call about, ink at 4.5:1");
 
   // ── the named grid fills in over a season. Three of the four rivals run
   // Local, so an uncapped field put every face in the game plus Buck on the
@@ -2234,12 +2247,14 @@ const pass = (msg) => console.log("✓", msg);
     // The ladder is still communicated, just as one line instead of buttons.
     if (!/Next rung/.test(document.getElementById("appContent").innerText))
       return "the next-rung line went missing with the locked tier pills";
-    // Workspace ladder: current + next only, the rest named in a line.
+    // Workspace ladder: every listing in the window, no padlocks; a rung past
+    // the next one says in words what has to come first.
     setView("workshop"); setShopSub("workspace"); render("full");
-    const lockedRows = [...document.querySelectorAll("#appContent .dense-row")]
+    const lockedRows = [...document.querySelectorAll("#appContent .re-sheet")]
       .filter((r) => /🔒/.test(r.textContent));
     if (lockedRows.length) return "workspace ladder still renders " + lockedRows.length + " locked row(s)";
-    if (!/Further up the ladder/.test(document.getElementById("appContent").innerText))
+    const far = [...document.querySelectorAll("#appContent .re-sheet")].slice(workshopIdx() + 1);
+    if (far.length && !far.some((sh) => /after the/i.test(sh.textContent)))
       return "workspace ladder lost the line naming what is above";
     return true;
   });
@@ -3363,10 +3378,31 @@ const pass = (msg) => console.log("✓", msg);
       if (!shows) return "no shows were picked, so Compete was never measured";
       setView("workshop"); setShopSub("tools");
       for (let a = 1; a <= HFS.SIGNS.length; a++) { state.toolAisle = a; render("full"); if (over() > 0) { bad.push(`Tools aisle ${a} scrolls ${over()}px`); break; } }
+      for (const lvl of ["curb", "carport"]) {
+        state.workshopLevel = lvl; setShopSub("workspace"); render("full");
+        if (!document.querySelector(".re-window")) { bad.push("the realty window did not render"); break; }
+        if (over() > 0) bad.push(`Space (${lvl}) scrolls ${over()}px`);
+      }
+      // The results table, at its fullest: a judged show, six on the sheet,
+      // the ribbon, the clipboard and the envelope all out.
+      const judged = SHOWS_MASTER.find((x) => x.axis && !isRaceShow(x.name));
+      const keepResult = state.result, keepView = state.view;
+      state.result = { show: judged.name, tier: judged.tier, week: 9, season: seasonNum(), car: `${car.year} ${car.make} ${car.model}`, place: 1, score: 88, prize: 2200, bonusCash: 75, fee: 150, localSponsorCovered: false, fuelUsed: 12, net: 2125, gained: 1400, repDelta: 4, repTitle: "Local Legend",
+        standings: Array.from({ length: 6 }, (_, i) => ({ name: i ? `Rival ${i}'s '6${i} Coupe` : `Your ${car.year} ${car.make} ${car.model}`, score: 88 - i * 5, isPlayer: !i })),
+        judgingLine: "Clean enough to eat off.", tasteId: "purist", tasteEdge: 1, axis: judged.axis,
+        judgeCard: { label: JUDGING_AXES[judged.axis].label, overall: 80, axisScore: 84, cats: Object.entries(JUDGING_AXES[judged.axis].weights).map(([cat, w]) => ({ cat, w, val: 70 })) },
+        rivalReactions: [{ kicker: "THE RIVAL", color: "#e07070", line: "Buck packed up before the trophies came out. Says the judges were blind." }, { kicker: "NEW ALLY", color: "#87c77b", line: "Hector shook your hand on the way out." }] };
+      // A full render, the way the game arrives here: the result view hides
+      // the tab strip, and measuring with it still up would be a page that
+      // never exists.
+      state.view = "result"; render("full");
+      if (!document.querySelector(".res-table")) bad.push("the results table did not render");
+      else if (over() > 0) bad.push(`the results table scrolls ${over()}px`);
+      state.result = keepResult; state.view = keepView; render("full");
       return bad.length ? bad.join("; ") : true;
     });
     if (lapFit !== true) fail(`laptop ${lw}x${lh}: ${lapFit}`);
-    pass(`Marketplace, Compete and the tool store fit ${lw}x${lh} without a scroll`);
+    pass(`Marketplace, Compete, the tool store, Space and the results fit ${lw}x${lh} without a scroll`);
     await lap.close();
   }
 
