@@ -1093,6 +1093,34 @@
          fields, Dale's notes in his blue marker. The two boxes at the foot
          are the buttons: yellow parts-only, blue parts-and-labor. */
       .grid-main > .ro-row { grid-column: 1 / -1; min-width: 0; }
+      /* Next Jobs fits the screen. The photo of the car gives up height first,
+         only as much as the screen is short (595 is everything else on the
+         page at Deck size); on a short laptop the frame around it and the air
+         between the pieces go too. */
+      @media (min-width: 761px) {
+        .grid-main.next-jobs .art-backdrop-shell { height: clamp(118px, calc(100vh - 595px), 236px); min-height: 0; }
+        /* The car sits 30px into the floor of a full-height photo; in a
+           shorter one it sinks the same share, not the same pixels, so its
+           wheels stay on the ground instead of under the frame. */
+        .grid-main.next-jobs .car-preview-stage svg { bottom: -12.7%; }
+      }
+      @media (min-width: 761px) and (max-height: 720px) {
+        .grid-main.next-jobs { row-gap: 10px; }
+        .grid-main.next-jobs .hero-panel { padding-top: 10px; padding-bottom: 10px; }
+        .grid-main.next-jobs .car-preview-wrap > .flex.between.center { padding: 6px 14px; }
+        .grid-main.next-jobs .art-backdrop-shell { height: clamp(100px, calc(100vh - 560px), 236px); margin: 8px 10px; }
+        .grid-main.next-jobs .ro-board { padding-top: 8px; padding-bottom: 9px; }
+        /* With a job in the bay its card needs the column; the paycheck
+           countdown steps aside on a screen this short. */
+        .grid-main.next-jobs.busy .chalkboard { display: none; }
+      }
+      /* The running job's card packs closer on anything under a desktop's
+         height, so the side column never outgrows the car beside it. */
+      @media (min-width: 761px) and (max-height: 860px) {
+        .grid-main.next-jobs .panel.work-order { padding-top: 12px; padding-bottom: 8px; }
+        .grid-main.next-jobs .panel.work-order .panel-header { margin-bottom: 8px; padding-bottom: 6px; }
+        .grid-main.next-jobs .panel.work-order .info-box { padding-top: 8px; padding-bottom: 8px; }
+      }
       .ro-board { position: relative; margin: 0 0 6px; padding: 10px 14px 13px; border-radius: 4px;
         background: radial-gradient(circle at 6px 6px, rgba(30, 18, 8, 0.75) 1.4px, transparent 2px) 0 0 / 12px 12px, linear-gradient(180deg, #9a7650 0%, #8a6844 100%);
         box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45), inset 0 10px 18px rgba(0, 0, 0, 0.25), 0 8px 18px rgba(0, 0, 0, 0.4); }
@@ -12959,7 +12987,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.100.0";
+      const GAME_VERSION = "0.101.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -27846,7 +27874,7 @@ addEventListener("DOMContentLoaded",function(){
               const remaining = Math.max(0, task.finishTime - Date.now());
               return `<div class="info-box" data-task-id="${task.id}"><div class="flex between center" style="margin-bottom:8px;gap:10px"><div><div class="small" style="color:var(--text-bright);font-weight:bold">${part?.name || "Restoration"}</div></div><div class="small good task-time" style="font-weight:bold">${remaining <= 0 ? "COMPLETE" : formatRemaining(remaining)}</div></div>${gauge("", Math.round(getRestorationProgress(task) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${remaining <= 0 ? "Wrapping up now…" : taskStatusText(task)}</div>${
                 canLookInHere(task)
-                  ? `${button("While you're in there, have a look", `lookWhileInHere('${task.id}')`, false, "", "width:100%;margin-top:8px;font-size:11px;background:#3a2a1a;border-color:#8a5a2a;color:#e8c79a")}<div class="tiny muted" style="margin-top:4px;line-height:1.45">One look while she is open. Whatever you check, you are not checking the other thing.</div>`
+                  ? button("While you're in there, have a look", `lookWhileInHere('${task.id}')`, false, "", "width:100%;margin-top:8px;font-size:11px;background:#3a2a1a;border-color:#8a5a2a;color:#e8c79a").replace("<button ", `<button title="One look per job, while she is open." `)
                   : task.looked
                     ? `<div class="tiny muted" style="margin-top:8px;line-height:1.45">You already had your look at this one.</div>`
                     : task.method === "shop" && remaining > 0
@@ -28103,7 +28131,7 @@ addEventListener("DOMContentLoaded",function(){
         // a page that half failed to load. When the side has nothing to say, the
         // layout stops holding space for it.
         const sideCol = `${renderUpcomingBar()}${renderRestorationPanel(car)}`;
-        return `<div class="grid-main${sideCol.trim() ? '' : ' solo'}"><div>${gigBoardMarkup()}${heroPanel(
+        return `<div class="grid-main${sideCol.trim() ? '' : ' solo'}${state.shopSub === "suggested" ? " next-jobs" : ""}${activeTasksForCar(car.id).length ? " busy" : ""}"><div>${gigBoardMarkup()}${heroPanel(
           "",
           onboardStageVal() >= 3 ? "" : "Every bolt, every part, one at a time",
           "",

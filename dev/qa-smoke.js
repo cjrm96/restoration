@@ -3378,6 +3378,17 @@ const pass = (msg) => console.log("✓", msg);
       if (!shows) return "no shows were picked, so Compete was never measured";
       setView("workshop"); setShopSub("tools");
       for (let a = 1; a <= HFS.SIGNS.length; a++) { state.toolAisle = a; render("full"); if (over() > 0) { bad.push(`Tools aisle ${a} scrolls ${over()}px`); break; } }
+      // Next Jobs, with the bay empty and with a job in it.
+      {
+        const keepTasks = state.activeRestorations.slice(), keepMoney = state.money, keepTools = state.ownedTools.slice();
+        state.money = 4000; state.ownedTools = TOOLS_LIST.map((t) => t.id); state.activeRestorations = [];
+        setShopSub("suggested"); render("full");
+        if (!document.querySelector(".ro-row .ro")) bad.push("Next Jobs hung no repair orders");
+        if (over() > 0) bad.push(`Next Jobs scrolls ${over()}px`);
+        const diy = document.querySelector(".ro .ro-box.diy:not([disabled])");
+        if (diy) { diy.click(); render("full"); if (over() > 0) bad.push(`Next Jobs with a job running scrolls ${over()}px`); }
+        state.activeRestorations = keepTasks; state.money = keepMoney; state.ownedTools = keepTools;
+      }
       for (const lvl of ["curb", "carport"]) {
         state.workshopLevel = lvl; setShopSub("workspace"); render("full");
         if (!document.querySelector(".re-window")) { bad.push("the realty window did not render"); break; }
@@ -3402,7 +3413,7 @@ const pass = (msg) => console.log("✓", msg);
       return bad.length ? bad.join("; ") : true;
     });
     if (lapFit !== true) fail(`laptop ${lw}x${lh}: ${lapFit}`);
-    pass(`Marketplace, Compete, the tool store, Space and the results fit ${lw}x${lh} without a scroll`);
+    pass(`Next Jobs, Marketplace, Compete, the tool store, Space and the results fit ${lw}x${lh} without a scroll`);
     await lap.close();
   }
 
@@ -3448,7 +3459,9 @@ const pass = (msg) => console.log("✓", msg);
       Object.keys(state.milestones).forEach((k) => (state.milestones[k] = true));
       state.onboardStage = 3; state.preWeek = 0; state.week = 13;
       state.money = 25000; state.installsDone = 12;
-      setView("workshop"); requestRender("full");
+      // The Legacy Wall: ninety-odd achievements, always taller than any
+      // frame. Build used to be the long screen here, and now it fits.
+      setView("legacy"); requestRender("full");
     });
     await embed.waitForTimeout(700);
     const e1 = await gf.evaluate(() => {
@@ -3467,7 +3480,7 @@ const pass = (msg) => console.log("✓", msg);
       const a = document.querySelector(".app");
       return a.scrollTop + a.clientHeight >= a.scrollHeight - 4;
     });
-    if (!e2) fail("itch embed: cannot reach the bottom of the Build tab inside the frame");
+    if (!e2) fail("itch embed: cannot reach the bottom of the Legacy Wall inside the frame");
     pass(`itch embed: scrolls inside scrolling="no" (${e1.tall}px of game in a ${e1.frame}px frame)`);
     cleanupHost();
     await embed.close();
