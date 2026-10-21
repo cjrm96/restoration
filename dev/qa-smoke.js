@@ -1221,49 +1221,11 @@ const pass = (msg) => console.log("✓", msg);
     if (!state.activeRestorations.every((t) => t.id !== "clock_job" || t.completed))
       return bail("a finished job was held open by weeksRequired, so there are two clocks now");
 
-    // ── while I'm in here ──
-    clear(); putJobOnBench();
-    const task = state.activeRestorations[0];
-    if (!canLookInHere(task)) return bail("cannot look while a job is running");
-    lookWhileInHere(task.id);
-    if (!task.looked) return bail("the look did not spend itself");
-    if (canLookInHere(task)) return bail("a second look was offered on the same job");
-    const q = state.noticeQueue.length;
-    lookWhileInHere(task.id);
-    if (state.noticeQueue.length !== q) return bail("a second look on one job produced something");
-
-    // Balance is declared, not a side effect of how many lines got written.
-    if (typeof IN_HERE_ODDS === "undefined") return bail("the odds are not stated anywhere");
-    const odds = Object.fromEntries(IN_HERE_ODDS);
-    const worst = Object.entries(odds).sort((a, b) => b[1] - a[1])[0][0];
-    if (worst === "bad") return bail("bad news is the likeliest outcome, which teaches the player not to look");
-    if (odds.bad > 20) return bail(`bad news at ${odds.bad}% will train avoidance`);
-    // Every kind the odds name has to have lines behind it.
-    for (const [k] of IN_HERE_ODDS) {
-      if (!IN_HERE_FINDS.some((f) => f.k === k)) return bail("no lines written for outcome kind: " + k);
-    }
-    if (IN_HERE_FINDS.length < 36)
-      return bail(`only ${IN_HERE_FINDS.length} finds, a run will see repeats`);
-    // And it lands where the odds say.
-    const seen = {};
-    for (let i = 0; i < 1200; i++) {
-      state.activeRestorations[0].looked = false;
-      state.noticeQueue = [];
-      lookWhileInHere("smoke_job");
-      const note = state.noticeQueue[state.noticeQueue.length - 1];
-      const txt = (note && (note.text || note.title)) || "";
-      const f = IN_HERE_FINDS.find((x) => txt.startsWith(x.t.slice(0, 30)));
-      if (f) seen[f.k] = (seen[f.k] || 0) + 1;
-    }
-    const badPct = ((seen.bad || 0) / 1200) * 100;
-    if (badPct > odds.bad + 8)
-      return bail(`bad news came up ${badPct.toFixed(0)}% of the time against a stated ${odds.bad}%`);
-
     Object.assign(state, JSON.parse(snapshot));
     return true;
   });
   if (cageOk !== true) fail("work on the bench: " + cageOk);
-  pass("a job on the bench no longer switches the game off, and buys one look under the car");
+  pass("a job on the bench no longer switches the game off");
 
   // ── the Saturday trips. Neither the yard nor the swap was ever introduced:
   // the Road Trip pill turned up with two others when show season opened, and
@@ -3387,6 +3349,23 @@ const pass = (msg) => console.log("✓", msg);
         if (over() > 0) bad.push(`Next Jobs scrolls ${over()}px`);
         const diy = document.querySelector(".ro .ro-box.diy:not([disabled])");
         if (diy) { diy.click(); render("full"); if (over() > 0) bad.push(`Next Jobs with a job running scrolls ${over()}px`); }
+        // The rail hangs at the same height with the bay empty or full: a
+        // job in the bay is a line in the side column, which never grows the
+        // row the rail sits under.
+        const keepWs = state.workshopLevel, car = currentCar();
+        const railTop = () => { document.querySelector(".app").scrollTop = 0; const r = document.querySelector(".ro-row"); return r ? Math.round(r.getBoundingClientRect().top) : -1; };
+        state.activeRestorations = []; state.workshopLevel = "warehouse"; render("full");
+        const empty = railTop();
+        for (const p of PARTS.filter((x) => !car.installedParts.includes(x.id) && x.tier === "Budget")) {
+          if (state.activeRestorations.length >= workspaceData().maxActive) break;
+          installPart(p.id, "diy", false);
+        }
+        render("full");
+        const full = railTop();
+        if (state.activeRestorations.length < 4) bad.push(`could only fill ${state.activeRestorations.length} bays to test the rail`);
+        else if (full !== empty) bad.push(`the rail moved ${full - empty}px with ${state.activeRestorations.length} jobs in the bay`);
+        if (over() > 0) bad.push(`Next Jobs with a full warehouse scrolls ${over()}px`);
+        state.workshopLevel = keepWs;
         state.activeRestorations = keepTasks; state.money = keepMoney; state.ownedTools = keepTools;
       }
       for (const lvl of ["curb", "carport"]) {

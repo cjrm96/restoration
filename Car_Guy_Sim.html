@@ -1104,6 +1104,20 @@
          only as much as the screen is short (595 is everything else on the
          page at Deck size); on a short laptop the frame around it and the air
          between the pieces go too. */
+      /* The rail of repair orders hangs at the same height however many jobs
+         are in the bay. The side column takes the height the car's panel
+         sets and adds none of its own; a list longer than that (a warehouse
+         running seven) scrolls inside the column instead of shoving the rail
+         down the page. */
+      @media (min-width: 981px) {
+        .grid-main.next-jobs > div:nth-child(2) { height: 0; min-height: 100%; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(217, 162, 79, 0.5) transparent; }
+        .grid-main.next-jobs > div:nth-child(2) > .panel:last-child { margin-bottom: 2px; }
+        /* the bay count rides on the title's line */
+        .grid-main.next-jobs .panel.work-order .panel-header > div { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 12px; }
+        .grid-main.next-jobs .panel.work-order .panel-sub { margin-top: 0; }
+        /* four bays and up need the whole column; the paycheck steps aside */
+        .grid-main.next-jobs.busy-4 .chalkboard { display: none; }
+      }
       @media (min-width: 761px) {
         .grid-main.next-jobs .art-backdrop-shell { height: clamp(118px, calc(100vh - 595px), 236px); min-height: 0; }
         /* The car sits 30px into the floor of a full-height photo; in a
@@ -1120,13 +1134,14 @@
         /* With a job in the bay its card needs the column; the paycheck
            countdown steps aside on a screen this short. */
         .grid-main.next-jobs.busy .chalkboard { display: none; }
+        .grid-main.next-jobs .panel.work-order { margin-top: 11px; }
+        .grid-main.next-jobs .panel.work-order .job { padding: 4px 0 5px; }
       }
       /* The running job's card packs closer on anything under a desktop's
          height, so the side column never outgrows the car beside it. */
       @media (min-width: 761px) and (max-height: 860px) {
         .grid-main.next-jobs .panel.work-order { padding-top: 12px; padding-bottom: 8px; }
         .grid-main.next-jobs .panel.work-order .panel-header { margin-bottom: 8px; padding-bottom: 6px; }
-        .grid-main.next-jobs .panel.work-order .info-box { padding-top: 8px; padding-bottom: 8px; }
       }
       .ro-board { position: relative; margin: 0 0 6px; padding: 10px 14px 13px; border-radius: 4px;
         background: radial-gradient(circle at 6px 6px, rgba(30, 18, 8, 0.75) 1.4px, transparent 2px) 0 0 / 12px 12px, linear-gradient(180deg, #9a7650 0%, #8a6844 100%);
@@ -5637,6 +5652,15 @@
       .panel.work-order [style*="color:var(--text-bright)"] {
         color: #1a0f08 !important;
       }
+      .panel.work-order .job { padding: 5px 0 6px; border-top: 1px dashed rgba(0, 0, 0, 0.28); }
+      .panel.work-order .job:first-of-type { padding-top: 2px; border-top: 0; }
+      .job-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+      .job-top .job-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: bold; }
+      .job-top .task-time { flex: none; font-weight: bold; white-space: nowrap; }
+      .job-bar { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+      .job-bar > :first-child { flex: 1 1 auto; min-width: 0; }
+      .job-bar .gauge-wrap { margin: 0; }
+      .job-tag { flex: none; font: 15px/1 var(--font-dale); color: #5d4a30; transform: rotate(-2deg); }
 
       /* ── Cork board (Show Prep hero variant) ── */
       .hero-panel.corkboard {
@@ -13005,7 +13029,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.102.1";
+      const GAME_VERSION = "0.102.2";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -13046,7 +13070,6 @@
           // two weeks running.
           lastPestLine: "",
           // So a look does not turn up the same line it did last time.
-          lastLookLine: "",
           seasonLength: 22,
           cars: [
             {
@@ -27771,161 +27794,6 @@ addEventListener("DOMContentLoaded",function(){
           _renderRestorationPanelInner(car, tasks),
         );
       }
-      /* ═══════════════════════════════════════════
-     WHILE I'M IN HERE
-     A man with a job on the bench and time to kill does one thing in every
-     shop there has ever been: he goes and looks at something else that is
-     wrong with the car. He was not going to fix it today. He wanted to know
-     how bad it is.
-     One look per job, so choosing to go under the dash is choosing not to
-     pull the door card this time, and you will never find out what was behind
-     the other one. That is the whole cost, and it is the reason this is a
-     decision rather than something to click at.
-  ═══════════════════════════════════════════ */
-      // Four kinds of answer. Nothing is the commonest, because that is what
-      // looking usually gets you, and it is not a failure state: it is the
-      // relief of finding out the thing you were worried about is fine.
-      const IN_HERE_FINDS = [
-        { k: "nothing", t: "You pull the door card off expecting the worst. Dry as a bone behind it. Somebody garaged this thing for thirty years and never said so.", lore: 2 },
-        { k: "nothing", t: "Up under the dash with a light in your teeth. Wiring is original, brittle at the ends, and nowhere near as bad as the smell suggested.", lore: 2 },
-        { k: "nothing", t: "Pull the plugs to read them. All eight the same colour. Whoever had this last knew what they were doing and never got the credit.", lore: 3 },
-        { k: "nothing", t: "Crawl under with the drop light. Frame is straight. No filler, no ripples, no sign anybody ever hit anything. You lie there a minute longer than you need to.", lore: 3 },
-        { k: "nothing", t: "Check the spare well for rot. Not a hole in it. The spare is still the one that came with the truck, still holding air.", lore: 2 },
-        { k: "nothing", t: "Take the valve cover off just to see. Everything in there is wet with clean oil. You put it straight back on.", lore: 2 },
-        { k: "nothing", t: "Pull the carpet back at the pedals, where they always rot. Dry, solid, factory. Somebody kept this thing out of the weather its whole life.", lore: 2 },
-        { k: "nothing", t: "Get the wheel off to look at the backing plate. Shoes have half their life left and the springs are the right colour. Fine.", lore: 2 },
-        { k: "nothing", t: "You are sure you heard something in the door. It is a pen. It has been a pen for a very long time.", lore: 3 },
-        { k: "nothing", t: "Take a look at the fuel sender while you are near it. Clean tank, no rust flakes, no varnish. Somebody drove this regularly and did not let it sit.", lore: 2 },
-        { k: "nothing", t: "Check the cab mounts, because they are always gone. Every one of them is intact. You check twice because you do not believe it.", lore: 3 },
-        { k: "nothing", t: "Look behind the grille for a nest, the way you always do. Nothing. Not even an old one.", lore: 2 },
-        { k: "nothing", t: "Trace the ground strap because you half expect it to be missing. It is right where it should be, clean and tight. Wayne would be disappointed.", lore: 3 },
-        { k: "nothing", t: "Pop the horn button off just to see what is under there. What is under there is a horn. You put it back.", lore: 2 },
-        { k: "nothing", t: "Inspect the seat frame while the cushion is out. Not a broken spring in it. Whoever sat here was gentle or was never here much.", lore: 2 },
-        { k: "nothing", t: "You go looking for the rust everybody says these have behind the rear wheel. It is not there. It is genuinely not there.", lore: 3 },
-        { k: "story", t: "Behind the kick panel, a receipt. Tune-up, March 1974, eleven dollars and forty cents, paid in cash by a man with the same last name as the road you live on.", lore: 8, followers: 40 },
-        { k: "story", t: "There is a name written in pencil on the inside of the glovebox door, and a date, and the words FIRST CAR. You leave it exactly where it is.", lore: 9, followers: 60 },
-        { k: "story", t: "Somebody wrapped a heater hose in the same green tape twice, twenty years apart. You can tell which one is which. Whoever it was, they were doing their best.", lore: 7, followers: 30 },
-        { k: "story", t: "Under the seat, a church bulletin from a town two hours north, folded to the crossword. Half done. In pen.", lore: 7, followers: 45 },
-        { k: "story", t: "The radio has one preset that is not a station any more. It has not been a station since before you were born.", lore: 8, followers: 50 },
-        { k: "story", t: "Sun visor comes down and a photograph falls out. Two people, a dog, this truck when it was new. Nobody is looking at the camera.", lore: 10, followers: 70 },
-        { k: "story", t: "Inside the tailgate, in grease pencil, somebody has written a phone number with only six digits. That was enough, once.", lore: 8, followers: 55 },
-        { k: "story", t: "The odometer stopped at a round number, and the cable was neatly disconnected, on purpose, a long time ago. Somebody decided this truck was done counting.", lore: 9, followers: 65 },
-        { k: "story", t: "There is a second key taped inside the frame rail, and a note that just says HERS.", lore: 10, followers: 80 },
-        { k: "story", t: "Fairground sticker on the inside of the tailgate, 1978, from a county two states over. This truck has been further than you have.", lore: 7, followers: 40 },
-        { k: "good", t: "You find a whole box of the right clips taped inside the fender, put there by somebody who knew he would need them again.", part: "Budget" },
-        { k: "good", t: "There is a spare that has never touched the road bolted under the bed, and the shop rag around it is older than you are.", part: "Budget" },
-        { k: "good", t: "Behind the bench seat, wrapped in a feed sack: the original trim piece, the one that is impossible to find, still in the paper.", part: "Quality" },
-        { k: "good", t: "The previous owner put a factory part on and kept the old one in the trunk, cleaned, in case. It is better than what is on it now.", part: "Quality" },
-        { k: "good", t: "You go looking for a leak and find forty dollars in the seat springs instead, in old notes, folded small.", cash: 40 },
-        { k: "good", t: "Under the floor mat, the original build sheet. Somebody would pay for that. You are not somebody.", lore: 6, followers: 90 },
-        { k: "good", t: "Taped to the inside of the inner fender, in a bread bag: every receipt this truck ever had, in order, going back to the dealer.", lore: 9, followers: 120 },
-        { k: "good", t: "The bed is holding a full set of the original hubcaps, face down under a sheet of plywood, not a mark on them.", part: "Quality" },
-        { k: "good", t: "There is a coffee can of hardware bolted to the frame, and every fastener in it is the correct one for this truck.", part: "Budget" },
-        { k: "good", t: "You find sixty dollars rolled in the ashtray, which has never once been used as an ashtray.", cash: 60 },
-        { k: "bad", t: "Get a light on the inner rocker and there it is. Not new, not from you, just finally somebody looking at it. It has been like that a long time.", hit: "body", lore: 4 },
-        { k: "bad", t: "The pinion seal has been weeping since before you owned it. Nobody caused this. It has just been waiting for somebody to notice.", hit: "differential", lore: 4 },
-        { k: "bad", t: "Poke at the top of the heater core and your finger comes away wet and sweet. That is going to be a whole day, and not today.", hit: "cooling", lore: 4 },
-        { k: "bad", t: "Somebody spliced into the harness with a twist and some tape, back when that was normal. You leave it, but now you know it is there.", hit: "electrical", lore: 5 },
-        { k: "bad", t: "The brake line runs against the frame where it should not, and it has been rubbing itself thin for a couple of decades.", hit: "brakes", lore: 5 },
-        { k: "bad", t: "There is filler in the lower quarter, thick, and a straight edge shows the whole panel is not the shape it left the factory as.", hit: "body", lore: 5 },
-        { k: "bad", t: "The exhaust hanger is a coat hanger. An actual coat hanger. It has held for years and it is not going to hold forever.", hit: "exhaust", lore: 4 },
-        { k: "bad", t: "You put a wrench on a suspension bolt and it turns with no fight at all. That has not been tight in a long time.", hit: "suspension", lore: 4 },
-      ];
-      // Odds are declared here, not left to emerge from how many lines of each
-      // kind happen to be written, which is how the first build ended up at
-      // thirty percent bad news: the pool was picked flat and I had written
-      // eight problems and six of everything else. A kind is chosen first, a
-      // line inside it second, so more writing never moves the balance.
-      //
-      // Nothing is the commonest because that is what looking usually gets
-      // you, and it is not a failure: it is finding out the thing you were
-      // worried about is fine. Bad news is the rarest because a look that
-      // punishes you one time in three teaches the player not to look, and a
-      // hook that trains avoidance is not a hook.
-      const IN_HERE_ODDS = [
-        ["nothing", 36],
-        ["good", 24],
-        ["story", 24],
-        ["bad", 16],
-      ];
-      const IN_HERE_HIT = 3;
-      // Only on a job you are doing yourself. The whole beat is that you are
-      // already under there with the trim off and you get one look at what
-      // else the car is hiding. Send it to the shop and you are not under
-      // there: somebody else is, and whatever they notice is theirs. Offering
-      // the look on a shop ticket was the game letting you rummage through a
-      // car sitting in another man's bay.
-      function canLookInHere(task) {
-        return (
-          !!task &&
-          task.method !== "shop" &&
-          !task.completed &&
-          !task.looked &&
-          Date.now() < task.finishTime
-        );
-      }
-      function lookWhileInHere(taskId) {
-        const task = (state.activeRestorations || []).find((t) => t.id === taskId);
-        if (!canLookInHere(task)) return;
-        // One per job. Spent whatever the answer turns out to be, because the
-        // cost of looking here is not looking anywhere else on this one.
-        task.looked = true;
-        const car = getCarById(task.carId) || currentCar();
-        const total = IN_HERE_ODDS.reduce((a, o) => a + o[1], 0);
-        let roll = Math.random() * total;
-        let kind = IN_HERE_ODDS[0][0];
-        for (const [k, w] of IN_HERE_ODDS) {
-          if (roll < w) { kind = k; break; }
-          roll -= w;
-        }
-        const pool = IN_HERE_FINDS.filter((f) => f.k === kind);
-        // Never the same line twice running, so a short pool does not read as
-        // a short pool.
-        const fresh = pool.filter((f) => f.t !== state.lastLookLine);
-        const find = (fresh.length ? fresh : pool)[Math.floor(Math.random() * (fresh.length ? fresh.length : pool.length))];
-        state.lastLookLine = find.t;
-        let tail = "";
-        if (find.lore) addGarageLore(find.lore);
-        if (find.followers) {
-          state.followers += find.followers;
-          clampFollowers();
-          tail = ` (+${find.followers} followers, people love this stuff.)`;
-        }
-        if (find.cash) {
-          state.money += find.cash;
-          recordMoneyChange(find.cash, "Found in the seat springs");
-          tail = ` (+$${find.cash}.)`;
-        }
-        if (find.part) {
-          const tierPool = PARTS.filter((x) => x.tier === find.part);
-          const part = tierPool[Math.floor(Math.random() * tierPool.length)];
-          if (part) {
-            const val = Math.max(35, Math.round(partCost(part, "diy") * 0.6));
-            state.partsInventory.push({
-              id: `inhere_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-              name: `${part.name} · found in the car`,
-              sourcePart: part.name,
-              category: part.category,
-              tier: part.tier,
-              askingPrice: Math.round(val * 1.35),
-              baselineValue: val,
-              listed: false,
-              sold: false,
-            });
-            tail = ` (${part.name}, yours.)`;
-          }
-        }
-        if (find.hit && car) {
-          // It was always like this. Finding it does not break the truck, it
-          // stops the truck pretending, and the number was never honest.
-          car[find.hit] = Math.max(0, (car[find.hit] || 0) - IN_HERE_HIT);
-          tail = ` (${CAT_LABELS[find.hit] || find.hit} -${IN_HERE_HIT}. It was always like that.)`;
-        }
-        pushNotice(find.t + tail, find.k === "bad" ? "bad" : "good");
-        playSfx(find.k === "bad" ? "error" : "ding");
-        saveGame();
-        requestRender("full");
-      }
       function _renderRestorationPanelInner(car, tasks) {
         // The number that matters is how many bays there are, so it says
         // that here, where the bays are.
@@ -27937,19 +27805,16 @@ addEventListener("DOMContentLoaded",function(){
             : "";
         return panel(
           "Active Restorations",
+          // A job in the bay is one line on the slip: what, how long, how far
+          // along, and where, if it is in Dale's bay. Every running job is the
+          // same height, so a full shop is a short list, not a column that
+          // shoves the rail of repair orders down the page.
           `${tasks
             .map((task) => {
               const part = PARTS.find((p) => p.id === task.partId);
               const remaining = Math.max(0, task.finishTime - Date.now());
-              return `<div class="info-box" data-task-id="${task.id}"><div class="flex between center" style="margin-bottom:8px;gap:10px"><div><div class="small" style="color:var(--text-bright);font-weight:bold">${part?.name || "Restoration"}</div></div><div class="small good task-time" style="font-weight:bold">${remaining <= 0 ? "COMPLETE" : formatRemaining(remaining)}</div></div>${gauge("", Math.round(getRestorationProgress(task) * 100), 100, "#7da0c2")}<div class="tiny muted task-status" style="margin-top:6px">${remaining <= 0 ? "Wrapping up now…" : taskStatusText(task)}</div>${
-                canLookInHere(task)
-                  ? button("While you're in there, have a look", `lookWhileInHere('${task.id}')`, false, "", "width:100%;margin-top:8px;font-size:11px;background:#3a2a1a;border-color:#8a5a2a;color:#e8c79a").replace("<button ", `<button title="One look per job, while she is open." `)
-                  : task.looked
-                    ? `<div class="tiny muted" style="margin-top:8px;line-height:1.45">You already had your look at this one.</div>`
-                    : task.method === "shop" && remaining > 0
-                      ? `<div class="tiny muted" style="margin-top:8px;line-height:1.45">She's up on somebody else's lift. Whatever he finds in there, he finds.</div>`
-                      : ""
-              }</div>`;
+              const side = task.method === "shop" && remaining > 0 ? `<span class="job-tag">at Dale's</span>` : "";
+              return `<div class="job" data-task-id="${task.id}"><div class="job-top"><span class="small job-name">${part?.name || "Restoration"}</span><span class="small good task-time">${remaining <= 0 ? "COMPLETE" : formatRemaining(remaining)}</span></div><div class="job-bar">${gauge("", Math.round(getRestorationProgress(task) * 100), 100, "#7da0c2")}${side}</div></div>`;
             })
             .join("")}`,
           bayLine + timerHint,
@@ -28200,7 +28065,7 @@ addEventListener("DOMContentLoaded",function(){
         // a page that half failed to load. When the side has nothing to say, the
         // layout stops holding space for it.
         const sideCol = `${renderUpcomingBar()}${renderRestorationPanel(car)}`;
-        return `<div class="grid-main${sideCol.trim() ? '' : ' solo'}${state.shopSub === "suggested" ? " next-jobs" : ""}${activeTasksForCar(car.id).length ? " busy" : ""}"><div>${gigBoardMarkup()}${heroPanel(
+        return `<div class="grid-main${sideCol.trim() ? '' : ' solo'}${state.shopSub === "suggested" ? " next-jobs" : ""}${activeTasksForCar(car.id).length ? " busy" : ""}${activeTasksForCar(car.id).length >= 4 ? " busy-4" : ""}"><div>${gigBoardMarkup()}${heroPanel(
           "",
           onboardStageVal() >= 3 ? "" : "Every bolt, every part, one at a time",
           "",
@@ -31663,15 +31528,8 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           state.workshopLevel,
           state.toolStorageLevel,
           state.activeRestorations.length,
-          // `looked` belongs here. Without it, taking the look under the car
-          // changed the task and nothing on screen: the button stayed, and a
-          // second click did nothing because canLookInHere() was already
-          // false. It looked intermittent rather than broken, because a find
-          // that pays cash or followers moves state.money and re-renders on
-          // that instead, while a lore-only or a bad find moves nothing in
-          // this list and the panel stayed cached on the old markup.
           state.activeRestorations
-            .map((task) => `${task.carId}:${task.partId}:${task.completed ? 1 : 0}:${task.looked ? 1 : 0}`)
+            .map((task) => `${task.carId}:${task.partId}:${task.completed ? 1 : 0}`)
             .join(","),
           state.ownedTools.length,
           state.cars.length,
