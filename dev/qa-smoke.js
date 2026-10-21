@@ -2667,6 +2667,27 @@ const pass = (msg) => console.log("✓", msg);
   if (recapLastOk !== true) fail("recap ordering: " + recapLastOk);
   pass("week recap always lands last (deferred behind every other beat)");
 
+  // ── the shop log is a page in the spiral book, filled in by pen ──
+  const logOk = await page.evaluate(() => {
+    const snap = { recap: state.weekRecap, pending: state.pendingRecap, view: state.view };
+    state.weekRecap = { week: 6, money: -240, installs: 2, idle: false, followers: 35 };
+    const shown = renderWeekRecapModal();
+    const root = document.getElementById("modalRoot");
+    const pg = root.querySelector(".log-page");
+    const done = (m) => { state.weekRecap = snap.recap; state.pendingRecap = snap.pending; root.innerHTML = ""; return m; };
+    if (!shown || !pg) return done("the shop log page did not open");
+    if (!pg.querySelector(".log-rings")) return done("the page lost its spiral");
+    const t = pg.textContent;
+    if (!/-\$240/.test(t) || !pg.querySelector(".log-v.down")) return done("a losing week is not in red ink");
+    if (!/Parts in/i.test(t) || !/\+2/.test(t)) return done("the parts put in are not logged");
+    if (!/Week\s*6/i.test(t)) return done("the page is not dated to its week");
+    const go = pg.querySelector('button[onclick="dismissWeekRecap()"]');
+    if (!go || !/Week 7/.test(go.textContent)) return done("the page does not turn to the next week");
+    return done(true);
+  });
+  if (logOk !== true) fail("shop log: " + logOk);
+  pass("shop log: a spiral page, the week in pen, red ink for a losing week");
+
   // ── the results, taped to the registration table ──
   // Drive renderResult() directly with synthetic results so the assertions
   // don't depend on which show the RNG happened to offer. A judged axis show

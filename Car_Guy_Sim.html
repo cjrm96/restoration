@@ -2880,6 +2880,48 @@
         padding: 12px 14px;
       }
       /* The results, taped to the registration table. */
+      /* The shop log: a spiral book off the bench, ruled in blue with a red
+         margin, printed column labels and the week filled in by pen. */
+      .modal-card.log-page {
+        position: relative;
+        width: min(440px, calc(100vw - 32px));
+        max-width: 440px;
+        padding: 30px 26px 22px 62px;
+        border: 0;
+        border-radius: 3px;
+        background:
+          linear-gradient(90deg, transparent 46px, rgba(214, 96, 96, 0.55) 46px 47.5px, transparent 47.5px),
+          repeating-linear-gradient(180deg, transparent 0 27px, rgba(120, 156, 204, 0.42) 27px 28px),
+          linear-gradient(180deg, #fbf8ef, #f2ecdc);
+        background-position: 0 0, 0 22px, 0 0;
+        color: #24201a;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+        text-align: left;
+      }
+      .log-rings {
+        position: absolute;
+        top: -9px;
+        left: 14px;
+        right: 14px;
+        height: 26px;
+        background:
+          radial-gradient(circle at 50% 76%, #2a241d 3.6px, transparent 4.2px) 0 0 / 24px 26px repeat-x,
+          repeating-linear-gradient(90deg, transparent 0 9px, #d3d8dc 9px 11px, #858c92 11px 14px, transparent 14px 24px) 0 0 / 100% 17px no-repeat;
+        pointer-events: none;
+      }
+      .log-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; height: 28px; font: bold 10px var(--font-print); letter-spacing: 0.14em; text-transform: uppercase; color: #5f5a50; }
+      .log-head b { font: 19px var(--font-dale); letter-spacing: 0; text-transform: none; color: #1f3d9a; }
+      .log-book { color: #24201a; font-size: 11px; }
+      .log-hl { margin: 0 0 4px; font: 20px/28px var(--font-dale); color: #1f3d9a; }
+      .log-rows { margin: 0; }
+      .log-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; height: 28px; }
+      .log-k { font: bold 10px var(--font-print); letter-spacing: 0.14em; text-transform: uppercase; color: #5f5a50; }
+      .log-v { font: 20px/28px var(--font-dale); color: #1f3d9a; }
+      .log-v.up { color: #1e6a2c; }
+      .log-v.down { color: #b3262a; }
+      .log-next { margin-top: 0; font: 18px/28px var(--font-dale); color: #4b4740; transform: rotate(-1deg); }
+      .log-page .log-go { display: block; width: 100%; margin-top: 18px; }
+
       .res-table {
         display: grid;
         grid-template-columns: 268px minmax(0, 1fr) 292px;
@@ -26058,27 +26100,31 @@ addEventListener("DOMContentLoaded",function(){
           tabArriving
         )
           return false;
+        // The week goes in the shop log: the spiral book on the bench with the
+        // printed columns, filled in by hand. The labels are the book's, the
+        // numbers and the line about the week are in pen, and the next show
+        // is the reminder scrawled at the foot of the page.
         const root = getEl("modalRoot");
-        const row = (k, v, col) => `<div class="flex between center" style="padding:7px 4px;border-bottom:1px dashed #453a31"><span class="small muted">${k}</span><span class="small" style="font-weight:bold;color:${col}">${v}</span></div>`;
+        const row = (k, v, ink) => `<div class="log-row"><span class="log-k">${k}</span><span class="log-v${ink ? " " + ink : ""}">${v}</span></div>`;
         const money = r.money;
         const rows = [
-          row("Cash flow", `${money >= 0 ? "+" : "−"}$${fmt(Math.abs(money))}`, money >= 0 ? "#9fd18e" : "#e07a7a"),
-          r.installs > 0 ? row("Parts finished", `+${r.installs}`, "#9fd18e") : "",
-          r.idle ? row("Shop homework", "+1 garage lore", "var(--gold-soft)") : "",
-          r.followers !== 0 ? row("Followers", `${r.followers > 0 ? "+" : ""}${fmtF(r.followers)}`, "#b68ae6") : "",
-          row("Next up", getUpcomingSummary().nextShowText, "var(--gold-soft)"),
+          row("Cash", `${money >= 0 ? "+" : "-"}$${fmt(Math.abs(money))}`, money >= 0 ? "up" : "down"),
+          r.installs > 0 ? row("Parts in", `+${r.installs}`, "up") : "",
+          r.idle ? row("Homework", "+1 garage lore", "") : "",
+          r.followers !== 0 ? row("Followers", `${r.followers > 0 ? "+" : ""}${fmtF(r.followers)}`, r.followers > 0 ? "up" : "down") : "",
         ].join("");
         const headline = weekRecapHeadline(r);
-        const headlineMarkup = headline
-          ? `<div style="text-align:center;color:var(--gold);font-family:var(--font-ui);font-size:16px;font-weight:bold;line-height:1.35;margin:-2px 0 14px">${headline}</div>`
-          : "";
-        root.innerHTML = popupCard({
-          tone: "neutral",
-          kicker: "Shop Log",
-          title: `Week ${r.week} in the books`,
-          extra: `${headlineMarkup}<div class="info-box" style="text-align:left;margin-bottom:16px">${rows}</div>`,
-          actions: `<button class="notice-primary" onclick="dismissWeekRecap()">On to Week ${r.week + 1} →</button>`,
-        });
+        const d = r.week >= 1 ? calSatDate(r.week) : null;
+        const date = d ? `${d.getUTCMonth() + 1}/${d.getUTCDate()}` : "";
+        const next = getUpcomingSummary().nextShowText;
+        root.innerHTML = `<div class="modal"><div class="modal-card log-page show-beat" role="dialog" aria-label="Shop log, week ${r.week}">
+          <div class="log-rings" aria-hidden="true"></div>
+          <div class="log-head"><span class="log-book">Shop log</span><span>Week <b>${r.week}</b></span><span>${date ? `Sat <b>${date}</b>` : ""}</span></div>
+          ${headline ? `<div class="log-hl">${headline}</div>` : ""}
+          <div class="log-rows">${rows}</div>
+          ${next ? `<div class="log-next">next: ${next}</div>` : ""}
+          <button class="notice-primary log-go" onclick="dismissWeekRecap()">On to Week ${r.week + 1} &#8594;</button>
+        </div></div>`;
         return true;
       }
       function dismissWeekRecap() {
