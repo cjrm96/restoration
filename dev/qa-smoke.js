@@ -1236,7 +1236,8 @@ const pass = (msg) => console.log("✓", msg);
     const back = (m) => { Object.assign(state, { legacyBuilds: keep.builds, achievementsUnlocked: keep.un, view: keep.view }); render("full"); return m; };
     state.legacyBuilds = [
       { id: "w2", year: 1969, make: "Chevvi", model: "Cameron SS", style: "camaro", palette: "cherry", finalOverall: 94, wonNational: true, completedSeason: 2, followersAtCompletion: 41000, bestPlace: 1, partsInstalled: 61 },
-      { id: "w1", year: 1965, make: "Forde", model: "F-100", style: "truck", finalOverall: 81, wonNational: false, completedSeason: 1, followersAtCompletion: 9200, bestPlace: 2, bestTier: "Regional", partsInstalled: 47 },
+      // Scores higher than it placed: gold is for a title, not a number.
+      { id: "w1", year: 1965, make: "Forde", model: "F-100", style: "truck", finalOverall: 92, wonNational: false, completedSeason: 1, followersAtCompletion: 9200, bestPlace: 2, bestTier: "Regional", partsInstalled: 47 },
     ];
     state.achievementsUnlocked = {};
     const pick = ACHIEVEMENTS.filter((a, i) => i % 5 === 0);
