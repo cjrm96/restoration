@@ -2667,55 +2667,74 @@ const pass = (msg) => console.log("✓", msg);
   if (recapLastOk !== true) fail("recap ordering: " + recapLastOk);
   pass("week recap always lands last (deferred behind every other beat)");
 
-  // ── results screen renders its panels (judge card / rep / rival) ──
+  // ── the results, taped to the registration table ──
   // Drive renderResult() directly with synthetic results so the assertions
   // don't depend on which show the RNG happened to offer. A judged axis show
-  // must produce the judging breakdown, the scene-standing line, and a
-  // non-empty rival panel; Cars & Coffee must show scene chatter and NO
-  // judge card.
+  // must put the judge's clipboard on the table with every system it weighed
+  // and the baseline, ring your line on the typed sheet, pin the ribbon your
+  // place earned, carry the scene standing and what was said. Cars & Coffee
+  // gets the sheet and the chatter, and no clipboard and no ribbon.
   const resultUiOk = await page.evaluate(() => {
     const car = currentCar();
     if (!car) return "no car to render";
     const snapResult = state.result, snapView = state.view;
     const baseStandings = [
-      { name: "Your " + car.make, score: 84, isPlayer: true },
-      { name: "Buck's '67 Stallion", score: 82, isRival: true },
+      { name: "Buck's '67 Stallion", score: 86, isRival: true },
+      { name: "Your " + car.year + " " + car.make + " " + car.model, score: 84, isPlayer: true },
       { name: "A Stranger", score: 78 },
     ];
     const common = {
-      week: state.week, car: `${car.year} ${car.make} ${car.model}`,
+      week: state.week, season: seasonNum(), car: `${car.year} ${car.make} ${car.model}`,
       prize: 1200, bonusCash: 0, fee: 60, localSponsorCovered: false,
       fuelUsed: 10, net: 1140, gained: 45, standings: baseStandings,
-      buckPlace: 3, showReward: null, arrivalLine: "arr", judgingLine: "jud",
+      buckPlace: 1, showReward: null, arrivalLine: "arr", judgingLine: "jud",
     };
-    // Judged axis show.
-    state.result = { ...common, show: "QA County Classic", tier: "Regional",
+    const judged = SHOWS_MASTER.find((s) => s.axis && !isRaceShow(s.name)) || { name: "QA County Classic" };
+    state.result = { ...common, show: judged.name, tier: "Regional",
       place: 2, score: 84, axis: "beauty", repDelta: 6, repTitle: "Local Legend",
-      judgeCard: { label: "Paint, Chrome & Presentation", icon: "✨",
+      judgeCard: { label: "Paint, Chrome & Presentation", icon: "",
         overall: 71, axisScore: 84, cats: [
           { cat: "paint", w: 0.3, val: 91 }, { cat: "chrome", w: 0.25, val: 83 },
-          { cat: "body", w: 0.25, val: 79 }, { cat: "interior", w: 0.15, val: 54 },
+          { cat: "body", w: 0.25, val: 79 }, { cat: "interior", w: 0.15, val: 44 },
           { cat: "wheels", w: 0.05, val: 88 }] },
       rivalReactions: [
-        { kicker: "🤝 NEW ALLY", color: "#87c77b", line: "ally line" },
-        { kicker: "🏁 THE RIVAL", color: "#e07070", line: "buck line" }] };
-    let html;
-    try { html = renderResult(); } catch (e) { state.result = snapResult; return "renderResult threw (judged): " + e.message; }
-    const need = ["How the Judges Scored It", "Word Around the Paddock", "Scene standing", "Judged baseline"];
-    for (const s of need) if (!html.includes(s)) { state.result = snapResult; return "judged result missing: " + s; }
-    // Cars & Coffee — scene chatter, no judging breakdown.
+        { kicker: "NEW ALLY", color: "#87c77b", line: "ally line" },
+        { kicker: "THE RIVAL", color: "#e07070", line: "buck line" }] };
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const bail = (m) => { host.remove(); state.result = snapResult; state.view = snapView; return m; };
+    try { host.innerHTML = renderResult(); } catch (e) { return bail("renderResult threw (judged): " + e.message); }
+    const clip = host.querySelector(".res-table .res-clip");
+    if (!clip) return bail("the judge's clipboard is missing from a judged show");
+    for (const c of ["paint", "chrome", "body", "interior", "wheels"])
+      if (!clip.textContent.includes(CAT_LABELS[c])) return bail("the clipboard lost a system: " + c);
+    if (!/baseline 77/.test(clip.textContent)) return bail("the clipboard does not add up to its baseline");
+    if (!clip.querySelector(".res-js-v.lo")) return bail("a weak system is not ringed on the clipboard");
+    const mine = host.querySelector(".res-sheet .res-row.you");
+    if (!mine || !/^2\./.test(mine.textContent.trim())) return bail("your line is not the ringed one on the sheet");
+    if (/^Your /.test(mine.querySelector(".res-n").textContent)) return bail("the typed sheet calls your car 'Your'");
+    if (!host.querySelector(".res-sheet .res-ribbon") || !/2ND/.test(host.querySelector(".res-ribbon").textContent)) return bail("second place did not get its ribbon");
+    if (!/Local Legend/.test(host.textContent) || !/\+6 rep/.test(host.textContent)) return bail("the scene standing went missing");
+    if (!/buck line/.test(host.textContent) || !/ally line/.test(host.textContent)) return bail("what the scene said is missing from the margin");
+    if (!host.querySelector(".res-note.red")) return bail("Buck's line is not in red pencil");
+    if (!/Net/.test(host.querySelector(".res-env").textContent) || !/1,140/.test(host.querySelector(".res-env").textContent)) return bail("the prize envelope lost the net");
+    if (host.querySelector(".chalkboard")) return bail("the Upcoming chalkboard is back on the results");
+    if (!host.querySelector('.res-side button[onclick="leaveResultScreen()"]')) return bail("there is no way back to the garage");
+    // Cars & Coffee: scene chatter, no judging and no ribbon.
     state.result = { ...common, show: "Saturday Cars & Coffee", tier: "Cars & Coffee",
       place: 1, score: 0, axis: null, repDelta: 0, repTitle: null, judgeCard: null,
-      rivalReactions: [{ kicker: "☕ AROUND THE LOT", color: "#c2a37d", line: "chatter line" }] };
-    let coffee;
-    try { coffee = renderResult(); } catch (e) { state.result = snapResult; return "renderResult threw (coffee): " + e.message; }
-    state.result = snapResult; state.view = snapView;
-    if (coffee.includes("How the Judges Scored It")) return "judge card leaked into Cars & Coffee";
-    if (!coffee.includes("Around the Lot")) return "coffee scene-chatter panel missing";
-    return true;
+      showReward: { type: "part", label: "Free Budget part unlocked", detail: "redeem it in the shop" },
+      rivalReactions: [{ kicker: "AROUND THE LOT", color: "#c2a37d", line: "chatter line" }] };
+    try { host.innerHTML = renderResult(); } catch (e) { return bail("renderResult threw (coffee): " + e.message); }
+    if (host.querySelector(".res-clip")) return bail("the judge's clipboard leaked into Cars & Coffee");
+    if (host.querySelector(".res-ribbon")) return bail("Cars & Coffee pinned a ribbon");
+    if (host.querySelector(".res-env")) return bail("Cars & Coffee handed over a prize envelope");
+    if (!/chatter line/.test(host.textContent)) return bail("coffee scene chatter missing");
+    if (!/Free Budget part/.test((host.querySelector(".res-ticket") || {}).textContent || "")) return bail("the raffle win is missing");
+    return bail(true);
   });
   if (resultUiOk !== true) fail("results UI: " + resultUiOk);
-  pass("results screen panels (judge / rep / rival)");
+  pass("results: typed sheet rings your line, ribbon, clipboard, envelope, margin notes");
 
   // ── workspace vibe options resolve, incl. the classic (6th) pick ──
   const vibeOk = await page.evaluate(() => {

@@ -2676,8 +2676,6 @@
       .cg-at-shop-main { color:#f0d4a0; font-weight:bold; font-size:15px; text-shadow:0 2px 6px rgba(0,0,0,.7); }
       .cg-at-shop-sub { color:#b7a98f; font-size:12px; }
       .cg-gain-float { position:absolute; left:50%; top:38%; z-index:6; pointer-events:none; padding:5px 12px; border-radius:3px; background:linear-gradient(180deg,#2c7a43,#1c5c31); border:1px solid #4fbf6e; color:#eafff0; font-weight:bold; font-size:14px; box-shadow:0 4px 14px rgba(0,0,0,.45); white-space:nowrap; animation:cg-gain-float 2.4s cubic-bezier(0.3,0.7,0.4,1) both; }
-      .champ-ribbon { display:inline-block; margin-bottom:8px; padding:5px 18px; border-radius:3px; background:linear-gradient(180deg,#e6bd5c,#c48f2c); border:1px solid #f2d98a; color:#241704; font-weight:bold; font-size:13px; letter-spacing:1px; text-transform:uppercase; box-shadow:0 3px 12px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.4); }
-      .beauty-card { border:1px solid rgba(217,162,79,0.5); border-radius:12px; padding:12px 12px 6px; background:linear-gradient(180deg,rgba(217,162,79,0.09),rgba(20,16,12,0.2)); box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.4); margin-bottom:12px; }
       #crashBar { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 4000; display: flex; align-items: center; gap: 10px; background: linear-gradient(180deg, #3a1a14, #24100c); border: 1px solid #c46d60; border-radius: 10px; padding: 10px 14px; box-shadow: 0 10px 30px rgba(0,0,0,.6); font-size: 12.5px; color: #f2ddd8; }
       #crashBar .cb-icon { font-size: 18px; }
       #crashBar .cb-text { flex: 1; line-height: 1.5; }
@@ -2881,66 +2879,134 @@
       .judging-stack {
         padding: 12px 14px;
       }
-      .judge-row {
+      /* The results, taped to the registration table. */
+      .res-table {
         display: grid;
-        grid-template-columns: 96px 1fr 34px;
-        align-items: center;
-        gap: 10px;
-        padding: 5px 0;
+        grid-template-columns: 268px minmax(0, 1fr) 292px;
+        grid-template-areas: "side sheet clip";
+        gap: 24px 28px;
+        align-items: start;
+        padding: 24px 26px 28px;
+        border: 1px solid #2a1c10;
+        border-radius: 10px;
+        background:
+          radial-gradient(ellipse at 50% 0%, rgba(255, 226, 170, 0.12), transparent 70%),
+          repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.07) 0 1px, transparent 1px 7px, rgba(255, 255, 255, 0.025) 7px 8px, transparent 8px 19px),
+          linear-gradient(180deg, #6a4a2d, #523720);
+        box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.08), 0 10px 26px rgba(0, 0, 0, 0.45);
       }
-      .judge-row + .judge-row {
-        border-top: 1px dashed #33291f;
-      }
-      .judge-cat {
-        font-size: 12px;
-        color: var(--text);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .judge-wt {
-        font-size: 10px;
-        color: var(--text-dim);
-        letter-spacing: 0.3px;
-      }
-      .judge-bar {
+      .res-table.no-clip { grid-template-columns: 268px minmax(0, 640px); grid-template-areas: "side sheet"; justify-content: center; }
+      .res-side { grid-area: side; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+      /* The sheet: typed on the club's typewriter, taped at the corners. */
+      .res-sheet {
+        grid-area: sheet;
         position: relative;
-        height: 8px;
-        border-radius: 5px;
-        background: #14100c;
-        border: 1px solid #3a3027;
-        overflow: hidden;
+        padding: 22px 26px 20px;
+        background: linear-gradient(180deg, #f6f3ea, #ece6d6);
+        color: #1f1b16;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+        transform: rotate(-0.5deg);
+        font-family: var(--font-type);
       }
-      .judge-bar-fill {
+      .res-sheet::before, .res-sheet::after {
+        content: "";
         position: absolute;
-        inset: 0 auto 0 0;
-        width: 0;
-        border-radius: 5px;
-        animation: judgeFill 0.7s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+        top: -8px;
+        width: 70px;
+        height: 20px;
+        background: rgba(232, 220, 182, 0.82);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
       }
-      @keyframes judgeFill {
-        from {
-          width: 0;
-        }
+      .res-sheet::before { left: -14px; transform: rotate(-32deg); }
+      .res-sheet::after { right: -14px; transform: rotate(30deg); }
+      /* Where a ribbon is pinned, the pin holds that corner. */
+      .res-sheet.ribboned::after { display: none; }
+      .res-org { padding-right: 96px; font: bold 10px/1.3 var(--font-print); letter-spacing: 0.14em; text-transform: uppercase; color: #5b5346; }
+      .res-name { padding-right: 96px; margin: 3px 0 2px; font: 900 24px/1.1 var(--font-print); letter-spacing: -0.01em; text-transform: uppercase; color: #15120e; }
+      .res-sub { display: flex; justify-content: space-between; gap: 10px; padding: 0 96px 7px 0; border-bottom: 2px solid #1f1b16; font: bold 11px var(--font-type); letter-spacing: 0.12em; text-transform: uppercase; }
+      .res-rows { margin: 12px 0 0; padding: 0; list-style: none; }
+      .res-row { position: relative; display: flex; align-items: baseline; gap: 8px; padding: 5px 4px; font-size: 14.5px; line-height: 1.2; }
+      .res-p { flex: 0 0 26px; font-weight: bold; }
+      .res-n { flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .res-dots { flex: 1 1 12px; min-width: 12px; border-bottom: 2px dotted #8a8172; transform: translateY(-3px); }
+      .res-s { flex: 0 0 auto; min-width: 22px; font-weight: bold; text-align: right; }
+      /* Somebody ringed yours in red marker. */
+      .res-row.you::after {
+        content: "";
+        position: absolute;
+        inset: -3px -12px -4px -10px;
+        border: 2.5px solid #c8281e;
+        border-radius: 50% 46% 52% 48% / 62% 52% 56% 44%;
+        transform: rotate(-1.2deg);
+        opacity: 0.88;
+        pointer-events: none;
       }
-      .judge-val {
-        font-size: 12px;
-        font-weight: bold;
-        text-align: right;
-        font-variant-numeric: tabular-nums;
+      .res-row.you .res-n { font-weight: bold; }
+      .res-notes { display: grid; gap: 8px; margin-top: 14px; padding-top: 10px; border-top: 1px dashed #b9ae95; }
+      .res-note { font: 15px/1.3 var(--font-dale); color: #4b4740; transform: rotate(-0.6deg); }
+      .res-note.red { color: #a3241f; }
+      /* Pinned over the top edge, so its tails hang down beside the header
+         and never across a score. */
+      .res-ribbon { position: absolute; top: -36px; right: 4px; width: 80px; transform: rotate(8deg); filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.35)); }
+      .res-sheet.coffee .res-org, .res-sheet.coffee .res-name, .res-sheet.coffee .res-sub { padding-right: 0; }
+      .res-sheet.coffee { background: radial-gradient(circle at 86% 18%, transparent 30px, rgba(120, 72, 30, 0.22) 31px, rgba(120, 72, 30, 0.08) 35px, transparent 37px), linear-gradient(180deg, #f6f3ea, #ece6d6); }
+      .res-sheet.stamped { padding-bottom: 66px; }
+      .res-stamp { position: absolute; right: 26px; bottom: 18px; padding: 4px 12px; border: 3px solid #b3262a; border-radius: 4px; color: #b3262a; font: 900 17px var(--font-print); letter-spacing: 0.08em; text-transform: uppercase; transform: rotate(-9deg); opacity: 0.8; }
+      /* The photo off the lawn. */
+      .res-photo { padding: 9px 9px 0; background: #f7f5ef; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.45); transform: rotate(-2.2deg); }
+      .res-photo .car-preview-wrap { margin: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+      .res-photo .car-preview-wrap > .flex { display: none !important; }
+      .res-photo .art-backdrop-shell { height: 150px; min-height: 150px; border-radius: 0; }
+      .res-photo-cap { padding: 7px 4px 9px; font: 17px/1.1 var(--font-dale); color: #2b3a8a; text-align: center; }
+      /* The phone, on the way out. */
+      .res-buzz { display: flex; align-items: center; gap: 10px; padding: 8px 11px; border-radius: 12px; background: rgba(24, 22, 26, 0.92); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); color: #f1ece4; }
+      .res-buzz-app { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, #e0607e, #8e5bd4); font: bold 11px var(--font-print); color: #fff; }
+      .res-buzz-t { display: flex; flex-direction: column; min-width: 0; font: 13px var(--font-print); }
+      .res-buzz-t small { font-size: 11px; color: #b6aea3; }
+      /* The purse, in the organizers' envelope. */
+      .res-env { position: relative; padding: 22px 16px 12px; background: linear-gradient(180deg, #d9b97b, #c9a564); color: #2d2210; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4); font-family: var(--font-type); transform: rotate(1deg); }
+      .res-env::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 14px; background: linear-gradient(170deg, rgba(0, 0, 0, 0.12) 50%, transparent 52%), linear-gradient(190deg, rgba(0, 0, 0, 0.12) 50%, transparent 52%); }
+      .res-env-h { margin-bottom: 6px; font: 900 11px var(--font-print); letter-spacing: 0.18em; text-transform: uppercase; }
+      .res-env-l, .res-env-t { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; font-size: 13px; }
+      .res-env-t { margin-top: 5px; padding-top: 5px; border-top: 1.5px solid #2d2210; font-weight: bold; font-size: 15px; }
+      .res-env-t .up { color: #1d5a24; }
+      .res-env-t .down { color: #8e1f1a; }
+      .res-ticket { display: flex; align-items: center; gap: 12px; padding: 9px 14px; background: #e4574b; color: #fff6ec; border-left: 2px dashed rgba(255, 246, 236, 0.7); box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4); transform: rotate(-1.4deg); }
+      .res-ticket-k { font: 900 10px/1.1 var(--font-print); letter-spacing: 0.14em; text-transform: uppercase; }
+      .res-ticket-v { font: bold 13px var(--font-print); }
+      /* The judge's clipboard. */
+      .res-clip { grid-area: clip; position: relative; padding: 26px 12px 12px; border-radius: 8px; background: linear-gradient(180deg, #8a5f36, #6c4826); box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45); transform: rotate(1.2deg); }
+      .res-clip-clamp { position: absolute; top: -6px; left: 50%; width: 104px; height: 26px; margin-left: -52px; border-radius: 5px 5px 8px 8px; background: linear-gradient(180deg, #d9dde1, #8c9298); box-shadow: 0 2px 3px rgba(0, 0, 0, 0.4); }
+      .res-clip-paper { padding: 12px 14px 12px; background: #f9f7f1; color: #1f1b16; font-family: var(--font-type); }
+      .res-clip-h { font: 900 13px var(--font-print); letter-spacing: 0.12em; text-transform: uppercase; }
+      .res-clip-sub { margin: 2px 0 8px; font-size: 11.5px; }
+      .res-js { display: grid; grid-template-columns: minmax(0, 1fr) 40px 44px; align-items: center; gap: 6px; padding: 3px 0; border-bottom: 1px solid #d9d2c1; font-size: 12.5px; }
+      .res-js-hd { border-bottom: 1.5px solid #1f1b16; font: bold 10px var(--font-print); letter-spacing: 0.1em; text-transform: uppercase; }
+      .res-js-c { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .res-js-w { text-align: right; color: #6d6556; }
+      .res-js-v { justify-self: center; font: 19px/1 var(--font-dale); color: #1f3d9a; }
+      .res-js-hd .res-js-v { font: bold 10px var(--font-print); color: inherit; }
+      .res-js-v.lo { padding: 0 5px; border: 2px solid #c8281e; border-radius: 50%; color: #b3262a; }
+      .res-clip-foot { margin-top: 8px; font-size: 11.5px; line-height: 1.4; }
+      /* A short laptop: the photo is a smaller print and the table packs closer. */
+      @media (min-width: 761px) and (max-height: 760px) {
+        .res-table { padding-top: 20px; padding-bottom: 20px; }
+        .res-side { gap: 10px; }
+        .res-photo .art-backdrop-shell { height: 108px; min-height: 108px; }
+        .res-photo-cap { padding: 5px 4px 7px; }
+        .res-env { padding-top: 18px; padding-bottom: 10px; }
       }
-      .judge-foot {
-        display: flex;
-        justify-content: space-between;
-        gap: 8px;
-        margin-top: 10px;
-        padding-top: 9px;
-        border-top: 1px solid #41372f;
-        font-size: 11px;
-        color: var(--text-dim);
+      @media (max-width: 1120px) {
+        .res-table, .res-table.no-clip { grid-template-columns: 248px minmax(0, 1fr); grid-template-areas: "side sheet" "side clip"; justify-content: stretch; }
       }
-      .judge-foot b {
-        color: var(--text);
+      @media (max-width: 760px) {
+        .res-table, .res-table.no-clip { grid-template-columns: minmax(0, 1fr); grid-template-areas: "sheet" "side" "clip"; padding: 18px 14px 20px; }
+        .res-sheet { padding: 18px 16px 16px; }
+        .res-name { font-size: 20px; }
+        .res-row { font-size: 13.5px; }
+        .res-ribbon { width: 66px; top: -30px; right: 2px; }
+        .res-org, .res-name { padding-right: 76px; }
+        .res-sub { padding-right: 0; }
       }
 
       .tutorial-modal {
@@ -3850,9 +3916,6 @@
         }
       }
 
-      .result-action-bar {
-        position: static;
-      }
       @media (max-width: 980px) {
         .grid-main,
         .grid-main-shows {
@@ -3860,21 +3923,6 @@
         }
         .social-actions {
           grid-template-columns: 1fr;
-        }
-        .result-grid {
-          display: flex;
-          flex-direction: column;
-        }
-        .result-grid > div:first-child {
-          order: 2;
-        }
-        .result-grid > div:nth-child(2) {
-          order: 1;
-          display: flex;
-          flex-direction: column;
-        }
-        .result-grid > div:nth-child(2) .result-action-bar {
-          position: static;
         }
       }
       @media (max-width: 640px) {
@@ -23561,21 +23609,20 @@
         if (!isPhone) return html;
         return `<details class="m-fold" ${mFoldOpen[id] ? "open" : ""} ontoggle="mFoldToggle(this,'${id}')"><summary>${label}<span class="m-fold-v">${value}</span></summary>${html}</details>`;
       }
-      function renderUpcomingBar(showEvent = true) {
+      function renderUpcomingBar() {
         // Staged reveal: week one belongs to the truck. The calendar shows
         // up once the first week is in the books (and always for veterans).
         if (state.week <= 1 && onboardStageVal() < 3) return "";
-        const { nextShow, nextShowText } = getUpcomingSummary();
-        // Current week and loan balance both live in the topbar, no need
-        // to repeat them here.
+        // Current week and loan balance both live in the topbar, and the next
+        // show is Compete's whole wall, so the board keeps the paycheck.
         const payWeeks = `${PAYCHECK_CYCLE - state.paycheckProgress} week(s)`;
         return mobileFold(
           "upcoming",
           "Upcoming",
-          showEvent ? nextShowText : `Paycheck in ${payWeeks}`,
+          `Paycheck in ${payWeeks}`,
           panel(
             "Upcoming",
-            `${chalkRow("Paycheck", payWeeks)}${showEvent ? chalkRow("Next Big Event", nextShowText, nextShow.weeksUntil === 0 ? "good" : "warn") : ""}`,
+            chalkRow("Paycheck", payWeeks),
             "",
             "#f5efe0",
             "chalkboard",
@@ -27845,7 +27892,7 @@ addEventListener("DOMContentLoaded",function(){
         // nothing in the second column, which does not read as restraint so much as
         // a page that half failed to load. When the side has nothing to say, the
         // layout stops holding space for it.
-        const sideCol = `${renderUpcomingBar(false)}${renderRestorationPanel(car)}`;
+        const sideCol = `${renderUpcomingBar()}${renderRestorationPanel(car)}`;
         return `<div class="grid-main${sideCol.trim() ? '' : ' solo'}"><div>${gigBoardMarkup()}${heroPanel(
           "",
           onboardStageVal() >= 3 ? "" : "Every bolt, every part, one at a time",
@@ -28534,144 +28581,143 @@ addEventListener("DOMContentLoaded",function(){
       function isRaceShow(name) {
         return RACE_SHOWS.has(name);
       }
-      // Judge card, for shows that weigh a specific axis, break the score
-      // down by system so the placement is legible: which systems the venue
-      // cared about, how each one scored, and the overall/axis blend that
-      // produced the baseline. Weak systems read red so the player knows
-      // exactly what to fix before the next one. For races the same breakdown
-      // is reframed around the clock instead of a judging panel.
-      function renderJudgeCard(r) {
-        const jc = r && r.judgeCard;
+      /* ═══════════════════════════════════════════
+         THE RESULTS (after a show)
+      ═══════════════════════════════════════════ */
+      // When the judging's done they tape the results to the registration
+      // table: typed standings, your line circled, a ribbon pinned on if you
+      // placed, and what you overheard scribbled in the margin. Beside it the
+      // photo somebody took of her on the lawn, the purse in its envelope,
+      // and, where the venue weighed one thing, the judge's clipboard with the
+      // scores by system. Every number the old panels printed is still here;
+      // it just sits where it would at a real show.
+      const RES_RIBBON = {
+        1: ["#1f4f9e", "#163a76", "1ST"],
+        2: ["#b3262a", "#86191c", "2ND"],
+        3: ["#f1efe7", "#a9a596", "3RD"],
+      };
+      function resRibbon(place, tier, champ) {
+        const rb = RES_RIBBON[place];
+        if (!rb) return "";
+        const [c1, c2, label] = rb;
+        let pts = "";
+        for (let i = 0; i < 36; i++) {
+          const a = (i / 36) * Math.PI * 2;
+          const rad = i % 2 ? 40 : 47;
+          pts += `${(50 + rad * Math.sin(a)).toFixed(1)},${(50 - rad * Math.cos(a)).toFixed(1)} `;
+        }
+        const ink = place === 3 ? "#4d4a42" : c2;
+        const band = champ
+          ? `<rect x="12" y="106" width="76" height="16" fill="#f4efe2" stroke="${c2}" stroke-width="1.5"/><text x="50" y="118" text-anchor="middle" font-family="Arial" font-size="9.5" font-weight="bold" letter-spacing="1.2" fill="${ink}">CHAMPION</text>`
+          : "";
+        return `<svg class="res-ribbon" viewBox="0 0 100 152" role="img" aria-label="${label} place ribbon">
+          <path d="M40 58 L22 146 L35 137 L43 150 L55 60Z" fill="${c2}"/>
+          <path d="M60 58 L78 146 L65 137 L57 150 L45 60Z" fill="${c1}" stroke="${c2}" stroke-width="0.8"/>
+          ${band}
+          <polygon points="${pts}" fill="${c1}" stroke="${c2}" stroke-width="1.5"/>
+          <circle cx="50" cy="50" r="29" fill="#f4efe2"/>
+          <circle cx="50" cy="50" r="25" fill="none" stroke="${place === 3 ? c2 : c1}" stroke-width="2"/>
+          <text x="50" y="54" text-anchor="middle" font-family="Georgia, serif" font-size="19" font-weight="bold" fill="${ink}">${label}</text>
+          <text x="50" y="66" text-anchor="middle" font-family="Arial" font-size="6.5" letter-spacing="1" fill="#4d4a42">${tier.toUpperCase()}</text>
+          <circle cx="50" cy="6" r="4.5" fill="#c8281e"/><circle cx="48.6" cy="4.6" r="1.4" fill="#f28a7e"/>
+        </svg>`;
+      }
+      // The judge's clipboard: the systems the venue weighed, the weights on
+      // the form, the judge's numbers in pen, the weak ones ringed. At a race
+      // it is the bracket sheet, and the clock did the judging.
+      function resClipboard(r) {
+        const jc = r.judgeCard;
         if (!jc) return "";
-        const race = r && isRaceShow(r.show);
-        const barCol = (v) =>
-          v >= 75 ? "#87c77b" : v >= 50 ? "#d8a24f" : "#d38a76";
+        const race = isRaceShow(r.show);
         const rows = jc.cats
-          .map((c, i) => {
-            const label = CAT_LABELS[c.cat] || c.cat;
-            const pct = Math.max(3, Math.min(100, c.val));
-            return `<div class="judge-row"><div class="judge-cat">${label}<span class="judge-wt"> · ${Math.round(c.w * 100)}%</span></div><div class="judge-bar"><div class="judge-bar-fill" style="width:${pct}%;background:${barCol(c.val)};animation-delay:${(0.06 * i).toFixed(2)}s"></div></div><div class="judge-val" style="color:${barCol(c.val)}">${c.val}</div></div>`;
-          })
+          .map((c) => `<div class="res-js"><span class="res-js-c">${CAT_LABELS[c.cat] || c.cat}</span><span class="res-js-w">${Math.round(c.w * 100)}%</span><b class="res-js-v${c.val < 50 ? " lo" : ""}">${c.val}</b></div>`)
           .join("");
         const baseline = Math.round(jc.overall * 0.55 + jc.axisScore * 0.45);
-        if (race) {
-          const intro = `<div class="tiny muted" style="margin-bottom:9px">No judges out here, just the clock. This run came down to <b style="color:var(--text)">${jc.label}</b>, and your weakest systems cost you the most time.</div>`;
-          const foot = `<div class="judge-foot"><span>Build <b>${jc.overall}</b> + <b>${jc.axisScore}</b> down the track</span><span>Finished <b>${placeLabel(r.place)}</b></span></div>`;
-          return panel(
-            "How the Run Went",
-            `${intro}${rows}${foot}`,
-            "",
-            "#c2a37d",
-          );
-        }
-        const intro = `<div class="tiny muted" style="margin-bottom:9px">This venue weighed <b style="color:var(--text)">${jc.label}</b>. Your weakest systems here dragged the score the most.</div>`;
-        const foot = `<div class="judge-foot"><span>Overall <b>${jc.overall}</b> ×55% + <b>${jc.axisScore}</b> ×45%</span><span>Judged baseline <b>${baseline}</b></span></div>`;
-        return panel(
-          "How the Judges Scored It",
-          `${intro}${rows}${foot}`,
-          "",
-          "#c2a37d",
-        );
+        const foot = race
+          ? `build ${jc.overall} + ${jc.axisScore} down the track`
+          : `overall ${jc.overall} &times; 55% + ${jc.axisScore} &times; 45% = <b>baseline ${baseline}</b>`;
+        return `<div class="res-clip"><div class="res-clip-clamp"></div><div class="res-clip-paper">
+          <div class="res-clip-h">${race ? "Bracket sheet" : "Judging sheet"}</div>
+          <div class="res-clip-sub">${race ? "came down to" : "this venue weighs"} <b>${jc.label}</b></div>
+          <div class="res-js res-js-hd"><span class="res-js-c">System</span><span class="res-js-w">Wt</span><b class="res-js-v">Score</b></div>
+          ${rows}
+          <div class="res-clip-foot">${foot}</div>
+        </div></div>`;
       }
-
-      // Rival reactions, the persistent, readable version of what the scene
-      // said about this result. Rows fade in one at a time (beat pacing) with
-      // a relationship kicker so the player reads the tone at a glance.
-      function renderRivalReactions(r) {
-        const rx = r && r.rivalReactions;
-        if (!rx || !rx.length) return "";
-        const rows = rx
-          .map(
-            (e, i) =>
-              `<div class="judging-line" style="animation-delay:${(0.12 * i).toFixed(2)}s"><div class="feed-kicker" style="color:${e.color}">${e.kicker}</div><div class="small" style="color:var(--text);line-height:1.6">${e.line}</div></div>`,
-          )
-          .join("");
-        const title =
-          r.tier === "Cars & Coffee" ? "Around the Lot" : "Word Around the Paddock";
-        return panel(title, `<div class="judging-stack">${rows}</div>`, "", "#c98f6a");
-      }
-
       function renderResult() {
         const car = currentCar();
         const r = state.result;
         const isCoffee = r.tier === "Cars & Coffee";
-        // No medals or judges at Cars & Coffee, just hangout vibes.
-        // Skip the Buck-finished-Nth comparison and the JUDGING beat
-        // when there's nothing being judged.
-        // Buck was on this screen three times: named here, flagged RIVAL at his
-        // place in the standings, and again in the paddock where he actually
-        // says something. The standings carry the number, the paddock carries
-        // the meaning, and this line carried neither.
-        const buckLine = "";
-        const rewardLine = r.showReward
-          ? `<div class="small good" style="margin-bottom:8px">${r.showReward.label}</div><div class="tiny muted" style="margin-bottom:10px">${r.showReward.detail}</div>`
-          : "";
-        const vibeLine = isCoffee
-          ? r.place <= 2
-            ? "Heads turned. Phones came out. Couple guys you don't even know wanted to walk around it."
-            : r.place <= 4
-              ? "A few nods. One real conversation. Coffee got cold while somebody asked about the engine."
-              : "Quiet morning. You drank coffee, looked at other people's builds, didn't talk to anyone."
-          : r.place === 1
-            ? "For one night, the whole place had to admit the build was real."
-            : r.place <= 3
-              ? "You caught respect, even if nobody would say it without sounding annoyed."
-              : "You learned something tonight, even if most of it arrived disguised as criticism.";
-        const placeColor = isCoffee
-          ? r.place <= 2 ? "var(--gold)" : r.place <= 4 ? "var(--text-bright)" : "var(--text-dim)"
-          : r.place === 1 ? "#d8a24f" : r.place === 2 ? "#d8a24f" : r.place === 3 ? "#bdb7ab" : "#8f8577";
-        const placeIcon = isCoffee
-          ? r.place <= 2 ? "" : r.place <= 4 ? "" : ""
-          : r.place === 1 ? "" : r.place === 2 ? "" : r.place === 3 ? "" : "";
-        const placeText = isCoffee
-          ? r.place === 1
-            ? "Turned Heads"
-            : r.place <= 3
-              ? "Got Noticed"
-              : r.place <= 5
-                ? "Showed Up"
-                : "Quiet Morning"
-          : ["1st", "2nd", "3rd", "4th", "5th"][r.place - 1] || `${r.place}th`;
-        // The car is named in the preview header an inch above this line, and
-        // the medal is already forty pixels tall over the words under it.
-        const carLine = isCoffee
-          ? ""
-          : `<div class="small" style="color:var(--text);margin-bottom:2px">Score ${r.score}</div>`;
-        const isWin = isCoffee ? r.place === 1 : r.place === 1;
-        const championRibbon = isWin
-          ? `<div class="champ-ribbon">${isCoffee ? " Show Stealer" :` ${r.tier} Champion`}</div>`
-          : "";
-        const shareHint = isWin
-          ? `<div class="tiny muted" style="text-align:center;margin-top:10px;font-style:italic;opacity:.85"> Screenshot the build and post it, @${(r.car || "your build").replace(/[^A-Za-z0-9]/g, "").slice(0, 14) || "yourbuild"} earned it.</div>`
-          : "";
-        const heroTop = `<div style="text-align:center;padding:4px 0 2px">${championRibbon}<div style="font-size:40px;line-height:1;margin-bottom:4px">${placeIcon}</div><div style="color:${placeColor};font-weight:bold;font-size:${isCoffee ? "22px" : "28px"};letter-spacing:0.5px;margin-bottom:4px">${placeText}</div>${carLine}${buckLine}${r.localSponsorCovered ? `<div class="tiny good" style="margin-top:6px">Entry fee covered by town sponsor.</div>` : ""}${rewardLine ? `<div style="margin-top:8px">${rewardLine}</div>` : ""}</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:10px 0 4px">${[
-          isCoffee ? null : ["Net", `${r.net >= 0 ? "+" : ""}$${fmt(r.net)}`, r.net >= 0 ? "#87c77b" : "#d38a76"],
-          r.bonusCash > 0 ? ["Sponsor", `+$${fmt(r.bonusCash)}`, "#d8a24f"] : null,
-          ["Followers", `+${fmtF(r.gained)}`, "#b68ae6"],
-          r.repDelta > 0 ? ["Rep", `+${r.repDelta}`, "#d8a24f"] : null,
-        ].filter(Boolean).map(([label, val, col]) => `<div style="background:#191511;border:1px solid #41372f;border-radius:8px;padding:9px 6px;text-align:center"><div style="color:${col};font-weight:bold;font-size:16px">${val}</div><div class="tiny muted" style="letter-spacing:.5px;margin-top:2px">${label.toUpperCase()}</div></div>`).join("")}</div>${
-          isCoffee
-            ? ""
-            : `<div class="tiny muted" style="text-align:center;margin-bottom:4px">Prize $${fmt(r.prize)} · Entry -$${fmt(r.fee)} · Fuel -${r.fuelUsed} gal</div>`
-        }${!isCoffee && r.repDelta > 0 ? `<div class="tiny muted" style="text-align:center;margin-bottom:4px">Scene standing: <b style="color:var(--text)">${r.repTitle}</b>, word's getting around</div>` : ""}${shareHint}`;
-        const standingsBody = `${r.standings.map((e, i) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 6px;border-bottom:${i < r.standings.length - 1 ? "1px dashed #453a31" : "none"};background:${e.isPlayer ? "rgba(79,112,74,0.18)" : e.isRival ? "rgba(112,40,40,0.15)" : "transparent"};border-radius:4px"><div style="display:flex;gap:10px"><span style="color:${i === 0 ? "#d8a24f" : "#7d7468"};font-weight:bold;width:18px">${i + 1}</span><span style="color:${e.isPlayer ? "#9fd18e" : e.isRival ? "#e07070" : "#e4d8c1"};font-size:14px">${e.name}${e.isRival ? `<span class="rival-badge">RIVAL</span>` : e.named && e.rivalId ? `<span class="rival-badge known ${rivalTier(e.rivalId)}">${RIVAL_TIER_LABEL[rivalTier(e.rivalId)]}</span>` : ""}</span></div><span class="small muted">${isCoffee ? "" : e.score}</span></div>`).join("")}`;
+        const race = isRaceShow(r.show);
+        const master = SHOWS_MASTER.find((s) => s.name === r.show);
+        const bill = master ? SHOW_BILL[master.id] || {} : {};
+        const org = master ? showBillLine(master) : "";
+        const d = r.season === seasonNum() && r.week >= 1 ? calSatDate(r.week) : null;
+        const date = d ? `${d.getUTCMonth() + 1}/${d.getUTCDate()}` : "";
+        const isWin = r.place === 1;
+        const champ = isWin && !isCoffee;
+
+        // The sheet. The typist has every car down the same way, and yours is
+        // the one somebody ringed.
+        const short = (name) => String(name || "").replace(/^Your\s+/, "").replace(/^(\d{2})(\d{2})\s/, "'$2 ");
+        const rows = r.standings
+          .map((e, i) => {
+            const cls = e.isPlayer ? " you" : e.isRival ? " buck" : "";
+            const who = e.isPlayer ? short(e.name) : e.name;
+            return `<li class="res-row${cls}"><span class="res-p">${i + 1}.</span><span class="res-n">${who}</span><span class="res-dots"></span><span class="res-s">${isCoffee ? "" : e.score}</span></li>`;
+          })
+          .join("");
+        // What you heard, in pencil down the margin. The scene's taste comes
+        // first because it is the one that changes what you build next.
         const tasteLine =
           !isCoffee && r.tasteEdge && r.tasteId && SCENE_TASTES[r.tasteId]
             ? r.tasteEdge > 0
               ? SCENE_TASTES[r.tasteId].resultGood
               : SCENE_TASTES[r.tasteId].resultBad
             : "";
-        const narrativeBody = `<div style="margin-top:2px">${[r.arrivalLine, isCoffee ? "" : r.judgingLine, tasteLine, vibeLine].filter(Boolean).map((line) => `<div class="small" style="color:var(--text);line-height:1.6;margin-bottom:8px">${line}</div>`).join("")}</div>`;
-        // and the panel heading does not need to say the placing a third time
-        const heroTitle = isCoffee ? `${r.show} · Hangout` : r.show;
-        const storyBody = `<div class="${isWin ? "beauty-card" : ""}">${carPreview(car).replace(workspaceBackdropFrame(), showBackdropFrame(r.tier, r.show))}${heroTop}</div>${narrativeBody}`;
-        return `<div class="grid-main result-grid"><div>${panel(
-          heroTitle,
-          storyBody,
-          "",
-          placeColor,
-        )}${renderJudgeCard(r)}${renderRivalReactions(r)}</div><div><div class="result-action-bar">${state.won ? panel("After the Show", `${button("Back to the Garage", "leaveResultScreen()", false, "", "width:100%")}`, "You won the National Show. The build is complete.", "#d8a24f") : `<div style="margin-bottom:14px">${button("Back to the Garage", "leaveResultScreen()", false, "", "width:100%")}</div>`}</div>${panel(isCoffee ? "Crowd Pleasers" : "Final Standings", standingsBody, "", "#7da0c2")}${renderUpcomingBar()}</div></div>`;
+        const heard = [];
+        if (tasteLine) heard.push(["", tasteLine]);
+        (r.rivalReactions || []).forEach((e) => heard.push([/RIVAL/i.test(e.kicker || "") ? " red" : "", e.line]));
+        if (!isCoffee && r.judgingLine) heard.push(["", `"${r.judgingLine}"`]);
+        const notes = heard.slice(0, 2).map(([c, t]) => `<div class="res-note${c}">${t}</div>`).join("");
+        const kind = isCoffee ? "Who turned heads" : race ? "Bracket results" : "Official results";
+        const stamp = state.won ? `<div class="res-stamp">Build complete</div>` : "";
+        const ribbon = isCoffee ? "" : resRibbon(r.place, r.tier, champ);
+        const sheet = `<div class="res-sheet${isCoffee ? " coffee" : ""}${ribbon ? " ribboned" : ""}${stamp ? " stamped" : ""}">
+          <div class="res-org">${org || r.tier}</div>
+          <div class="res-name">${r.show}</div>
+          <div class="res-sub"><span>${kind}</span><span>${date ? `Sat ${date}` : ""}</span></div>
+          <ol class="res-rows">${rows}</ol>
+          ${notes ? `<div class="res-notes">${notes}</div>` : ""}
+          ${ribbon}
+          ${stamp}
+        </div>`;
+
+        // The photo off the lawn, the car as she stands, at that venue.
+        const shot = carPreview(car)
+          .replace(workspaceBackdropFrame(), showBackdropFrame(r.tier, r.show))
+          .replace(` onclick="popTheHood()" style="cursor:pointer"`, "");
+        const where = String(bill.place || r.show).toLowerCase();
+        const photo = `<div class="res-photo">${shot}<div class="res-photo-cap">${where}${date ? `, ${date}` : ""}</div></div>`;
+        // The phone, buzzing in your pocket on the way out.
+        const buzz = `<div class="res-buzz"><span class="res-buzz-app">SG</span><span class="res-buzz-t"><b>+${fmtF(r.gained)} followers</b>${r.repDelta > 0 ? `<small>+${r.repDelta} rep &middot; ${r.repTitle || ""}</small>` : ""}</span></div>`;
+        // The purse, in the envelope the organizers hand you at the table.
+        const entry = r.localSponsorCovered ? "covered" : r.fee > 0 ? `-$${fmt(r.fee)}` : "free";
+        const env = isCoffee
+          ? ""
+          : `<div class="res-env"><div class="res-env-h">Prize money</div>
+              <div class="res-env-l"><span>Purse</span><b>${r.prize > 0 ? `$${fmt(r.prize)}` : "none"}</b></div>
+              ${r.bonusCash > 0 ? `<div class="res-env-l"><span>Sponsor</span><b>+$${fmt(r.bonusCash)}</b></div>` : ""}
+              <div class="res-env-l"><span>Entry</span><b>${entry}</b></div>
+              <div class="res-env-t"><span>Net</span><b class="${r.net >= 0 ? "up" : "down"}">${r.net >= 0 ? "+" : "-"}$${fmt(Math.abs(r.net))}</b></div>
+            </div>`;
+        // A coffee meet pays in the raffle.
+        const ticket = r.showReward
+          ? `<div class="res-ticket" title="${escapeHtmlAttr(r.showReward.detail || "")}"><span class="res-ticket-k">Raffle<br>winner</span><span class="res-ticket-v">${r.showReward.label}</span></div>`
+          : "";
+        const side = `<div class="res-side">${photo}${buzz}${env}${ticket}${button("Back to the Garage", "leaveResultScreen()", false, "", "width:100%")}</div>`;
+        const clip = resClipboard(r);
+        return `<div class="res-table${clip ? "" : " no-clip"}">${side}${sheet}${clip}</div>`;
       }
 
       // Ending the Saturday trip burns the weekend, advance one week
