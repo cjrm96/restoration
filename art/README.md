@@ -47,7 +47,7 @@ single-file itch build.
 | `loading-midnight-order.png` | Ambient load-in rotation — 1 AM parts order at the kitchen table. |
 | `loading-gas-station.png` | Ambient load-in rotation — desert gas-station stop at dusk. |
 | `loading-rain-day.png` | Ambient load-in rotation — rainy evening in the garage. |
-| `scene-season-end.png` | Season's-end cut scene — winter night in the garage, trophies on the shelf, first snow outside. Plays when the season wraps. |
+| `scene-season-end.jpg` | Season's-end cut scene — winter night in the garage, trophies on the shelf, first snow outside, the mechanic in a folding chair with his coffee and the dog asleep on a mat. Plays when the season wraps. Replaced the earlier standing-with-coffee master (`scene-season-end.png`, in git history). |
 | `scene-season-start.png` | New-season cut scene — warm spring morning, pulling the cover off the project in the driveway. Plays when a new season begins. |
 | `scene-friday-night-lot.png` | Friday-night hangout cut scene — the crew's cars backed into the corner of a grocery-store lot after dark, hoods popped. Occasional ambient beat on week advance. |
 | `loading-phone-break.png` | Ambient load-in rotation — mechanic taking a phone break on the garage floor mid-brake-job. |
