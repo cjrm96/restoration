@@ -3011,6 +3011,63 @@
         .re-sheet .re-call, .re-yours { grid-column: 1 / -1; }
       }
 
+      /* The Saturday map, unfolded on the truck's bench seat: tuck-and-roll
+         vinyl, the printed map on it with its folds, and a yellow tag beside
+         each place Dale or she marked. Tags sit on the map in percentages, so
+         they stay on their marks at any size; the map is sized to the screen. */
+      .hero-panel.rt-view { padding: 0; overflow: hidden; }
+      .rt-seat {
+        position: relative;
+        padding: 12px 18px 30px;
+        border-radius: inherit;
+        background:
+          radial-gradient(ellipse at 50% 18%, rgba(255, 226, 190, 0.16), transparent 62%),
+          linear-gradient(180deg, transparent calc(100% - 22px), #2a110d calc(100% - 22px), #2a110d calc(100% - 20px), #7c4234 calc(100% - 19px), #5a271f calc(100% - 12px), #3a1712 100%),
+          repeating-linear-gradient(90deg, #5a281f 0, #64302a 11px, #6c352b 22px, #64302a 33px, #5a281f 43px, #3d1a14 44px, #5a281f 45px);
+        box-shadow: inset 0 0 0 2px #2a110d, inset 0 0 30px rgba(0, 0, 0, 0.5);
+      }
+      .rt-seat .rt-back { display: block; margin: 0 0 8px; padding: 5px 12px; font-size: 12px; background: #2c1a14; border-color: #6b4a38; color: var(--text); }
+      .rt-paper {
+        position: relative;
+        container-type: inline-size;
+        width: min(100%, calc(clamp(280px, 100vh - 318px, 600px) * 1000 / 540));
+        aspect-ratio: 1000 / 540;
+        margin: 0 auto;
+        transform: rotate(-0.5deg);
+        box-shadow: var(--paper-shadow);
+      }
+      .rt-map { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+      .rt-map .st { stroke: #fff; stroke-width: 3.2; }
+      .rt-map .rd { stroke: #e07a3a; stroke-width: 3.4; }
+      .rt-map .ink-dale { fill: none; stroke: #23407a; stroke-width: 2.4; stroke-linecap: round; opacity: 0.9; }
+      .rt-map .ink-dale.route { stroke-dasharray: 7 6; }
+      .rt-map .ink-dale-t { font-family: var(--font-dale); font-size: 24px; fill: #23407a; }
+      .rt-map .ink-her path { fill: none; stroke: #6a3d7a; stroke-width: 2; }
+      .rt-map .ink-her-t { font-family: var(--font-her); font-size: 22px; fill: #6a3d7a; }
+      /* the tag is the button: yellow, hard shadow, like a shelf sign */
+      .rt-paper .rt-tag { position: absolute; z-index: 2; transform: translateX(-50%); }
+      .rt-tag { display: grid; grid-template-columns: auto auto; grid-template-rows: auto auto; column-gap: 0.45em; align-items: center; padding: 0.18em 0.45em 0.2em 0.4em; border: 2px solid #111; border-radius: 1px; background: #f2c21b; color: #111; box-shadow: 2px 2px 0 #111; cursor: pointer; font: 900 clamp(13px, 1.9cqw, 20px)/1 var(--font-print); letter-spacing: -0.02em; text-align: left; transition: transform 0.06s, box-shadow 0.06s; }
+      .rt-tag i { grid-column: 1; grid-row: 1; font: bold clamp(8px, 0.95cqw, 10.5px)/1.2 var(--font-print); font-style: normal; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+      .rt-tag small { grid-column: 1; grid-row: 2; font: bold clamp(7.5px, 0.85cqw, 9.5px)/1.15 var(--font-print); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+      .rt-tag b { grid-column: 2; grid-row: 1 / span 2; font-weight: 900; }
+      .rt-paper .rt-tag:hover:not(:disabled) { transform: translate(calc(-50% - 1px), -1px); box-shadow: 3px 3px 0 #111; background: #ffd23f; }
+      .rt-paper .rt-tag:active:not(:disabled) { transform: translate(calc(-50% + 2px), 2px); box-shadow: none; }
+      .rt-tag:focus-visible { outline: 2px solid #1f5fa8; outline-offset: 2px; }
+      .rt-tag:disabled { background: #e2e0d9; color: #6f6c64; border-color: #9c988e; box-shadow: none; cursor: not-allowed; }
+      .rt-m { display: none; }
+      /* A phone: the map is a picture, and its tags line up under it. */
+      @media (max-width: 640px) {
+        .rt-seat { padding: 10px 10px 30px; }
+        .rt-paper { width: 100%; transform: none; }
+        .rt-paper .rt-tag { display: none; }
+        .rt-m { display: grid; gap: 8px; margin-top: 12px; }
+        .rt-m .rt-tag { font-size: 18px; padding: 8px 12px; }
+        .rt-m .rt-tag i { font-size: 11px; }
+        .rt-m .rt-tag small { font-size: 10px; white-space: normal; }
+        .rt-m .rt-tag b { justify-self: end; }
+        .rt-m .rt-tag { grid-template-columns: minmax(0, 1fr) auto; }
+      }
+
       /* The shop log: a spiral book off the bench, ruled in blue with a red
          margin, printed column labels and the week filled in by pen. */
       .modal-card.log-page {
@@ -13029,7 +13086,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.102.2";
+      const GAME_VERSION = "0.103.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -29077,49 +29134,177 @@ addEventListener("DOMContentLoaded",function(){
             "gold",
           )}</div>`;
         }
+        return renderSaturdayMap();
+      }
+
+      /* ═══════════════════════════════════════════
+         THE SATURDAY MAP (Marketplace › truck keys)
+      ═══════════════════════════════════════════ */
+      // Picking up the keys used to open three cards. It is a road map now,
+      // the free one off Dale's counter (compliments of Dale's Garage, like the
+      // calendar), unfolded on the bench seat of the truck. Dale has circled
+      // the yard and the swap in marker, which is how a man who knows the
+      // county tells you where to go, and she has put a heart on the street
+      // you live on with what she has planned for the Saturday: the same note
+      // the calendar shows for it if you stay. Every place on the map is
+      // printed; the yellow tag beside each mark is the one thing to press.
+      // The swap is off the edge of the map, thirty-eight miles up the
+      // highway, which is why it costs the gas and the parking it does.
+      function rtMapSvg(o) {
+        const W = 1000, H = 540;
+        const f = (n) => Math.round(n * 10) / 10;
+        // a hand-drawn ring: an ellipse that overshoots where the pen started
+        const ring = (cx, cy, rx, ry, rot, cls) => {
+          let d = "";
+          for (let i = 0; i <= 40; i++) {
+            const t = -0.35 + (i / 40) * (Math.PI * 2 + 0.55);
+            const wob = 1 + 0.05 * Math.sin(i * 1.7) + (i / 40) * 0.08;
+            const x = cx + Math.cos(t) * rx * wob, y = cy + Math.sin(t) * ry * wob;
+            d += (i ? " L" : "M") + f(x) + "," + f(y);
+          }
+          return `<path class="${cls}" d="${d}" transform="rotate(${rot} ${cx} ${cy})"/>`;
+        };
+        const shield = (x, y, n) => `<g transform="translate(${x} ${y})"><path d="M-9,-10 H9 V2 C9,8 4,11 0,13 C-4,11 -9,8 -9,2 Z" fill="#fff" stroke="#2b2b2b" stroke-width="1.4"/><text x="0" y="4" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#2b2b2b">${n}</text></g>`;
+        const poi = (x, y, n) => `<g><circle cx="${x}" cy="${y}" r="6.5" fill="#fff" stroke="#8b2a22" stroke-width="1.3"/><text x="${x}" y="${y + 3.4}" text-anchor="middle" font-family="Arial" font-size="9" font-weight="bold" fill="#8b2a22">${n}</text></g>`;
+        const label = (x, y, t, size, extra = "") => `<text x="${x}" y="${y}" font-family="Arial" font-size="${size}" fill="#3a352c" ${extra}>${t}</text>`;
+        // the downtown blocks
+        let blocks = "";
+        const xs = [404, 434, 464, 494, 524, 554, 584];
+        for (let i = 0; i < xs.length - 1; i++) {
+          for (const [y0, y1] of [[214, 246], [266, 298]]) blocks += `<rect x="${xs[i] + 3}" y="${y0 + 3}" width="${xs[i + 1] - xs[i] - 6}" height="${y1 - y0 - 6}" fill="#e3d8bf"/>`;
+        }
+        let cross = "";
+        xs.forEach((x) => (cross += `<line x1="${x}" y1="206" x2="${x}" y2="306" class="st"/>`));
+        // houses on the residential loop, little squares
+        let houses = "";
+        [[176, 372], [192, 360], [210, 352], [230, 350], [250, 356], [168, 392], [186, 410], [206, 418], [228, 420], [250, 414], [266, 400], [270, 380]].forEach(([x, y]) => (houses += `<rect x="${x - 3}" y="${y - 3}" width="6" height="6" fill="#d9ccb0"/>`));
+        // junked cars in the salvage yard, rows of little bodies
+        let junk = "";
+        for (let r = 0; r < 4; r++) for (let c = 0; c < 7; c++) junk += `<rect x="${614 + c * 13 + (r % 2) * 4}" y="${454 + r * 9.5}" width="9" height="5" rx="1" fill="${["#9b8f7a", "#8a6f5a", "#7f8a8f", "#a08a6a"][(r + c) % 4]}"/>`;
+        // the grade: switchbacks up into the hills
+        const grade = "M612,214 C640,196 660,206 680,186 S712,176 700,158 S744,150 760,128 S800,128 792,104 S836,96 850,74 S900,70 910,40";
+        const yard = o.yard, swap = o.swap, home = o.home;
+        return `<svg class="rt-map" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <defs>
+          <clipPath id="rtClip"><rect x="24" y="24" width="952" height="492"/></clipPath>
+          <pattern id="rtHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#cfc5a8" stroke-width="2"/></pattern>
+        </defs>
+        <rect width="${W}" height="${H}" fill="#f6f1e2"/>
+        <g clip-path="url(#rtClip)">
+          <rect x="24" y="24" width="952" height="492" fill="#efe7cf"/>
+          <!-- hills and the mountain to the north-east -->
+          <path d="M560,24 C600,90 680,120 760,150 C830,176 900,170 976,210 V24 Z" fill="#e2dcbd"/>
+          <path d="M660,24 C700,70 770,90 840,100 C900,108 940,96 976,120 V24 Z" fill="#d6dfbd"/>
+          <path d="M760,24 C800,46 860,54 976,60 V24 Z" fill="#c9d8b0"/>
+          <text x="905" y="52" text-anchor="middle" font-family="Arial" font-size="11" font-style="italic" fill="#5d6b45" letter-spacing="1">PALOMAR MTN</text>
+          <!-- the lake -->
+          <path d="M226,72 C250,50 310,52 336,68 C362,84 346,112 312,118 C278,124 236,120 224,102 C216,90 218,80 226,72 Z" fill="#b8d3e3" stroke="#8fb4cb" stroke-width="1.2"/>
+          <text x="282" y="92" text-anchor="middle" font-family="Arial" font-size="10" font-style="italic" fill="#3d6a88">Cutter Lake</text>
+          <!-- the creek -->
+          <path id="rtCreek" d="M24,486 C150,450 250,404 316,348 C360,312 380,250 452,192 C520,140 610,118 700,86 C760,64 800,40 830,24" fill="none" stroke="#8fb4cb" stroke-width="5"/>
+          <path d="M24,486 C150,450 250,404 316,348 C360,312 380,250 452,192 C520,140 610,118 700,86 C760,64 800,40 830,24" fill="none" stroke="#b8d3e3" stroke-width="2.6"/>
+          <text font-family="Arial" font-size="9.5" font-style="italic" fill="#3d6a88" letter-spacing=".5"><textPath href="#rtCreek" startOffset="58%">Palomar Creek</textPath></text>
+          <!-- the railroad -->
+          <path d="M24,438 C260,430 520,446 976,410" fill="none" stroke="#3a352c" stroke-width="1.6"/>
+          <path d="M24,438 C260,430 520,446 976,410" fill="none" stroke="#3a352c" stroke-width="5" stroke-dasharray="1 9"/>
+          <!-- the fairground -->
+          <rect x="636" y="318" width="118" height="70" fill="#e4dcc3" stroke="#a89c7e" stroke-width="1"/>
+          <rect x="652" y="330" width="86" height="46" rx="23" fill="none" stroke="#a89c7e" stroke-width="2"/>
+          ${label(695, 404, "COUNTY FAIRGROUND", 8.5, 'text-anchor="middle" letter-spacing=".6" font-weight="bold"')}
+          <!-- the salvage yard by the tracks -->
+          <rect x="606" y="450" width="102" height="44" fill="url(#rtHatch)" stroke="#a89c7e" stroke-width="1"/>
+          ${junk}
+          ${label(657, 508, "AUTO SALVAGE", 8.5, 'text-anchor="middle" letter-spacing=".6" font-weight="bold"')}
+          <!-- the old cannery on the creek -->
+          <rect x="300" y="300" width="34" height="22" fill="#d6ccb2" stroke="#a89c7e" stroke-width="1"/>
+          <!-- storage units off the tracks -->
+          <rect x="520" y="396" width="54" height="13" fill="#d6ccb2" stroke="#a89c7e" stroke-width="1"/>
+          <rect x="520" y="411" width="54" height="9" fill="#d6ccb2" stroke="#a89c7e" stroke-width="1"/>
+          <!-- town -->
+          ${blocks}
+          <line x1="404" y1="214" x2="584" y2="214" class="st"/><line x1="404" y1="298" x2="584" y2="298" class="st"/>
+          ${cross}
+          <!-- the residential loop south-west, and home on it -->
+          <path d="M300,330 C280,350 270,372 250,384 C220,400 190,394 176,382 C164,370 176,350 200,344 C230,338 262,350 280,372" fill="none" class="st"/>
+          <path d="M250,384 L262,430 M176,382 L130,420" fill="none" class="st"/>
+          ${houses}
+          <!-- county roads -->
+          <path d="M404,256 C360,280 330,300 300,330 C270,360 250,384 240,440 L232,516" fill="none" class="rd"/>
+          <path d="M584,256 C610,290 624,312 630,350 C634,390 640,420 660,450" fill="none" class="rd"/>
+          <path d="M494,298 L500,400 L520,404" fill="none" class="st"/>
+          <path d="${grade}" fill="none" class="rd"/>
+          <path d="M232,516 C260,470 300,452 360,448" fill="none" class="st"/>
+          <!-- Highway 9, north-west to Pamona and east down the valley -->
+          <path d="M24,170 C120,180 220,200 300,224 C350,240 380,252 404,256 L584,256 C640,256 690,270 760,300 C830,330 900,340 976,352" fill="none" stroke="#fff" stroke-width="10"/>
+          <path d="M24,170 C120,180 220,200 300,224 C350,240 380,252 404,256 L584,256 C640,256 690,270 760,300 C830,330 900,340 976,352" fill="none" stroke="#c8322a" stroke-width="6"/>
+          ${shield(250, 196, 9)}${shield(880, 330, 9)}
+          ${label(494, 252, "MAIN ST", 8, 'text-anchor="middle" font-weight="bold" letter-spacing="1.4" fill="#fff"')}
+          <!-- points of interest -->
+          ${poi(540, 270, 1)}${poi(612, 272, 2)}${poi(450, 226, 3)}${poi(476, 306, 4)}${poi(317, 296, 5)}${poi(586, 402, 6)}
+          <!-- the town -->
+          <text x="494" y="198" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" letter-spacing="3" fill="#2b2620">PALOMAR JUNCTION</text>
+          ${label(780, 158, "PALOMAR GRADE", 9, 'font-style="italic" letter-spacing="1" transform="rotate(-24 780 158)"')}
+          ${label(206, 478, "VALLEY RD", 8.5, 'font-style="italic" letter-spacing="1" transform="rotate(-70 206 478)"')}
+          ${label(188, 342, "SYCAMORE CT", 7.5, 'letter-spacing=".6"')}
+          ${label(820, 424, "railroad", 8, 'font-style="italic" fill="#5a544a"')}
+          <!-- off the map: Pamona -->
+          <path d="M30,154 L48,146 L48,151 L70,151 L70,157 L48,157 L48,162 Z" fill="#2b2620"/>
+          ${label(76, 159, "PAMONA 38", 10, 'font-weight="bold" letter-spacing="1"')}
+        </g>
+        <!-- the neatline and the grid in the margin -->
+        <rect x="24" y="24" width="952" height="492" fill="none" stroke="#2b2620" stroke-width="1.4"/>
+        ${"ABCDEFGH".split("").map((c, i) => `<text x="${f(24 + 119 * i + 59.5)}" y="17" text-anchor="middle" font-family="Arial" font-size="9" fill="#5a544a">${c}</text>`).join("")}
+        ${[1, 2, 3, 4].map((n, i) => `<text x="12" y="${f(24 + 123 * i + 66)}" text-anchor="middle" font-family="Arial" font-size="9" fill="#5a544a">${n}</text>`).join("")}
+        <!-- title and legend, printed in the corner -->
+        <g transform="translate(34 32)">
+          <rect x="0" y="0" width="150" height="96" fill="#f6f1e2" stroke="#2b2620" stroke-width="1"/>
+          <text x="75" y="16" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" letter-spacing="1" fill="#2b2620">PALOMAR JCT.</text>
+          <text x="75" y="27" text-anchor="middle" font-family="Arial" font-size="7.5" letter-spacing=".8" fill="#5a544a">AND VICINITY</text>
+          <line x1="10" y1="33" x2="140" y2="33" stroke="#2b2620" stroke-width=".6"/>
+          ${[["1", "Dale's Garage"], ["2", "Bay Freight"], ["3", "High School"], ["4", "Coffee"], ["5", "Old Cannery"], ["6", "Self Storage"]].map(([n, t], i) => `<text x="${12 + (i % 2) * 68}" y="${48 + Math.floor(i / 2) * 15}" font-family="Arial" font-size="8" fill="#8b2a22" font-weight="bold">${n}</text><text x="${22 + (i % 2) * 68}" y="${48 + Math.floor(i / 2) * 15}" font-family="Arial" font-size="8" fill="#2b2620">${t}</text>`).join("")}
+        </g>
+        <g transform="translate(36 494)">
+          <text x="0" y="0" font-family="Arial" font-size="7.5" letter-spacing=".8" fill="#5a544a">COMPLIMENTS OF DALE'S GARAGE · 214 MAIN ST · BRAKES · TUNE-UPS</text>
+        </g>
+        <g transform="translate(36 470)"><path d="M0,10 L5,-4 L10,10 L5,6 Z" fill="#2b2620"/><text x="5" y="20" text-anchor="middle" font-family="Arial" font-size="7" fill="#2b2620">N</text>
+          <line x1="22" y1="12" x2="82" y2="12" stroke="#2b2620" stroke-width="1"/><rect x="22" y="9" width="30" height="3" fill="#2b2620"/>
+          <text x="22" y="5" font-family="Arial" font-size="6.5" fill="#5a544a">0</text><text x="78" y="5" font-family="Arial" font-size="6.5" fill="#5a544a">1 mi</text></g>
+        <!-- the folds -->
+        ${[250, 500, 750].map((x) => `<rect x="${x - 1}" y="0" width="1.2" height="${H}" fill="rgba(60,50,30,.16)"/><rect x="${x + 0.2}" y="0" width="1.4" height="${H}" fill="rgba(255,255,255,.55)"/>`).join("")}
+        <rect x="0" y="269" width="${W}" height="1.2" fill="rgba(60,50,30,.16)"/><rect x="0" y="270.2" width="${W}" height="1.4" fill="rgba(255,255,255,.55)"/>
+        <rect x="250" y="0" width="250" height="270" fill="rgba(255,255,255,.08)"/><rect x="750" y="270" width="250" height="270" fill="rgba(255,255,255,.08)"/>
+        <rect x="0" y="270" width="250" height="270" fill="rgba(60,50,30,.035)"/><rect x="500" y="0" width="250" height="270" fill="rgba(60,50,30,.035)"/>
+        <!-- the pens -->
+        ${yard ? `<path class="ink-dale route" d="M246,394 C300,420 380,452 480,452 C530,452 560,458 588,466"/>${ring(657, 474, 68, 30, -4, "ink-dale")}<text class="ink-dale-t" x="728" y="474" transform="rotate(-5 728 474)">Pick-A-Part</text>` : ""}
+        ${swap ? `<path class="ink-dale route" d="M236,368 C240,320 262,262 298,232 C250,210 200,192 160,178"/>${ring(90, 155, 68, 21, 3, "ink-dale")}<text class="ink-dale-t" x="36" y="206" transform="rotate(-4 36 206)">the swap</text>` : ""}
+        ${home ? `<g class="ink-her"><path d="M212,370 c-6,-9 -18,-4 -12,5 l12,11 l12,-11 c6,-9 -6,-14 -12,-5 z"/></g><text class="ink-her-t" x="166" y="392" text-anchor="end" transform="rotate(-5 166 392)">${home}</text>` : ""}
+      </svg>`;
+      }
+
+      // Where each mark's tag sits on the map, in its own units (1000 x 540).
+      const RT_TAG_AT = { swap: [108, 224], home: [118, 404], yard: [800, 488] };
+      function renderSaturdayMap() {
         const yardCount = state.junkyardStock.length;
         const swapCount = state.swapMeetStock.length;
         const ride = canMakeScavengeTrip();
-        // Work on the bench no longer blocks a Saturday out. Only having
-        // nothing to drive does, and that has its own banner below.
-        const busy = false;
-        const noRideBanner = !ride.ok
-          ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border:1px solid rgba(196,109,96,0.4);margin-bottom:12px;padding:10px 12px"><div class="tiny" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px"> No way to get there</div><div class="tiny muted" style="line-height:1.5">${ride.msg} Get the project running (engine ${ROADWORTHY_ENGINE}+, transmission ${ROADWORTHY_TRANSMISSION}+, brakes ${ROADWORTHY_BRAKES}+, steering ${ROADWORTHY_STEERING}+) and the trip opens up.</div></div>`
-          : busy
-            ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border:1px solid rgba(196,109,96,0.4);margin-bottom:12px;padding:10px 12px"><div class="tiny" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px"> Jobs on the bench</div><div class="tiny muted" style="line-height:1.5">Finish or park your current restoration jobs first, a Saturday out burns the whole week and you can't leave a build mid-wrench.</div></div>`
-            : "";
-        const yardCard = `<div style="background:rgba(125,160,194,0.07);border:1px solid rgba(125,160,194,0.4);border-radius:8px;padding:12px">
-            <div class="small" style="color:var(--blue-bright);font-weight:bold;margin-bottom:6px"> Pick-A-Part</div>
-            <div class="tiny" style="color:var(--text);margin-bottom:8px">${yardCount} part${yardCount === 1 ? "" : "s"} on the lot today</div>
-            ${button(`Hit the Yard · $${JUNKYARD_TRIP_COST}`, "commitScavengeTrip('junkyard')", !ride.ok || busy || state.money < JUNKYARD_TRIP_COST || !yardCount, "", "width:100%;background:#7da0c2;border-color:var(--blue-bright)")}
-          </div>`;
-        const swapCard = `<div style="background:rgba(217,162,79,0.07);border:1px solid rgba(217,162,79,0.4);border-radius:8px;padding:12px">
-            <div class="small" style="color:var(--gold);font-weight:bold;margin-bottom:6px"> Pamona Swap</div>
-            <div class="tiny" style="color:var(--text);margin-bottom:8px">${swapCount} tool${swapCount === 1 ? "" : "s"} on tables today</div>
-            ${tripKnown("swap") ? button(`Hit the Swap · $${SWAP_TRIP_COST}`, "commitScavengeTrip('swap')", !ride.ok || busy || state.money < SWAP_TRIP_COST || !swapCount, "", "width:100%") : ""}
-          </div>`;
-        // The home card: a Saturday spent with them instead of out on the hunt.
-        // No cost, no ride needed (the truck can be in pieces and you can still
-        // be present). It burns the weekend like the trips do; the trade is the
-        // parts you didn't pull against being around. Always available unless a
-        // job's mid-wrench on the bench.
-        const homeCard = `<div style="background:rgba(143,203,126,0.07);border:1px solid rgba(143,203,126,0.4);border-radius:8px;padding:12px">
-            <div class="small" style="color:var(--green-bright);font-weight:bold;margin-bottom:6px"> Home this weekend</div>
-            <div class="tiny" style="color:var(--text);margin-bottom:8px">No gas, no gate, no tables</div>
-            <div class="tiny muted" style="margin-bottom:8px">The Saturday's yours. Spend it with them instead of on the truck.</div>
-            ${button("Spend it home", "takeWeekendHome()", busy, "", "width:100%;background:#6f9a5a;border-color:var(--green-bright)")}
-          </div>`;
-        // The pill row used to be the way back off this screen. It is gone, so
-        // the screen carries its own door: you have not left yet, and putting
-        // the keys back down must not cost anything.
-        const backToDesk = `<div style="margin-bottom:10px">${button("← Put the keys back, stay at the desk", "setMarketTab('sell')", false, "", "background:#4a3c2e;border-color:#6b5840;color:var(--text);font-size:12px;padding:7px 14px")}</div>`;
-        return `<div style="margin-bottom:14px">${backToDesk}${heroPanel(
-          "Saturday Road Trip",
-          "The yard, the swap, or home",
-          "",
-          `${noRideBanner}<div class="info-box" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;background:transparent;border:none;padding:0">${yardCard}${swapCard}${homeCard}</div>`,
-          "blue",
-        )}</div>`;
+        const yardKnown = tripKnown("yard"), swapKnown = tripKnown("swap");
+        const note = HER_HOME_NOTES[(state.week * 5 + seasonNum()) % HER_HOME_NOTES.length];
+        const at = (k) => `left:${(RT_TAG_AT[k][0] / 10).toFixed(2)}%;top:${((RT_TAG_AT[k][1] / 540) * 100).toFixed(2)}%`;
+        // One tag per place: what is there today and what it costs, or why
+        // you are not going.
+        // Drawn twice: on the map at its mark, and in the phone's list under it.
+        const tag = (k, name, sub, price, onclick, why) => (placed) =>
+          `<button class="rt-tag rt-${k}"${placed ? ` style="${at(k)}"` : ""} onclick="${onclick}" ${why ? "disabled" : ""}><i>${name}</i><small>${why || sub}</small><b>${price}</b></button>`;
+        const tripWhy = (cost, count, bare) =>
+          !ride.ok ? "nothing to drive" : !count ? bare : state.money < cost ? `short $${fmt(cost - state.money)}` : "";
+        const tagFns = [
+          swapKnown ? tag("swap", "Pamona Swap", `${swapCount} tool${swapCount === 1 ? "" : "s"} on the tables`, `$${fmt(SWAP_TRIP_COST)}`, "commitScavengeTrip('swap')", tripWhy(SWAP_TRIP_COST, swapCount, "tables bare")) : "",
+          yardKnown ? tag("yard", "Pick-A-Part", `${yardCount} part${yardCount === 1 ? "" : "s"} on the lot`, `$${fmt(JUNKYARD_TRIP_COST)}`, "commitScavengeTrip('junkyard')", tripWhy(JUNKYARD_TRIP_COST, yardCount, "picked clean")) : "",
+          tag("home", "Stay home", "with them", "free", "takeWeekendHome()", ""),
+        ].filter(Boolean);
+        const tags = (placed) => tagFns.map((t) => t(placed)).join("");
+        const back = `<button class="btn rt-back" onclick="setMarketTab('sell')">&#8592; Put the keys back</button>`;
+        return `<div class="hero-panel rt-view"><div class="rt-seat">${back}<div class="rt-paper">${rtMapSvg({ yard: yardKnown, swap: swapKnown, home: note })}${tags(true)}</div><div class="rt-m">${tags(false)}</div></div></div>`;
       }
 
       /* ═══════════════════════════════════════════

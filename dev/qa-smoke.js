@@ -1227,6 +1227,52 @@ const pass = (msg) => console.log("✓", msg);
   if (cageOk !== true) fail("work on the bench: " + cageOk);
   pass("a job on the bench no longer switches the game off");
 
+  // ── the Saturday map: a printed map on the truck seat. Dale's marker
+  // circles the places you know about, she marks home with this Saturday's
+  // note, and each yellow tag is the way to go. A place nobody has told you
+  // about is printed but not marked; with nothing to drive, the trips grey
+  // out and home does not. ──
+  const mapOk = await page.evaluate(() => {
+    const keep = { known: JSON.parse(JSON.stringify(state.tripsKnown || {})), money: state.money, sold: state.wifeCarSold, view: state.view, tab: state.marketTab, stage: state.onboardStage };
+    const back = (m) => { Object.assign(state, { tripsKnown: keep.known, money: keep.money, wifeCarSold: keep.sold, onboardStage: keep.stage, marketTab: keep.tab || "sell", view: keep.view }); render("full"); return m; };
+    // Stage it directly: setView bounces off a tab this save has not opened.
+    state.tripsKnown = { yard: true, swap: true }; state.money = 5000; state.wifeCarSold = false;
+    state.onboardStage = 3; state.view = "dealership"; state.marketTab = "trip"; render("full");
+    const paper = document.querySelector(".rt-paper");
+    if (!paper || !paper.querySelector(".rt-map")) return back("the Saturday map is not on the seat");
+    const tags = () => [...document.querySelectorAll(".rt-paper .rt-tag")];
+    const on = (fn) => tags().find((t) => (t.getAttribute("onclick") || "").includes(fn));
+    if (!on("commitScavengeTrip('junkyard')") || !on("commitScavengeTrip('swap')") || !on("takeWeekendHome()")) return back("the yard, the swap and home each need a tag");
+    if (tags().some((t) => t.disabled)) return back("a tag is dead with cash, a ride and stock on hand");
+    const note = HER_HOME_NOTES[(state.week * 5 + seasonNum()) % HER_HOME_NOTES.length];
+    if ((paper.querySelector(".ink-her-t") || {}).textContent !== note) return back("home is not marked with the note the calendar keeps for this Saturday");
+    if (paper.querySelectorAll(".ink-dale-t").length !== 2) return back("Dale did not mark the yard and the swap");
+    const yellow = (c) => { const m = c.match(/rgba?\(([\d.]+), ([\d.]+), ([\d.]+)/); return m && +m[1] > 190 && +m[2] > 140 && +m[3] < 90; };
+    const notBtn = [...paper.querySelectorAll("*")].find((el) => !el.closest("button") && el.tagName !== "svg" && !el.closest("svg") && yellow(getComputedStyle(el).backgroundColor));
+    if (notBtn) return back("yellow on something that is not a button on the map");
+    // A place nobody mentioned is on the map, not marked, and has no tag.
+    state.tripsKnown = { yard: true, swap: false }; render("full");
+    if (on("commitScavengeTrip('swap')")) return back("the swap has a tag before anybody told you about it");
+    if (document.querySelectorAll(".rt-paper .ink-dale-t").length !== 1) return back("Dale marked a place nobody told you about");
+    // Nothing to drive: the trips grey out, home stays open.
+    state.tripsKnown = { yard: true, swap: true }; state.wifeCarSold = true;
+    const cars = state.cars.map((c) => ({ id: c.id, e: c.engine })); state.cars.forEach((c) => (c.engine = 0));
+    render("full");
+    const yardTag = on("commitScavengeTrip('junkyard')"), homeTag = on("takeWeekendHome()");
+    cars.forEach((k) => (state.cars.find((c) => c.id === k.id).engine = k.e));
+    if (!yardTag.disabled || !/nothing to drive/i.test(yardTag.textContent)) return back("with nothing to drive the yard's tag still goes");
+    if (homeTag.disabled) return back("home closed because the truck will not start");
+    // The tag drives you there.
+    state.wifeCarSold = false; render("full");
+    const before = state.money;
+    on("commitScavengeTrip('junkyard')").click();
+    if (!state.atTrip || state.scavengeChoice !== "junkyard" || state.money !== before - JUNKYARD_TRIP_COST) return back("the yard's tag did not drive to the yard and pay the $15");
+    state.atTrip = false; state.scavengeChoice = null; state.money = before;
+    return back(true);
+  });
+  if (mapOk !== true) fail("Saturday map: " + mapOk);
+  pass("the Saturday map: Dale marks what you know, she marks home, the tags drive you there");
+
   // ── the Saturday trips. Neither the yard nor the swap was ever introduced:
   // the Road Trip pill turned up with two others when show season opened, and
   // the only writing explaining either place fired after the player had paid
@@ -3368,6 +3414,14 @@ const pass = (msg) => console.log("✓", msg);
         state.workshopLevel = keepWs;
         state.activeRestorations = keepTasks; state.money = keepMoney; state.ownedTools = keepTools;
       }
+      {
+        const keepKnown = JSON.parse(JSON.stringify(state.tripsKnown || {}));
+        state.tripsKnown = { yard: true, swap: true };
+        setView("dealership"); setMarketTab("trip"); render("full");
+        if (!document.querySelector(".rt-paper .rt-map")) bad.push("the Saturday map did not render");
+        else if (over() > 0) bad.push(`the Saturday map scrolls ${over()}px`);
+        state.tripsKnown = keepKnown; setMarketTab("sell"); setView("workshop");
+      }
       for (const lvl of ["curb", "carport"]) {
         state.workshopLevel = lvl; setShopSub("workspace"); render("full");
         if (!document.querySelector(".re-window")) { bad.push("the realty window did not render"); break; }
@@ -3392,7 +3446,7 @@ const pass = (msg) => console.log("✓", msg);
       return bad.length ? bad.join("; ") : true;
     });
     if (lapFit !== true) fail(`laptop ${lw}x${lh}: ${lapFit}`);
-    pass(`Next Jobs, Marketplace, Compete, the tool store, Space and the results fit ${lw}x${lh} without a scroll`);
+    pass(`Next Jobs, Marketplace, Compete, the tool store, Space, the Saturday map and the results fit ${lw}x${lh} without a scroll`);
     await lap.close();
   }
 
