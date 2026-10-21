@@ -430,19 +430,10 @@
         .content { padding: 12px; }
         .grid-main, .grid-main-shows { gap: 12px; }
         .cards { gap: 10px; }
-        .ach { padding: 7px 9px; }
-        .ach-desc { display: none; }
-        .ach-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important; gap: 7px; }
         .art-backdrop-shell { height: 185px !important; min-height: 185px !important; }
         .hero-panel-sub { display: none; }
         .panel-sub { display: none; }
       }
-      .ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-      .ach { display: flex; gap: 10px; align-items: flex-start; background: rgba(217,162,79,0.06); border: 1px solid rgba(217,162,79,0.28); border-radius: 10px; padding: 10px 12px; }
-      .ach.locked { opacity: 0.5; filter: saturate(0.4); }
-      .ach-emoji { font-size: 22px; line-height: 1.2; filter: drop-shadow(0 2px 5px rgba(0,0,0,.4)); }
-      .ach-name { font-size: 12.5px; font-weight: bold; color: var(--text-bright); margin-bottom: 2px; }
-      .ach-desc { font-size: 11px; color: var(--muted); line-height: 1.45; }
       .tab.locked {
         opacity: 0.45;
         filter: saturate(0.35);
@@ -1745,8 +1736,8 @@
       }
       /* The world in pixels: every picture of it is resampled onto one grid
          (installPixelGrid). The store's canvas has pixels of its own. */
-      .car-preview-stage, .mcal-pic, .poster-art, .lst-shot .lst-art, .lst-thumb .lst-art, .finale-spotlight, .pc-featured-photo, .ppp-car { filter: url(#px-grid); }
-      .px-off .car-preview-stage, .px-off .mcal-pic, .px-off .poster-art, .px-off .lst-shot .lst-art, .px-off .lst-thumb .lst-art, .px-off .finale-spotlight, .px-off .pc-featured-photo, .px-off .ppp-car { filter: none; }
+      .car-preview-stage, .mcal-pic, .poster-art, .lst-shot .lst-art, .lst-thumb .lst-art, .finale-spotlight, .pc-featured-photo, .ppp-car, .lw-photo { filter: url(#px-grid); }
+      .px-off .car-preview-stage, .px-off .mcal-pic, .px-off .poster-art, .px-off .lst-shot .lst-art, .px-off .lst-thumb .lst-art, .px-off .finale-spotlight, .px-off .pc-featured-photo, .px-off .ppp-car, .px-off .lw-photo { filter: none; }
       /* Type roles: Georgia is the game talking. Anything printed, or lit on
          a screen inside the world, is in the print face: the bill on the
          board, the day's sheet, Dale's shop calendar, the Gearbook site on the
@@ -3011,6 +3002,94 @@
         .re-sheet .re-call, .re-yours { grid-column: 1 / -1; }
       }
 
+      /* The Legacy Wall: the paneling in the garage, the frames on it, the
+         shelf, the jacket on its hook, the chalkboard and the patch list. */
+      .lw-wrap { max-width: 1180px; margin: 0 auto; }
+      .lw-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+      .lw-top .lw-back { padding: 6px 12px; font-size: 12px; background: #2c1a14; border-color: #6b4a38; color: var(--text); }
+      .lw-top .lw-start { padding: 6px 14px; font-size: 12px; }
+      .lw-wall {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        grid-template-areas: "main hook" "lower lower";
+        gap: 18px 26px;
+        padding: 24px 26px 26px;
+        border-radius: 10px;
+        background:
+          radial-gradient(ellipse at 30% 0%, rgba(255, 210, 150, 0.16), transparent 55%),
+          linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.35)),
+          repeating-linear-gradient(90deg, #3e2a1b 0, #47301f 26px, #3e2a1b 52px, #23170e 54px, #3e2a1b 55px);
+        box-shadow: inset 0 0 0 2px #1a110a, inset 0 0 40px rgba(0, 0, 0, 0.5);
+      }
+      .lw-main { grid-area: main; display: flex; flex-direction: column; justify-content: flex-end; min-width: 0; }
+      .lw-frames { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 18px 20px; padding: 6px 0 18px; }
+      .lw-frames.lg { --fw: 230px; }
+      .lw-frames.md { --fw: 170px; }
+      .lw-frames.sm { --fw: 128px; }
+      .lw-frame { position: relative; margin: 0; width: var(--fw); }
+      .lw-frame .lw-photo {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 4 / 3;
+        padding: 6% 7% 4%;
+        border: 9px solid #5a3a22;
+        border-image: linear-gradient(135deg, #6e4a2c, #3a2414 40%, #5a3a22 60%, #2a1a0e) 1;
+        background: linear-gradient(180deg, #e8b98a 0%, #d99a6c 46%, #7d6a5a 47%, #5f564e 100%);
+        box-shadow: inset 0 0 0 6px #f1ead8, inset 0 0 0 7px #b9ae94, 0 8px 16px rgba(0, 0, 0, 0.55);
+      }
+      .lw-frame .lw-photo svg { position: absolute; left: -6%; bottom: 2%; width: 112%; height: 112%; }
+      .lw-frame.gold .lw-photo { border-image: linear-gradient(135deg, #f2d27a, #b5862e 35%, #f6e09a 55%, #8a5f1a) 1; }
+      .lw-frame.empty .lw-photo { background: #1d1612; box-shadow: inset 0 0 0 6px #e9e2d0, inset 0 0 0 7px #b9ae94, inset 0 0 30px rgba(0, 0, 0, 0.8), 0 8px 16px rgba(0, 0, 0, 0.55); border-image: linear-gradient(135deg, #2c2c2c, #111 50%, #2a2a2a) 1; }
+      .lw-saving { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%) rotate(-4deg); padding: 6px 10px; background: #fbf8ef; font: 17px/1 var(--font-her); color: #6a3d7a; white-space: nowrap; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.45); }
+      .lw-plate { width: 92%; margin: 8px auto 0; padding: 4px 6px 5px; border-radius: 2px; background: linear-gradient(180deg, #e6c67a, #b98d3e); color: #2a1c08; text-align: center; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 2px 3px rgba(0, 0, 0, 0.5); font-family: var(--font-print); }
+      .lw-plate b { display: block; font-size: 10.5px; line-height: 1.2; letter-spacing: 0.05em; text-transform: uppercase; }
+      .lw-plate span { display: block; margin-top: 1px; font-size: 9px; letter-spacing: 0.04em; }
+      .lw-plate.blank { background: linear-gradient(180deg, #8f8a80, #6c675e); color: #e8e4da; }
+      .lw-frames.sm .lw-plate b { font-size: 9.5px; }
+      .lw-frames.sm .lw-plate span { font-size: 8px; }
+      .lw-shelf { position: relative; display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 10px 14px; padding: 0 14px 12px; }
+      .lw-shelf::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 12px; border-radius: 2px; background: linear-gradient(180deg, #7a5434, #4a3020); box-shadow: 0 8px 12px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.15); }
+      .lw-plaque { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 108px; padding: 9px 12px 8px; border: 5px solid #4a2e1a; border-radius: 3px; background: linear-gradient(180deg, #e9cd84, #c19445); color: #2a1c08; font-family: var(--font-print); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
+      .lw-plaque b { font-size: 24px; line-height: 1; }
+      .lw-plaque span { margin-top: 3px; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; }
+      .lw-trophy { position: relative; z-index: 1; color: #e2b54c; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.5)); }
+      .lw-hook { grid-area: hook; align-self: start; }
+      .lw-jacket { display: block; width: 100%; height: auto; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.55)); }
+      .lw-jacket .lw-patch { cursor: pointer; }
+      .lw-jacket .lw-patch:hover > g:first-of-type, .lw-jacket .lw-patch.on > g:first-of-type { filter: brightness(1.25); }
+      .lw-jk-note { font: 20px var(--font-dale); fill: #c9d3e6; opacity: 0.7; }
+      .lw-lower { grid-area: lower; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 22px; align-items: start; }
+      .lw-lower .lw-chalk { margin: 0; }
+      .lw-card { padding: 14px 16px 12px; background: #fbf8ef; color: #1f1b16; box-shadow: var(--paper-shadow); transform: rotate(0.4deg); font-family: var(--font-print); }
+      .lw-card-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding-bottom: 7px; margin-bottom: 8px; border-bottom: 2px solid #1f1b16; }
+      .lw-card-h b { font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; }
+      .lw-card-h span { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #5d564a; }
+      .lw-card-h em { margin-left: auto; font: 18px/1 var(--font-dale); color: #23407a; }
+      .lw-list { columns: 150px; column-gap: 18px; }
+      .lw-li { display: block; width: 100%; margin: 0; padding: 1px 0 1px 17px; border: 0; background: none; position: relative; text-align: left; font: 11px/1.45 var(--font-print); color: #8a8274; cursor: pointer; break-inside: avoid; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .lw-li::before { content: ""; position: absolute; left: 1px; top: 4px; width: 9px; height: 9px; border: 1.2px solid #8a8274; }
+      .lw-li.got { color: #1f1b16; }
+      .lw-li.got::before { border-color: #1f1b16; }
+      .lw-li.got::after { content: ""; position: absolute; left: 3px; top: 1px; width: 5px; height: 10px; border: solid #23407a; border-width: 0 2.5px 2.5px 0; transform: rotate(40deg); }
+      .lw-li:hover, .lw-li.on { color: #1f1b16; text-decoration: underline; }
+      .lw-read { min-height: 18px; margin-top: 8px; padding-top: 7px; border-top: 1px dashed #b9ae95; font-size: 12px; color: #3b362d; }
+      .lw-read b { margin-right: 6px; }
+      .lw-read i { font: 15px var(--font-dale); color: #a3241f; }
+      @media (max-width: 900px) {
+        .lw-wall { grid-template-columns: minmax(0, 1fr); grid-template-areas: "main" "hook" "lower"; padding: 18px 14px 20px; }
+        .lw-hook { max-width: 300px; justify-self: center; width: 100%; }
+        .lw-lower { grid-template-columns: minmax(0, 1fr); }
+      }
+      @media (max-width: 640px) {
+        .lw-frames.lg { --fw: 150px; }
+        .lw-frames.md, .lw-frames.sm { --fw: 128px; }
+        .lw-plaque { min-width: 0; flex: 1 1 40%; }
+        .lw-wall { padding: 14px 10px 16px; }
+        .lw-card { padding: 12px 10px 10px; }
+        .lw-list { columns: 2; column-gap: 10px; }
+        .lw-li { font-size: 10.5px; padding-left: 15px; }
+      }
+
       /* The Saturday map, unfolded on the truck's bench seat: tuck-and-roll
          vinyl dyed to the truck's paint (the tones come in on --s-*), the
          printed map on it with its folds, and a yellow tag beside
@@ -3519,10 +3598,6 @@
         color: var(--text-bright);
       }
 
-      .legacy-wrap {
-        max-width: 1000px;
-        margin: 0 auto;
-      }
       .legacy-hero {
         position: relative;
         background:
@@ -3562,142 +3637,6 @@
         line-height: 1.6;
         margin-bottom: 18px;
         max-width: 620px;
-      }
-      .legacy-career-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-        gap: 10px;
-        margin-bottom: 18px;
-      }
-      .legacy-career-stat {
-        background: rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(209, 154, 63, 0.22);
-        border-radius: 8px;
-        padding: 12px;
-      }
-      .legacy-career-v {
-        font-size: 22px;
-        font-weight: bold;
-        color: var(--gold);
-        line-height: 1.1;
-      }
-      .legacy-career-k {
-        font-size: 10px;
-        letter-spacing: 1.2px;
-        color: var(--text-dim);
-        text-transform: uppercase;
-        margin-top: 4px;
-      }
-      .legacy-back {
-        appearance: none;
-        background: transparent;
-        color: var(--text-dim);
-        border: 1px solid #3a3228;
-        border-radius: 6px;
-        padding: 6px 12px;
-        font-family: inherit;
-        font-size: 11px;
-        letter-spacing: 0.8px;
-        cursor: pointer;
-        text-transform: uppercase;
-        transition: color 0.15s, border-color 0.15s;
-      }
-      .legacy-back:hover {
-        color: var(--text-bright);
-        border-color: var(--muted);
-      }
-      .legacy-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 14px;
-      }
-      .legacy-card {
-        background: linear-gradient(180deg, #221911 0%, #170f09 100%);
-        border: 1px solid #433629;
-        border-radius: 10px;
-        padding: 18px 16px 16px;
-        position: relative;
-        overflow: hidden;
-        transition: border-color 0.2s, transform 0.15s;
-      }
-      .legacy-card:hover {
-        border-color: var(--gold-soft);
-        transform: translateY(-1px);
-      }
-      .legacy-card.national {
-        border-color: var(--gold);
-        box-shadow:
-          0 0 0 1px rgba(209, 154, 63, 0.16) inset,
-          0 0 32px rgba(209, 154, 63, 0.1);
-      }
-      .legacy-card.national::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      }
-      .legacy-card-badge {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        font-size: 22px;
-        filter: drop-shadow(0 2px 6px rgba(209, 154, 63, 0.4));
-      }
-      .legacy-card-emoji {
-        font-size: 42px;
-        line-height: 1;
-        margin-bottom: 10px;
-      }
-      .legacy-card-title {
-        font-size: 16px;
-        font-weight: bold;
-        color: var(--text-bright);
-        letter-spacing: 0.2px;
-        margin-bottom: 2px;
-      }
-      .legacy-card-sub {
-        font-size: 11px;
-        color: var(--text-dim);
-        letter-spacing: 0.5px;
-        margin-bottom: 14px;
-        text-transform: uppercase;
-      }
-      .legacy-card-stats {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-      }
-      .legacy-card-stat {
-        background: rgba(0, 0, 0, 0.28);
-        border: 1px solid rgba(75, 64, 54, 0.5);
-        border-radius: 6px;
-        padding: 8px;
-      }
-      .legacy-card-stat-v {
-        font-size: 16px;
-        font-weight: bold;
-        color: var(--text);
-      }
-      .legacy-card-stat-v.gold {
-        color: var(--gold);
-      }
-      .legacy-card-stat-k {
-        font-size: 9px;
-        letter-spacing: 0.9px;
-        color: var(--text-dim);
-        text-transform: uppercase;
-        margin-top: 2px;
-      }
-      .legacy-empty {
-        text-align: center;
-        padding: 48px 24px;
-        color: var(--text-dim);
-        font-size: 14px;
-        line-height: 1.7;
-        font-style: italic;
       }
 
       .notice-modal {
@@ -4242,17 +4181,11 @@
           min-width: 0;
           width: 100%;
         }
-        .legacy-grid {
-          grid-template-columns: 1fr;
-        }
         .legacy-hero {
           padding: 22px 18px 18px;
         }
         .legacy-hero-title {
           font-size: 24px;
-        }
-        .legacy-career-row {
-          grid-template-columns: 1fr 1fr;
         }
         .show-beat {
           max-width: 100% !important;
@@ -13087,7 +13020,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.103.1";
+      const GAME_VERSION = "0.104.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -21770,6 +21703,7 @@
           model: car.model,
           emoji: car.emoji,
           style: car.style,
+          palette: car.palette,
           finalOverall: getOverall(car),
           wonNational:
             !!state.won ||
@@ -26422,26 +26356,6 @@ addEventListener("DOMContentLoaded",function(){
           }
         });
       }
-      function renderCareerPanels() {
-        const un = state.achievementsUnlocked || {};
-        const stylesDone = Object.keys(state.stylesRestored || {}).length;
-        const achGrid = ACHIEVEMENTS.map((a) => {
-          const got = !!un[a.id];
-          return `<div class="ach ${got ? "" : "locked"}"><div class="ach-emoji">${got ? a.emoji || "" : ""}</div><div><div class="ach-name">${a.name}</div><div class="ach-desc">${a.desc}</div></div></div>`;
-        }).join("");
-        const gotCount = ACHIEVEMENTS.filter((a) => un[a.id]).length;
-        return `${panel(
-          "Garage Life · Career Stats",
-          `${chalkRow("Weeks in the garage", state.totalWeeks || 0)}${chalkRow("Parts installed", state.installsDone || 0)}${chalkRow("Shows entered", (state.history || []).length)}${chalkRow("Show wins", (state.history || []).filter((h) => h.place === 1).length)}${chalkRow("Body styles restored", `${stylesDone} / 11`)}${chalkRow("Lifetime cash earned", "$" + fmt(state.lifetimeEarned || 0))}${chalkRow("Slow weeks, well spent", state.familyCruises || 0)}${chalkRow("Saturday scavenge trips", state.scavengeTripsTaken || 0)}`,
-          "", "#1d1611", "clipboard",
-        )}${panel(
-          `Car Guy Achievements · ${gotCount}/${ACHIEVEMENTS.length}`,
-          `<div class="ach-grid">${achGrid}</div>`,
-          "",
-          "#d8a24f",
-        )}`;
-      }
-
       // A headline for weeks that actually meant something, so a big week
       // never reads identical to a quiet one. Tied first to the show result
       // that landed this week, then to the sharpest delta.
@@ -31143,64 +31057,157 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         );
       }
 
+      /* ═══════════════════════════════════════════
+         THE LEGACY WALL
+      ═══════════════════════════════════════════ */
+      // The wall in the garage where a career ends up. Every build you
+      // finished is a framed photo on the paneling, gold for a National
+      // title, with its brass plate; the next frame hangs empty, waiting on
+      // the car in the bay. The shelf under them carries the four numbers as
+      // engraved plaques and a trophy for every title. The shop jacket on the
+      // hook has a patch sewn on for every achievement, and the list from the
+      // patch table at the swap is pinned beside the chalkboard with yours
+      // ticked off. Nothing here is a panel of rows: a veteran's wall is
+      // crowded and a new one is mostly paneling, which is the point.
+      //
+      // Each achievement gets an emblem off the shop's own icon set, chosen by
+      // what it is about; shape and colors are seeded off its id, so a patch
+      // looks the same every time you look at the jacket.
+      const LW_EMBLEM = [
+        [/national|dynasty|concours|hardware|legend|terror|podium|king|sideways|lemons|among|founders|invitation|factory|royalty|numbers|heresy|show_cars|trailer|nationals/, "trophy"],
+        [/stable|showroom|garage$|two_in|collector|five_car|zoning|variety|driveway|everything|parked|drives|first_start|blue_oval|bowtie|five_point|liquid/, "car"],
+        [/wrench|shadetree|whisperer|bolts|together|shop_rat|tree/, "wrench"],
+        [/wife|family|father|hands|doghouse|sold_her|sainthood/, "ring"],
+        [/famous|following|influencer/, "reach"],
+        [/ten_k|figures|million|quarter|cash|flip|half_mil/, "case"],
+        [/circuit|season_ticket|coffee|saturday|distance|flat_out/, "flag"],
+        [/friend|crew|scene|guard|ghost/, "shake"],
+        [/buck|head|rent_free|repeat/, "skull"],
+        [/season|sophomore|decade|weeks/, "moon"],
+        [/flake|spray|pearl|mirror/, "spark"],
+        [/yard|junkyard|schoolyard/, "gear"],
+        [/gold/, "toolbox"],
+        [/legacy/, "check"],
+      ];
+      const LW_TWILL = ["#1f2f52", "#7c1f1f", "#1d1d1f", "#3f4a24", "#5a1f3a", "#e9e1c8", "#245a5a", "#6a3f1c"];
+      const LW_THREAD = ["#e8c46a", "#f4efe2", "#d84a3a", "#7fb4e0"];
+      function lwSeed(s) {
+        let h = 2166136261;
+        for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+        return h >>> 0;
+      }
+      function lwPatch(a, cx, cy, s) {
+        const h = lwSeed(a.id);
+        const emblem = (LW_EMBLEM.find(([re]) => re.test(a.id)) || [0, "nut"])[1];
+        const twill = LW_TWILL[h % LW_TWILL.length];
+        const light = twill === "#e9e1c8";
+        const thread = light ? "#7c1f1f" : LW_THREAD[(h >> 3) % LW_THREAD.length];
+        const r = s / 2, rot = ((h >> 6) % 13) - 6;
+        const shape = (h >> 9) % 4;
+        const f = (n) => Math.round(n * 10) / 10;
+        const body =
+          shape === 0 ? `<circle cx="0" cy="0" r="${f(r)}"/>`
+          : shape === 1 ? `<path d="M${f(-r)},${f(-r * 0.86)} H${f(r)} V${f(r * 0.1)} C${f(r)},${f(r * 0.6)} ${f(r * 0.4)},${f(r * 0.86)} 0,${f(r)} C${f(-r * 0.4)},${f(r * 0.86)} ${f(-r)},${f(r * 0.6)} ${f(-r)},${f(r * 0.1)} Z"/>`
+          : shape === 2 ? `<rect x="${f(-r)}" y="${f(-r * 0.78)}" width="${f(s)}" height="${f(s * 0.78)}" rx="${f(s * 0.12)}"/>`
+          : `<path d="M0,${f(-r)} L${f(r * 0.87)},${f(-r * 0.5)} L${f(r * 0.87)},${f(r * 0.5)} L0,${f(r)} L${f(-r * 0.87)},${f(r * 0.5)} L${f(-r * 0.87)},${f(-r * 0.5)} Z"/>`;
+        const e = s * 0.5;
+        return `<g class="lw-patch" data-ach="${a.id}" transform="translate(${f(cx)} ${f(cy)}) rotate(${rot})" onclick="lwRead('${a.id}')"><title>${a.name}</title>
+          <g fill="${twill}" stroke="${thread}" stroke-width="${f(Math.max(1.4, s * 0.09))}">${body}</g>
+          <g fill="none" stroke="${thread}" stroke-width="${f(Math.max(0.6, s * 0.025))}" stroke-dasharray="${f(s * 0.05)} ${f(s * 0.04)}" opacity="0.8" transform="scale(0.78)">${body}</g>
+          <svg x="${f(-e / 2)}" y="${f(-e / 2)}" width="${f(e)}" height="${f(e)}" viewBox="0 0 16 16" fill="${thread}" shape-rendering="crispEdges">${UI_ICONS[emblem] || UI_ICONS.nut}</svg>
+        </g>`;
+      }
+      // The jacket, hung by its collar on a hook, and the patches on its back.
+      function lwJacket(got) {
+        const n = got.length;
+        const X0 = 74, Y0 = 92, PW = 152, PH = 190;
+        let patches = "";
+        if (n) {
+          let cols = Math.max(1, Math.round(Math.sqrt((n * PW) / PH)));
+          let rows = Math.ceil(n / cols);
+          while (rows * (PW / cols) > PH * 1.08 && cols < n) { cols++; rows = Math.ceil(n / cols); }
+          const cell = Math.min(PW / cols, PH / rows, 58);
+          const s = cell * 0.86;
+          const gw = cols * cell, gh = rows * cell;
+          got.forEach((a, i) => {
+            const c = i % cols, rr = Math.floor(i / cols);
+            const inRow = rr === rows - 1 ? n - rr * cols : cols;
+            const off = ((cols - inRow) * cell) / 2;
+            const jx = ((lwSeed(a.id) >> 12) % 5) - 2, jy = ((lwSeed(a.id) >> 15) % 5) - 2;
+            patches += lwPatch(a, X0 + (PW - gw) / 2 + off + c * cell + cell / 2 + jx * cell * 0.03, Y0 + (PH - gh) / 2 + rr * cell + cell / 2 + jy * cell * 0.03, s);
+          });
+        }
+        return `<svg class="lw-jacket" viewBox="0 0 300 330" aria-label="Your shop jacket, ${n} patch${n === 1 ? "" : "es"}">
+          <defs><linearGradient id="lwJk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34405a"/><stop offset="1" stop-color="#232c40"/></linearGradient></defs>
+          <rect x="145" y="0" width="10" height="16" fill="#8d939a"/><path d="M150,16 C150,28 162,28 162,20" fill="none" stroke="#b9bfc5" stroke-width="3"/>
+          <path d="M150,26 L70,58 H230 Z" fill="none" stroke="#6b5240" stroke-width="4"/>
+          <path d="M70,58 C56,62 46,72 40,92 L22,286 C22,294 30,298 40,298 L62,298 L68,120 L74,300 C74,306 80,310 88,310 H212 C220,310 226,306 226,300 L232,120 L238,298 L260,298 C270,298 278,294 278,286 L260,92 C254,72 244,62 230,58 C214,52 190,48 172,48 L150,60 L128,48 C110,48 86,52 70,58 Z" fill="url(#lwJk)" stroke="#161c2a" stroke-width="2"/>
+          <path d="M128,48 L150,60 L172,48 L166,40 H134 Z" fill="#4a3a2a" stroke="#161c2a" stroke-width="1.5"/>
+          <path d="M74,292 H226 V306 C226,309 222,311 218,311 H82 C78,311 74,309 74,306 Z" fill="#1c2335"/>
+          ${Array.from({ length: 19 }, (_, i) => `<line x1="${78 + i * 8}" y1="293" x2="${78 + i * 8}" y2="309" stroke="#2c3550" stroke-width="2"/>`).join("")}
+          <path d="M70,58 L68,120 M230,58 L232,120" stroke="#161c2a" stroke-width="1.5" fill="none" opacity="0.7"/>
+          <path d="M22,280 H62 M238,280 H278" stroke="#1c2335" stroke-width="8"/>
+          ${n ? "" : `<text class="lw-jk-note" x="150" y="190" text-anchor="middle">no patches yet</text>`}
+          ${patches}
+        </svg>`;
+      }
+      function lwRead(id) {
+        const a = ACHIEVEMENTS.find((x) => x.id === id);
+        const out = document.querySelector(".lw-read");
+        if (!a || !out) return;
+        const got = !!(state.achievementsUnlocked || {})[id];
+        out.innerHTML = `<b>${a.name}</b> ${a.desc}${got ? "" : ` <i>not yet</i>`}`;
+        document.querySelectorAll(".lw-li.on, .lw-patch.on").forEach((e) => e.classList.remove("on"));
+        document.querySelectorAll(`[data-ach="${id}"]`).forEach((e) => e.classList.add("on"));
+      }
+      // A framed photo of a finished build, and its brass plate.
+      function lwFrame(b) {
+        const yr = String(b.year || "").slice(-2);
+        const title = b.wonNational ? "National Champion" : b.bestPlace ? `best: ${placeLabel(b.bestPlace)}${b.bestTier ? ` at a ${b.bestTier}` : ""}` : "retired";
+        const tip = `${b.year} ${b.make} ${b.model}. ${fmtF(b.followersAtCompletion || 0)} followers then, ${b.partsInstalled || 0} parts put in by hand${b.origin === "project" && b.boughtAt ? `, bought as a project for $${fmt(b.boughtAt)}` : ""}.`;
+        return `<figure class="lw-frame${b.wonNational ? " gold" : ""}" title="${tip.replaceAll('"', "&quot;")}">
+          <div class="lw-photo">${carGlamourSvg(b.style || "truck", b.palette || "blue")}</div>
+          <figcaption class="lw-plate"><b>'${yr} ${b.make} ${b.model}</b><span>Season ${b.completedSeason || "-"} · ${b.finalOverall || 0} overall · ${title}</span></figcaption>
+        </figure>`;
+      }
       function renderLegacyWall() {
         const builds = state.legacyBuilds || [];
-        const careerStats = {
-          total: builds.length,
-          nationals: builds.filter((b) => b.wonNational).length,
-          best: builds.reduce((m, b) => Math.max(m, b.finalOverall || 0), 0),
-          followers: state.followers,
-        };
-        const cards = builds
-          .map(
-            (b) => `
-          <div class="legacy-card ${b.wonNational ? "national" : ""}">
-            ${b.wonNational ? `<div class="legacy-card-badge">${ico("trophy", "15px")}</div>` : ""}
-            <div class="legacy-card-emoji">${b.emoji || ""}</div>
-            <div class="legacy-card-title">${b.year || ""} ${b.make || ""} ${b.model || ""}</div>
-            <div class="legacy-card-sub">Build #${b.completedSeason || "-"} · ${b.wonNational ? "National Champion" : "Retired Project"}${b.origin === "project" ? ` · Bought as a project${b.boughtAt ? `, at ${b.boughtAt}` : ""}` : ""}</div>
-            <div class="legacy-card-stats">
-              <div class="legacy-card-stat">
-                <div class="legacy-card-stat-v ${b.finalOverall >= 90 ? "gold" : ""}">${b.finalOverall || 0}</div>
-                <div class="legacy-card-stat-k">Final Overall</div>
-              </div>
-              <div class="legacy-card-stat">
-                <div class="legacy-card-stat-v">${fmtF(b.followersAtCompletion || 0)}</div>
-                <div class="legacy-card-stat-k">Followers Then</div>
-              </div>
-              <div class="legacy-card-stat">
-                <div class="legacy-card-stat-v">${b.bestPlace ? placeLabel(b.bestPlace) : "-"}</div>
-                <div class="legacy-card-stat-k">Best Result</div>
-              </div>
-              <div class="legacy-card-stat">
-                <div class="legacy-card-stat-v">${b.partsInstalled || 0}</div>
-                <div class="legacy-card-stat-k">Parts Installed</div>
-              </div>
+        const un = state.achievementsUnlocked || {};
+        const got = ACHIEVEMENTS.filter((a) => un[a.id]);
+        const nationals = builds.filter((b) => b.wonNational).length;
+        const best = builds.reduce((m, b) => Math.max(m, b.finalOverall || 0), 0);
+        const car = currentCar();
+        // The next frame hangs empty for the car in the bay.
+        const next = `<figure class="lw-frame empty"><div class="lw-photo"></div><span class="lw-saving">${builds.length ? "the next one" : "saving this spot"}</span><figcaption class="lw-plate blank"><b>${car ? `'${String(car.year).slice(-2)} ${car.make} ${car.model}` : "&nbsp;"}</b><span>${car ? "still in the bay" : "&nbsp;"}</span></figcaption></figure>`;
+        const many = builds.length + 1;
+        const size = many <= 3 ? "lg" : many <= 6 ? "md" : "sm";
+        const plaque = (v, k) => `<div class="lw-plaque"><b>${v}</b><span>${k}</span></div>`;
+        const trophies = Array.from({ length: Math.min(nationals, 8) }, () => `<span class="lw-trophy">${ico("trophy", "32px")}</span>`).join("");
+        const stylesDone = Object.keys(state.stylesRestored || {}).length;
+        const chalk = panel(
+          "Garage life",
+          `${chalkRow("Weeks in the garage", state.totalWeeks || 0)}${chalkRow("Parts put in", state.installsDone || 0)}${chalkRow("Shows entered", (state.history || []).length)}${chalkRow("Show wins", (state.history || []).filter((h) => h.place === 1).length)}${chalkRow("Body styles done", `${stylesDone} / 11`)}${chalkRow("Cash earned", "$" + fmt(state.lifetimeEarned || 0))}${chalkRow("Slow weeks, well spent", state.familyCruises || 0)}${chalkRow("Saturday trips", state.scavengeTripsTaken || 0)}`,
+          "", "#f5efe0", "chalkboard lw-chalk",
+        );
+        const list = ACHIEVEMENTS.map((a) => `<button class="lw-li${un[a.id] ? " got" : ""}" data-ach="${a.id}" onclick="lwRead('${a.id}')">${a.name}</button>`).join("");
+        const card = `<div class="lw-card">
+          <div class="lw-card-h"><b>Patch table</b><span>Pamona Swap · Row G · $3 each</span><em>${got.length} of ${ACHIEVEMENTS.length}</em></div>
+          <div class="lw-list">${list}</div>
+          <div class="lw-read">${got.length ? "Tap a patch or a name." : "Tap a name to see what it takes."}</div>
+        </div>`;
+        return `<div class="lw-wrap">
+          <div class="lw-top">
+            <button class="btn lw-back" onclick="setView('career')">&#8592; Back to Social</button>
+            ${car ? button("Start a fresh Legacy build", "startLegacyRun()", false, "lw-start") : ""}
+          </div>
+          <div class="lw-wall">
+            <div class="lw-main">
+              <div class="lw-frames ${size}">${builds.map(lwFrame).join("")}${next}</div>
+              <div class="lw-shelf">${plaque(builds.length, builds.length === 1 ? "build finished" : "builds finished")}${plaque(nationals, nationals === 1 ? "national title" : "national titles")}${trophies}${plaque(best || "-", "best overall")}${plaque(fmtF(state.followers), "followers")}</div>
             </div>
+            <div class="lw-hook">${lwJacket(got)}</div>
+            <div class="lw-lower">${chalk}${card}</div>
           </div>
-        `,
-          )
-          .join("");
-        const emptyMarkup = builds.length
-          ? ""
-          : `<div class="legacy-empty">No completed builds yet.<br/>Win a Nationals round or retire a project to start the wall.</div>`;
-        return `<div class="legacy-wrap">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px;flex-wrap:wrap">
-            <button class="legacy-back" onclick="setView('career')">← Back to Social</button>
-            ${currentCar() ? button("Start a fresh Legacy build", "startLegacyRun()", false, "", "background:transparent;border:1px solid var(--gold);color:var(--gold);padding:6px 14px;font-size:11px;letter-spacing:.8px;text-transform:uppercase") : ""}
-          </div>
-          <div class="legacy-hero" style="background-image:linear-gradient(180deg, rgba(20,14,10,.88) 0%, rgba(16,11,8,.94) 100%), url('${CUTSCENE_ART["scene-legacy-wall"]}');background-size:cover;background-position:center 32%">
-            <div class="legacy-hero-kicker">The Legacy Wall</div>
-            <div class="legacy-hero-title">Every build you ever finished</div>
-            <div class="legacy-career-row">
-              <div class="legacy-career-stat"><div class="legacy-career-v">${careerStats.total}</div><div class="legacy-career-k">Builds Completed</div></div>
-              <div class="legacy-career-stat"><div class="legacy-career-v">${careerStats.nationals}</div><div class="legacy-career-k">National Titles</div></div>
-              <div class="legacy-career-stat"><div class="legacy-career-v">${careerStats.best || "-"}</div><div class="legacy-career-k">Highest Overall</div></div>
-              <div class="legacy-career-stat"><div class="legacy-career-v">${fmtF(careerStats.followers)}</div><div class="legacy-career-k">Lifetime Followers</div></div>
-            </div>
-          </div>
-          ${emptyMarkup}<div style="margin-top:18px">${renderCareerPanels()}</div>
-          <div class="legacy-grid">${cards}</div>
         </div>`;
       }
 

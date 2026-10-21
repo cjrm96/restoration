@@ -1227,6 +1227,51 @@ const pass = (msg) => console.log("✓", msg);
   if (cageOk !== true) fail("work on the bench: " + cageOk);
   pass("a job on the bench no longer switches the game off");
 
+  // ── the Legacy Wall: a frame per finished build (gold for a title) and
+  // an empty one for the car in the bay, the four numbers on the shelf, a
+  // patch on the jacket for every achievement and only those, and the patch
+  // table's list with yours ticked, each name telling you what it takes. ──
+  const wallOk = await page.evaluate(() => {
+    const keep = { builds: state.legacyBuilds, un: state.achievementsUnlocked, view: state.view };
+    const back = (m) => { Object.assign(state, { legacyBuilds: keep.builds, achievementsUnlocked: keep.un, view: keep.view }); render("full"); return m; };
+    state.legacyBuilds = [
+      { id: "w2", year: 1969, make: "Chevvi", model: "Cameron SS", style: "camaro", palette: "cherry", finalOverall: 94, wonNational: true, completedSeason: 2, followersAtCompletion: 41000, bestPlace: 1, partsInstalled: 61 },
+      { id: "w1", year: 1965, make: "Forde", model: "F-100", style: "truck", finalOverall: 81, wonNational: false, completedSeason: 1, followersAtCompletion: 9200, bestPlace: 2, bestTier: "Regional", partsInstalled: 47 },
+    ];
+    state.achievementsUnlocked = {};
+    const pick = ACHIEVEMENTS.filter((a, i) => i % 5 === 0);
+    pick.forEach((a) => (state.achievementsUnlocked[a.id] = true));
+    state.view = "legacy"; render("full");
+    const wall = document.querySelector(".lw-wall");
+    if (!wall) return back("the wall did not render");
+    if (/undefined|NaN/.test(wall.textContent)) return back("the wall prints undefined or NaN");
+    const frames = [...wall.querySelectorAll(".lw-frame")];
+    if (frames.length !== 3) return back(`${frames.length} frames for two builds and the car in the bay`);
+    if (!frames[0].classList.contains("gold") || frames[1].classList.contains("gold")) return back("the gold frame is not on the title-winning build");
+    if (!frames[2].classList.contains("empty")) return back("there is no empty frame waiting on the car in the bay");
+    if (!frames[0].querySelector(".lw-photo svg")) return back("a finished build has no photo");
+    if (!/#px-grid/.test(getComputedStyle(frames[0].querySelector(".lw-photo")).filter)) return back("the photos are off the pixel grid");
+    if (!/1965/.test(frames[1].getAttribute("title") || "") ) return back("a frame does not tell you about its build on hover");
+    const plaques = [...wall.querySelectorAll(".lw-plaque b")].map((b) => b.textContent);
+    if (plaques[0] !== "2" || plaques[1] !== "1" || plaques[2] !== "94") return back("the shelf's plaques do not add up: " + plaques.join(","));
+    if (wall.querySelectorAll(".lw-trophy").length !== 1) return back("one title should stand one trophy on the shelf");
+    // Rendering can earn a few on its own (the car in the bay was always
+    // "ran when parked"), so the jacket answers to what is unlocked now.
+    const have = ACHIEVEMENTS.filter((a) => state.achievementsUnlocked[a.id]);
+    const patches = [...wall.querySelectorAll(".lw-jacket .lw-patch")].map((g) => g.dataset.ach);
+    if (patches.length !== have.length || have.some((a) => !patches.includes(a.id))) return back(`the jacket carries ${patches.length} patches for ${have.length} achievements`);
+    const items = [...wall.querySelectorAll(".lw-list .lw-li")];
+    if (items.length !== ACHIEVEMENTS.length) return back(`the patch list has ${items.length} of ${ACHIEVEMENTS.length}`);
+    if (items.filter((b) => b.classList.contains("got")).length !== have.length) return back("the ticks on the list do not match what you have");
+    const locked = ACHIEVEMENTS.find((a) => !state.achievementsUnlocked[a.id]);
+    items.find((b) => b.dataset.ach === locked.id).click();
+    const read = wall.querySelector(".lw-read").textContent;
+    if (!read.includes(locked.desc) || !/not yet/.test(read)) return back("tapping a name does not say what it takes");
+    return back(true);
+  });
+  if (wallOk !== true) fail("Legacy Wall: " + wallOk);
+  pass("the Legacy Wall: frames, plaques, a patch per achievement, and the list says what each takes");
+
   // ── the Saturday map: a printed map on the truck seat. Dale's marker
   // circles the places you know about, she marks home with this Saturday's
   // note, and each yellow tag is the way to go. A place nobody has told you
