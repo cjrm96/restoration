@@ -802,12 +802,6 @@
         margin-bottom: 3px;
       }
       .sp-next-foot { margin-top: 6px; }
-      .sp-tail {
-        margin-top: 13px;
-        padding-top: 11px;
-        border-top: 1px solid var(--line);
-        line-height: 1.6;
-      }
       .sp-toggle {
         width: 100%;
         margin-top: 12px;
@@ -1681,7 +1675,7 @@
          Dale's paperwork: the calendar with the day's sheet clipped under
          it, dark ink on cream, where a show is a line you pick, not a
          button. And the one printed bill for the line you picked, which
-         carries the only way in, with the trip's fuel on its tear-off stub. */
+         carries the only way in. The tank is bolted under the day's sheet. */
       .wall {
         display: grid;
         grid-template-columns: 372px minmax(0, 1fr) minmax(300px, 0.95fr);
@@ -1689,10 +1683,19 @@
         gap: 20px;
         align-items: start;
       }
+      /* The middle of the board: the day's sheet, and the tank in whatever
+         cork is left under it, as tall as the calendar beside it allows. */
+      .wall-mid {
+        grid-area: sheet;
+        align-self: stretch;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        min-width: 0;
+      }
       /* The day's sheet, on a clip of its own beside the calendar. */
       .wall-paper {
         position: relative;
-        grid-area: sheet;
         background: linear-gradient(180deg, #f6efdf 0%, #ece2cb 100%);
         border: 1px solid #bfae88;
         border-radius: 3px;
@@ -1828,36 +1831,49 @@
         background: radial-gradient(ellipse at 50% 88%, rgba(255, 220, 150, 0.2) 0%, transparent 70%);
       }
       .poster-art svg { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
-      /* The trip stub: a tear-off at the foot of the bill, perforated, in
-         the bill's own colours, holding the tank and the pump. */
-      .poster-stub {
+      /* The tank: the gauge out of the truck's dash on a black crinkle plate,
+         with the pump's two buttons beside it. The slot is the cork left under
+         the sheet; the gauge grows into it, up to the size of the real thing,
+         and stands over its buttons once there is room to. */
+      .wall-tank-slot { flex: 1 1 0; min-height: 86px; container: tank / size; }
+      .wall-tank {
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin: 13px -17px -14px;
-        padding: 10px 17px 12px;
-        border-top: 1px dashed var(--bill-edge, #6d5b45);
-        background: rgba(0, 0, 0, 0.2);
+        justify-content: center;
+        gap: 14px;
+        width: fit-content;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 8px 14px;
+        border: 1px solid #0c0b0a;
+        border-radius: 6px;
+        background:
+          radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.07), transparent 60%),
+          repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px),
+          #1b1a18;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
       }
-      .poster-stub .fuel-gauge { width: 96px; max-width: 96px; margin: 0; flex: 0 0 96px; }
-      .poster-stub-side { flex: 1 1 auto; min-width: 0; }
-      .poster-stub-k { font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--bill-ink-soft, #9a8b76); }
-      .poster-stub-read { margin: 2px 0 7px; font-size: 12px; color: var(--bill-ink, #e8dfcd); }
-      .poster-stub-read b { color: #f5dda6; }
-      .poster-stub-btns { display: flex; gap: 6px; }
-      .bill .poster-stub-btns .btn {
-        flex: 1 1 0;
+      .wall-tank .fuel-gauge {
+        flex: none;
+        width: auto;
+        max-width: none;
+        height: clamp(56px, min(calc(100cqh - 18px), calc((100cqw - 190px) * 0.577)), 150px);
+        aspect-ratio: 260 / 150;
         margin: 0;
-        padding: 6px 8px;
-        font-size: 11px;
-        background: transparent;
-        border: 1px solid var(--bill-edge, #6d5b45);
-        color: var(--bill-ink, #e8dfcd);
-        box-shadow: none;
       }
-      .bill .poster-stub-btns .btn:disabled { opacity: 0.4; }
-      .poster-stub-full { font-size: 11.5px; color: #9fd18e; }
-      .poster-stub-note { margin-top: 6px; font-size: 10.5px; line-height: 1.45; color: #9fd18e; }
+      .tank-side { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+      .tank-btns { display: flex; flex-direction: column; gap: 6px; }
+      .tank-btns .btn { margin: 0; padding: 7px 12px; font-size: 12px; white-space: nowrap; }
+      .tank-btns .btn:disabled { opacity: 0.45; }
+      .tank-full { font: italic 12px var(--font-ui); color: #9fd18e; white-space: nowrap; }
+      .tank-her { max-width: 150px; font: 15px/1.1 var(--font-her); color: #f0c8d2; transform: rotate(-2deg); }
+      @container tank (min-height: 210px) {
+        .wall-tank { flex-direction: column; gap: 10px; padding: 12px 16px 14px; }
+        .wall-tank .fuel-gauge { height: clamp(56px, min(calc(100cqh - 80px), calc((100cqw - 34px) * 0.577)), 150px); }
+        .tank-side { align-items: center; }
+        .tank-btns { flex-direction: row; }
+        .tank-her { max-width: none; }
+      }
       @media (max-width: 1120px) {
         .wall { grid-template-columns: 372px minmax(0, 1fr); grid-template-areas: "cal sheet" "cal poster"; }
       }
@@ -1873,7 +1889,7 @@
         .mcal-d { height: clamp(33px, calc((100vh - 482px) / 5), 46px); }
       }
       /* Mid-season the tallest thing on the board is a big show's bill (two
-         lines of chrome lettering, the purse, Buck's line, the tank), so on a
+         lines of chrome lettering, the purse, Buck's line), so on a
          laptop it tightens too: a shorter art strip, a size down on the
          lettering, less air between its parts. */
       @media (min-width: 761px) and (max-height: 860px) {
@@ -1887,8 +1903,6 @@
         .bill-note { margin-top: 7px; }
         .bill-foot { margin-top: 8px; padding-top: 7px; }
         .bill .btn { margin-top: 9px; }
-        .poster-stub { margin-top: 10px; padding-top: 9px; padding-bottom: 10px; }
-        .poster-stub .fuel-gauge { width: 80px; max-width: 80px; flex-basis: 80px; }
       }
       /* A 1280x800 or 1366x768 laptop with a browser and the ticker on: the
          art strip comes down again and the bill's button slims. */
@@ -1907,19 +1921,21 @@
         .bill.loud .bill-first { font-size: 27px; }
         .bill-foot { margin-top: 6px; padding-top: 5px; }
         .bill-note { margin-top: 3px; }
-        .poster-stub { margin-top: 8px; padding-top: 7px; padding-bottom: 8px; }
-        .poster-stub .fuel-gauge { width: 64px; max-width: 64px; flex-basis: 64px; }
       }
       @media (max-width: 760px) {
         .wall { grid-template-columns: minmax(0, 1fr); grid-template-areas: "cal" "sheet" "poster"; gap: 16px; }
+        /* Stacked, there is no cork left over to grow into: a set size. */
+        .wall-tank-slot { flex: none; min-height: 0; container-type: normal; }
+        .wall-tank { flex-direction: column; gap: 10px; padding: 12px 16px 14px; }
+        .wall-tank .fuel-gauge { height: 100px; }
+        .tank-side { align-items: center; }
+        .tank-btns { flex-direction: row; }
+        .tank-her { max-width: none; }
       }
       @media (max-width: 640px) {
         .mcal-d { height: 42px; padding: 2px; font-size: 13px; }
         .mcal-month { font-size: 26px; }
         .mcal-her, .mcal-his { font-size: 9px; }
-        .poster-stub { margin: 12px -13px -12px; padding: 10px 13px 11px; gap: 10px; }
-        .poster-stub .fuel-gauge { width: 72px; max-width: 72px; flex-basis: 72px; }
-        .poster-stub-btns { flex-direction: column; }
       }
 
       /* Perks: a sponsor covering your fee is good news and should look it,
@@ -2245,7 +2261,6 @@
       .wife-lst .lst-shot { flex: 0 0 40%; border-bottom: 0; border-right: 1px solid rgba(196, 109, 96, 0.35); }
       .wife-lst .lst-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; justify-content: center; padding: 12px 14px; }
       .wife-lst .lst-title { white-space: normal; }
-      .wife-lst-kicker { font-size: 11px; font-weight: bold; color: var(--red-bright); letter-spacing: 0.3px; margin-bottom: 4px; }
       .wife-lst-copy { font-size: 11.5px; line-height: 1.5; color: var(--text); margin-top: 6px; }
       @media (max-width: 560px) {
         .lst.wife-lst { flex-direction: column; }
@@ -12796,7 +12811,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.99.2";
+      const GAME_VERSION = "0.100.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -23388,9 +23403,29 @@
         }
         return o;
       })();
-      function fuelGauge(value, max) {
+      // The trip, when there is one, is a band on the dial from the needle
+      // back to where it will sit after the drive: the gallons read off the
+      // gauge itself instead of a line of type beside it. Red when the band
+      // runs out past E.
+      function fuelTripBand(value, max, trip) {
+        if (!(trip > 0)) return "";
+        const at = (deg, r) => {
+          const a = (deg * Math.PI) / 180;
+          return [FUEL_CX + r * Math.sin(a), FUEL_CY - r * Math.cos(a)].map((n) => Math.round(n * 100) / 100);
+        };
+        const short = value < trip;
+        const a0 = fuelNeedleAngle(value - trip, max);
+        const a1 = fuelNeedleAngle(value, max);
+        if (a1 - a0 < 0.5 && !short) return "";
+        const [x0, y0] = at(a0, 57);
+        const [x1, y1] = at(a1, 57);
+        const [mx, my] = at(a0, 50);
+        const col = short ? "#e0533a" : "#9fd18e";
+        return `<path class="fuel-trip" d="M${x0} ${y0} A57 57 0 0 1 ${x1} ${y1}" fill="none" stroke="${col}" stroke-width="6" opacity="0.85"/><circle cx="${mx}" cy="${my}" r="2.6" fill="${col}"/>`;
+      }
+      function fuelGauge(value, max, trip = 0) {
         const deg = fuelNeedleAngle(value, max);
-        return `<svg class="fuel-gauge no-sweep" viewBox="0 0 260 150" role="img" aria-label="Fuel ${value} of ${max} gallons">
+        return `<svg class="fuel-gauge no-sweep" viewBox="0 0 260 150" role="img" aria-label="Fuel ${value} of ${max} gallons${trip > 0 ? `, this trip burns ${trip}` : ""}">
           <defs>
             <linearGradient id="fgPlate" x1="0" y1="0" x2="0.15" y2="1">
               <stop offset="0" stop-color="#dfe3e5"/><stop offset="0.32" stop-color="#8f979c"/>
@@ -23425,6 +23460,7 @@
           <text x="130" y="14" text-anchor="middle" font-family="Georgia, serif" font-size="7.5" letter-spacing="1.3" fill="#6f767c">PJ-9306-N</text>
           <text x="130" y="38" text-anchor="middle" font-family="Georgia, serif" font-size="9.5" letter-spacing="1.7" fill="#a79f90">PALOMAR</text>
           ${FUEL_FACE}
+          ${fuelTripBand(value, max, trip)}
           <text x="130" y="110" text-anchor="middle" font-family="Georgia, serif" font-size="16" letter-spacing="3.2" font-weight="bold" fill="#e8e2d4">FUEL</text>
           <!-- The needle rides in a group translated to the pivot and spins
                about its own origin. A px transform-origin looked right at one
@@ -25597,8 +25633,7 @@ addEventListener("DOMContentLoaded",function(){
           <div class="sb-brand">Car Guy Simulator</div>
           <div style="letter-spacing:1.4px;text-transform:uppercase;margin:3px 0 9px">v${GAME_VERSION} &middot; WINNXT Studios &middot; 2026</div>
           <div style="font-style:italic;margin-bottom:10px">A garage management sim about restoring classic American iron, chasing show podiums, and keeping the lights on while your wife asks when you are going to fix the lawn mower.</div>
-          <div style="line-height:1.9">Single file HTML5, hand-coded SVG sprites, and a 12-bar E-blues shuffle played live in your browser. Nothing is streamed and nothing is cached.<br>
-          The whole thing runs on your machine. No data leaves it.</div>
+          <div style="line-height:1.9">The whole thing runs on your machine. No data leaves it.</div>
           <div style="margin-top:10px;font-style:italic;opacity:0.75">Any resemblance to real cars, sponsors or auction houses is parody. The brands they wink at are theirs, the loving impression is ours.</div>
           <div style="margin-top:10px">Game design and direction &middot; WINNXT Studios</div>
         </div>
@@ -25612,7 +25647,7 @@ addEventListener("DOMContentLoaded",function(){
           root.innerHTML = "";
           return;
         }
-        root.innerHTML = `<div class="modal"><div class="modal-card loans-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">${sharkAtTheDesk() ? "Borrow just enough to keep the build alive, or make a worse decision." : "Borrow just enough to keep the build alive. Paperwork, a rate, and it comes out of the pay."}</div>${loanTakenThisWeek() ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border:1px solid rgba(196,109,96,0.4);margin-bottom:14px;padding:10px 12px"><div class="tiny" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px"> One loan a week</div><div class="tiny muted" style="line-height:1.5">You've already borrowed this week. Your credit only stretches so far, the desk reopens next week.</div></div>` : ""}<div class="loans-grid">${panel("Bank Loan", `${chalkRow("Cash Now", "+$4,000", "good")}${chalkRow("Payday Hit", "-$400 every paycheck", "warn")}${state.bankLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.bankLoanBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $400", "payOffLoan('bank', 400)", state.money < Math.min(400, state.bankLoanBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.bankLoanBalance)}`, "payOffLoan('bank')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Bank Loan", "takeBankLoan()", loanTakenThisWeek(), "", "width:100%")}`, "", "#1d1208", "loan-form")}${sharkAtTheDesk() ? panel("Loan Shark", `${chalkRow("Cash Now", "+$6,000", "good")}${chalkRow("You Owe", "$7,800 total", "bad")}${chalkRow("Payday Hit", "-$750 every paycheck", "bad")}${state.sharkLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.sharkLoanBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $750", "payOffLoan('shark', 750)", state.money < Math.min(750, state.sharkLoanBalance), "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}${button(`Pay Off $${fmt(state.sharkLoanBalance)}`, "payOffLoan('shark')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Shark Loan", "takeSharkLoan()", loanTakenThisWeek(), "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "", "#3a1810", "loan-shark") : ""}${panel("Tool Truck Tab", `${chalkRow("Cash Now", "+$3,500", "good")}${chalkRow("You Owe", "$3,600 total", "warn")}${chalkRow("Weekly Hit", "-$90 for 40 weeks", "warn")}${state.toolTruckBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.toolTruckBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $90", "payOffLoan('truck', 90)", state.money < Math.min(90, state.toolTruckBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.toolTruckBalance)}`, "payOffLoan('truck')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Open Tool Truck Tab", "takeToolTruckLoan()", loanTakenThisWeek(), "", "width:100%")}`, "", "#1d1208", "tool-truck")}${state.weddingRingPawned && state.ringPawnBalance > 0 ? panel("Pawn Ticket", `${chalkRow("You Owe", `$${fmt(state.ringPawnBalance)}`, "bad")}${chalkRow("Weekly Hit", "-$50 weekly", "warn")}${chalkRow("Outstanding", `$${fmt(state.ringPawnBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $50", "payOffLoan('ring', 50)", state.money < Math.min(50, state.ringPawnBalance), "", "width:100%")}${button(`Pick Up Ring · $${fmt(state.ringPawnBalance)}`, "payOffLoan('ring')", state.money < state.ringPawnBalance, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}</div>`, "", "#2a1810", "pawn-ticket") : ""}</div></div></div>`;
+        root.innerHTML = `<div class="modal"><div class="modal-card loans-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">${sharkAtTheDesk() ? "Borrow just enough to keep the build alive, or make a worse decision." : "Borrow just enough to keep the build alive."}</div>${loanTakenThisWeek() ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border:1px solid rgba(196,109,96,0.4);margin-bottom:14px;padding:10px 12px"><div class="tiny" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px"> One loan a week</div><div class="tiny muted" style="line-height:1.5">You've already borrowed this week. Your credit only stretches so far, the desk reopens next week.</div></div>` : ""}<div class="loans-grid">${panel("Bank Loan", `${chalkRow("Cash Now", "+$4,000", "good")}${chalkRow("Payday Hit", "-$400 every paycheck", "warn")}${state.bankLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.bankLoanBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $400", "payOffLoan('bank', 400)", state.money < Math.min(400, state.bankLoanBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.bankLoanBalance)}`, "payOffLoan('bank')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Bank Loan", "takeBankLoan()", loanTakenThisWeek(), "", "width:100%")}`, "", "#1d1208", "loan-form")}${sharkAtTheDesk() ? panel("Loan Shark", `${chalkRow("Cash Now", "+$6,000", "good")}${chalkRow("You Owe", "$7,800 total", "bad")}${chalkRow("Payday Hit", "-$750 every paycheck", "bad")}${state.sharkLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.sharkLoanBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $750", "payOffLoan('shark', 750)", state.money < Math.min(750, state.sharkLoanBalance), "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}${button(`Pay Off $${fmt(state.sharkLoanBalance)}`, "payOffLoan('shark')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Shark Loan", "takeSharkLoan()", loanTakenThisWeek(), "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "", "#3a1810", "loan-shark") : ""}${panel("Tool Truck Tab", `${chalkRow("Cash Now", "+$3,500", "good")}${chalkRow("You Owe", "$3,600 total", "warn")}${chalkRow("Weekly Hit", "-$90 for 40 weeks", "warn")}${state.toolTruckBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.toolTruckBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $90", "payOffLoan('truck', 90)", state.money < Math.min(90, state.toolTruckBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.toolTruckBalance)}`, "payOffLoan('truck')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Open Tool Truck Tab", "takeToolTruckLoan()", loanTakenThisWeek(), "", "width:100%")}`, "", "#1d1208", "tool-truck")}${state.weddingRingPawned && state.ringPawnBalance > 0 ? panel("Pawn Ticket", `${chalkRow("You Owe", `$${fmt(state.ringPawnBalance)}`, "bad")}${chalkRow("Weekly Hit", "-$50 weekly", "warn")}${chalkRow("Outstanding", `$${fmt(state.ringPawnBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $50", "payOffLoan('ring', 50)", state.money < Math.min(50, state.ringPawnBalance), "", "width:100%")}${button(`Pick Up Ring · $${fmt(state.ringPawnBalance)}`, "payOffLoan('ring')", state.money < state.ringPawnBalance, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}</div>`, "", "#2a1810", "pawn-ticket") : ""}</div></div></div>`;
       }
 
       function renderTutorialModal() {
@@ -25929,7 +25964,7 @@ addEventListener("DOMContentLoaded",function(){
         )}${panel(
           `Car Guy Achievements · ${gotCount}/${ACHIEVEMENTS.length}`,
           `<div class="ach-grid">${achGrid}</div>`,
-          "Lifetime goals. They follow you across seasons and legacy builds.",
+          "",
           "#d8a24f",
         )}`;
       }
@@ -28332,9 +28367,7 @@ addEventListener("DOMContentLoaded",function(){
         const stopLine = isToday
           ? st.blocking.length
             ? `<div class="bill-note bill-stop">${st.blocking[0].fail}</div>`
-            : show.enteredThisWeek
-              ? ""
-              : `<div class="bill-note bill-go">She is loaded and ready to roll.</div>`
+            : ""
           : weeksOut > 0 && (scoreShort || !st.progressReq.ok)
             ? `<div class="bill-note bill-stop">${!st.progressReq.ok ? st.progressReq.msg : `${show.minScore}+ overall to enter. She's a ${st.overall} right now.`}</div>`
             : "";
@@ -28361,18 +28394,6 @@ addEventListener("DOMContentLoaded",function(){
               : show.tier === "Cars & Coffee"
                 ? "Roll Up And Hang Out"
                 : `Roll In And Compete · ${st.entryFee > 0 ? "$" + fmt(st.entryFee) : "Free"}`;
-        const fillAmount = MAX_FUEL - state.fuel;
-        const chauffeur =
-          (state.wifeChauffeur || 0) > 0
-            ? `<div class="poster-stub-note">She's driving. Your right leg is off the clutch for ${state.wifeChauffeur} more week${state.wifeChauffeur === 1 ? "" : "s"}, so she is taking you, and she drives it easier than you do, so the trip costs less gas.</div>`
-            : "";
-        // The tear-off stub: your tank against this trip, and the pump. A
-        // full tank says so instead of offering to fill it for $0.
-        const pump =
-          fillAmount <= 0
-            ? `<div class="poster-stub-full">Tank's full.</div>`
-            : `<div class="poster-stub-btns"><button class="btn" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE ? "disabled" : ""}>+5 gal · $${fmt(5 * FUEL_PRICE)}</button><button class="btn" onclick="buyFuel(${fillAmount})" ${state.money < fillAmount * FUEL_PRICE ? "disabled" : ""}>Fill up · $${fmt(fillAmount * FUEL_PRICE)}</button></div>`;
-        const fuelStrip = `<div class="poster-stub">${fuelGauge(state.fuel, MAX_FUEL)}<div class="poster-stub-side"><div class="poster-stub-k">Your tank</div><div class="poster-stub-read"><b>${state.fuel}</b> of ${MAX_FUEL} gal · this trip takes <b>${st.fuelNeed}</b></div>${pump}${chauffeur}</div></div>`;
         return `<div class="bill${loud ? " loud" : ""}" style="${billVars}"><div class="bill-inner">
           ${art}
           ${annualLine ? `<div class="bill-annual">${annualLine}</div>` : ""}
@@ -28384,8 +28405,22 @@ addEventListener("DOMContentLoaded",function(){
           ${stopLine}
           ${rivalLine}
           ${button(label, `beginShowEntry(${show.id})`, off, "", "width:100%")}
-          ${fuelStrip}
         </div></div>`;
+      }
+      // The tank, bolted to the board under the day's sheet: the truck's own
+      // gauge, this trip marked off the needle, and the pump. The gallons are
+      // on the top bar and the trip is on the poster, so nothing here is
+      // spelled out twice.
+      function wallTankMarkup(trip) {
+        const fill = MAX_FUEL - state.fuel;
+        const pump =
+          fill <= 0
+            ? `<div class="tank-full">Tank's full.</div>`
+            : `<div class="tank-btns"><button class="btn" onclick="buyFuel(5)" ${state.money < 5 * FUEL_PRICE ? "disabled" : ""}>+5 gal · $${fmt(5 * FUEL_PRICE)}</button><button class="btn" onclick="buyFuel(${fill})" ${state.money < fill * FUEL_PRICE ? "disabled" : ""}>Fill up · $${fmt(fill * FUEL_PRICE)}</button></div>`;
+        const n = state.wifeChauffeur || 0;
+        const her = n > 0 ? `<div class="tank-her">I'm driving, ${n} more wk${n === 1 ? "" : "s"}. easier on gas</div>` : "";
+        const tip = `${state.fuel} of ${MAX_FUEL} gal${trip > 0 ? `, this trip burns ${trip}` : ""}`;
+        return `<div class="wall-tank-slot"><div class="wall-tank" title="${tip}">${fuelGauge(state.fuel, MAX_FUEL, trip)}<div class="tank-side">${pump}${her}</div></div></div>`;
       }
       function renderShows() {
         const car = currentCar();
@@ -28401,13 +28436,6 @@ addEventListener("DOMContentLoaded",function(){
         const tasteBanner = sceneTasteId() === "split"
           ? ""
           : `<div class="sheet-taste">${SCENE_TASTES[sceneTasteId()].showLine}</div>`;
-        // Shows gated behind reputation, garage or seasons stay off the wall
-        // until they open. One line says more exist.
-        const tierShows = SHOWS_MASTER.filter((s) => calTierReachable(s.tier));
-        const lockedAheadCount = tierShows.filter((s) => s.gate && !evaluateShowGate(s).ok).length;
-        const lockedAheadHint = lockedAheadCount > 0
-          ? `<div class="board-note"><span class="note-lock">${ico("lock", "12px")}</span>${lockedAheadCount} more event${lockedAheadCount === 1 ? "" : "s"} unlock as your reputation, garage, and seasons grow.</div>`
-          : "";
 
         const pick = calPick();
         const now = state.week;
@@ -28476,15 +28504,16 @@ addEventListener("DOMContentLoaded",function(){
           : weeksOut > 0
             ? `<div class="sat-head">Saturday, week ${w}<span>${onWall.length} show${onWall.length === 1 ? "" : "s"} · ${weeksOut} week${weeksOut === 1 ? "" : "s"} out${w === state.seasonLength ? " · the last Saturday" : ""}</span></div>`
             : `<div class="sat-head">Week ${w}, gone<span>${finHere ? `you took ${placeLabel(finHere.place)} at ${finHere.show}` : calHome(w) ? "you were home with them" : "nothing written down"}</span></div>`;
-        const notes = nextTierNote || tasteBanner || lockedAheadHint
-          ? `<div class="sheet-notes">${nextTierNote}${tasteBanner}${lockedAheadHint}</div>`
+        const notes = nextTierNote || tasteBanner
+          ? `<div class="sheet-notes">${nextTierNote}${tasteBanner}</div>`
           : "";
-        const paper = `${renderMonthPage(pick)}<div class="wall-paper"><div class="day-sheet">${satHead}<div class="srow-list${shown.length > 8 ? " dense" : ""}">${rows}${noneReach}</div>${fold}${notes}</div></div>`;
+        const trip = isToday && chosen && !chosen.show.enteredThisWeek ? chosen.st.fuelNeed : 0;
+        const paper = `${renderMonthPage(pick)}<div class="wall-mid"><div class="wall-paper"><div class="day-sheet">${satHead}<div class="srow-list${shown.length > 8 ? " dense" : ""}">${rows}${noneReach}</div>${fold}${notes}</div></div>${wallTankMarkup(trip)}</div>`;
         const poster = chosen
           ? `<div class="wall-poster">${showPosterMarkup(chosen.show, car, w, chosen.st)}</div>`
           : "";
         return heroPanel(
-          "Show Prep Board",
+          "",
           onboardStageVal() >= 3 ? "" : "Load the truck, check the fuel, roll it out",
           onboardStageVal() >= 3 ? "" : "Every show the car runs is one more story on the build.",
           `<div class="wall">${paper}${poster}</div>`,
@@ -28844,13 +28873,11 @@ addEventListener("DOMContentLoaded",function(){
         const yardCard = `<div style="background:rgba(125,160,194,0.07);border:1px solid rgba(125,160,194,0.4);border-radius:8px;padding:12px">
             <div class="small" style="color:var(--blue-bright);font-weight:bold;margin-bottom:6px"> Pick-A-Part</div>
             <div class="tiny" style="color:var(--text);margin-bottom:8px">${yardCount} part${yardCount === 1 ? "" : "s"} on the lot today</div>
-            <div class="tiny muted" style="margin-bottom:8px">$${JUNKYARD_GAS_COST} gas + $${JUNKYARD_ENTRY_FEE} entry = <span style="color:var(--text)">$${JUNKYARD_TRIP_COST}</span></div>
             ${button(`Hit the Yard · $${JUNKYARD_TRIP_COST}`, "commitScavengeTrip('junkyard')", !ride.ok || busy || state.money < JUNKYARD_TRIP_COST || !yardCount, "", "width:100%;background:#7da0c2;border-color:var(--blue-bright)")}
           </div>`;
         const swapCard = `<div style="background:rgba(217,162,79,0.07);border:1px solid rgba(217,162,79,0.4);border-radius:8px;padding:12px">
             <div class="small" style="color:var(--gold);font-weight:bold;margin-bottom:6px"> Pamona Swap</div>
             <div class="tiny" style="color:var(--text);margin-bottom:8px">${swapCount} tool${swapCount === 1 ? "" : "s"} on tables today</div>
-            <div class="tiny muted" style="margin-bottom:8px">$${SWAP_GAS_COST} gas + $${SWAP_ENTRY_FEE} entry + $${SWAP_PARKING_COST} parking = <span style="color:var(--text)">$${SWAP_TRIP_COST}</span></div>
             ${tripKnown("swap") ? button(`Hit the Swap · $${SWAP_TRIP_COST}`, "commitScavengeTrip('swap')", !ride.ok || busy || state.money < SWAP_TRIP_COST || !swapCount, "", "width:100%") : ""}
           </div>`;
         // The home card: a Saturday spent with them instead of out on the hunt.
@@ -28871,9 +28898,7 @@ addEventListener("DOMContentLoaded",function(){
         return `<div style="margin-bottom:14px">${backToDesk}${heroPanel(
           "Saturday Road Trip",
           "The yard, the swap, or home",
-          (state.scavengeTripsTaken || 0) < 2
-            ? "Pick one. The Saturday's gone either way, so spend it where it counts."
-            : "",
+          "",
           `${noRideBanner}<div class="info-box" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;background:transparent;border:none;padding:0">${yardCard}${swapCard}${homeCard}</div>`,
           "blue",
         )}</div>`;
@@ -29312,7 +29337,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         </div>
       </div>`)
               .join("") + `</div>`
-          : `<div class="small muted">Nothing here to move. You only own one of every tool, and anything that opens a job is worth more in the box than it is on the market.</div>`;
+          : "";
         const pullsSellMarkup = sellablePulls.length
           ? `<div class="lst-grid">` + sellablePulls
               .map((pull) => {
@@ -29331,7 +29356,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
       </div>`;
               })
               .join("") + `</div>`
-          : `<div class="small muted">No spare yard pulls. A part you pulled for the build stays in the truck to install, only pulls you can't use (wrong car, already fitted, system maxed) turn up here to flip.</div>`;
+          : "";
 
         const STASH_PREVIEW = 5;
         const LISTED_PREVIEW = 5;
@@ -29377,7 +29402,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
     `,
               )
               .join("") + `</div>` + stashToggle
-          : `<div class="small muted">No loose parts waiting right now. As you replace parts on your build, take-offs will show up here.</div>`;
+          : `<div class="small muted">Nothing to list yet.</div>`;
 
         const listedMarkup = listed.length
           ? listedSummary + `<div class="lst-grid">` + listedShown
@@ -29394,7 +29419,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
     `,
               )
               .join("") + `</div>` + listedToggle
-          : `<div class="small muted">No live listings right now. List a take-off part and it should appear here immediately.</div>`;
+          : "";
 
         const sellableCars = state.cars.filter((c) => !isCarListed(c.id));
         // You can never list your only build, selling it strands you with
@@ -29642,13 +29667,11 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           // listing machinery, and the headline stops calling it inventory.
           const flipSeason = seasonNum() >= 2;
           return onScreen(heroPanel(
-            flipSeason ? "Flip a Build" : "The Other Car in the Driveway",
-            flipSeason
-              ? "Buy low, restore, sell high, or dump a project as-is"
-              : "There is one set of keys here that is not yours to trade",
+            flipSeason ? "Flip a Build" : "",
+            flipSeason ? "Buy low, restore, sell high, or dump a project as-is" : "",
             "",
             `
-      ${!state.wifeCarSold && currentCar() ? `<div class="lst wife-lst"><div class="lst-shot lot-shot">${wifeCarPhoto()}<div class="lst-tag">&ldquo;Must go by Sunday&rdquo;</div></div><div class="lst-body"><div class="wife-lst-kicker">Sell the wife's daily driver?</div><div class="lst-price">$8,000</div><div class="lst-title">Her daily driver</div><div class="wife-lst-copy">It's clean, it runs, and she's at her sister's for the weekend. The Marketplace listing practically writes itself. What could go wrong.</div><div class="lst-acts">${button("List the wife's car · $8,000", "sellWifeCar()", false, "", "width:100%;background:linear-gradient(180deg,#c97d70 0%,#8c4e44 100%);border-color:#d99a8f;color:#1a120a;font-weight:bold")}</div></div></div>` : ""}
+      ${!state.wifeCarSold && currentCar() ? `<div class="lst wife-lst"><div class="lst-shot lot-shot">${wifeCarPhoto()}<div class="lst-tag">&ldquo;Must go by Sunday&rdquo;</div></div><div class="lst-body"><div class="lst-price">$8,000</div><div class="lst-title">Her daily driver</div><div class="wife-lst-copy">It's clean, it runs, and she's at her sister's for the weekend. The Marketplace listing practically writes itself. What could go wrong.</div><div class="lst-acts">${button("List the wife's car · $8,000", "sellWifeCar()", false, "", "width:100%;background:linear-gradient(180deg,#c97d70 0%,#8c4e44 100%);border-color:#d99a8f;color:#1a120a;font-weight:bold")}</div></div></div>` : ""}
       ${flipSeason ? `<div class="info-box">
         <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px"> List a build for sale</div>
         <div class="tiny muted" style="margin-bottom:8px;line-height:1.5">Flip a project as-is or after a full restoration. Buyers DM you offers over the following weeks, haggle or hold out.</div>
@@ -29680,10 +29703,10 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
               ? `${liveTotal} live on Gearbook`
               : "Nothing posted yet",
             "",
-            `<div class="info-box">
+            `${listedMarkup ? `<div class="info-box">
                <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Items</div>
                ${listedMarkup}
-             </div>${carsBlock}`,
+             </div>` : ""}${carsBlock}`,
             "gold",
             "marketplace",
           ));
@@ -29702,14 +29725,14 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Take-off parts from the garage</div>
         ${stashMarkup}
       </div>
-      <div class="info-box">
-        <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px"> Tools you can move</div>
+      ${toolsSellMarkup ? `<div class="info-box">
+        <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Tools you can move</div>
         ${toolsSellMarkup}
-      </div>
-      <div class="info-box">
-        <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px"> Parts pulled at the yard</div>
+      </div>` : ""}
+      ${pullsSellMarkup ? `<div class="info-box">
+        <div class="small" style="color:var(--text-bright);font-weight:bold;margin-bottom:8px">Parts pulled at the yard</div>
         ${pullsSellMarkup}
-      </div>
+      </div>` : ""}
     `,
           "gold",
           "marketplace",
@@ -30615,7 +30638,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
             <div class="phone-home-bar" onclick="setPhoneApp('home')" title="Home"></div>
           </div>
         </div>`;
-        return `<div class="grid-main"><div>${phone}</div><div>${renderUpcomingBar()}${renderSponsorWatch()}</div></div>`;
+        return `<div class="grid-main"><div>${phone}</div><div>${renderSponsorWatch()}</div></div>`;
       }
 
       // Every sponsor's decal: its colours, its shape, and the wording that
@@ -30656,9 +30679,6 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         const signed = SPONSORS.filter((s) => state.followers >= s.req);
         const unsigned = SPONSORS.filter((s) => state.followers < s.req);
         const next = unsigned[0];
-        const soon = unsigned.slice(1, 3);
-        const far = unsigned.slice(3);
-        const top = SPONSORS[SPONSORS.length - 1];
 
         if (state.sponsorWatchExpanded) {
           return panel(
@@ -30703,19 +30723,9 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           nextUp = `<div class="sp-next"><div class="sp-head">Next to call</div><div class="tiny good">Every name on the board has signed. There is nobody left to impress.</div></div>`;
         }
 
-        // The rest of the ladder, as a sentence instead of a spreadsheet.
-        const tail = [
-          soon.length
-            ? `Then ${soon.map((s) => `${s.name} at ${fmtF(s.req)}`).join(", then ")}.`
-            : "",
-          far.length
-            ? `${far.length} more past them, up to ${top.name} at ${fmtF(top.req)}.`
-            : "",
-        ].filter(Boolean).join(" ");
-
         return panel(
           "Sponsor Watch",
-          `${onTheTruck}${nextUp}${tail ? `<div class="tiny muted sp-tail">${tail}</div>` : ""}<button class="btn btn-quiet sp-toggle" onclick="toggleSponsorWatch()">See the whole board</button>`,
+          `${onTheTruck}${nextUp}<button class="btn btn-quiet sp-toggle" onclick="toggleSponsorWatch()">See the whole board</button>`,
           `${signed.length} of ${SPONSORS.length} signed`,
           "#d8a24f",
         );
@@ -30770,7 +30780,6 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           <div class="legacy-hero" style="background-image:linear-gradient(180deg, rgba(20,14,10,.88) 0%, rgba(16,11,8,.94) 100%), url('${CUTSCENE_ART["scene-legacy-wall"]}');background-size:cover;background-position:center 32%">
             <div class="legacy-hero-kicker">The Legacy Wall</div>
             <div class="legacy-hero-title">Every build you ever finished</div>
-            <div class="legacy-hero-sub">The scene remembers. Each project retired here carries its score, its titles, and the followers that stayed for the next chapter.</div>
             <div class="legacy-career-row">
               <div class="legacy-career-stat"><div class="legacy-career-v">${careerStats.total}</div><div class="legacy-career-k">Builds Completed</div></div>
               <div class="legacy-career-stat"><div class="legacy-career-v">${careerStats.nationals}</div><div class="legacy-career-k">National Titles</div></div>

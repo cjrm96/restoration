@@ -1339,7 +1339,8 @@ const pass = (msg) => console.log("✓", msg);
     const t1 = setup(1, false, "sellcar");
     if (/flip a build/i.test(t1)) return bail("season one still headlines it as a flipping business");
     if (/list a build for sale/i.test(t1)) return bail("the flip listings render in season one");
-    if (!/other car in the driveway/i.test(t1)) return bail("her car lost its own framing");
+    // Her car is the page: its own listing card, and no headline stacked on it.
+    if (!document.querySelector(".wife-lst") || !/her daily driver/i.test(t1)) return bail("her car lost its own listing");
     // Her car is pictured, like every car on the site: her sedan in your
     // driveway with his card in the back window, and the one red button.
     const card = document.querySelector(".wife-lst");
@@ -1770,9 +1771,8 @@ const pass = (msg) => console.log("✓", msg);
         if ((b.querySelector(".bill-name") || {}).textContent !== sh.name) return "picking a row did not put it on the poster";
         weights.push(b.className.includes("loud") ? "loud" : "quiet");
         // One headline per bill, not nine boxes at one volume. The car art
-        // and the tank stub ride along on the one poster and are not the
-        // bill's own furniture.
-        const skip = (e) => e.closest(".poster-art, .poster-stub");
+        // rides along on the one poster and is not the bill's own furniture.
+        const skip = (e) => e.closest(".poster-art");
         const boxes = [...b.querySelectorAll("*")].filter((e) => {
           if (skip(e)) return false;
           const cs = getComputedStyle(e);
@@ -1783,7 +1783,14 @@ const pass = (msg) => console.log("✓", msg);
           return (bordered || filled) && r.height > 10 && r.width > 20;
         }).length;
         if (boxes > 5) return "the bill is back to " + boxes + " bordered objects";
-        if (!b.querySelector(".poster-stub .fuel-needle")) return "the tank gauge lost its needle on the poster";
+        // The tank is bolted to the board under the sheet, at a size you can
+        // read, with the trip drawn on the dial and nothing spelled out.
+        const tank = document.querySelector(".wall-mid .wall-tank");
+        if (!tank || !tank.querySelector(".fuel-needle")) return "the tank gauge lost its needle on the board";
+        if (b.querySelector(".fuel-gauge")) return "the tank went back onto the poster";
+        if (tank.querySelector(".fuel-gauge").getBoundingClientRect().width < 110) return "the tank gauge shrank under 110px wide";
+        if (!tank.querySelector(".fuel-trip")) return "the trip's gallons are not marked on the gauge";
+        if (/your tank|this trip takes/i.test(tank.textContent)) return "the tank is spelling out its gallons again";
       }
       if (weights.join() !== "loud,quiet") return "both paper weights should still exist: " + weights.join();
       // Nobody prints a checklist or a validation bar on a poster.
