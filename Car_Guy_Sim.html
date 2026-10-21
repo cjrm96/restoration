@@ -3012,7 +3012,8 @@
       }
 
       /* The Saturday map, unfolded on the truck's bench seat: tuck-and-roll
-         vinyl, the printed map on it with its folds, and a yellow tag beside
+         vinyl dyed to the truck's paint (the tones come in on --s-*), the
+         printed map on it with its folds, and a yellow tag beside
          each place Dale or she marked. Tags sit on the map in percentages, so
          they stay on their marks at any size; the map is sized to the screen. */
       .hero-panel.rt-view { padding: 0; overflow: hidden; }
@@ -3022,9 +3023,9 @@
         border-radius: inherit;
         background:
           radial-gradient(ellipse at 50% 18%, rgba(255, 226, 190, 0.16), transparent 62%),
-          linear-gradient(180deg, transparent calc(100% - 22px), #2a110d calc(100% - 22px), #2a110d calc(100% - 20px), #7c4234 calc(100% - 19px), #5a271f calc(100% - 12px), #3a1712 100%),
-          repeating-linear-gradient(90deg, #5a281f 0, #64302a 11px, #6c352b 22px, #64302a 33px, #5a281f 43px, #3d1a14 44px, #5a281f 45px);
-        box-shadow: inset 0 0 0 2px #2a110d, inset 0 0 30px rgba(0, 0, 0, 0.5);
+          linear-gradient(180deg, transparent calc(100% - 22px), var(--s-edge, #2a110d) calc(100% - 22px), var(--s-edge, #2a110d) calc(100% - 20px), var(--s-welt, #7c4234) calc(100% - 19px), var(--s-roll, #5a271f) calc(100% - 12px), var(--s-edge, #3a1712) 100%),
+          repeating-linear-gradient(90deg, var(--s-base, #5a281f) 0, var(--s-mid, #64302a) 11px, var(--s-hi, #6c352b) 22px, var(--s-mid, #64302a) 33px, var(--s-base, #5a281f) 43px, var(--s-crease, #3d1a14) 44px, var(--s-base, #5a281f) 45px);
+        box-shadow: inset 0 0 0 2px var(--s-edge, #2a110d), inset 0 0 30px rgba(0, 0, 0, 0.5);
       }
       .rt-seat .rt-back { display: block; margin: 0 0 8px; padding: 5px 12px; font-size: 12px; background: #2c1a14; border-color: #6b4a38; color: var(--text); }
       .rt-paper {
@@ -13086,7 +13087,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.103.0";
+      const GAME_VERSION = "0.103.1";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -29304,7 +29305,15 @@ addEventListener("DOMContentLoaded",function(){
         ].filter(Boolean);
         const tags = (placed) => tagFns.map((t) => t(placed)).join("");
         const back = `<button class="btn rt-back" onclick="setMarketTab('sell')">&#8592; Put the keys back</button>`;
-        return `<div class="hero-panel rt-view"><div class="rt-seat">${back}<div class="rt-paper">${rtMapSvg({ yard: yardKnown, swap: swapKnown, home: note })}${tags(true)}</div><div class="rt-m">${tags(false)}</div></div></div>`;
+        // The seat is the truck's: vinyl in the body color, darkened the way
+        // a dyed-to-match interior sits next to the paint, so the map always
+        // has a dark bed to lie on whatever color the truck is.
+        const car = currentCar();
+        const paint = (car && (PAINT_SWATCHES.find((p) => p.id === car.palette) || {}).hex) || "#8a3a2c";
+        const rgb = [1, 3, 5].map((i) => parseInt(paint.slice(i, i + 2), 16));
+        const dark = (f) => "#" + rgb.map((v) => Math.round(v * (1 - f)).toString(16).padStart(2, "0")).join("");
+        const seat = `--s-crease:${dark(0.78)};--s-base:${dark(0.56)};--s-mid:${dark(0.5)};--s-hi:${dark(0.44)};--s-welt:${dark(0.34)};--s-roll:${dark(0.62)};--s-edge:${dark(0.8)}`;
+        return `<div class="hero-panel rt-view"><div class="rt-seat" style="${seat}">${back}<div class="rt-paper">${rtMapSvg({ yard: yardKnown, swap: swapKnown, home: note })}${tags(true)}</div><div class="rt-m">${tags(false)}</div></div></div>`;
       }
 
       /* ═══════════════════════════════════════════
