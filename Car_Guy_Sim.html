@@ -12796,7 +12796,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.99.1";
+      const GAME_VERSION = "0.99.2";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -23525,20 +23525,21 @@
         if (!isPhone) return html;
         return `<details class="m-fold" ${mFoldOpen[id] ? "open" : ""} ontoggle="mFoldToggle(this,'${id}')"><summary>${label}<span class="m-fold-v">${value}</span></summary>${html}</details>`;
       }
-      function renderUpcomingBar() {
+      function renderUpcomingBar(showEvent = true) {
         // Staged reveal: week one belongs to the truck. The calendar shows
         // up once the first week is in the books (and always for veterans).
         if (state.week <= 1 && onboardStageVal() < 3) return "";
         const { nextShow, nextShowText } = getUpcomingSummary();
         // Current week and loan balance both live in the topbar, no need
         // to repeat them here.
+        const payWeeks = `${PAYCHECK_CYCLE - state.paycheckProgress} week(s)`;
         return mobileFold(
           "upcoming",
           "Upcoming",
-          nextShowText,
+          showEvent ? nextShowText : `Paycheck in ${payWeeks}`,
           panel(
             "Upcoming",
-            `${chalkRow("Paycheck", `${PAYCHECK_CYCLE - state.paycheckProgress} week(s)`)}${chalkRow("Next Big Event", nextShowText, nextShow.weeksUntil === 0 ? "good" : "warn")}`,
+            `${chalkRow("Paycheck", payWeeks)}${showEvent ? chalkRow("Next Big Event", nextShowText, nextShow.weeksUntil === 0 ? "good" : "warn") : ""}`,
             "",
             "#f5efe0",
             "chalkboard",
@@ -25383,7 +25384,7 @@ addEventListener("DOMContentLoaded",function(){
         // Car is physically at the mechanic, leave the bay empty.
         if (atShop) sprite = "";
 
-        return `<div class="car-preview-wrap"><div class="flex between center" style="gap:10px;margin-bottom:8px"><div><div style="color:var(--text-bright);font-weight:bold;font-size:14px">${car.year} ${car.make} ${car.model}</div><div style="color:#a7987f;font-size:11px">Stage: ${stage}</div></div><div style="color:#d2a14b;font-weight:bold;font-size:12px"><span class="${revealFx ? "cg-overall-pop" : ""}">${overall}</span> overall</div></div><div class="art-backdrop-shell" onclick="popTheHood()" style="cursor:pointer">${workspaceBackdropFrame()}<div class="car-preview-stage"><svg viewBox="0 0 340 190" preserveAspectRatio="xMidYMax meet" style="width:100%;height:100%;display:block;image-rendering:pixelated"><defs><filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity=".35"/></filter></defs><g opacity=".18" shape-rendering="crispEdges"><rect x="62" y="148" width="44" height="4" fill="#000"/><rect x="118" y="150" width="104" height="4" fill="#000"/><rect x="232" y="148" width="46" height="4" fill="#000"/></g>${bayFxBehind}<g transform="translate(0,${bodyDrop})"><g filter="url(#shadow)"><g class="${revealFx ? "cg-fx-settle" : ""}">${sprite}</g></g><g opacity="${atShop ? 0 : rustOpacity}" shape-rendering="crispEdges"><rect x="92" y="102" width="12" height="5" fill="#8a4517"/><rect x="166" y="86" width="10" height="4" fill="#7c3516"/><rect x="218" y="100" width="13" height="5" fill="#8a4517"/></g><g opacity="${atShop ? 0 : dentOpacity}" shape-rendering="crispEdges"><rect x="140" y="103" width="18" height="3" fill="#1a2127"/><rect x="196" y="107" width="10" height="3" fill="#1a2127"/></g><g opacity="${atShop ? 0 : shineOpacity}" shape-rendering="crispEdges"><rect x="102" y="82" width="96" height="2" fill="#fff"/><rect x="118" y="98" width="122" height="2" fill="#fff"/></g>${atShop ? "" : finishFlakeMarkup}${!atShop && car.paint < 20 ? `<g opacity=".8" shape-rendering="crispEdges"><rect x="68" y="104" width="16" height="5" fill="#111827"/><rect x="236" y="100" width="18" height="5" fill="#111827"/></g>` : ""}</g>${!atShop && smokeOpacity > 0 ? `<g opacity="${smokeOpacity}"><rect class="cg-smoke-puff" x="70" y="70" width="6" height="6" fill="#cdd3d8"/><rect class="cg-smoke-puff cg-smoke-puff-2" x="74" y="64" width="8" height="8" fill="#bcc4cb"/><rect class="cg-smoke-puff cg-smoke-puff-3" x="82" y="58" width="8" height="8" fill="#d6dde2"/></g>` : ""}${bayFxFront}${revealFxMarkup}</svg>${atShop ? `<div class="cg-at-shop"><div class="cg-at-shop-icon">${ico("wrench", "30px")}</div><div class="cg-at-shop-main">At the mechanic shop</div><div class="cg-at-shop-sub">${shopTask ? (Date.now() >= shopTask.finishTime ? "Rolling back in now…" : "Ready " + formatRemaining(shopTask.finishTime - Date.now())) : ""}</div></div>` : (revealFx && state.lastGain && state.lastGain.cat && state.lastGain.at === (state.lastRestoreFxAt) ? `<div class="cg-gain-float">+${state.lastGain.amt} ${state.lastGain.label}</div>` : "")}</div></div></div>`;
+        return `<div class="car-preview-wrap"><div class="flex between center" style="gap:10px;margin-bottom:8px"><div><div style="color:var(--text-bright);font-weight:bold;font-size:14px">${car.year} ${car.make} ${car.model}</div></div><div style="color:#d2a14b;font-weight:bold;font-size:12px"><span class="${revealFx ? "cg-overall-pop" : ""}">${overall}</span> overall</div></div><div class="art-backdrop-shell" onclick="popTheHood()" style="cursor:pointer">${workspaceBackdropFrame()}<div class="car-preview-stage"><svg viewBox="0 0 340 190" preserveAspectRatio="xMidYMax meet" style="width:100%;height:100%;display:block;image-rendering:pixelated"><defs><filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity=".35"/></filter></defs><g opacity=".18" shape-rendering="crispEdges"><rect x="62" y="148" width="44" height="4" fill="#000"/><rect x="118" y="150" width="104" height="4" fill="#000"/><rect x="232" y="148" width="46" height="4" fill="#000"/></g>${bayFxBehind}<g transform="translate(0,${bodyDrop})"><g filter="url(#shadow)"><g class="${revealFx ? "cg-fx-settle" : ""}">${sprite}</g></g><g opacity="${atShop ? 0 : rustOpacity}" shape-rendering="crispEdges"><rect x="92" y="102" width="12" height="5" fill="#8a4517"/><rect x="166" y="86" width="10" height="4" fill="#7c3516"/><rect x="218" y="100" width="13" height="5" fill="#8a4517"/></g><g opacity="${atShop ? 0 : dentOpacity}" shape-rendering="crispEdges"><rect x="140" y="103" width="18" height="3" fill="#1a2127"/><rect x="196" y="107" width="10" height="3" fill="#1a2127"/></g><g opacity="${atShop ? 0 : shineOpacity}" shape-rendering="crispEdges"><rect x="102" y="82" width="96" height="2" fill="#fff"/><rect x="118" y="98" width="122" height="2" fill="#fff"/></g>${atShop ? "" : finishFlakeMarkup}${!atShop && car.paint < 20 ? `<g opacity=".8" shape-rendering="crispEdges"><rect x="68" y="104" width="16" height="5" fill="#111827"/><rect x="236" y="100" width="18" height="5" fill="#111827"/></g>` : ""}</g>${!atShop && smokeOpacity > 0 ? `<g opacity="${smokeOpacity}"><rect class="cg-smoke-puff" x="70" y="70" width="6" height="6" fill="#cdd3d8"/><rect class="cg-smoke-puff cg-smoke-puff-2" x="74" y="64" width="8" height="8" fill="#bcc4cb"/><rect class="cg-smoke-puff cg-smoke-puff-3" x="82" y="58" width="8" height="8" fill="#d6dde2"/></g>` : ""}${bayFxFront}${revealFxMarkup}</svg>${atShop ? `<div class="cg-at-shop"><div class="cg-at-shop-icon">${ico("wrench", "30px")}</div><div class="cg-at-shop-main">At the mechanic shop</div><div class="cg-at-shop-sub">${shopTask ? (Date.now() >= shopTask.finishTime ? "Rolling back in now…" : "Ready " + formatRemaining(shopTask.finishTime - Date.now())) : ""}</div></div>` : (revealFx && state.lastGain && state.lastGain.cat && state.lastGain.at === (state.lastRestoreFxAt) ? `<div class="cg-gain-float">+${state.lastGain.amt} ${state.lastGain.label}</div>` : "")}</div></div></div>`;
       }
 
       /* ═══════════════════════════════════════════
@@ -27329,7 +27330,9 @@ addEventListener("DOMContentLoaded",function(){
         const tasks = activeTasksForCar(car.id);
         // Staged reveal: no point showing an empty work-order board to
         // somebody who has never started a job. First wrench turn brings it.
-        if (!tasks.length && !(state.installsDone || 0) && !state.activeRestorations.length) return "";
+        // Nothing running, nothing to show: the rail of repair orders is right
+        // there under the shop floor, and an empty board just said so twice.
+        if (!tasks.length) return "";
         return mobileFold(
           "resto",
           "Active Restorations",
@@ -27493,26 +27496,14 @@ addEventListener("DOMContentLoaded",function(){
         requestRender("full");
       }
       function _renderRestorationPanelInner(car, tasks) {
-        // Shop Notes used to carry "Active Jobs 1 / 1" directly under this
-        // board, which counted the cards you were already looking at. The
-        // number that matters is how many bays there are, so it says that
-        // here, where the bays are.
+        // The number that matters is how many bays there are, so it says
+        // that here, where the bays are.
         const bays = workspaceData().maxActive;
         const bayLine = `${tasks.length} of ${bays} ${bays === 1 ? "bay" : "bays"} running`;
         const timerHint =
           (state.installsDone || 0) < 2
             ? " · timers keep running even while the game is closed"
             : "";
-        if (!tasks.length)
-          return panel(
-            "Active Restorations",
-            `<div class="small muted">No active work orders. Start one in the Auto Shop.</div>`,
-            bayLine + timerHint,
-            "#1a0f08",
-            // The empty board is the one a player often meets first, the job
-            // having just finished, so it gets written on too.
-            "work-order" + inkOnce("resto"),
-          );
         return panel(
           "Active Restorations",
           `${tasks
@@ -27819,9 +27810,9 @@ addEventListener("DOMContentLoaded",function(){
         // nothing in the second column, which does not read as restraint so much as
         // a page that half failed to load. When the side has nothing to say, the
         // layout stops holding space for it.
-        const sideCol = `${renderUpcomingBar()}${renderRestorationPanel(car)}${(state.installsDone || 0) > 0 || activeTasksForCar(car.id).length ? mobileFold("notes", " Shop Notes", workspaceData().name, panel("Shop Notes",`${chalkRow("Work Space", workspaceData().name)}${chalkRow("Tool Storage", `${toolStorageData().name} · ${state.ownedTools.length}/${toolStorageData().maxTools}`)}${toolStorageData().speedBonus > 0 ? chalkRow("Build Speed", `+${Math.round(toolStorageData().speedBonus * 100)}% faster`) : ""}`, "", "#1d1611", "clipboard" + inkOnce("notes"))) : ""}`;
+        const sideCol = `${renderUpcomingBar(false)}${renderRestorationPanel(car)}`;
         return `<div class="grid-main${sideCol.trim() ? '' : ' solo'}"><div>${gigBoardMarkup()}${heroPanel(
-          "Auto Shop Floor",
+          "",
           onboardStageVal() >= 3 ? "" : "Every bolt, every part, one at a time",
           "",
           `${carPreview(car)}${(() => {
