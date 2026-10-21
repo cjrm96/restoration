@@ -36,6 +36,11 @@
         --font-type: "Courier New", "Liberation Mono", Courier, monospace;
         --font-dale: "Dale Marker", cursive;
         --font-her: "Her Hand", cursive;
+        /* Props on the desk share their materials: one masking tape, one paper
+           shadow, wherever a sheet is stuck down or pinned up. */
+        --tape: rgba(234, 222, 184, 0.86);
+        --tape-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        --paper-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
       }
       * {
         box-sizing: border-box;
@@ -267,7 +272,7 @@
         padding: 9px 12px;
         cursor: pointer;
         font-weight: bold;
-        font-family: inherit;
+        font-family: var(--font-ui);
         transition:
           transform 0.08s ease,
           box-shadow 0.12s ease,
@@ -479,16 +484,18 @@
         50% { opacity: 1; box-shadow: 0 0 9px 2px rgba(217, 162, 79, 0.65); }
       }
       .tab-ico {
-        width: 15px;
-        height: 15px;
+        width: 16px;
+        height: 16px;
+        /* a whole 16px, without growing the tab strip it sits in */
+        margin: -1px 0 -1px;
         display: inline-block;
         vertical-align: -3px;
         fill: currentColor;
         shape-rendering: crispEdges;
       }
       .unlock-flier .tab-ico {
-        width: 34px;
-        height: 34px;
+        width: 32px;
+        height: 32px;
         vertical-align: baseline;
       }
       .unlock-flier {
@@ -746,7 +753,7 @@
         line-height: 1.25;
       }
       .sp-sticker.oval { border-radius: 999px; padding: 4px 12px; }
-      .sp-sticker.script { font-family: var(--font-ui); font-style: italic; letter-spacing: 0; }
+      .sp-sticker.script { font-family: var(--font-print); font-style: italic; letter-spacing: 0; }
       .sp-sticker.banner { border-radius: 2px; text-transform: uppercase; letter-spacing: 1.1px; }
       .sp-sticker.shield {
         border-radius: 3px 3px 10px 10px;
@@ -1442,7 +1449,7 @@
         margin-bottom: 3px;
       }
       .bill-name {
-        font-family: var(--font-ui);
+        font-family: var(--font-print);
         font-weight: bold;
         font-size: 27px;
         line-height: 1.02;
@@ -1481,7 +1488,7 @@
       .bill-body { display: flex; align-items: center; gap: 14px; }
       .bill-money { flex: 0 0 auto; }
       .bill-first {
-        font-family: var(--font-ui);
+        font-family: var(--font-print);
         font-weight: bold;
         font-size: 30px;
         line-height: 1;
@@ -1579,13 +1586,13 @@
       .mcal-pic { position: relative; overflow: hidden; border-radius: 2px 2px 0 0; }
       .mcal-pic svg { display: block; width: 100%; height: auto; image-rendering: pixelated; }
       .mcal-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; padding: 8px 10px 4px; }
-      .mcal-month { display: flex; align-items: baseline; gap: 4px; font: 30px/0.9 var(--font-ui); letter-spacing: 0.02em; color: #111; }
-      .mcal-flip { border: 0; background: none; padding: 0 3px; font: 16px var(--font-ui); color: #6b6458; cursor: pointer; }
+      .mcal-month { display: flex; align-items: baseline; gap: 4px; font: 30px/0.9 var(--font-print); letter-spacing: 0.02em; color: #111; }
+      .mcal-flip { border: 0; background: none; padding: 0 3px; font: 16px var(--font-print); color: #6b6458; cursor: pointer; }
       .mcal-flip:hover { color: #111; }
       .mcal-flip:disabled { visibility: hidden; }
-      .mcal-cap { max-width: 150px; font: italic 9.5px/1.3 var(--font-ui); color: #4f4a42; text-align: right; }
+      .mcal-cap { max-width: 150px; font: italic 9.5px/1.3 var(--font-print); color: #4f4a42; text-align: right; }
       .mcal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin: 0 8px; border-left: 1px solid #222; border-top: 1px solid #222; }
-      .mcal-dow { padding: 3px 0 2px; background: #161616; color: #f3f1ea; font: bold 8px var(--font-ui); letter-spacing: 0.12em; text-align: center; border-right: 1px solid #161616; }
+      .mcal-dow { padding: 3px 0 2px; background: #161616; color: #f3f1ea; font: bold 8px var(--font-print); letter-spacing: 0.12em; text-align: center; border-right: 1px solid #161616; }
       .mcal-d {
         position: relative;
         height: 46px;
@@ -1597,7 +1604,7 @@
         border-radius: 0;
         background: #fbfaf6;
         color: #111;
-        font: 15px/1 var(--font-ui);
+        font: 15px/1 var(--font-print);
         text-align: left;
         overflow: hidden;
       }
@@ -1642,17 +1649,17 @@
         background: linear-gradient(to top left, transparent calc(50% - 0.5px), #222 50%, transparent calc(50% + 0.5px));
       }
       .mcal-split-b { position: absolute; right: 3px; bottom: 2px; font-size: 13px; }
-      .mcal-print { display: block; margin-top: 2px; font: bold 5.8px/1.1 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: #77716a; }
+      .mcal-print { display: block; margin-top: 2px; font: bold 5.8px/1.1 var(--font-print); letter-spacing: 0.06em; text-transform: uppercase; color: #77716a; }
       .mcal-her { display: block; margin-top: 3px; font: 10.5px/1 var(--font-her); color: #6a3d7a; transform: rotate(-2deg); transform-origin: left; }
       .mcal-his { display: block; margin-top: 2px; font: 10px/1 var(--font-dale); color: #1f3a66; transform: rotate(-3deg); transform-origin: left; }
       .mcal-her.struck { white-space: nowrap; text-decoration: line-through; text-decoration-color: rgba(31, 58, 102, 0.85); text-decoration-thickness: 1.5px; }
       .mcal-his.over { margin-top: 1px; white-space: nowrap; }
-      .mini { padding: 1px 0 0; font: 5.2px/1.25 var(--font-ui); color: #222; }
-      .mini-t { margin-bottom: 1px; font: bold 6px var(--font-ui); letter-spacing: 0.08em; text-align: center; }
+      .mini { padding: 1px 0 0; font: 5.2px/1.25 var(--font-print); color: #222; }
+      .mini-t { margin-bottom: 1px; font: bold 6px var(--font-print); letter-spacing: 0.08em; text-align: center; }
       .mini-g { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
       .mini-g i { font-style: normal; }
       .mini-g b { font-weight: normal; color: #fff; background: #c0392b; border-radius: 50%; }
-      .mcal-imprint { padding: 5px 10px 7px; font: bold 8.5px var(--font-ui); letter-spacing: 0.3em; color: #b8322a; }
+      .mcal-imprint { padding: 5px 10px 7px; font: bold 8.5px var(--font-print); letter-spacing: 0.3em; color: #b8322a; }
       .wcal-note {
         display: block;
         margin-top: 2px;
@@ -1663,7 +1670,7 @@
         transform: rotate(-4deg);
         transform-origin: left center;
       }
-      .wcal-more { display: block; margin-top: 1px; font: 8px var(--font-ui); color: #6b6458; }
+      .wcal-more { display: block; margin-top: 1px; font: 8px var(--font-dale); color: #6b6458; }
       .wcal-t-national { color: #c0392b; }
       .wcal-t-regional { color: #1f5fa8; }
       .wcal-t-local { color: #2b2b2b; }
@@ -1721,13 +1728,23 @@
         gap: 16px;
         min-width: 0;
       }
+      /* The world in pixels: every picture of it is resampled onto one grid
+         (installPixelGrid). The store's canvas has pixels of its own. */
+      .car-preview-stage, .mcal-pic, .poster-art, .lst-shot .lst-art, .lst-thumb .lst-art, .finale-spotlight, .pc-featured-photo, .ppp-car { filter: url(#px-grid); }
+      .px-off .car-preview-stage, .px-off .mcal-pic, .px-off .poster-art, .px-off .lst-shot .lst-art, .px-off .lst-thumb .lst-art, .px-off .finale-spotlight, .px-off .pc-featured-photo, .px-off .ppp-car { filter: none; }
+      /* Type roles: Georgia is the game talking. Anything printed, or lit on
+         a screen inside the world, is in the print face: the bill on the
+         board, the day's sheet, Dale's shop calendar, the Gearbook site on the
+         desk monitor, the phone, the stickers on the box lid. Buttons stay the
+         game's own wherever they sit. */
+      .bill, .wall-paper, .mcal, .crt-page, .phone-screen, .sp-sticker { font-family: var(--font-print); }
       /* The day's sheet, on a clip of its own beside the calendar. */
       .wall-paper {
         position: relative;
         background: linear-gradient(180deg, #f6efdf 0%, #ece2cb 100%);
         border: 1px solid #bfae88;
         border-radius: 3px;
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+        box-shadow: var(--paper-shadow);
         color: #2a2117;
       }
       .wall-paper::before {
@@ -1751,9 +1768,9 @@
         gap: 2px 10px;
         margin: 0 0 4px;
         color: #2a1d10;
-        font: bold 14px var(--font-ui);
+        font: bold 14px var(--font-print);
       }
-      .sat-head span { font: 11px var(--font-ui); color: #6b5a40; }
+      .sat-head span { font: 11px var(--font-print); color: #6b5a40; }
       .srow-list { display: grid; grid-template-columns: 1fr; }
       .srow {
         display: flex;
@@ -1789,7 +1806,7 @@
       .srow-main { flex: 1 1 auto; min-width: 0; }
       .srow-name {
         display: block;
-        font: bold 12.5px var(--font-ui);
+        font: bold 12.5px var(--font-print);
         color: #2a1d10;
         white-space: nowrap;
         overflow: hidden;
@@ -1797,7 +1814,7 @@
       }
       .srow-meta {
         display: block;
-        font: 10.5px var(--font-ui);
+        font: 10.5px var(--font-print);
         color: #6b5a40;
         white-space: nowrap;
         overflow: hidden;
@@ -1824,11 +1841,11 @@
         border: 0;
         background: transparent;
         color: #3f3222;
-        font: italic 12px var(--font-ui);
+        font: italic 12px var(--font-print);
         text-decoration: underline dotted;
         cursor: pointer;
       }
-      .srow-none { grid-column: 1 / -1; padding: 8px 4px; font: italic 12px var(--font-ui); color: #3f3222; text-align: center; }
+      .srow-none { grid-column: 1 / -1; padding: 8px 4px; font: italic 12px var(--font-print); color: #3f3222; text-align: center; }
       /* The board's notes are footnotes on the same sheet, not slips of
          their own: same ink, same paper, a dashed rule above them. */
       .sheet-notes { margin-top: 9px; padding-top: 7px; border-top: 1px dashed #c9b994; }
@@ -1847,7 +1864,7 @@
         color: #3f3222;
       }
       .day-sheet .board-note b { color: #7a4f16; }
-      .sheet-taste { margin: 2px 0; font: italic 12px/1.5 var(--font-ui); color: #5a4a30; }
+      .sheet-taste { margin: 2px 0; font: italic 12px/1.5 var(--font-print); color: #5a4a30; }
       /* The bill, pinned to the same cork. With one up, it can carry the car. */
       .wall-poster { grid-area: poster; }
       .wall-poster .bill { margin-top: 10px; }
@@ -2360,7 +2377,7 @@
         transform: translateY(-1px);
       }
       .dk-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-      .dk-ico { width: 26px; height: 26px; fill: #d8b25f; flex: 0 0 auto; }
+      .dk-ico { width: 24px; height: 24px; fill: #d8b25f; flex: 0 0 auto; }
       .dk-txt { display: flex; flex-direction: column; line-height: 1.3; }
       .dk-txt b { font-size: 12.5px; color: var(--text-bright); font-weight: bold; }
       .dk-txt small { font-size: 10.5px; color: var(--gold-soft); }
@@ -2394,11 +2411,11 @@
       }
       .crt-nav button.off { opacity: .45; cursor: not-allowed; }
       .crt-nav button .crt-ico {
-        width: 14px;
-        height: 14px;
+        width: 16px;
+        height: 16px;
         fill: currentColor;
         shape-rendering: crispEdges;
-        flex: 0 0 14px;
+        flex: 0 0 16px;
       }
       .crt-block {
         margin-top: 14px;
@@ -2925,8 +2942,8 @@
       .re-gild b { font-style: italic; text-transform: none; letter-spacing: 0.02em; }
       .re-gild-sub { margin: 4px 0 14px; text-align: center; font: italic 13px var(--font-ui); letter-spacing: 0.12em; color: #c9a75a; }
       .re-sheets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; align-items: start; }
-      .re-sheet { position: relative; padding: 0 0 12px; background: #fbfaf5; color: #1f1b16; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5); transform: rotate(var(--r, 0deg)); font-family: var(--font-print); }
-      .re-sheet::before { content: ""; position: absolute; top: -9px; left: 50%; width: 58px; height: 18px; margin-left: -29px; background: rgba(232, 220, 182, 0.85); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); z-index: 2; }
+      .re-sheet { position: relative; padding: 0 0 12px; background: #fbfaf5; color: #1f1b16; box-shadow: var(--paper-shadow); transform: rotate(var(--r, 0deg)); font-family: var(--font-print); }
+      .re-sheet::before { content: ""; position: absolute; top: -9px; left: 50%; width: 58px; height: 18px; margin-left: -29px; background: var(--tape); box-shadow: var(--tape-shadow); z-index: 2; }
       .re-band { padding: 5px 10px; background: #8e1f1a; color: #fff; font: 900 12px var(--font-print); letter-spacing: 0.16em; text-transform: uppercase; }
       .re-sheet.next .re-band { background: #1f4f9e; }
       .re-photo { position: relative; margin: 8px 8px 0; aspect-ratio: 16 / 9; overflow: hidden; background: #2a2622; }
@@ -3045,7 +3062,7 @@
         padding: 22px 26px 20px;
         background: linear-gradient(180deg, #f6f3ea, #ece6d6);
         color: #1f1b16;
-        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+        box-shadow: var(--paper-shadow);
         transform: rotate(-0.5deg);
         font-family: var(--font-type);
       }
@@ -3055,8 +3072,8 @@
         top: -8px;
         width: 70px;
         height: 20px;
-        background: rgba(232, 220, 182, 0.82);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        background: var(--tape);
+        box-shadow: var(--tape-shadow);
       }
       .res-sheet::before { left: -14px; transform: rotate(-32deg); }
       .res-sheet::after { right: -14px; transform: rotate(30deg); }
@@ -3094,7 +3111,7 @@
       .res-sheet.stamped { padding-bottom: 66px; }
       .res-stamp { position: absolute; right: 26px; bottom: 18px; padding: 4px 12px; border: 3px solid #b3262a; border-radius: 4px; color: #b3262a; font: 900 17px var(--font-print); letter-spacing: 0.08em; text-transform: uppercase; transform: rotate(-9deg); opacity: 0.8; }
       /* The photo off the lawn. */
-      .res-photo { padding: 9px 9px 0; background: #f7f5ef; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.45); transform: rotate(-2.2deg); }
+      .res-photo { padding: 9px 9px 0; background: #f7f5ef; box-shadow: var(--paper-shadow); transform: rotate(-2.2deg); }
       .res-photo .car-preview-wrap { margin: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
       .res-photo .car-preview-wrap > .flex { display: none !important; }
       .res-photo .art-backdrop-shell { height: 150px; min-height: 150px; border-radius: 0; }
@@ -3105,7 +3122,7 @@
       .res-buzz-t { display: flex; flex-direction: column; min-width: 0; font: 13px var(--font-print); }
       .res-buzz-t small { font-size: 11px; color: #b6aea3; }
       /* The purse, in the organizers' envelope. */
-      .res-env { position: relative; padding: 22px 16px 12px; background: linear-gradient(180deg, #d9b97b, #c9a564); color: #2d2210; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4); font-family: var(--font-type); transform: rotate(1deg); }
+      .res-env { position: relative; padding: 22px 16px 12px; background: linear-gradient(180deg, #d9b97b, #c9a564); color: #2d2210; box-shadow: var(--paper-shadow); font-family: var(--font-type); transform: rotate(1deg); }
       .res-env::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 14px; background: linear-gradient(170deg, rgba(0, 0, 0, 0.12) 50%, transparent 52%), linear-gradient(190deg, rgba(0, 0, 0, 0.12) 50%, transparent 52%); }
       .res-env-h { margin-bottom: 6px; font: 900 11px var(--font-print); letter-spacing: 0.18em; text-transform: uppercase; }
       .res-env-l, .res-env-t { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; font-size: 13px; }
@@ -5559,7 +5576,7 @@
         color: #2a1d10;
         position: relative;
         margin-top: 20px;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+        box-shadow: var(--paper-shadow);
       }
       .panel.work-order::before,
       .panel.work-order::after {
@@ -5568,10 +5585,10 @@
         top: -10px;
         width: 64px;
         height: 18px;
-        background: rgba(255, 230, 200, 0.55);
+        background: var(--tape);
         border-left: 1px dashed rgba(0, 0, 0, 0.18);
         border-right: 1px dashed rgba(0, 0, 0, 0.18);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+        box-shadow: var(--tape-shadow);
       }
       .panel.work-order::before {
         left: 16px;
@@ -7041,7 +7058,7 @@
     <!-- Splash -->
     <div id="splash">
       <div class="splash-inner">
-        <span class="splash-badge"><svg class="ui-ico" viewBox="0 0 16 16" aria-hidden="true" style="width:34px;height:34px"><rect x="5" y="2" width="6" height="2"/><rect x="3" y="4" width="10" height="8"/><rect x="5" y="12" width="6" height="2"/><rect x="6" y="6" width="4" height="4" fill="#1a1208"/></svg></span>
+        <span class="splash-badge"><svg class="ui-ico" viewBox="0 0 16 16" aria-hidden="true" style="width:32px;height:32px"><rect x="5" y="2" width="6" height="2"/><rect x="3" y="4" width="10" height="8"/><rect x="5" y="12" width="6" height="2"/><rect x="6" y="6" width="4" height="4" fill="#1a1208"/></svg></span>
         <div class="splash-title">Car Guy Simulator</div>
         <div class="splash-divider"></div>
         <svg
@@ -7315,7 +7332,7 @@
               onclick="openSettings()"
               title="Settings"
             >
-              <svg class="ui-ico" viewBox="0 0 16 16" aria-hidden="true" style="width:17px;height:17px"><rect x="6" y="1" width="4" height="3"/><rect x="6" y="12" width="4" height="3"/><rect x="1" y="6" width="3" height="4"/><rect x="12" y="6" width="3" height="4"/><rect x="3" y="3" width="3" height="3"/><rect x="10" y="3" width="3" height="3"/><rect x="3" y="10" width="3" height="3"/><rect x="10" y="10" width="3" height="3"/><rect x="4" y="4" width="8" height="8"/><rect x="6" y="6" width="4" height="4" fill="#1a1208"/></svg>
+              <svg class="ui-ico" viewBox="0 0 16 16" aria-hidden="true" style="width:16px;height:16px"><rect x="6" y="1" width="4" height="3"/><rect x="6" y="12" width="4" height="3"/><rect x="1" y="6" width="3" height="4"/><rect x="12" y="6" width="3" height="4"/><rect x="3" y="3" width="3" height="3"/><rect x="10" y="3" width="3" height="3"/><rect x="3" y="10" width="3" height="3"/><rect x="10" y="10" width="3" height="3"/><rect x="4" y="4" width="8" height="8"/><rect x="6" y="6" width="4" height="4" fill="#1a1208"/></svg>
             </button>
           </div>
         </div>
@@ -12987,7 +13004,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.101.0";
+      const GAME_VERSION = "0.102.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -23641,10 +23658,15 @@
       };
       // `size` is any CSS length. The icon takes its colour from whatever it
       // sits in, so it never needs a palette of its own.
-      function ico(name, size = "1em", cls = "") {
+      // The icons are drawn on a 16px grid, so they show at whole multiples of
+      // it: a 13px icon smears its single-pixel strokes into half-tones, and a
+      // 16px one keeps every pixel square, the same as the pictures around it.
+      function ico(name, size = "16px", cls = "") {
         const d = UI_ICONS[name];
         if (!d) return "";
-        return `<svg class="ui-ico ${cls}" viewBox="0 0 16 16" aria-hidden="true" style="width:${size};height:${size}">${d}</svg>`;
+        const px = parseFloat(size);
+        const snapped = /px$/.test(size) && px > 0 ? `${Math.max(16, Math.round(px / 16) * 16)}px` : size;
+        return `<svg class="ui-ico ${cls}" viewBox="0 0 16 16" aria-hidden="true" style="width:${snapped};height:${snapped}">${d}</svg>`;
       }
       const TAB_ICONS = {
         workshop:
@@ -23719,7 +23741,7 @@
           const deg = -FUEL_SWEEP + (i / 4) * FUEL_SWEEP * 2;
           const end = i === 0 || i === 4;
           const [x, y] = at(deg, end ? 88 : 86);
-          o += `<text x="${f(x)}" y="${f(y + 5)}" text-anchor="middle" font-family="Georgia, serif" font-size="${end ? 15 : 12.5}" font-weight="bold" fill="${INK}">${label}</text>`;
+          o += `<text x="${f(x)}" y="${f(y + 5)}" text-anchor="middle" font-family="Arial" font-size="${end ? 15 : 12.5}" font-weight="bold" fill="${INK}">${label}</text>`;
         });
         // The four pips above the hub, off the real face.
         for (let i = 0; i < 4; i++) {
@@ -23781,11 +23803,11 @@
           <ellipse cx="130" cy="75" rx="78" ry="62" fill="#191a1b"/>
           <ellipse cx="130" cy="75" rx="75" ry="59" fill="url(#fgFace)"/>
           <ellipse class="fuel-glow" cx="130" cy="75" rx="75" ry="59" fill="url(#fgGlow)" opacity="0"/>
-          <text x="130" y="14" text-anchor="middle" font-family="Georgia, serif" font-size="7.5" letter-spacing="1.3" fill="#6f767c">PJ-9306-N</text>
-          <text x="130" y="38" text-anchor="middle" font-family="Georgia, serif" font-size="9.5" letter-spacing="1.7" fill="#a79f90">PALOMAR</text>
+          <text x="130" y="14" text-anchor="middle" font-family="Arial" font-size="7.5" letter-spacing="1.3" fill="#6f767c">PJ-9306-N</text>
+          <text x="130" y="38" text-anchor="middle" font-family="Arial" font-size="9.5" letter-spacing="1.7" fill="#a79f90">PALOMAR</text>
           ${FUEL_FACE}
           ${fuelTripBand(value, max, trip)}
-          <text x="130" y="110" text-anchor="middle" font-family="Georgia, serif" font-size="16" letter-spacing="3.2" font-weight="bold" fill="#e8e2d4">FUEL</text>
+          <text x="130" y="110" text-anchor="middle" font-family="Arial" font-size="16" letter-spacing="3.2" font-weight="bold" fill="#e8e2d4">FUEL</text>
           <!-- The needle rides in a group translated to the pivot and spins
                about its own origin. A px transform-origin looked right at one
                width only: the viewBox scales and the pixels do not, so at any
@@ -23869,10 +23891,48 @@
       function isPhoneWidth() {
         return !!(window.matchMedia && window.matchMedia("(max-width: 640px)").matches);
       }
+      /* ═══════════════════════════════════════════
+         THE PIXEL GRID
+      ═══════════════════════════════════════════ */
+      // Every picture of the world (the car in the bay and the place behind
+      // it, the calendar's photo, the car on a show bill, a listing's photo,
+      // the phone's car pictures) is resampled onto one grid, PX_GRID screen
+      // pixels to a pixel: one sample per cell, painted across the cell. Round
+      // wheels step, gradients band by the pixel, and nothing in a picture is
+      // drawn finer than what sits beside it. Bay Freight paints its own
+      // pixels on a canvas, at 3.
+      //
+      // It is an SVG filter built for the screen's pixel ratio: the sampling
+      // dot is one device pixel and the cell is PX_GRID css px of them. A
+      // fractional ratio (a 125% Windows desktop) has no whole number of
+      // device pixels to a cell, so there the pictures keep smooth edges.
+      const PX_GRID = 2;
+      function installPixelGrid() {
+        const dpr = window.devicePixelRatio || 1;
+        const whole = Math.abs(dpr - Math.round(dpr)) < 0.01;
+        document.documentElement.classList.toggle("px-off", !whole);
+        if (!whole || !document.body) return;
+        const r = Math.round(dpr), dev = PX_GRID * r;
+        let defs = document.getElementById("px-defs");
+        if (!defs) {
+          defs = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          defs.id = "px-defs";
+          defs.setAttribute("width", "0");
+          defs.setAttribute("height", "0");
+          defs.setAttribute("aria-hidden", "true");
+          defs.style.position = "absolute";
+          document.body.appendChild(defs);
+        }
+        if (defs.dataset.dev === String(dev)) return;
+        defs.dataset.dev = String(dev);
+        defs.innerHTML = `<filter id="px-grid" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB"><feFlood x="0" y="0" width="${1 / r}" height="${1 / r}" result="dot"/><feComposite in="dot" width="${PX_GRID}" height="${PX_GRID}" result="cell"/><feTile in="cell" result="grid"/><feComposite in="SourceGraphic" in2="grid" operator="in" result="samples"/><feConvolveMatrix in="samples" order="${dev}" kernelMatrix="${Array(dev * dev).fill(1).join(" ")}" targetX="${dev - 1}" targetY="${dev - 1}" divisor="1" edgeMode="none" preserveAlpha="false"/></filter>`;
+      }
       let lastPhoneWidth = null;
       function watchPhoneWidth() {
         lastPhoneWidth = isPhoneWidth();
+        installPixelGrid();
         window.addEventListener("resize", () => {
+          installPixelGrid();
           const now = isPhoneWidth();
           if (now !== lastPhoneWidth) {
             lastPhoneWidth = now;
@@ -24492,29 +24552,31 @@
       // Ambient life injected into every backdrop scene without touching
       // the art strings: drifting clouds (seamless marquee), sun shimmer,
       // a passing car and a bird outdoors; floating dust motes indoors.
+      // The ambient life in a backdrop (clouds, a bird, dust in the light, a
+      // car going by) moves the way a pixel-art scene does: a small clock in
+      // the backdrop ticks it eight times a second, on whole steps. A CSS
+      // animation repaints every frame even when it steps, and every repaint
+      // runs the pixel grid over the whole picture.
       const BACKDROP_AMBIENT_SHELL =
-        '<style id="cg-backdrop-ambient">' +
-        "@keyframes cga-drift{from{transform:translateX(0)}to{transform:translateX(760px)}}" +
-        "@keyframes cga-sun{0%,100%{opacity:.4}50%{opacity:.75}}" +
-        "@keyframes cga-cross{0%{transform:translateX(-100px)}14%{transform:translateX(800px)}100%{transform:translateX(800px)}}" +
-        "@keyframes cga-bird{0%{transform:translate(-40px,0)}7%{transform:translate(150px,-8px)}14%{transform:translate(340px,3px)}21%{transform:translate(540px,-6px)}28%{transform:translate(760px,0)}100%{transform:translate(760px,0)}}" +
-        "@keyframes cga-mote{0%{transform:translateY(0);opacity:0}20%{opacity:.32}80%{opacity:.18}100%{transform:translateY(-40px);opacity:0}}" +
-        "</style><script>addEventListener(\"DOMContentLoaded\",function(){try{" +
+        '<style id="cg-backdrop-ambient"></style>' +
+        "<script>addEventListener(\"DOMContentLoaded\",function(){try{" +
         'var svg=document.querySelector(".scene svg");if(!svg)return;' +
         'var NS="http://www.w3.org/2000/svg";' +
         "var OUT=__CGOUT__;" +
         "var CLD=__CGCLD__;" +
         "var PCAR=__CGPCAR__;" +
         "function el(n,a){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);return e}" +
+        // A = [element, period s, delay s, keys [[at 0-1, x, y, opacity]...]]
+        "var A=[];function key(e,p,d,k){A.push([e,p,d,k])}" +
         "var sky=svg.querySelector('rect[fill=\\\"#3a86ff\\\"]');" +
         "if(sky){" +
         "if(CLD){var clouds=svg.querySelector('g[fill=\\\"#fff8e7\\\"]');" +
-        "if(clouds){var wrap=el(\"g\",{});clouds.parentNode.insertBefore(wrap,clouds);var dup=clouds.cloneNode(true);dup.setAttribute(\"transform\",\"translate(-760,0)\");wrap.appendChild(clouds);wrap.appendChild(dup);wrap.style.animation=\"cga-drift 80s linear infinite\";}" +
+        "if(clouds){var wrap=el(\"g\",{});clouds.parentNode.insertBefore(wrap,clouds);var dup=clouds.cloneNode(true);dup.setAttribute(\"transform\",\"translate(-760,0)\");wrap.appendChild(clouds);wrap.appendChild(dup);key(wrap,80,0,[[0,0,0],[1,760,0]]);}" +
         "else{var cwrap=el(\"g\",{}),cw=el(\"g\",{});" +
         "function mkc(x,y,s){var cc=el(\"g\",{});cc.appendChild(el(\"rect\",{x:x,y:y,width:40*s,height:12*s,fill:\"#e6eef7\",opacity:\"0.45\"}));cc.appendChild(el(\"rect\",{x:x+12*s,y:y-7*s,width:22*s,height:9*s,fill:\"#e6eef7\",opacity:\"0.45\"}));cw.appendChild(cc);}" +
-        "mkc(110,30,1);mkc(360,20,1.3);mkc(560,38,0.9);var cd=cw.cloneNode(true);cd.setAttribute(\"transform\",\"translate(-760,0)\");cwrap.appendChild(cw);cwrap.appendChild(cd);cwrap.style.animation=\"cga-drift 90s linear infinite\";sky.parentNode.insertBefore(cwrap,sky.nextSibling);}}" +
-        "svg.querySelectorAll('rect[fill=\\\"#ffcc00\\\"][opacity]').forEach(function(s,i){s.style.animation=\"cga-sun \"+(6+i*2)+\"s ease-in-out infinite\"});" +
-        "if(OUT){var bird=el(\"g\",{fill:\"#20293a\"});bird.appendChild(el(\"rect\",{x:\"0\",y:\"52\",width:\"5\",height:\"2\"}));bird.appendChild(el(\"rect\",{x:\"4\",y:\"50\",width:\"3\",height:\"2\"}));bird.style.animation=\"cga-bird 34s linear infinite\";svg.appendChild(bird);}" +
+        "mkc(110,30,1);mkc(360,20,1.3);mkc(560,38,0.9);var cd=cw.cloneNode(true);cd.setAttribute(\"transform\",\"translate(-760,0)\");cwrap.appendChild(cw);cwrap.appendChild(cd);key(cwrap,90,0,[[0,0,0],[1,760,0]]);sky.parentNode.insertBefore(cwrap,sky.nextSibling);}}" +
+        "svg.querySelectorAll('rect[fill=\\\"#ffcc00\\\"][opacity]').forEach(function(s,i){key(s,6+i*2,0,[[0,0,0,.4],[.5,0,0,.75],[1,0,0,.4]])});" +
+        "if(OUT){var bird=el(\"g\",{fill:\"#20293a\"});bird.appendChild(el(\"rect\",{x:\"0\",y:\"52\",width:\"5\",height:\"2\"}));bird.appendChild(el(\"rect\",{x:\"4\",y:\"50\",width:\"3\",height:\"2\"}));key(bird,34,0,[[0,-40,0],[.07,150,-8],[.14,340,3],[.21,540,-6],[.28,760,0],[1,760,0]]);svg.appendChild(bird);}" +
         "if(PCAR){var road=null,roads=svg.querySelectorAll('rect[fill=\\\"#2d3142\\\"]');roads.forEach(function(rr){var yy=+rr.getAttribute('y'),ww=+rr.getAttribute('width');if(yy>=150&&ww>=380&&(!road||ww>+road.getAttribute('width')))road=rr;});" +
         "if(road){var ry=+road.getAttribute(\"y\");var cg=el(\"g\",{});var CS=1.45;" +
         "var ig=el(\"g\",{transform:\"translate(\"+(37*(1-CS))+\",\"+((ry+45)*(1-CS))+\") scale(\"+CS+\")\"});" +
@@ -24526,10 +24588,14 @@
         "ig.appendChild(el(\"rect\",{x:\"10\",y:ry+36,width:\"15\",height:\"9\",fill:\"#14181f\"}));" +
         "ig.appendChild(el(\"rect\",{x:\"50\",y:ry+36,width:\"15\",height:\"9\",fill:\"#14181f\"}));" +
         "cg.appendChild(ig);" +
-        "cg.style.animation=\"cga-cross 23s linear infinite\";cg.style.animationDelay=\"5s\";svg.appendChild(cg);}}" +
+        "key(cg,23,5,[[0,-100,0],[.14,800,0],[1,800,0]]);svg.appendChild(cg);}}" +
         "}else{" +
-        "for(var i=0;i<5;i++){var m=el(\"rect\",{x:70+i*130,y:60+(i%3)*26,width:\"2\",height:\"2\",fill:\"#efe2c6\",opacity:\"0\"});m.style.animation=\"cga-mote \"+(7+i*2)+\"s linear infinite\";m.style.animationDelay=(i*1.7)+\"s\";svg.appendChild(m)}" +
+        "for(var i=0;i<5;i++){var m=el(\"rect\",{x:70+i*130,y:60+(i%3)*26,width:\"2\",height:\"2\",fill:\"#efe2c6\",opacity:\"0\"});key(m,7+i*2,i*1.7,[[0,0,0,0],[.2,0,-8,.32],[.8,0,-32,.18],[1,0,-40,0]]);svg.appendChild(m)}" +
         "}" +
+        // The clock: each element's place in its loop, read off its keys,
+        // snapped to whole units and written only when it changed.
+        "var t0=performance.now();function tick(){var t=(performance.now()-t0)/1000;A.forEach(function(a){var e=a[0],p=a[1],k=a[3],u=t-a[2];if(u<0)u+=p;var f=(u%p)/p,i=0;while(i<k.length-2&&f>k[i+1][0])i++;var q=k[i],r=k[i+1],w=r[0]>q[0]?(f-q[0])/(r[0]-q[0]):0;var x=Math.round((q[1]+(r[1]-q[1])*w)/2)*2,y=Math.round(q[2]+(r[2]-q[2])*w),tr=\"translate(\"+x+\" \"+y+\")\";if(e.__t!==tr){e.__t=tr;e.setAttribute(\"transform\",tr)}if(q.length>3){var o=Math.round((q[3]+(r[3]-q[3])*w)*8)/8;if(e.__o!==o){e.__o=o;e.setAttribute(\"opacity\",o)}}})}" +
+        "if(A.length){tick();setInterval(tick,125)}" +
         "}catch(e){}});<\/script>";
 
       function normalizeBackdropSrcdoc(srcdoc, outdoor, clouds, passingCar) {
@@ -24545,12 +24611,14 @@ html,body{margin:0!important;width:100%!important;height:100%!important;overflow
 body{position:relative!important;display:block!important;}
 .scene{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;transform:none!important;margin:0!important;box-sizing:border-box!important;max-width:none!important;max-height:none!important;background:transparent!important;}
 .scene > svg{width:100%!important;height:100%!important;display:block!important;}
+.scene{filter:url(#px-grid);}
 </style>
 <script>
 addEventListener("DOMContentLoaded",function(){
   document.querySelectorAll(".scene svg").forEach(function(s){
     s.setAttribute("preserveAspectRatio","xMidYMid slice");
   });
+  try{var g=parent.document.getElementById("px-defs");if(g){var d=document.createElementNS("http://www.w3.org/2000/svg","svg");d.setAttribute("width","0");d.setAttribute("height","0");d.style.position="absolute";d.innerHTML=g.innerHTML;document.body.appendChild(d);}}catch(e){}
 });
 <\/script>
 `;
@@ -28855,7 +28923,7 @@ addEventListener("DOMContentLoaded",function(){
           <polygon points="${pts}" fill="${c1}" stroke="${c2}" stroke-width="1.5"/>
           <circle cx="50" cy="50" r="29" fill="#f4efe2"/>
           <circle cx="50" cy="50" r="25" fill="none" stroke="${place === 3 ? c2 : c1}" stroke-width="2"/>
-          <text x="50" y="54" text-anchor="middle" font-family="Georgia, serif" font-size="19" font-weight="bold" fill="${ink}">${label}</text>
+          <text x="50" y="54" text-anchor="middle" font-family="Arial" font-size="19" font-weight="bold" fill="${ink}">${label}</text>
           <text x="50" y="66" text-anchor="middle" font-family="Arial" font-size="6.5" letter-spacing="1" fill="#4d4a42">${tier.toUpperCase()}</text>
           <circle cx="50" cy="6" r="4.5" fill="#c8281e"/><circle cx="48.6" cy="4.6" r="1.4" fill="#f28a7e"/>
         </svg>`;

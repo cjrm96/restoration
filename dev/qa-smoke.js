@@ -3417,6 +3417,82 @@ const pass = (msg) => console.log("✓", msg);
     await lap.close();
   }
 
+  // ── one look: fonts by role, the pixel grid, icons on their grid ──
+  // Georgia is the game talking and every game button; anything printed or
+  // lit on a screen inside the world is the print face. Every picture of the
+  // world is resampled onto the one pixel grid (the backdrop does it inside
+  // its own frame, and its ambient life ticks on a clock, not a CSS animation
+  // that would repaint the grid every frame). Icons drawn on a 16px grid show
+  // at whole multiples of it.
+  {
+    const look = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    await look.goto(GAME);
+    await look.waitForTimeout(700);
+    await look.keyboard.press("Enter"); await look.waitForTimeout(1100);
+    for (let i = 0; i < 9; i++) {
+      await look.evaluate(() => {
+        if (state.cutscene) dismissCutscene(true);
+        state.noticeQueue = []; state.pendingScene = null; state.pendingUnlock = null;
+        state.pendingMarketplaceOffer = null; state.pendingCarOffer = null; state.weekRecap = null; state.pendingRecap = null;
+        const cr = document.getElementById("cutsceneRoot"); if (cr) cr.innerHTML = "";
+        const mr = document.getElementById("modalRoot"); if (mr) mr.innerHTML = "";
+      });
+      await look.waitForTimeout(110);
+    }
+    await look.evaluate(() => {
+      state.tutorialComplete = true;
+      Object.keys(state.milestones).forEach((k) => (state.milestones[k] = true));
+      state.onboardStage = 3; state.preWeek = 0; state.week = 9; state.money = 3800; state.followers = 4200;
+      state.workshopLevel = "curb"; state.installsDone = 12;
+      state.history = [{ week: 3, showName: "Cars & Coffee", tier: "Cars & Coffee", place: 2, season: 1 }];
+      setView("workshop"); setShopSub("suggested"); render("full");
+    });
+    await look.waitForTimeout(1500);
+    const lookOk = await look.evaluate(() => {
+      const fam = (el) => getComputedStyle(el).fontFamily;
+      const isPrint = (el) => /^Arial/.test(fam(el));
+      const isUi = (el) => /^Georgia/.test(fam(el));
+      const pix = (el) => /#px-grid/.test(getComputedStyle(el).filter);
+      if (!document.querySelector("#px-defs #px-grid")) return "the pixel grid filter was never installed";
+      const stage = document.querySelector(".grid-main .car-preview-stage");
+      if (!stage || !pix(stage)) return "the car in the bay is off the pixel grid";
+      const fr = document.querySelector(".grid-main .art-backdrop-frame");
+      const doc = fr && fr.contentDocument;
+      if (!doc || !doc.querySelector("#px-grid") || !pix(doc.querySelector(".scene"))) return "the backdrop behind the car is off the pixel grid";
+      const animated = [...doc.querySelectorAll("*")].filter((e) => { const a = getComputedStyle(e).animationName; return a && a !== "none"; });
+      if (animated.length) return `the backdrop runs ${animated.length} CSS animation(s), which repaint the grid every frame`;
+      const bad = [];
+      const icons = () => [...document.querySelectorAll(".ui-ico, .tab-ico, .crt-ico")].filter((i) => i.getBoundingClientRect().width > 0);
+      const checkIcons = (where) => icons().forEach((i) => { const w = Math.round(i.getBoundingClientRect().width); if (w % 16) bad.push(`${where}: a ${w}px icon`); });
+      const checkButtons = (where) => document.querySelectorAll("#appContent .btn, .topbar .btn").forEach((b) => { if (b.getBoundingClientRect().width && !isUi(b)) bad.push(`${where}: a button in ${fam(b).split(",")[0]}`); });
+      checkIcons("Build"); checkButtons("Build");
+      setView("shows"); render("full");
+      for (const [sel, what] of [[".bill", "the show bill"], [".wall-paper", "the day's sheet"], [".mcal", "the shop calendar"]]) {
+        const el = document.querySelector(sel);
+        if (!el) bad.push(`Compete: ${what} is missing`); else if (!isPrint(el)) bad.push(`Compete: ${what} is set in ${fam(el).split(",")[0]}`);
+      }
+      for (const sel of [".mcal-pic", ".poster-art"]) { const el = document.querySelector(sel); if (el && !pix(el)) bad.push(`Compete: ${sel} is off the pixel grid`); }
+      const gaugeText = document.querySelector(".fuel-gauge text");
+      if (gaugeText && !/Arial/.test(gaugeText.getAttribute("font-family") || "")) bad.push("Compete: the gauge face is not lettered in print");
+      checkIcons("Compete"); checkButtons("Compete");
+      setView("dealership"); state.marketTab = "sellcar"; render("full");
+      const crt = document.querySelector(".crt-page");
+      if (!crt || !isPrint(crt)) bad.push("Marketplace: the Gearbook site is not in the print face");
+      document.querySelectorAll(".lst-shot .lst-art").forEach((a) => { if (!pix(a)) bad.push("Marketplace: a listing photo is off the pixel grid"); });
+      checkIcons("Marketplace"); checkButtons("Marketplace");
+      setView("career"); render("full");
+      const phone = document.querySelector(".phone-screen");
+      if (!phone || !isPrint(phone)) bad.push("Social: the phone is not in the print face");
+      document.querySelectorAll(".sp-sticker").forEach((st) => { if (!isPrint(st)) bad.push("Social: a sponsor sticker is not printed"); });
+      checkIcons("Social"); checkButtons("Social");
+      setView("workshop"); setShopSub("suggested"); render("full");
+      return bad.length ? [...new Set(bad)].slice(0, 6).join("; ") : true;
+    });
+    if (lookOk !== true) fail("one look: " + lookOk);
+    pass("one look: fonts by role, every picture on the pixel grid, icons on their 16px grid");
+    await look.close();
+  }
+
   // ── the itch embed ────────────────────────────────────────────────────────
   // itch serves the game in an iframe and the host decides whether that frame
   // may scroll; its scrollbars option defaults off. A build that relies on
