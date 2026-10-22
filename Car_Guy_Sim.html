@@ -2136,23 +2136,6 @@
           0 0 0 1px rgba(209, 154, 63, 0.14) inset,
           0 20px 50px rgba(0, 0, 0, 0.45);
       }
-      .modal-card.loans-card {
-        max-width: 760px;
-      }
-      .loans-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
-        align-items: start;
-      }
-      @media (max-width: 640px) {
-        .modal-card.loans-card {
-          max-width: 440px;
-        }
-        .loans-grid {
-          grid-template-columns: 1fr;
-        }
-      }
       /* One small action per row, sized to itself. A single button stretched
          across the whole row read as a banner rather than a thing to press. */
       .lst-row-act {
@@ -5273,295 +5256,80 @@
         .settings-board { padding: 30px 14px 16px 24px !important; }
       }
 
-      /* ── Bank Loan: stamped form ── */
-      .panel.loan-form {
-        background: linear-gradient(180deg, #ecdfc1 0%, #d9c89e 100%);
-        border: 1px solid #6b5840;
-        border-radius: 3px;
-        padding: 16px 16px 14px;
-        font-family: var(--font-type);
-        color: #2a1f12;
+      /* The loans: the kitchen table at one in the morning, under the lamp,
+         one lender's paper each. Print and type for what a lender printed,
+         a pen or pencil for what somebody wrote, and the yellow button with
+         the hard shadow for the one thing on a paper you can press. */
+      .modal-card.kt-table {
         position: relative;
-        box-shadow:
-          inset 0 0 0 4px rgba(255, 255, 255, 0.35),
-          inset 0 0 0 5px #6b5840,
-          0 6px 16px rgba(0, 0, 0, 0.45);
-      }
-      .panel.loan-form::after {
-        content: "APPROVED";
-        position: absolute;
-        top: 14px;
-        right: 14px;
-        font-family: var(--font-type);
-        font-weight: bold;
-        font-size: 14px;
-        color: rgba(125, 60, 50, 0.32);
-        border: 2.5px solid rgba(125, 60, 50, 0.32);
-        padding: 3px 8px;
-        letter-spacing: 2px;
-        transform: rotate(-9deg);
-        pointer-events: none;
-        border-radius: 2px;
-      }
-      .panel.loan-form .panel-title {
-        color: #1d1208 !important;
-        font-family: inherit;
-        letter-spacing: 1px;
-      }
-      .panel.loan-form .panel-sub {
-        color: #5d4a30;
-        font-family: inherit;
-      }
-      .panel.loan-form .panel-header {
-        border-bottom: 1px dashed rgba(0, 0, 0, 0.3);
-      }
-      .panel.loan-form .row-k {
-        color: #5d4a30;
-        font-family: inherit;
-      }
-      .panel.loan-form .row-v {
-        color: #1d1208;
-        font-family: inherit;
-      }
-      .panel.loan-form .row-v.good {
-        color: #2f6b1f;
-      }
-      .panel.loan-form .row-v.warn {
-        color: #a36300;
-      }
-      .panel.loan-form .row-v.bad {
-        color: #8a2a1c;
-      }
-
-      /* ── Loan Shark: torn diner napkin ── */
-      .panel.loan-shark {
+        width: min(900px, calc(100vw - 32px));
+        max-width: 900px;
+        padding: 40px 28px 30px;
+        border: 0;
+        border-radius: 4px;
         background:
-          radial-gradient(
-            ellipse at 18% 28%,
-            rgba(170, 80, 40, 0.14),
-            transparent 40%
-          ),
-          radial-gradient(
-            circle at 82% 72%,
-            rgba(110, 70, 30, 0.2),
-            transparent 28%
-          ),
-          radial-gradient(
-            circle at 60% 18%,
-            rgba(80, 50, 20, 0.12),
-            transparent 18%
-          ),
-          linear-gradient(180deg, #efdfc4 0%, #ddc8a4 100%);
-        border: none;
-        padding: 20px 18px 16px;
-        color: #3a2410;
-        font-family: var(--font-dale);
-        position: relative;
-        clip-path: polygon(
-          0% 4%,
-          5% 0%,
-          14% 3%,
-          24% 0%,
-          36% 2%,
-          50% 0%,
-          63% 3%,
-          76% 0%,
-          88% 4%,
-          100% 1%,
-          98% 18%,
-          100% 36%,
-          97% 55%,
-          100% 72%,
-          99% 90%,
-          100% 100%,
-          88% 97%,
-          72% 100%,
-          56% 96%,
-          38% 100%,
-          22% 97%,
-          8% 100%,
-          0% 96%,
-          2% 78%,
-          0% 60%,
-          3% 40%,
-          0% 20%
-        );
-        filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.45));
+          radial-gradient(ellipse 62% 52% at 50% 30%, rgba(255, 210, 140, 0.2), transparent 72%),
+          radial-gradient(circle at 92% 88%, transparent 30px, rgba(40, 20, 6, 0.4) 31px 33px, transparent 34px),
+          radial-gradient(ellipse 120% 100% at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.55) 100%),
+          repeating-linear-gradient(180deg, transparent 0 118px, rgba(0, 0, 0, 0.35) 118px 120px),
+          repeating-linear-gradient(179deg, #5b3c22 0 6px, #634229 6px 9px, #57391f 9px 17px, #5f4026 17px 23px),
+          #5a3b21;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
       }
-      .panel.loan-shark .panel-title {
-        color: #3a1810 !important;
-        font-family: inherit;
-        font-size: 20px;
-      }
-      .panel.loan-shark .panel-sub {
-        color: #5d3220;
-        font-family: inherit;
-        font-style: italic;
-      }
-      .panel.loan-shark .panel-header {
-        border-bottom: 1px dashed rgba(0, 0, 0, 0.3);
-      }
-      .panel.loan-shark .row-k {
-        color: #4a2818;
-        font-family: inherit;
-        font-size: 14px;
-      }
-      .panel.loan-shark .row-v {
-        color: #2a1408;
-        font-family: inherit;
-        font-size: 14px;
-      }
-      .panel.loan-shark .row-v.good {
-        color: #2f6b1f;
-      }
-      .panel.loan-shark .row-v.warn {
-        color: #8a4f10;
-      }
-      .panel.loan-shark .row-v.bad {
-        color: #7a1c10;
-      }
-
-      /* ── Pawn Ticket: kraft slip with dashed perforation ── */
-      .panel.pawn-ticket {
-        background:
-          repeating-linear-gradient(
-            to bottom,
-            transparent 0,
-            transparent 21px,
-            rgba(0, 0, 0, 0.07) 21px,
-            rgba(0, 0, 0, 0.07) 22px
-          ),
-          linear-gradient(180deg, #d8b779 0%, #c19e5e 100%);
-        border: 2px dashed rgba(40, 20, 10, 0.55);
-        border-radius: 3px;
-        padding: 14px 18px 12px;
-        color: #2a1810;
-        font-family: var(--font-type);
-        position: relative;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
-      }
-      .panel.pawn-ticket::after {
-        content: "TICKET";
-        position: absolute;
-        top: 10px;
-        right: 14px;
-        background: rgba(122, 42, 34, 0.85);
-        color: #f5e9d8;
-        font-weight: bold;
-        font-family: var(--font-type);
-        letter-spacing: 2px;
-        font-size: 10px;
-        padding: 2px 7px;
-        border-radius: 2px;
-        transform: rotate(2deg);
-      }
-      .panel.pawn-ticket .panel-title {
-        color: #2a1810 !important;
-        font-family: inherit;
-      }
-      .panel.pawn-ticket .panel-sub {
-        color: #4a2f18;
-        font-family: inherit;
-      }
-      .panel.pawn-ticket .panel-header {
-        border-bottom: 1px dashed rgba(0, 0, 0, 0.35);
-      }
-      .panel.pawn-ticket .row-k {
-        color: #4a2f18;
-        font-family: inherit;
-      }
-      .panel.pawn-ticket .row-v {
-        color: #1a0f08;
-        font-family: inherit;
-      }
-      .panel.pawn-ticket .row-v.good {
-        color: #2f6b1f;
-      }
-      .panel.pawn-ticket .row-v.warn {
-        color: #8a4f10;
-      }
-      .panel.pawn-ticket .row-v.bad {
-        color: #8a2a1c;
-      }
-
-      /* ── Tool Truck Tab: receipt slip with ON THE TAB stamp ── */
-      .panel.tool-truck {
-        background:
-          repeating-linear-gradient(
-            to bottom,
-            transparent 0,
-            transparent 18px,
-            rgba(0, 0, 0, 0.045) 18px,
-            rgba(0, 0, 0, 0.045) 19px
-          ),
-          linear-gradient(180deg, #f5edd9 0%, #e8dec4 100%);
-        border: 1px solid #9c8865;
-        border-radius: 2px;
-        padding: 14px 16px 12px;
-        font-family: var(--font-type);
-        color: #1d1208;
-        position: relative;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
-      }
-      .panel.tool-truck::before {
-        /* perforated tear strip along the bottom */
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: -1px;
-        height: 6px;
-        background: radial-gradient(
-            circle at 4px 6px,
-            transparent 2px,
-            #e8dec4 2px
-          )
-          0 0 / 8px 6px repeat-x;
-      }
-      .panel.tool-truck::after {
-        content: "ON THE TAB";
-        position: absolute;
-        top: 14px;
-        right: 14px;
-        font-family: var(--font-type);
-        font-weight: bold;
-        font-size: 12px;
-        color: rgba(125, 30, 25, 0.5);
-        border: 2.5px solid rgba(125, 30, 25, 0.5);
-        padding: 3px 8px;
-        letter-spacing: 2px;
-        transform: rotate(6deg);
-        border-radius: 2px;
-        pointer-events: none;
-      }
-      .panel.tool-truck .panel-header {
-        border-bottom: 1px dashed rgba(0, 0, 0, 0.3);
-      }
-      .panel.tool-truck .panel-title {
-        color: #1d1208 !important;
-        font-family: inherit;
-        letter-spacing: 1px;
-      }
-      .panel.tool-truck .panel-sub {
-        color: #5d4a30;
-        font-family: inherit;
-      }
-      .panel.tool-truck .row-k {
-        color: #5d4a30;
-        font-family: inherit;
-      }
-      .panel.tool-truck .row-v {
-        color: #1d1208;
-        font-family: inherit;
-      }
-      .panel.tool-truck .row-v.good {
-        color: #2f6b1f;
-      }
-      .panel.tool-truck .row-v.warn {
-        color: #a36300;
-      }
-      .panel.tool-truck .row-v.bad {
-        color: #8a2a1c;
+      .kt-close { position: absolute; top: 6px; right: 12px; z-index: 3; color: #ead9b8; }
+      .kt-papers { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 26px 24px; }
+      .kt-paper { position: relative; flex: 0 1 auto; color: #1f1b16; text-align: left; box-shadow: var(--paper-shadow); transform: rotate(var(--r, 0deg)); }
+      .kt-f { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 5px 0 4px; border-bottom: 1px dotted #a9a395; font: 13px/1.25 var(--font-type); }
+      .kt-f span { color: #59534a; }
+      .kt-f b { white-space: nowrap; }
+      .kt-acts { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 16px; }
+      .kt-btn { padding: 6px 11px 7px; border: 2px solid #111; border-radius: 1px; background: #f2c21b; color: #111; box-shadow: 2px 2px 0 #111; font: 900 13px/1.1 var(--font-print); cursor: pointer; transition: transform 0.06s, box-shadow 0.06s; }
+      .kt-btn:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 #111; background: #ffd23f; }
+      .kt-btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: none; }
+      .kt-btn:focus-visible { outline: 2px solid #1f5fa8; outline-offset: 2px; }
+      .kt-btn.alt { background: #fbfaf5; }
+      .kt-btn.alt:hover:not(:disabled) { background: #fff; }
+      .kt-btn.red { background: #c8321f; color: #fff; }
+      .kt-btn.red:hover:not(:disabled) { background: #dc3c27; }
+      .kt-btn:disabled { background: #e2e0d9; color: #6f6c64; border-color: #9c988e; box-shadow: none; cursor: not-allowed; }
+      /* The bank: typed on letterhead, stamped once it goes through. */
+      .kt-bank { width: 300px; padding: 18px 20px 18px; background: #fbfaf5; }
+      .kt-lh { display: flex; flex-direction: column; gap: 2px; margin-bottom: 14px; padding-bottom: 7px; border-bottom: 2px solid #1d3461; font-family: var(--font-print); }
+      .kt-lh b { color: #1d3461; font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; }
+      .kt-lh span { color: #5d6a80; font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; }
+      .kt-doc { margin-bottom: 8px; font: bold 10.5px/1.2 var(--font-print); letter-spacing: 0.12em; text-transform: uppercase; }
+      .kt-sign { display: flex; align-items: flex-end; gap: 8px; margin-top: 18px; color: #59534a; font: bold 9px/1 var(--font-print); letter-spacing: 0.12em; text-transform: uppercase; }
+      .kt-sign i { flex: 1; height: 20px; border-bottom: 1px solid #333; }
+      .kt-stamp { position: absolute; right: 14px; top: 64px; padding: 3px 10px 2px; border: 3px solid rgba(178, 34, 34, 0.72); border-radius: 3px; color: rgba(178, 34, 34, 0.72); font: 900 16px/1.1 var(--font-print); letter-spacing: 0.18em; text-transform: uppercase; transform: rotate(-11deg); mix-blend-mode: multiply; pointer-events: none; }
+      /* The tool truck: a page of his pocket book, in pencil. */
+      .kt-book { width: 270px; padding: 26px 18px 18px 22px; background: repeating-linear-gradient(180deg, transparent 0 25px, rgba(120, 156, 204, 0.45) 25px 26px) 0 50px / 100% 100% no-repeat, #fbf8ef; }
+      .kt-holes { position: absolute; top: 7px; left: 14px; right: 14px; height: 8px; background: radial-gradient(circle, #3a2716 3px, transparent 3.6px) 0 0 / 18px 8px repeat-x; }
+      .kt-bh { margin-bottom: 10px; color: #b23a2a; font: bold 10px/14px var(--font-print); letter-spacing: 0.14em; text-transform: uppercase; }
+      .kt-pen { color: #4d4d4d; font: 21px/26px var(--font-dale); }
+      .kt-pen.sm { font-size: 17px; }
+      .kt-pen b { color: #262626; font-weight: normal; }
+      .kt-tally { display: flex; flex-wrap: wrap; align-items: center; row-gap: 6px; min-height: 26px; padding: 4px 0 0 2px; }
+      .kt-tally i { width: 2px; height: 16px; margin-right: 4px; background: #555; transform: rotate(4deg); }
+      .kt-tally i.x { width: 26px; height: 2px; margin: 0 10px 0 -25px; transform: rotate(-22deg); }
+      /* The shark: a bar napkin, his number up top, in pen. */
+      .kt-napkin { width: 220px; padding: 24px 22px 20px; background: linear-gradient(90deg, transparent calc(50% - 1px), rgba(0, 0, 0, 0.05) 50%, transparent calc(50% + 1px)), linear-gradient(180deg, transparent calc(50% - 1px), rgba(0, 0, 0, 0.05) 50%, transparent calc(50% + 1px)), #fdfdfa; box-shadow: inset 0 0 0 9px #fdfdfa, inset 0 0 0 10px #dcd9cf, var(--paper-shadow); }
+      .kt-phone { margin-bottom: 6px; color: #1d2f6b; font: 24px/1.1 var(--font-dale); text-decoration: underline; text-decoration-thickness: 1px; }
+      .kt-ink { color: #1d2f6b; font: 21px/1.25 var(--font-dale); }
+      .kt-ink.sm { font-size: 17px; }
+      .kt-ink b { color: #b3261e; font-weight: normal; }
+      /* The ring: a pawn ticket, torn off along the perforation. */
+      .kt-pawn { width: 230px; padding: 18px 16px 16px; background: #eadfc4; }
+      .kt-pawn::before { content: ""; position: absolute; top: -4px; left: 0; right: 0; height: 8px; background: radial-gradient(circle, #4d331d 2.4px, transparent 3px) 2px 0 / 10px 8px repeat-x; }
+      .kt-pt { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; font-family: var(--font-print); }
+      .kt-pt b { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
+      .kt-no { color: #b3261e; font: bold 13px var(--font-type); }
+      .kt-pawn .kt-f { border-bottom-color: #9d9178; }
+      /* Hers, on top of the pile, when you have already borrowed this week. */
+      .kt-note { width: max-content; margin: -16px auto 18px; padding: 10px 16px 12px; background: #f6c3cd; color: #4b2a6b; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); font: 20px/1.15 var(--font-her); text-align: center; transform: rotate(-3deg); }
+      @media (max-width: 640px) {
+        .modal-card.kt-table { padding: 36px 14px 22px; }
+        .kt-papers { flex-direction: column; align-items: center; gap: 20px; }
+        .kt-paper { width: min(320px, 100%); transform: rotate(calc(var(--r, 0deg) / 2)); }
       }
 
       /* ── Work order: Active Restorations as a taped-up manila slip ── */
@@ -13020,7 +12788,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.104.1";
+      const GAME_VERSION = "0.105.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -26048,13 +25816,83 @@ addEventListener("DOMContentLoaded",function(){
         return true;
       }
 
+      // The loans live on the kitchen table after everybody has gone to bed:
+      // each lender's own paper, saying its terms the way that lender would.
+      // The bank sends a typed form on letterhead and a statement once you
+      // owe; the Snap-it man keeps you in a pencil book and ticks off the
+      // weeks; the shark is a number on a bar napkin, crossed out and written
+      // smaller as it comes down; the ring is a pawn ticket. The yellow (or,
+      // for the shark, red) button on a paper is the one thing to press. When
+      // you have already borrowed this week she has left a note on the stack.
+      function ktPay(kind, bal, step, payWord, offWord) {
+        return `<div class="kt-acts"><button class="kt-btn" onclick="payOffLoan('${kind}', ${step})" ${state.money < Math.min(step, bal) ? "disabled" : ""}>${payWord} $${fmt(Math.min(step, bal))}</button><button class="kt-btn alt" onclick="payOffLoan('${kind}')" ${state.money <= 0 ? "disabled" : ""}>${offWord} $${fmt(bal)}</button></div>`;
+      }
       function renderStoreModal() {
         const root = getEl("modalRoot");
         if (!state.showStore || state.pendingEvent || state.showLoading) {
           root.innerHTML = "";
           return;
         }
-        root.innerHTML = `<div class="modal"><div class="modal-card loans-card"><div class="flex between center" style="margin-bottom:10px"><div style="color:var(--gold);font-weight:bold;font-size:18px">Loans Desk</div><button class="close-x" onclick="closeStore()">×</button></div><div class="small muted" style="margin-bottom:14px">${sharkAtTheDesk() ? "Borrow just enough to keep the build alive, or make a worse decision." : "Borrow just enough to keep the build alive."}</div>${loanTakenThisWeek() ? `<div class="info-box" style="background:rgba(196,109,96,0.07);border:1px solid rgba(196,109,96,0.4);margin-bottom:14px;padding:10px 12px"><div class="tiny" style="color:var(--red-bright);font-weight:bold;margin-bottom:2px"> One loan a week</div><div class="tiny muted" style="line-height:1.5">You've already borrowed this week. Your credit only stretches so far, the desk reopens next week.</div></div>` : ""}<div class="loans-grid">${panel("Bank Loan", `${chalkRow("Cash Now", "+$4,000", "good")}${chalkRow("Payday Hit", "-$400 every paycheck", "warn")}${state.bankLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.bankLoanBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $400", "payOffLoan('bank', 400)", state.money < Math.min(400, state.bankLoanBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.bankLoanBalance)}`, "payOffLoan('bank')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Bank Loan", "takeBankLoan()", loanTakenThisWeek(), "", "width:100%")}`, "", "#1d1208", "loan-form")}${sharkAtTheDesk() ? panel("Loan Shark", `${chalkRow("Cash Now", "+$6,000", "good")}${chalkRow("You Owe", "$7,800 total", "bad")}${chalkRow("Payday Hit", "-$750 every paycheck", "bad")}${state.sharkLoanBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.sharkLoanBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $750", "payOffLoan('shark', 750)", state.money < Math.min(750, state.sharkLoanBalance), "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}${button(`Pay Off $${fmt(state.sharkLoanBalance)}`, "payOffLoan('shark')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Take Shark Loan", "takeSharkLoan()", loanTakenThisWeek(), "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}`, "", "#3a1810", "loan-shark") : ""}${panel("Tool Truck Tab", `${chalkRow("Cash Now", "+$3,500", "good")}${chalkRow("You Owe", "$3,600 total", "warn")}${chalkRow("Weekly Hit", "-$90 for 40 weeks", "warn")}${state.toolTruckBalance > 0 ? `${chalkRow("Outstanding", `$${fmt(state.toolTruckBalance)}`, "warn")}<div class="btn-row two" style="margin-top:8px">${button("Pay $90", "payOffLoan('truck', 90)", state.money < Math.min(90, state.toolTruckBalance), "", "width:100%")}${button(`Pay Off $${fmt(state.toolTruckBalance)}`, "payOffLoan('truck')", state.money <= 0, "", "width:100%;background:#4a3c2e;border-color:#6b5840")}</div>` : button("Open Tool Truck Tab", "takeToolTruckLoan()", loanTakenThisWeek(), "", "width:100%")}`, "", "#1d1208", "tool-truck")}${state.weddingRingPawned && state.ringPawnBalance > 0 ? panel("Pawn Ticket", `${chalkRow("You Owe", `$${fmt(state.ringPawnBalance)}`, "bad")}${chalkRow("Weekly Hit", "-$50 weekly", "warn")}${chalkRow("Outstanding", `$${fmt(state.ringPawnBalance)}`, "bad")}<div class="btn-row two" style="margin-top:8px">${button("Pay $50", "payOffLoan('ring', 50)", state.money < Math.min(50, state.ringPawnBalance), "", "width:100%")}${button(`Pick Up Ring · $${fmt(state.ringPawnBalance)}`, "payOffLoan('ring')", state.money < state.ringPawnBalance, "", "width:100%;background:#7a2a22;border-color:#b85b4f;color:#f2ddd8")}</div>`, "", "#2a1810", "pawn-ticket") : ""}</div></div></div>`;
+        const shut = loanTakenThisWeek();
+        const take = (label, fn, cls = "") => `<div class="kt-acts"><button class="kt-btn ${cls}" onclick="${fn}" ${shut ? "disabled" : ""}>${label}</button></div>`;
+        const bank = state.bankLoanBalance || 0, truck = state.toolTruckBalance || 0, shark = state.sharkLoanBalance || 0;
+        const bankPay = state.bankLoanPayment || 400, truckPay = state.toolTruckPayment || 90, sharkPay = state.sharkLoanPayment || 750, ringPay = state.ringPawnPayment || 50;
+        const papers = [];
+        // The bank: an application, then a statement.
+        papers.push(`<div class="kt-paper kt-bank" style="--r:-1.2deg">
+          <div class="kt-lh"><b>Palomar Valley Savings</b><span>Main St · since 1958</span></div>
+          ${bank > 0
+            ? `<div class="kt-doc">Loan statement</div>
+               <div class="kt-f"><span>Balance due</span><b>$${fmt(bank)}</b></div>
+               <div class="kt-f"><span>Next payment</span><b>$${fmt(bankPay)} on payday</b></div>
+               <span class="kt-stamp">Approved</span>
+               ${ktPay("bank", bank, bankPay, "Pay", "Pay off")}`
+            : `<div class="kt-doc">Personal loan application</div>
+               <div class="kt-f"><span>Amount</span><b>$4,000</b></div>
+               <div class="kt-f"><span>Repayment</span><b>$${fmt(bankPay)} each payday</b></div>
+               <div class="kt-sign">Signature <i></i></div>
+               ${take("Sign it · +$4,000", "takeBankLoan()")}`}
+        </div>`);
+        // The tool truck: a page in his book, in pencil.
+        const weeksPaid = Math.max(0, Math.floor((truckPay * 40 - truck) / truckPay));
+        const tally = Array.from({ length: Math.min(weeksPaid, 40) }, (_, i) => `<i${i % 5 === 4 ? ' class="x"' : ""}></i>`).join("");
+        papers.push(`<div class="kt-paper kt-book" style="--r:1.4deg">
+          <div class="kt-holes"></div>
+          <div class="kt-bh">Snap-it Tools · Route 9</div>
+          ${truck > 0
+            ? `<div class="kt-pen">owes <b>$${fmt(truck)}</b></div>
+               <div class="kt-pen sm">$${truckPay} a week, paid ${weeksPaid} of 40</div>
+               <div class="kt-tally">${tally}</div>
+               ${ktPay("truck", truck, truckPay, "Pay", "Square up")}`
+            : `<div class="kt-pen">$3,500 cash</div>
+               <div class="kt-pen">$${truckPay} a week, 40 weeks</div>
+               <div class="kt-pen sm">comes to $${fmt(truckPay * 40)}</div>
+               ${take("Shake on it · +$3,500", "takeToolTruckLoan()")}`}
+        </div>`);
+        // The shark: a number on a napkin.
+        if (sharkAtTheDesk())
+          papers.push(`<div class="kt-paper kt-napkin" style="--r:-2.4deg">
+            <div class="kt-phone">555-0187</div>
+            ${shark > 0
+              ? `<div class="kt-ink"><s>7,800</s> <b>${fmt(shark)}</b></div>
+                 <div class="kt-ink sm">${fmt(sharkPay)} a payday</div>
+                 ${ktPay("shark", shark, sharkPay, "Pay", "Pay him off")}`
+              : `<div class="kt-ink">6,000 now</div>
+                 <div class="kt-ink">7,800 back</div>
+                 <div class="kt-ink sm">${fmt(sharkPay)} every payday</div>
+                 ${take("Call him · +$6,000", "takeSharkLoan()", "red")}`}
+          </div>`);
+        // The ring: the pawn ticket, until it is picked up.
+        if (state.weddingRingPawned && (state.ringPawnBalance || 0) > 0)
+          papers.push(`<div class="kt-paper kt-pawn" style="--r:1.8deg">
+            <div class="kt-pt"><b>Palomar Pawn</b><span class="kt-no">No 0412</span></div>
+            <div class="kt-f"><span>Item</span><b>1 ring, gold band</b></div>
+            <div class="kt-f"><span>To redeem</span><b>$${fmt(state.ringPawnBalance)}</b></div>
+            <div class="kt-f"><span>Weekly</span><b>$${ringPay}</b></div>
+            <div class="kt-acts"><button class="kt-btn" onclick="payOffLoan('ring', ${ringPay})" ${state.money < Math.min(ringPay, state.ringPawnBalance) ? "disabled" : ""}>Pay $${ringPay}</button><button class="kt-btn red" onclick="payOffLoan('ring')" ${state.money < state.ringPawnBalance ? "disabled" : ""}>Pick up the ring · $${fmt(state.ringPawnBalance)}</button></div>
+          </div>`);
+        const note = shut ? `<div class="kt-note">one this week.<br>please.</div>` : "";
+        root.innerHTML = `<div class="modal"><div class="modal-card kt-table" role="dialog" aria-label="Loans, on the kitchen table"><button class="close-x kt-close" onclick="closeStore()" aria-label="Close">×</button>${note}<div class="kt-papers">${papers.join("")}</div></div></div>`;
       }
 
       function renderTutorialModal() {

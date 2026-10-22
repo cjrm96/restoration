@@ -396,6 +396,56 @@ const pass = (msg) => console.log("✓", msg);
   if (loansOk !== true) fail("loans introduction: " + loansOk);
   pass("loans desk stays shut until the shark introduces it, and refusing still opens it");
 
+  // ── the desk is the kitchen table: one paper per lender, each with its own
+  // button. The napkin only once he has met you, the pawn ticket only while
+  // the ring is in hock, a statement in place of the application once you
+  // owe, and her note on the pile when you have already borrowed this week. ──
+  const tableOk = await page.evaluate(() => {
+    const keys = ["money", "loansUnlocked", "sharkMetWeek", "bankLoanBalance", "toolTruckBalance",
+                  "sharkLoanBalance", "weddingRingPawned", "ringPawnBalance", "lastLoanWeek",
+                  "showStore", "pendingEvent", "showLoading"];
+    const snap = {}; keys.forEach((k) => (snap[k] = state[k]));
+    const look = () => {
+      state.showStore = true; renderStoreModal();
+      const root = document.getElementById("modalRoot");
+      const btns = (sel) => [...root.querySelectorAll(sel + " .kt-btn")].map((b) => ({ on: b.getAttribute("onclick") || "", off: b.disabled }));
+      return { papers: [...root.querySelectorAll(".kt-paper")].map((p) => p.classList[1]), note: !!root.querySelector(".kt-note"),
+               bank: btns(".kt-bank"), book: btns(".kt-book"), napkin: btns(".kt-napkin"), pawn: btns(".kt-pawn"),
+               stamp: !!root.querySelector(".kt-bank .kt-stamp"), text: root.textContent };
+    };
+    const why = (() => {
+      Object.assign(state, { money: 2000, loansUnlocked: true, sharkMetWeek: null, bankLoanBalance: 0, toolTruckBalance: 0,
+        sharkLoanBalance: 0, weddingRingPawned: false, ringPawnBalance: 0, lastLoanWeek: null, pendingEvent: null, showLoading: false });
+      let v = look();
+      if (v.papers.join() !== "kt-bank,kt-book") return "a fresh desk should be the bank and the truck, got " + v.papers.join();
+      if (v.bank.length !== 1 || v.bank[0].on !== "takeBankLoan()" || v.bank[0].off) return "the bank application has no live Sign it";
+      if (v.book.length !== 1 || v.book[0].on !== "takeToolTruckLoan()" || v.book[0].off) return "the truck book has no live Shake on it";
+      if (v.note) return "her note is on a desk nobody has borrowed from";
+      state.sharkMetWeek = 4; v = look();
+      if (!v.papers.includes("kt-napkin")) return "the napkin is missing after he met you";
+      if (v.napkin.length !== 1 || v.napkin[0].on !== "takeSharkLoan()") return "the napkin does not call him";
+      state.lastLoanWeek = weekStamp(); v = look();
+      if (!v.note) return "her note is missing after a loan this week";
+      if (![...v.bank, ...v.book, ...v.napkin].every((b) => b.off)) return "a lender still takes a second loan in one week";
+      Object.assign(state, { bankLoanBalance: 2800, toolTruckBalance: 2430, sharkLoanBalance: 5550,
+        weddingRingPawned: true, ringPawnBalance: 650 });
+      v = look();
+      if (v.papers.join() !== "kt-bank,kt-book,kt-napkin,kt-pawn") return "an owing desk should hold all four papers, got " + v.papers.join();
+      if (!v.stamp || !/2,800/.test(v.text)) return "the bank never turned into a stamped statement";
+      const kinds = { bank: "'bank'", book: "'truck'", napkin: "'shark'", pawn: "'ring'" };
+      for (const [k, kind] of Object.entries(kinds))
+        if (v[k].length !== 2 || !v[k].every((b) => b.on.startsWith("payOffLoan(" + kind)))
+          return "the " + k + " paper does not pay down its own debt";
+      if (/take(Bank|ToolTruck|Shark)Loan/.test(document.getElementById("modalRoot").innerHTML)) return "a paper offers a new loan on top of the one owed";
+      return true;
+    })();
+    keys.forEach((k) => (state[k] = snap[k]));
+    document.getElementById("modalRoot").innerHTML = "";
+    return why;
+  });
+  if (tableOk !== true) fail("loans kitchen table: " + tableOk);
+  pass("loans desk lays one paper per lender, each paying down its own debt");
+
   // ── the pre-season freezes state.week at 1 for four weeks and then season
   // one opens on 1 again. Anything rate-limited by "is it still the same
   // week" therefore could not tell those five weeks apart: one loan a week
