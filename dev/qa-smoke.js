@@ -3241,6 +3241,12 @@ const pass = (msg) => console.log("✓", msg);
     const inlined = (region[1].match(/data:image\/webp;base64,/g) || []).length;
     if (inlined < 60) fail("web build inlined too few assets: " + inlined);
     pass(`web build self-contained (${inlined} assets inlined)`);
+    const mregion = out.match(/\/\*__MUSIC_MAP__\*\/([\s\S]*?)\/\*__END_MUSIC_MAP__\*\//);
+    if (!mregion) fail("web build lost the music-map markers");
+    if (mregion[1].includes("assets/audio/")) fail("web build music-map still points at external files");
+    const tracks = (mregion[1].match(/data:audio\/mpeg;base64,/g) || []).length;
+    if (tracks < 1) fail("web build inlined no music tracks");
+    pass(`web build radio self-contained (${tracks} tracks inlined)`);
   }
 
   // ── the first playable screen at phone width, in a real narrow viewport.

@@ -80,3 +80,12 @@ single-file itch build.
 Two superseded uploads (`Title Screen - Edited.png`, `restoration complete -
 Edited.png`) carried a small watermark sparkle and were dropped in favor of
 their re-edited versions; they remain in git history if ever needed.
+
+## Music (the garage radio)
+
+Lofi masters live here as `art/<Name>.mp3`. The game ships 96 kbps copies in
+`assets/audio/<key>.mp3` (key = name lowercased, underscores to hyphens). To
+add a song: drop the master here, run `python3 dev/export-music.py <Name>`,
+then add its key to `MUSIC_KEYS` in `Car_Guy_Sim.html`. The blues loop theme
+plays first; the radio starts 2 minutes after it fades, then plays one song at
+a time with 4 to 8 minutes of quiet between songs.

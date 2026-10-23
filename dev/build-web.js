@@ -53,15 +53,47 @@ if (s === -1 || e === -1 || e < s) {
   console.error("build-web: art-map markers not found in the source.");
   process.exit(1);
 }
-const inlined =
+let inlined =
   html.slice(0, s) +
   `${START} {${pairs.join(",")}} ${END}` +
   html.slice(e + END.length);
+
+// Same trick for the garage radio: MUSIC_KEYS -> assets/audio/<key>.mp3,
+// inlined between the __MUSIC_MAP__ markers.
+const AUDIO_DIR = path.join(ROOT, "assets", "audio");
+const musicMatch = inlined.match(/const MUSIC_KEYS = \[([\s\S]*?)\];/);
+if (!musicMatch) {
+  console.error("build-web: could not find MUSIC_KEYS in the source.");
+  process.exit(1);
+}
+const musicKeys = [...musicMatch[1].matchAll(/"([a-z0-9-]+)"/g)].map((m) => m[1]);
+const musicPairs = musicKeys.map((k) => {
+  const file = path.join(AUDIO_DIR, `${k}.mp3`);
+  if (!fs.existsSync(file)) missing.push(`audio/${k}.mp3`);
+  const b64 = fs.existsSync(file) ? fs.readFileSync(file).toString("base64") : "";
+  return `"${k}":"data:audio/mpeg;base64,${b64}"`;
+});
+if (missing.length) {
+  console.error("build-web: missing assets:\n  " + missing.join("\n  "));
+  process.exit(1);
+}
+const MSTART = "/*__MUSIC_MAP__*/";
+const MEND = "/*__END_MUSIC_MAP__*/";
+const ms = inlined.indexOf(MSTART);
+const me = inlined.indexOf(MEND);
+if (ms === -1 || me === -1 || me < ms) {
+  console.error("build-web: music-map markers not found in the source.");
+  process.exit(1);
+}
+inlined =
+  inlined.slice(0, ms) +
+  `${MSTART} {${musicPairs.join(",")}} ${MEND}` +
+  inlined.slice(me + MEND.length);
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
 fs.writeFileSync(OUT, inlined);
 const mb = (n) => (n / 1024 / 1024).toFixed(1);
 console.log(
-  `build-web: inlined ${keys.length} assets -> dist/Car_Guy_Sim.html ` +
+  `build-web: inlined ${keys.length} art + ${musicKeys.length} music assets -> dist/Car_Guy_Sim.html ` +
     `(${mb(Buffer.byteLength(inlined))} MB, single file)`,
 );

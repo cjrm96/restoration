@@ -12788,7 +12788,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.105.0";
+      const GAME_VERSION = "0.106.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -25616,8 +25616,13 @@ addEventListener("DOMContentLoaded",function(){
         const val = Math.max(0, Math.min(1, parseFloat(v) || 0));
         state.settings.musicVolume = val;
         applyAudioSettings();
-        if (val > 0 && !musicPlaying) startMusic();
-        if (val === 0 && musicPlaying) stopMusic();
+        // Coming back up from silence replays the theme; nudging the volume
+        // while the radio is on (or between songs) just changes the level.
+        if (val > 0 && !musicPlaying && !radioOn()) startMusic();
+        if (val === 0) {
+          if (musicPlaying) stopMusic();
+          stopRadio();
+        }
         const lbl = document.getElementById("musicVolLabel");
         if (lbl) lbl.textContent = Math.round(val * 100) + "%";
         saveGame();
@@ -32558,6 +32563,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         if (getSfxGain._n) {
           getSfxGain._n.gain.value = state.settings.sfxVolume * 0.78;
         }
+        if (radioEl) radioEl.volume = radioVolume();
       }
       function getReverb() {
         const ctx = getAudioCtx();
@@ -33017,6 +33023,8 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           // Restore gain to user setting so re-engaging the slider
           // produces audible music immediately.
           applyAudioSettings();
+          // The theme hands off to the garage radio after a short quiet.
+          queueRadio(RADIO_AFTER_THEME_MS);
         }, MUSIC_AUTO_FADE_DURATION_S * 1000 + 200);
       }
       function stopMusic() {
@@ -33040,6 +33048,93 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           setTimeout(() => {
             applyAudioSettings();
           }, 600);
+        }
+      }
+
+      /* ── The garage radio ──
+         Lofi tracks that drift in after the theme fades, one at a time, with
+         a few minutes of quiet between songs so the shop sounds can breathe.
+         Tracks ship as assets/audio/<key>.mp3 (dev/export-music.py makes them
+         from the art/ masters); dev/build-web.js inlines them for itch. */
+      const MUSIC_KEYS = [
+        "dusty-corner",
+        "garage-dust-groove",
+        "garage-sunset",
+        "toolbox-junk-drawer",
+        "workbench-after-midnight",
+        "workshop-afterglow",
+        "workshop-nightfall",
+        "workshop-sunday",
+      ];
+      const MUSIC_TRACKS = /*__MUSIC_MAP__*/ Object.fromEntries(
+        MUSIC_KEYS.map((k) => [k, "assets/audio/" + k + ".mp3"])
+      ) /*__END_MUSIC_MAP__*/;
+      const RADIO_AFTER_THEME_MS = 120000;
+      const RADIO_GAP_MIN_MS = 240000;
+      const RADIO_GAP_MAX_MS = 480000;
+      const RADIO_LEVEL = 0.55;
+      // var, not let: applyAudioSettings() reads radioEl during save load,
+      // which can run before this line does.
+      var radioEl = null,
+        radioTimer = null,
+        radioBag = [],
+        radioLast = null;
+      function radioOn() {
+        return !!(radioEl || radioTimer);
+      }
+      function radioVolume() {
+        const v = state.settings && typeof state.settings.musicVolume === "number" ? state.settings.musicVolume : 0.6;
+        return Math.max(0, Math.min(1, v * RADIO_LEVEL));
+      }
+      // Shuffle-bag: every song plays once before any repeats, and the first
+      // of a fresh bag is never the song that just ended.
+      function nextRadioKey() {
+        if (!radioBag.length) {
+          radioBag = MUSIC_KEYS.slice();
+          for (let i = radioBag.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [radioBag[i], radioBag[j]] = [radioBag[j], radioBag[i]];
+          }
+          if (radioBag.length > 1 && radioBag[0] === radioLast) radioBag.push(radioBag.shift());
+        }
+        radioLast = radioBag.shift();
+        return radioLast;
+      }
+      function queueRadio(ms) {
+        clearTimeout(radioTimer);
+        radioTimer = setTimeout(playRadioTrack, ms);
+      }
+      function queueRadioGap() {
+        queueRadio(RADIO_GAP_MIN_MS + Math.random() * (RADIO_GAP_MAX_MS - RADIO_GAP_MIN_MS));
+      }
+      function playRadioTrack() {
+        radioTimer = null;
+        if (!state.settings || !(state.settings.musicVolume > 0)) return;
+        if (musicPlaying || radioEl) {
+          queueRadioGap();
+          return;
+        }
+        const el = new Audio(MUSIC_TRACKS[nextRadioKey()]);
+        el.volume = radioVolume();
+        const done = () => {
+          if (radioEl !== el) return;
+          radioEl = null;
+          queueRadioGap();
+        };
+        el.onended = done;
+        el.onerror = done;
+        radioEl = el;
+        const p = el.play();
+        if (p && p.catch) p.catch(done);
+      }
+      function stopRadio() {
+        clearTimeout(radioTimer);
+        radioTimer = null;
+        if (radioEl) {
+          const el = radioEl;
+          radioEl = null;
+          el.onended = el.onerror = null;
+          el.pause();
         }
       }
       function startGame() {
