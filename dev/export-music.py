@@ -2,7 +2,7 @@
 """export-music.py -- turn a full-quality music master into a shipped track.
 
 The masters live in art/<Name>.mp3 (as delivered, e.g. Garage_Sunset.mp3).
-The game ships smaller copies in assets/audio/<key>.mp3 (96 kbps stereo MP3),
+The game ships copies in assets/audio/<key>.mp3 (192 kbps stereo MP3),
 where <key> is the master name lowercased with hyphens (garage-sunset). Then
 add the key to MUSIC_KEYS in Car_Guy_Sim.html so the radio rotation picks it.
 
@@ -19,7 +19,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MASTERS = os.path.join(ROOT, "art")
 OUT = os.path.join(ROOT, "assets", "audio")
-BITRATE = "96k"
+BITRATE = "192k"
 
 
 def key_for(name):

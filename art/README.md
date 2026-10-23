@@ -83,7 +83,7 @@ their re-edited versions; they remain in git history if ever needed.
 
 ## Music (the garage radio)
 
-Lofi masters live here as `art/<Name>.mp3`. The game ships 96 kbps copies in
+Lofi masters live here as `art/<Name>.mp3`. The game ships 192 kbps copies in
 `assets/audio/<key>.mp3` (key = name lowercased, underscores to hyphens). To
 add a song: drop the master here, run `python3 dev/export-music.py <Name>`,
 then add its key to `MUSIC_KEYS` in `Car_Guy_Sim.html`. The blues loop theme
