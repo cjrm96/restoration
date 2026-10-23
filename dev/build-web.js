@@ -1,99 +1,119 @@
 #!/usr/bin/env node
-// build-web.js — produce the single-file itch/web build.
+// build-web.js — produce the itch/web upload: dist/car-guy-sim-itch.zip.
 //
-// The source Car_Guy_Sim.html points CUTSCENE_ART at assets/art/<key>.webp so
-// the repo stays small and the game runs from disk with no build. For the web
-// (itch, the playable demo) we want the old one-file-you-can-host artifact, so
-// this inlines every asset back into data-URIs between the __ART_MAP__ markers
-// and writes dist/Car_Guy_Sim.html. Behavior is identical to the split build.
+// The zip is the game exactly as it runs from disk: the source becomes
+// index.html at the zip root, beside the assets/ folders it points at (every
+// ART_KEYS webp, every MUSIC_KEYS mp3, and assets/fonts). itch serves the
+// files next to each other, so the page itself stays ~2 MB and the art and
+// songs load as they are needed. Upload the zip and tick "This file will be
+// played in the browser".
+//
+// Why not one big HTML with everything inlined: that file passed 50 MB once
+// the music landed and itch stopped loading it.
 //
 //   node dev/build-web.js
 //
 const fs = require("fs");
 const path = require("path");
+const zlib = require("zlib");
 
 const ROOT = path.join(__dirname, "..");
 const SRC = path.join(ROOT, "Car_Guy_Sim.html");
-const ART_DIR = path.join(ROOT, "assets", "art");
 const OUT_DIR = path.join(ROOT, "dist");
-const OUT = path.join(OUT_DIR, "Car_Guy_Sim.html");
+const OUT = path.join(OUT_DIR, "car-guy-sim-itch.zip");
 
 const html = fs.readFileSync(SRC, "utf8");
 
-// Pull the key list straight from the source so the two never drift.
-const keysMatch = html.match(/const ART_KEYS = \[([\s\S]*?)\];/);
-if (!keysMatch) {
-  console.error("build-web: could not find ART_KEYS in the source.");
-  process.exit(1);
-}
-const keys = [...keysMatch[1].matchAll(/"([a-z0-9-]+)"/g)].map((m) => m[1]);
-
-let missing = [];
-const pairs = keys.map((k) => {
-  const file = path.join(ART_DIR, `${k}.webp`);
-  if (!fs.existsSync(file)) {
-    missing.push(`${k}.webp`);
-    return `"${k}":""`;
+// Pull the key lists straight from the source so the two never drift.
+function keysFrom(listName) {
+  const m = html.match(new RegExp(`const ${listName} = \\[([\\s\\S]*?)\\];`));
+  if (!m) {
+    console.error(`build-web: could not find ${listName} in the source.`);
+    process.exit(1);
   }
-  const b64 = fs.readFileSync(file).toString("base64");
-  return `"${k}":"data:image/webp;base64,${b64}"`;
-});
+  return [...m[1].matchAll(/"([a-z0-9-]+)"/g)].map((x) => x[1]);
+}
+
+const files = [["index.html", fs.readFileSync(SRC)]];
+const missing = [];
+function add(rel) {
+  const abs = path.join(ROOT, rel);
+  if (!fs.existsSync(abs)) return missing.push(rel);
+  files.push([rel, fs.readFileSync(abs)]);
+}
+const artKeys = keysFrom("ART_KEYS");
+const musicKeys = keysFrom("MUSIC_KEYS");
+artKeys.forEach((k) => add(`assets/art/${k}.webp`));
+musicKeys.forEach((k) => add(`assets/audio/${k}.mp3`));
+for (const f of fs.readdirSync(path.join(ROOT, "assets", "fonts"))) add(`assets/fonts/${f}`);
 if (missing.length) {
   console.error("build-web: missing assets:\n  " + missing.join("\n  "));
   process.exit(1);
 }
 
-// Replace the marked expression with an inline object literal, keeping the
-// markers so a rebuild is idempotent.
-const START = "/*__ART_MAP__*/";
-const END = "/*__END_ART_MAP__*/";
-const s = html.indexOf(START);
-const e = html.indexOf(END);
-if (s === -1 || e === -1 || e < s) {
-  console.error("build-web: art-map markers not found in the source.");
-  process.exit(1);
-}
-let inlined =
-  html.slice(0, s) +
-  `${START} {${pairs.join(",")}} ${END}` +
-  html.slice(e + END.length);
-
-// Same trick for the garage radio: MUSIC_KEYS -> assets/audio/<key>.mp3,
-// inlined between the __MUSIC_MAP__ markers.
-const AUDIO_DIR = path.join(ROOT, "assets", "audio");
-const musicMatch = inlined.match(/const MUSIC_KEYS = \[([\s\S]*?)\];/);
-if (!musicMatch) {
-  console.error("build-web: could not find MUSIC_KEYS in the source.");
-  process.exit(1);
-}
-const musicKeys = [...musicMatch[1].matchAll(/"([a-z0-9-]+)"/g)].map((m) => m[1]);
-const musicPairs = musicKeys.map((k) => {
-  const file = path.join(AUDIO_DIR, `${k}.mp3`);
-  if (!fs.existsSync(file)) missing.push(`audio/${k}.mp3`);
-  const b64 = fs.existsSync(file) ? fs.readFileSync(file).toString("base64") : "";
-  return `"${k}":"data:audio/mpeg;base64,${b64}"`;
+// ── minimal zip writer ──
+// Media is already compressed, so it is stored; text gets deflated.
+const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
+  let c = n;
+  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  return c >>> 0;
 });
-if (missing.length) {
-  console.error("build-web: missing assets:\n  " + missing.join("\n  "));
-  process.exit(1);
+function crc32(buf) {
+  let c = 0xffffffff;
+  for (let i = 0; i < buf.length; i++) c = CRC_TABLE[(c ^ buf[i]) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
 }
-const MSTART = "/*__MUSIC_MAP__*/";
-const MEND = "/*__END_MUSIC_MAP__*/";
-const ms = inlined.indexOf(MSTART);
-const me = inlined.indexOf(MEND);
-if (ms === -1 || me === -1 || me < ms) {
-  console.error("build-web: music-map markers not found in the source.");
-  process.exit(1);
+const STORED = /\.(webp|mp3|png|jpe?g|woff2?)$/i;
+const locals = [];
+const centrals = [];
+let offset = 0;
+for (const [name, data] of files) {
+  const nameBuf = Buffer.from(name, "utf8");
+  const deflate = !STORED.test(name);
+  const body = deflate ? zlib.deflateRawSync(data, { level: 9 }) : data;
+  const crc = crc32(data);
+  const local = Buffer.alloc(30);
+  local.writeUInt32LE(0x04034b50, 0);
+  local.writeUInt16LE(20, 4);
+  local.writeUInt16LE(0x0800, 6); // UTF-8 names
+  local.writeUInt16LE(deflate ? 8 : 0, 8);
+  local.writeUInt32LE(0x00210000, 10); // 1980-01-01 00:00, keeps builds byte-identical
+  local.writeUInt32LE(crc, 14);
+  local.writeUInt32LE(body.length, 18);
+  local.writeUInt32LE(data.length, 22);
+  local.writeUInt16LE(nameBuf.length, 26);
+  local.writeUInt16LE(0, 28);
+  const central = Buffer.alloc(46);
+  central.writeUInt32LE(0x02014b50, 0);
+  central.writeUInt16LE(20, 4);
+  central.writeUInt16LE(20, 6);
+  central.writeUInt16LE(0x0800, 8);
+  central.writeUInt16LE(deflate ? 8 : 0, 10);
+  central.writeUInt32LE(0x00210000, 12);
+  central.writeUInt32LE(crc, 16);
+  central.writeUInt32LE(body.length, 20);
+  central.writeUInt32LE(data.length, 24);
+  central.writeUInt16LE(nameBuf.length, 28);
+  central.writeUInt32LE(offset, 42);
+  locals.push(local, nameBuf, body);
+  centrals.push(central, nameBuf);
+  offset += 30 + nameBuf.length + body.length;
 }
-inlined =
-  inlined.slice(0, ms) +
-  `${MSTART} {${musicPairs.join(",")}} ${MEND}` +
-  inlined.slice(me + MEND.length);
+const centralBuf = Buffer.concat(centrals);
+const end = Buffer.alloc(22);
+end.writeUInt32LE(0x06054b50, 0);
+end.writeUInt16LE(files.length, 8);
+end.writeUInt16LE(files.length, 10);
+end.writeUInt32LE(centralBuf.length, 12);
+end.writeUInt32LE(offset, 16);
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
-fs.writeFileSync(OUT, inlined);
+// Clear the old single-file build so nobody uploads it by mistake.
+try { fs.unlinkSync(path.join(OUT_DIR, "Car_Guy_Sim.html")); } catch (e) {}
+const zip = Buffer.concat([...locals, centralBuf, end]);
+fs.writeFileSync(OUT, zip);
 const mb = (n) => (n / 1024 / 1024).toFixed(1);
 console.log(
-  `build-web: inlined ${keys.length} art + ${musicKeys.length} music assets -> dist/Car_Guy_Sim.html ` +
-    `(${mb(Buffer.byteLength(inlined))} MB, single file)`,
+  `build-web: ${files.length} files (index.html, ${artKeys.length} art, ` +
+    `${musicKeys.length} music) -> dist/car-guy-sim-itch.zip (${mb(zip.length)} MB)`,
 );

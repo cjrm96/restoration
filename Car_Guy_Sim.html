@@ -4632,7 +4632,7 @@
         justify-content: center;
         /* A small inline thumbnail of the painted title art rides in the head
            CSS so the splash is already the garage on the very first paint, even
-           before the full-res art (inlined for itch) decodes. Kills the plain
+           before the full-res art file decodes. Kills the plain
            dark-gradient flash on a cold web load; the JS-added splash-cine-art
            layer swaps in the sharp version seamlessly on top. */
         background-color: #1f1915;
@@ -7158,7 +7158,7 @@
   ═══════════════════════════════════════════ */
       /* ═══════════════════════════════════════════
      CUT-SCENE ART, artist-made set pieces (see art/README.md).
-     Embedded as WebP so the game stays a single file.
+     Shipped as WebP files under assets/art/.
   ═══════════════════════════════════════════ */
       /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -8239,7 +8239,7 @@
    WIRING A NEW IMAGE IN (the code side)
    ═══════════════════════════════════════════════════════════════════════════
    Art no longer lives inline. It ships as assets/art/<key>.webp and the game
-   points at those files; dev/build-web.js inlines them for the itch build.
+   points at those files; dev/build-web.js zips them up for the itch build.
    1. Save the master PNG as art/<key>.png (key = its CUTSCENE_ART id).
    2. Export the web-size asset: python3 dev/export-art.py <key>
       (writes assets/art/<key>.webp, 1920px WebP q92).
@@ -8249,8 +8249,8 @@
   
       */
       // Cutscene art lives as assets/art/<key>.webp (web-size WebP). The game
-      // runs as-is from disk pointing at those files; dev/build-web.js inlines
-      // them into data-URIs for the single-file itch/web build. Add a key here
+      // runs as-is from disk pointing at those files; dev/build-web.js packs
+      // them into the itch zip beside index.html. Add a key here
       // when you add a cutscene, and drop its assets/art/<key>.webp beside it.
       const ART_KEYS = [
         "scene-pawn-shop",
@@ -8323,9 +8323,9 @@
         "scene-radio-interview",
         "scene-handoff",
       ];
-      const CUTSCENE_ART = /*__ART_MAP__*/ Object.fromEntries(
+      const CUTSCENE_ART = Object.fromEntries(
         ART_KEYS.map((k) => [k, "assets/art/" + k + ".webp"])
-      ) /*__END_ART_MAP__*/;
+      );
 
       const WORKSPACE_LEVELS = [
         {
@@ -12788,7 +12788,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.106.1";
+      const GAME_VERSION = "0.106.2";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -33055,7 +33055,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
          Lofi tracks that drift in after the theme fades, one at a time, with
          a few minutes of quiet between songs so the shop sounds can breathe.
          Tracks ship as assets/audio/<key>.mp3 (dev/export-music.py makes them
-         from the art/ masters); dev/build-web.js inlines them for itch. */
+         from the art/ masters); dev/build-web.js packs them into the itch zip. */
       const MUSIC_KEYS = [
         "dusty-corner",
         "garage-dust-groove",
@@ -33066,9 +33066,9 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         "workshop-nightfall",
         "workshop-sunday",
       ];
-      const MUSIC_TRACKS = /*__MUSIC_MAP__*/ Object.fromEntries(
+      const MUSIC_TRACKS = Object.fromEntries(
         MUSIC_KEYS.map((k) => [k, "assets/audio/" + k + ".mp3"])
-      ) /*__END_MUSIC_MAP__*/;
+      );
       const RADIO_AFTER_THEME_MS = 120000;
       const RADIO_GAP_MIN_MS = 240000;
       const RADIO_GAP_MAX_MS = 480000;

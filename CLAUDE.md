@@ -2,9 +2,10 @@
 
 HTML5 game. All game code lives in `Car_Guy_Sim.html`; cutscene art ships as
 `assets/art/*.webp` (the game points at those files, so the source stays small
-and runs straight from disk). `dev/` holds tooling (not shipped). The
-single-file itch/web build is generated on demand by `dev/build-web.js`, which
-inlines the art back into `dist/Car_Guy_Sim.html` (gitignored).
+and runs straight from disk). `dev/` holds tooling (not shipped). Music
+ships as `assets/audio/*.mp3`. The itch/web build is generated on demand by
+`dev/build-web.js`, which zips the game and its assets into
+`dist/car-guy-sim-itch.zip` (gitignored).
 
 ## Push checklist (EVERY push, no exceptions)
 
@@ -22,8 +23,8 @@ inlines the art back into `dist/Car_Guy_Sim.html` (gitignored).
    so step 4 covers it too, but it is fast to run alone while iterating.
 4. **Run the smoke suite**: `QA_CHROMIUM=/opt/pw-browsers/chromium node dev/qa-smoke.js`
    — all checks must pass (it runs the board gate, verifies the title version
-   plate, and runs `dev/build-web.js` to confirm the itch single-file build
-   stays self-contained).
+   plate, and runs `dev/build-web.js` to confirm the itch zip carries every
+   asset the game points at).
 5. Push the feature branch; fast-forward `main` and `garage` only when the
    user says to push live.
 
@@ -39,9 +40,12 @@ by `dev/board-gate.js` (step 3).
 
 ## Shipping to itch (the web build)
 
-Run `node dev/build-web.js`; upload the generated `dist/Car_Guy_Sim.html` (a
-self-contained single file, art inlined). Never upload the source
-`Car_Guy_Sim.html` to itch on its own, its art lives in `assets/`.
+Run `node dev/build-web.js`; upload the generated `dist/car-guy-sim-itch.zip`
+and tick "This file will be played in the browser". The zip holds the source as
+`index.html` beside `assets/`, so the page stays small and art and music load
+as needed. Do not go back to a single inlined HTML: past 50 MB itch stopped
+loading it. Never upload the source `Car_Guy_Sim.html` on its own, its art and
+music live in `assets/`.
 
 ## Conventions
 

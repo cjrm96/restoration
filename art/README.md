@@ -7,8 +7,8 @@ loads these masters directly. Keep the masters untouched.
 
 To add or refresh a shipped asset: `python3 dev/export-art.py <key>` (master →
 `assets/art/<key>.webp`), then add the key to `ART_KEYS` in `Car_Guy_Sim.html`
-if it's new. `dev/build-web.js` inlines all of `assets/art/` back into the
-single-file itch build.
+if it's new. `dev/build-web.js` packs `assets/` into the itch zip
+beside the game.
 
 ## Slot map
 

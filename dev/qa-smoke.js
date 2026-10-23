@@ -3219,34 +3219,48 @@ const pass = (msg) => console.log("✓", msg);
   if (errors.length) fail("uncaught errors:\n  " + errors.join("\n  "));
   pass("zero uncaught page errors");
 
-  // ── the itch/web single-file build stays self-contained ──
-  // Source points CUTSCENE_ART at assets/art/*.webp; dev/build-web.js inlines
-  // them back into data-URIs. Guard that the built artifact needs no external
-  // files, so an itch upload of just the one HTML never ships broken art.
+  // ── the itch zip has everything the game points at ──
+  // dev/build-web.js packs the source as index.html beside assets/. Read the
+  // zip's own directory back and guard that every art key, every song and the
+  // page itself made it in, so an itch upload never ships a broken picture.
   {
     const { execFileSync } = require("child_process");
     const fs = require("fs");
     const path = require("path");
+    const zlib = require("zlib");
     try {
       execFileSync("node", [path.join(__dirname, "build-web.js")], { stdio: "pipe" });
     } catch (e) {
       fail("web build failed: " + (e.stderr ? e.stderr.toString() : e.message));
     }
-    const dist = path.join(__dirname, "..", "dist", "Car_Guy_Sim.html");
-    if (!fs.existsSync(dist)) fail("web build produced no dist/Car_Guy_Sim.html");
-    const out = fs.readFileSync(dist, "utf8");
-    const region = out.match(/\/\*__ART_MAP__\*\/([\s\S]*?)\/\*__END_ART_MAP__\*\//);
-    if (!region) fail("web build lost the art-map markers");
-    if (region[1].includes("assets/art/")) fail("web build art-map still points at external files");
-    const inlined = (region[1].match(/data:image\/webp;base64,/g) || []).length;
-    if (inlined < 60) fail("web build inlined too few assets: " + inlined);
-    pass(`web build self-contained (${inlined} assets inlined)`);
-    const mregion = out.match(/\/\*__MUSIC_MAP__\*\/([\s\S]*?)\/\*__END_MUSIC_MAP__\*\//);
-    if (!mregion) fail("web build lost the music-map markers");
-    if (mregion[1].includes("assets/audio/")) fail("web build music-map still points at external files");
-    const tracks = (mregion[1].match(/data:audio\/mpeg;base64,/g) || []).length;
-    if (tracks < 1) fail("web build inlined no music tracks");
-    pass(`web build radio self-contained (${tracks} tracks inlined)`);
+    const zipPath = path.join(__dirname, "..", "dist", "car-guy-sim-itch.zip");
+    if (!fs.existsSync(zipPath)) fail("web build produced no dist/car-guy-sim-itch.zip");
+    const zip = fs.readFileSync(zipPath);
+    const eocd = zip.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+    if (eocd < 0) fail("itch zip has no directory");
+    const entries = new Map();
+    let p = zip.readUInt32LE(eocd + 16);
+    for (let i = 0; i < zip.readUInt16LE(eocd + 10); i++) {
+      const method = zip.readUInt16LE(p + 10), csize = zip.readUInt32LE(p + 20);
+      const nlen = zip.readUInt16LE(p + 28), xlen = zip.readUInt16LE(p + 30), clen = zip.readUInt16LE(p + 32);
+      const lo = zip.readUInt32LE(p + 42);
+      const name = zip.toString("utf8", p + 46, p + 46 + nlen);
+      const ds = lo + 30 + zip.readUInt16LE(lo + 26) + zip.readUInt16LE(lo + 28);
+      entries.set(name, { method, data: zip.subarray(ds, ds + csize) });
+      p += 46 + nlen + xlen + clen;
+    }
+    const idx = entries.get("index.html");
+    if (!idx) fail("itch zip has no index.html at its root");
+    const page = (idx.method === 8 ? zlib.inflateRawSync(idx.data) : idx.data).toString("utf8");
+    if (page !== fs.readFileSync(path.join(__dirname, "..", "Car_Guy_Sim.html"), "utf8"))
+      fail("itch zip index.html is not the current source");
+    const keys = (list) => [...(page.match(new RegExp(`const ${list} = \\[([\\s\\S]*?)\\];`)) || ["", ""])[1].matchAll(/"([a-z0-9-]+)"/g)].map((m) => m[1]);
+    const art = keys("ART_KEYS"), songs = keys("MUSIC_KEYS");
+    if (art.length < 60) fail("itch zip check found too few ART_KEYS: " + art.length);
+    if (!songs.length) fail("itch zip check found no MUSIC_KEYS");
+    const lost = [...art.map((k) => `assets/art/${k}.webp`), ...songs.map((k) => `assets/audio/${k}.mp3`)].filter((f) => !entries.has(f));
+    if (lost.length) fail("itch zip is missing: " + lost.join(", "));
+    pass(`itch zip complete (index.html, ${art.length} art, ${songs.length} songs, ${(zip.length / 1048576).toFixed(1)} MB)`);
   }
 
   // ── the first playable screen at phone width, in a real narrow viewport.
