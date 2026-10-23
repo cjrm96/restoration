@@ -3489,6 +3489,15 @@ const pass = (msg) => console.log("✓", msg);
         if (!document.querySelector(".crt-page")) return "the Marketplace monitor did not render";
         if (over() > 0) bad.push(`Marketplace/${t} scrolls ${over()}px`);
       }
+      // Social: the phone screen is sized to the room, so every app on it
+      // fits and its feed scrolls inside the phone, never the tab.
+      setView("career");
+      for (const ap of ["home", "snapgram", "cartok", "motortube", "dms", "wife"]) {
+        setPhoneApp(ap); render("full");
+        if (!document.querySelector(".phone-screen")) { bad.push("the Social phone did not render"); break; }
+        if (over() > 0) bad.push(`Social/${ap} scrolls ${over()}px`);
+      }
+      setPhoneApp("home");
       setView("shows");
       let shows = 0;
       for (const wk of [4, 20]) {
@@ -3562,7 +3571,7 @@ const pass = (msg) => console.log("✓", msg);
       return bad.length ? bad.join("; ") : true;
     });
     if (lapFit !== true) fail(`laptop ${lw}x${lh}: ${lapFit}`);
-    pass(`Next Jobs, Marketplace, Compete, the tool store, Space, the Saturday map and the results fit ${lw}x${lh} without a scroll`);
+    pass(`Next Jobs, Social, Marketplace, Compete, the tool store, Space, the Saturday map and the results fit ${lw}x${lh} without a scroll`);
     await lap.close();
   }
 
