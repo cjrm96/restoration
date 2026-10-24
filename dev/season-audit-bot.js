@@ -11,8 +11,15 @@
  * Usage: QA_CHROMIUM=/opt/pw-browsers/chromium node dev/season-audit-bot.js [seed]
  * Emits JSONL week snapshots + a season summary, and fails loudly on page
  * errors or stuck states.
+ *
+ * COPY_LOG=out.json plays Season 1 only and logs every story line that
+ * reaches the screen (see dev/copy-catalog.js), touring each tab once a week
+ * the way a player glances around. Each line is scored by how many weeks it
+ * was on screen, which is what ranks the rewrite sheet.
  */
-const { chromium } = require("/home/user/restoration/node_modules/playwright");
+const { chromium } = (() => { try { return require("/home/user/restoration/node_modules/playwright"); } catch (e) { return require("playwright"); } })();
+const COPY_LOG = process.env.COPY_LOG || "";
+const LAST_SEASON = COPY_LOG ? 1 : 3;
 const GAME = "file:///home/user/restoration/Car_Guy_Sim.html";
 const SEED = Number(process.argv[2] || 1);
 
@@ -45,6 +52,29 @@ const SEED = Number(process.argv[2] || 1);
       return orig(amount, reason);
     };
   }, SEED);
+
+  // Every bit of text added to the page lands in this week's set.
+  if (COPY_LOG) await page.evaluate(() => {
+    window.__seen = new Set();
+    new MutationObserver((muts) => {
+      for (const m of muts) {
+        if (m.type === "characterData") { window.__seen.add(m.target.nodeValue || ""); continue; }
+        m.addedNodes.forEach((n) => { const t = n.textContent; if (t && t.trim()) window.__seen.add(t); });
+      }
+    }).observe(document.body, { childList: true, subtree: true, characterData: true });
+  });
+  const copyWeeks = [];
+  const tourAndCollect = () => page.evaluate(() => {
+    const keep = { view: state.view, app: state.phoneApp };
+    for (const v of ["workshop", "career", "dealership", "shows"]) {
+      setView(v); render("full");
+      if (v === "career") for (const a of ["home", "snapgram", "cartok", "motortube", "messages", "wife"]) { state.phoneApp = a; render("full"); }
+    }
+    state.phoneApp = keep.app; setView(keep.view); render("full");
+    const out = { season: state.seasonNumber || 1, week: state.week, text: [...window.__seen].join("\n") };
+    window.__seen.clear();
+    return out;
+  });
 
   const drain = async () => {
     // Bounded modal-drain, mirrors a player clicking through whatever is up.
@@ -205,11 +235,12 @@ const SEED = Number(process.argv[2] || 1);
   const weekLines = [];
   while (ticks++ < 900) {
     await drain();
-    const done = await page.evaluate(() => (window.__seasonLog.filter((l) => l.season === 3 && (l.type === "VICTORY" || l.type === "WRAP_NO_TITLE")).length > 0) || (state.seasonNumber || 1) > 3);
+    const done = await page.evaluate((last) => (window.__seasonLog.filter((l) => l.season === last && (l.type === "VICTORY" || l.type === "WRAP_NO_TITLE")).length > 0) || (state.seasonNumber || 1) > last, LAST_SEASON);
     if (done) break;
     const { acts, entered } = await weekActions();
     await page.waitForTimeout(80);
     await drain();
+    if (COPY_LOG) copyWeeks.push(await tourAndCollect());
     const snapBefore = await snapshot();
     if (entered) weekLines.push({ ...snapBefore, entered });
     await page.evaluate(() => advanceWeek("time"));
@@ -240,6 +271,17 @@ const SEED = Number(process.argv[2] || 1);
   if (!jams) console.log("none");
   console.log("=== TOTAL HEAVY BEATS ===", beats.length);
   console.log("=== ERRORS ===", errors.length ? JSON.stringify(errors.slice(0, 10)) : "none");
+  if (COPY_LOG) {
+    copyWeeks.push(await tourAndCollect());
+    const { buildCatalog, clean } = require("./copy-catalog.js");
+    const weeks = copyWeeks.filter((w) => w.season === 1).map((w) => ({ week: w.week, text: clean(w.text) }));
+    const lines = buildCatalog().map((e) => {
+      const seen = weeks.filter((w) => w.text.includes(e.probe)).map((w) => w.week);
+      return { ...e, weeksSeen: new Set(seen).size, firstWeek: seen.length ? Math.min(...seen) : null };
+    });
+    require("fs").writeFileSync(COPY_LOG, JSON.stringify({ seed: SEED, weeks: weeks.length, lines }, null, 1));
+    console.log(`=== COPY LOG === ${lines.filter((l) => l.weeksSeen).length} of ${lines.length} story lines seen in ${weeks.length} weeks -> ${COPY_LOG}`);
+  }
   await browser.close();
   process.exit(0);
 })();
