@@ -11285,24 +11285,24 @@
 
       const DIY_START_LINES = [
         "You cracked open the toolbox and committed to another night of bad lighting and stubborn bolts.",
-        "You started wrenching after hours like this job was always supposed to happen on a weekday night.",
-        "You laid the parts out on cardboard and told yourself this one would stay simple.",
+        "You started wrenching after hours like this is a part time job.",
+        "You laid all the parts out on the floor, and they slowly looked increasingly difficult to install as each part came out of the box.",
         "You fired up the garage playlist, grabbed the headlamp, and got to work.",
-        "You rolled up your sleeves and turned another normal evening into project-car nonsense.",
-        "You started the job yourself, which is either noble or just financially necessary.",
+        "You rolled up your sleeves and began another 30 minute project that will last until 4AM.",
+        "You started the job, primarily because you need to get to work in the morning.",
         "You laid down the creeper, looked up at the underside, and made peace with the next four hours.",
         "You poured a coffee, opened the manual to the wrong chapter, and got started anyway.",
-        "You parked the project on jack stands you trusted slightly more than yesterday and got under it.",
+        "You parked the project on jack stands that have an open recall. But it did hold up yesterday.",
         "You wheeled the toolbox over, told yourself this was 'just an hour,' and committed.",
         "You started this one with a clean rag and high hopes. Both will be gone within twenty minutes.",
         "You set up the work light, grabbed the wrong size socket twice, and finally got to it.",
         "You opened the parts boxes, lined them up like soldiers, and prepared to assemble in the wrong order.",
-        "You took before pictures. You will not take after pictures.",
+        "You took the before pics, but best we don't take any after pics.",
         "You ran the extension cord across the driveway and accepted that the kitchen would be cold tonight.",
-        "You got the radio dialed, the trouble light hung, and started in. Best part of the project, every time.",
-        "You opened the box, read the instructions for two seconds, and decided you'd figure it out.",
-        "You took your wedding ring off, found a clean spot of cardboard, and started turning bolts.",
-        "You lined up the new part next to the old one. They are theoretically the same. Theoretically.",
+        "You turned on the 4 hour lofi mix on motortube, pulled the worklight off the charger, and cracked your neck like you were about to enter the ring.",
+        "No real man reads intructions.",
+        "You took your wedding ring off, found a clean spot of cardboard, and started stripping bolts.",
+        "You carefuly inspect the new and old part. They look the same, but only time will tell.",
       ];
 
       const SHOP_START_LINES = [
@@ -12480,23 +12480,23 @@
       const DALE_INTRO_SCENE = {
         id: "dale_intro",
         title: "Meet Dale",
-        text: "You roll up to the only shop in town that'll take a project this rough. The bay door's open. Dale's leaning on a creeper, eating a sandwich. He looks at the truck, then at you, then back at the sandwich. 'Oh, you're the one,' he says. He doesn't say what that means.",
+        text: "You roll up to the only shop in town that'll take a project this rough. The bay door's open. Dale's leaning on a creeper, eating a sandwich. He looks at the truck, then at you, then back at the sandwich. 'Oh, you're the one,' he says. He doesn't elaborate.",
         choices: [
           {
             label: "Hand over the keys",
-            note: "Dale nodded, set the sandwich down, and started writing it up. He doesn't talk much, but you watched him crawl under the truck for ten minutes before quoting anything. That's a guy who's going to do it right.",
+            note: "Dale nodded, set the sandwich down, and started writing up your ticket. He doesn't talk much, but you watched him crawl under the truck for ten minutes before quoting the job. A guy like that is the real deal.",
             mechanicTrust: 1,
             lore: 4,
           },
           {
             label: "Ask what he charges",
-            note: "Dale grinned. 'Whatever the truck tells me it needs.' Then he gave you a written estimate for less than expected. Trust earned, slow.",
+            note: "Dale grinned and said 'These old trucks speak to me, I know exactly what she needs.' Then he hands you a hand written estimates on a yellow paper for far less than you were planning. Dale earned your respect today.",
             mechanicTrust: 2,
             lore: 5,
           },
           {
             label: "Try to negotiate already",
-            note: "Dale raised one eyebrow at you and went back to the sandwich. You paid full price and he never quite forgot it.",
+            note: "Dale gave you a side eye, then returned back to his sandwich. You ended up paying full price, and Dale now judges you.",
             mechanicTrust: 0,
             lore: 2,
           },
@@ -12797,7 +12797,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.106.6";
+      const GAME_VERSION = "0.107.0";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -14209,7 +14209,7 @@
             id: "buck-intro",
             c: "red",
             h: "@BuckStallion67",
-            t: "that truck of yours. saw it. it's rough. rough isn't nothing, plenty of guys never drag one home at all. i enter every show on the calendar, so i'll be seeing it again. bring it when it runs. - B",
+            t: "i saw your truck sitting out on the lawn. it needs work, but so do all of us. plenty of guys never have the guts to drag a project like tht home. i go to every show, so i'm sure i'll see it again. maybe next time it will run - B",
           });
         }
         if (choice.wifeDrives) {
@@ -14933,20 +14933,20 @@
           art: "scene-yard-invite",
           title: "He Wants Your Saturday",
           text:
-            "One of the crew leans in the doorway with two coffees and the specific energy of a man who has already decided what you are doing this weekend. He looks at the fresh part on your bench, then at the box it came in, then at you. 'You paid retail for that.' He is not asking. 'There is a whole row of these lying out at Pick-A-Part with the sun on them. Bring gloves, bring cash, bring a breaker bar, and we go Saturday. Costs you a tank of gas and a day. You will not pay retail again.'",
+            "One of the crew leans in the doorway with two coffees and the kind of smirk of a man who already knows how your will spend your Saturday. He looks at the brand new truck part on your work bench, then at the box it came in, then at you. 'You paid retail for that?!' Without letting you respond he says 'There is a row of trucks with a couple dozen of those at Pick-A-Part. Bring gloves, bring cash, bring a set of sockets and wrenches and I'll meet you there Saturday. It's cheap, will only cost you a tank of gas and a day. You'll never pay retail again.'",
           choices: [
             {
-              label: "Saturday it is",
+              label: "I'm in",
               lore: 6,
               note:
-                "You wrote it on the calendar in the kitchen, which makes it real. Your truck keys are on the desk on the Marketplace tab, next to the monitor. Pick them up whenever you can spare the day. A Saturday out there costs you the week, so pick one where nothing is on the lift.",
+                "It made it into your car calendar, which means it's happening. Your truck keys are on the desk infront of your computer on the Marketplace tab. Grab them and take the family out whenever things are slow.",
               noteTone: "event-good",
             },
             {
-              label: "Some other Saturday",
+              label: "Next time",
               lore: 4,
               note:
-                "He shrugged and drank both coffees. The place is not going anywhere, and neither is he. The keys are on the desk on the Marketplace tab, next to the monitor, when you want them.",
+                "He shrugged and drank both coffees. The keys are on the desk on the Marketplace tab, next to the monitor, whenever you want to take him up on the offer.",
               noteTone: "event-good",
             },
           ],
@@ -16285,7 +16285,7 @@
             ? "You priced it to leave tonight and invited chaos on purpose."
             : tone === "trade"
               ? "You opened the door to trades. That was brave, or stupid."
-              : "You hit them with a firm price and the kind of confidence this hobby rarely deserves.";
+              : "You held firm on the price, and you are one of the few in this hobby...";
         toast(
           `${item.name} is live on the Marketplace. ${toneText}`,
           "ok",
@@ -20005,7 +20005,7 @@
         maybeTriggerBirthday();
         if (missedSocialPost && !choseHome) {
           toast(
-            "You rolled into a new week without dropping any content. The algorithm forgot you for a minute.",
+            "You forgot to drop content last week, and the algo rewards consistancy...",
             "event-bad",
           );
         }
@@ -20183,7 +20183,7 @@
       const TOOL_STORAGE_BEATS = {
         mobile: {
           title: "A Box With a History",
-          text: "It came out of your Uncle Ray's shop, the rolling box that sat in the corner your whole childhood. He is done chasing projects and wanted it working again. Same dents, same faint smell of gear oil. Everything comes up off the crate floor and into real drawers now, and the jobs set up quicker for it.",
+          text: "It came out of your Uncle Ray's shop, the old rolling box that has housed a generation of tools, sitting in the corner your whole childhood. He is done tackling projects and wanted it putting in work again. It carries the same dents, same faint smell of gear oil. At the end of the day, you are just excited that everything comes up off the crate on the floor and into real drawers now. Plus it makes getting work done faster.",
         },
         cart: {
           title: "Room to Roll",
@@ -20855,7 +20855,7 @@
           state.wifePepCoffeeSeen = true;
           state.wifePepTalks = (state.wifePepTalks || 0) + 1;
           pushWifeMessage(
-            "first one's just showing up. go let them meet the truck. and take pictures or it didn't happen. we're proud of you. GO.",
+            "first one's all about showing up, and i'm proud of you for that. take some pics, anjoy, have fun. WE ARE PROUD OF YOU.",
             "wife-pep-coffee",
           );
         } else if (show.tier === "National" && !state.wifePepNationalSeen) {
@@ -21405,10 +21405,10 @@
           art: "",
           headline: "She's on jack stands. Get her running.",
           body:
-            "You're five grand in and the show calendar wakes up at the end of summer. Engine, trans, brakes, clear the checklist and she's roadworthy. Everything else finds you from there.",
+            "You're five grand in and the shows start at the begining of summer. Clear the checklist for engine, trans, brakes, to get her driving. Everything else is yours to restore or leave as original.",
           points: [
-            { text: "Wrench it yourself, cheaper, but you'll need the right tools." },
-            { text: "Or pay the shop, faster, no tools, costs real money." },
+            { text: "It's cheaper to do it yourself, but you will need the right tools to get the job done." },
+            { text: "Or pay the pros to do it faster. No need to fill your garage with tools, but you pay an arm and a leg for labor." },
           ],
         },
       ];
@@ -21448,14 +21448,14 @@
           id: "bedside_box",
           title: "The Bedside Box",
           text:
-            "Walking the truck in the last of the light, you spot it: a steel toolbox bolted to the bed side, same vintage as the truck. Locked tight. No key on the ring, none in the glovebox, none under either floor mat. Whatever's in there has been riding along for decades.",
+            "You didn't spot it at first, but the truck has an old school bedside tool box. The kind that the best dealers would upgrade for you. It's locked, and there isn't any additional key on the key ring, nothing in the glovebox, and nothing sliding around the floorboard. Whatever is rattleing around in that old toolbox has been there for decades.",
           choices: [
             {
               label: "Get the pry bar",
               lore: 4,
               grantTools: ["t1", "t14"],
               note:
-                "The lid gives with a crack. Inside, wrapped in a shop rag: a full set of made-in-USA wrenches older than you are, and a caged trouble light that still runs. Straight into the milk crate, hand tools and a work light, free.",
+                "The lid cracks up, and inside wrapped in an oil soaked shop rag is a no skip set of made in USA wrenches older than you. Ironically the oil saved them from rust, and a quick wipe down lands them in the milk crate, ready to work for another half century.",
               noteTone: "event-good",
             },
             {
@@ -21463,7 +21463,7 @@
               lore: 5,
               grantTools: ["t1", "t14"],
               note:
-                "Twenty minutes of glovebox archaeology: three washers, a church bulletin, no key. The pry bar works fine. Inside: made-in-USA wrenches older than you are and a caged trouble light that still runs. Into the milk crate, hand tools and a work light, free.",
+                "Twenty minutes of glovebox archaeology: three washers, a church bulletin, no key. The pry bar cracks her open with litle effort. And inside wrapped in an oil soaked shop rag is a no skip set of made in USA wrenches older than you. Ironically the oil saved them from rust, and a quick wipe down lands them in the milk crate, ready to work for another half century.",
               noteTone: "event-good",
             },
           ],
@@ -23192,7 +23192,7 @@
         chrome: ["pitted bumpers, dull trim", "chrome's lost its shine"],
       };
       const RO_NOTE = {
-        "Fastest path to roadworthy": "road first. she can't drive yet",
+        "Fastest path to roadworthy": "Get her driving first!",
         "Show-focused upgrade": "points for the next show",
         "Crowd pleaser": "the crowd'll see this one",
         "Best ROI": "most bang for the buck",
@@ -26069,9 +26069,9 @@ addEventListener("DOMContentLoaded",function(){
      Complements the per-season MILESTONES list.
   ═══════════════════════════════════════════ */
       const ACHIEVEMENTS = [
-        { id: "ran_when_parked", name: "Ran When Parked", desc: "Dragged home a project that hadn't moved in years.", test: () => (state.cars || []).some((c) => getOverall(c) < 25) },
+        { id: "ran_when_parked", name: "Ran When Parked", desc: "Loaded up the trailer with a ran when parked", test: () => (state.cars || []).some((c) => getOverall(c) < 25) },
         { id: "first_start", name: "First Start in Years", desc: "Cranked a dead barn find back to life.", test: () => (state.cars || []).some((c) => roadworthy(c)) },
-        { id: "shadetree", name: "Shadetree Certified", desc: "Twenty-five parts swapped with your own hands.", test: () => (state.installsDone || 0) >= 25 },
+        { id: "shadetree", name: "Shadetree Certified", desc: "Twenty-five parts swapped out follwoing videos on the internet", test: () => (state.installsDone || 0) >= 25 },
         { id: "concours", name: "Concours Clean", desc: "One system detailed to a perfect 100.", test: () => (state.cars || []).some((c) => CATS.some((k) => c[k] >= 100)) },
         { id: "coffee_regular", name: "Cars & Coffee Regular", desc: "Five Saturday mornings, five bad coffees, zero regrets.", test: () => (state.history || []).filter((h) => h.tier === "Cars & Coffee").length >= 5 },
         { id: "hardware", name: "Brought Home Hardware", desc: "Podiumed at a judged show.", test: () => (state.history || []).some((h) => h.tier !== "Cars & Coffee" && h.place <= 3) },
@@ -26234,7 +26234,7 @@ addEventListener("DOMContentLoaded",function(){
           if (h.place <= 3) return `Podium week, ${placeLabel(h.place)} at ${h.show}.`;
         }
         if (r.missedMeet)
-          return "Saturday's meet happened without you. Buck posted from the parking lot like he owned it. Your day is coming.";
+          return "Saturday's meet happened without you. Buck posted from the parking lot like he owned it.";
         if (r.followers >= 800) return "The feed found you this week.";
         if (r.money >= 2500) return "A good week at the register.";
         if (r.idle) return pickFresh(IDLE_WEEK_LINES, "idleweek");
@@ -26320,7 +26320,7 @@ addEventListener("DOMContentLoaded",function(){
       const ONBOARD_UNLOCKS = {
         1: { tab: "career", title: "Your phone is blowing up", cta: "Back to the truck",
              home: "The phone rides on the Social tab from here on, top of the screen.",
-             text: "Real restorations take real shop time from here on out. While the wrenches turn, the scene wants to see the build, post to Snapgram, CarTok, and MotorTube for cash and followers. Get big enough and sponsors come to you." },
+             text: "Jobs take time from here on out. Don't forget to keep the scene updated on your projects and restorations. Post to post to Snapgram, CarTok, and MotorTube for cash and followers. Get big enough and sponsors might just slide into your DMs." },
         2: { tab: "dealership", title: "The Marketplace is open", cta: "Back to the truck",
              home: "The listings live on the Marketplace tab from here on, top of the screen.",
              text: "She runs. Word travels fast when a dead truck comes back to life. Now the money game opens up two ways: sell take-off parts (and cheap swap-meet scores) for the spread, or list a whole build, rough or finished, and let buyers bid. Buy low, restore, sell high. Saturday scavenge trips keep the donor parts cheap." },
@@ -27791,7 +27791,7 @@ addEventListener("DOMContentLoaded",function(){
         if (next && weeks === 0) {
           return `${next.name} is on today. Top off fuel, then head to Compete when you're happy with the build.`;
         }
-        return `Roadworthy and climbing. Chase overall for ${next ? next.name : "the next show"} ${next ? deadline : ""}, or let a quiet week be a quiet week, the family will take the long way home with you.`;
+        return `Roadworthy and climbing. Chase overall for ${next ? next.name : "the next show"} ${next ? deadline : ""}, or skip a week and just enjoy the time withthe family.`;
       }
       // The pre-season side-work board: paid mechanic jobs, the off-season
       // income faucet. Only shows during the pre-season ramp.
@@ -27891,7 +27891,7 @@ addEventListener("DOMContentLoaded",function(){
         const sideCol = `${renderUpcomingBar()}${renderRestorationPanel(car)}`;
         return `<div class="grid-main${sideCol.trim() ? '' : ' solo'}${state.shopSub === "suggested" ? " next-jobs" : ""}${activeTasksForCar(car.id).length ? " busy" : ""}${activeTasksForCar(car.id).length >= 4 ? " busy-4" : ""}"><div>${gigBoardMarkup()}${heroPanel(
           "",
-          onboardStageVal() >= 3 ? "" : "Every bolt, every part, one at a time",
+          onboardStageVal() >= 3 ? "" : "Restoration",
           "",
           `${carPreview(car)}${(() => {
             if (state.shopSub === "suggested") return "";
@@ -28395,7 +28395,7 @@ addEventListener("DOMContentLoaded",function(){
               : `Entry <b>free</b>`,
         );
         foot.push(`Fuel <b>${st.fuelNeed} gal</b>`);
-        if (show.tier === "Cars & Coffee") foot.push("No judges. Free part raffle for whoever turns up.");
+        if (show.tier === "Cars & Coffee") foot.push("No judges at this event. But the club does throw in a free raffle part for whover cruises in.");
         if (bonus > 0 && show.tier !== "Cars & Coffee")
           foot.push(`<span class="sponsor">Sponsor pays <b>+$${fmt(bonus)}</b></span>`);
         if (show.axis && JUDGING_AXES[show.axis])
@@ -29990,7 +29990,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
       function renderWifeThread() {
         const thread = Array.isArray(state.wifeThread) ? state.wifeThread : [];
         if (!thread.length) {
-          return `<div class="phone-empty">Nothing from her yet. She is downstairs. You could just go and talk to her, but here we are.</div>`;
+          return `<div class="phone-empty">Nothing from the wife yet. She is in the living room and you could just go talk to her, but she was upset last time you walked by.</div>`;
         }
         let lastWeek = null;
         const rows = thread
@@ -30025,7 +30025,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         // speaks for itself. It used to swap in a line grading his texting
         // ("Not well, but you do it"), which was the game narrating him over
         // his own conversation.
-        const foot = (state.wifeRepliesSent || 0) ? "" : `<div class="imsg-foot">You never text back. You go downstairs.</div>`;
+        const foot = (state.wifeRepliesSent || 0) ? "" : `<div class="imsg-foot">Just go talk IRL</div>`;
         return `<div class="imsg">${rows}${typingRow}${replyRow}${foot}</div>`;
       }
       function renderPhoneHomeScreen() {
@@ -30313,10 +30313,10 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         "you are going to sell that thing one day and i am going to be weird about it. fair warning.",
       ];
       const WIFE_WEEK_WARM = [
-        "no reason for this message. carry on.",
-        "found a socket in the washing machine. adding it to the collection on the windowsill.",
-        "your truck smells like your grandfather's garage and i did not expect to like that as much as i do.",
-        "i told someone at work my husband restores cars and i said it like it was a fact about me too.",
+        "Thinking of you, keep it up baby",
+        "I found one of your 10mm sockets in the laundry, I'm going to throw it in the pile near the kitchen window",
+        "why does the truck sorta smell like papa's garage? I don't hate it I'm just taken back 30 years",
+        "i told my coworker Jessica that you restore old cars, and she assumed this is just as much my hobby now too lol",
       ];
       // ── Texting her back ─────────────────────────────────────────────────
       // Every other relationship in this game is something the player does.
@@ -30381,7 +30381,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           wr("he would have liked you", "your grandfather would have liked that i own a wire brush. that is the whole test, isn't it.", "i think he would have. i wish i had met him."),
           wr("say that again", "no.", "not this week."),
           wr("i love you", "there it is. that is the whole text. go back to your truck.", "i love you too. i want it to be easier than it has been."),
-          wr("you are a fact about me too", "that is the nicest thing you have said all year and you sent it with a typo. perfect.", "that is a good thing to say. i am going to keep it."),
+          wr("you are a fact about me too baby", "that is the nicest thing you have said all year and you sent it with a typo. perfect.", "that is a good thing to say. i am going to keep it."),
         ],
         "wife-show-win": [
           wr("first place", "first. i said it out loud in the kitchen to nobody. the kettle heard it.", "first. good."),
@@ -30739,8 +30739,8 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           evergreen.push(`<div class="phone-dm">
             <div class="phone-dm-avatar red">${ico("skull", "16px")}</div>
             <div class="phone-dm-body">
-              <div class="phone-dm-handle">@FollowVendor73</div>
-              <div class="phone-dm-text">"1,000 real-looking followers overnight, $200 cash. Nobody has to know." Don't tell your sponsors, they definitely check this stuff.</div>
+              <div class="phone-dm-handle">@FollowBot6767</div>
+              <div class="phone-dm-text">"1,000 bot followers overnight is only going to fool a few people, let's hope the sponsors don't look into it..."</div>
               ${button(fakeRoadworthy ? "Buy 1,000 followers · $200" : "Need a roadworthy build first", "buyFakeFollowers()", !fakeRoadworthy || state.money < 200, "", "width:100%;background:linear-gradient(180deg,#c97d70 0%,#8c4e44 100%);border-color:#d99a8f;color:#1a120a;font-weight:bold")}
             </div>
           </div>`);
@@ -30880,7 +30880,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
                <div class="sp-stickers">${
                  signed.length
                    ? signed.map((sp) => sponsorSticker(sp)).join("")
-                   : `<div class="sp-lid-empty">Bare red steel. Nobody has given you a sticker worth putting on it yet.</div>`
+                   : `<div class="sp-lid-empty">Just a shinny Craftswoman's toolbox. It would look good with some sponsor stickers...</div>`
                }</div>
              </div>
              ${signed.length ? `<div class="tiny muted sp-perks">${sponsorPerkLines().join(" · ")}</div>` : ""}`;
@@ -32150,9 +32150,9 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
       if (!state.tutorialComplete && !state.cutscene && currentCar()) {
         state.cutscene = {
           art: "scene-barn-find",
-          kicker: "Where every story starts",
+          kicker: "Where every car guy starts",
           title: "The Barn Find",
-          sub: "The listing said “ran when parked.” The tarp says otherwise. The keys are yours now, let\u2019s get her home.",
+          sub: "The listing said “ran when parked.” The chewed up wiring harness says otherwise. The pink slip is yours now, let's get her home.",
           cta: "Pull the tarp",
           // This is the scene the whole hold exists for: the player presses
           // Enter to leave the title screen and the second half of that
@@ -33177,9 +33177,9 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         if (!state.tutorialComplete && !state.cutscene) {
           playCutscene({
             art: "scene-barn-find",  // fallback if boot pre-arm didn't run
-            kicker: "Where every story starts",
+            kicker: "Where every car guy starts",
             title: "The Barn Find",
-            sub: "The listing said \u201cran when parked.\u201d The tarp says otherwise. The keys are yours now, let’s get her home.",
+            sub: "The listing said “ran when parked.” The chewed up wiring harness says otherwise. The pink slip is yours now, let's get her home.",
             cta: "Pull the tarp",
           });
         }

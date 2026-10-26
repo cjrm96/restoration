@@ -45,6 +45,7 @@ function buildCatalog() {
   const main = scripts.sort((a, b) => b[1].length - a[1].length)[0];
   const src = main[1];
   const lineBase = html.slice(0, main.index).split("\n").length; // <script> line
+  const srcBase = main.index + main[0].indexOf(src); // file offset of the script text
   const ast = acorn.parse(src, { ecmaVersion: "latest", locations: true });
 
   const out = [];
@@ -94,6 +95,10 @@ function buildCatalog() {
       key,
       line: lineBase + node.loc.start.line - 1,
       card,
+      // Where the literal sits in Car_Guy_Sim.html, quotes included, for
+      // dev/copy-apply.js to write a rewrite back in place.
+      start: srcBase + node.start,
+      end: srcBase + node.end,
       text: display,
       // The longest plain stretch, used to spot this line on screen.
       probe: fragments.filter(Boolean).sort((a, b) => b.length - a.length)[0] || "",
