@@ -6,24 +6,20 @@
     "frontendDist": "../web"
   },
   "app": {
-    "windows": [
-      {
-        "title": "Car Guy Simulator",
-        "width": 1280,
-        "height": 800,
-        "minWidth": 1024,
-        "minHeight": 640,
-        "resizable": true,
-        "center": true
-      }
-    ],
+    "windows": [],
     "security": {
       "csp": null
-    }
+    },
+    "withGlobalTauri": true
   },
   "bundle": {
     "active": true,
-    "targets": ["appimage", "deb", "nsis", "dmg"],
+    "targets": [
+      "appimage",
+      "deb",
+      "nsis",
+      "dmg"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

@@ -237,6 +237,7 @@ dependencies = [
 name = "car-guy-sim"
 version = "0.0.0"
 dependencies = [
+ "serde_json",
  "tauri",
  "tauri-build",
 ]

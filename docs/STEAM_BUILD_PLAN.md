@@ -105,6 +105,8 @@ In order, because each unblocks the next:
    *Done on Linux in 0.107.3; confirm on a real Deck.*
    This is the only real technical unknown in the whole project.
 2. **Storage abstraction + file saves.** Small, mechanical, unblocks Cloud.
+   *Done in 0.108.0: `saveStore` mirrors every save to
+   `<app data>/saves/*.json` in the desktop app; browser unchanged.*
 3. **Steam Cloud Auto-Cloud.** Configuration, not code.
 4. **Achievements bridge.** Code is trivial, icons are the schedule risk.
 5. **Controller + Deck.** See `CONTROLLER_AND_DECK_PLAN.md`. Independent of all

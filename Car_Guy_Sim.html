@@ -12797,7 +12797,82 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.107.4";
+      const GAME_VERSION = "0.108.0";
+
+      // Every save read and write goes through saveStore. In a browser it is
+      // plain localStorage, exactly as before. In the desktop app (desktop/,
+      // Tauri) localStorage stays the working copy and every write is also
+      // mirrored to a real file on disk, which Steam Cloud can sync and an OS
+      // cache wipe can't touch. The app hands those files to the page at
+      // launch as window.__DESKTOP_SAVES; on the first page load of a launch
+      // they win over localStorage. Reloads within a launch skip that step,
+      // because localStorage is already newer than what the app read at
+      // startup.
+      const SAVE_SUFFIXES = ["", "_bak1", "_bak2", "_bak3", "_preimport"];
+      const saveStore = (() => {
+        const ls = {
+          get: (k) => localStorage.getItem(k),
+          set: (k, v) => localStorage.setItem(k, v),
+          remove: (k) => localStorage.removeItem(k),
+          flush: () => Promise.resolve(),
+          desktop: false,
+        };
+        const files = window.__DESKTOP_SAVES;
+        const invoke = window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke;
+        if (!files || typeof invoke !== "function") return ls;
+
+        // Writes run one at a time, in order, so a remove can't land after
+        // the write that follows it, and quitting can wait on the last one.
+        let warned = false;
+        let queue = Promise.resolve();
+        const send = (cmd, args) => {
+          queue = queue
+            .then(() => invoke(cmd, args))
+            .catch((e) => {
+              console.warn("Save file " + cmd + " failed", e);
+              if (warned) return;
+              warned = true;
+              try {
+                toast("Couldn't write the save file to disk. Export your save from Settings to be safe.", "err");
+              } catch (err) {}
+            });
+          return queue;
+        };
+        const keys = SAVE_SUFFIXES.map((s) => SAVE_KEY + s);
+        let firstLoad = true;
+        try {
+          firstLoad = !sessionStorage.getItem("__desktopSavesLoaded");
+          sessionStorage.setItem("__desktopSavesLoaded", "1");
+        } catch (e) {}
+        if (firstLoad) {
+          if (typeof files[SAVE_KEY] === "string") {
+            // Files on disk are the truth for this launch.
+            keys.forEach((k) => {
+              if (typeof files[k] === "string") localStorage.setItem(k, files[k]);
+              else localStorage.removeItem(k);
+            });
+          } else if (localStorage.getItem(SAVE_KEY)) {
+            // First launch since saves moved to files: carry the career over.
+            keys.forEach((k) => {
+              const v = localStorage.getItem(k);
+              if (v) send("save_write", { key: k, data: v });
+            });
+          }
+        }
+        return {
+          get: ls.get,
+          set: (k, v) => {
+            localStorage.setItem(k, v);
+            send("save_write", { key: k, data: v });
+          },
+          remove: (k) => {
+            localStorage.removeItem(k);
+            send("save_remove", { key: k });
+          },
+          flush: () => queue,
+          desktop: true,
+        };
+      })();
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -17778,11 +17853,11 @@
         if (now - lastBackupAt < 5 * 60 * 1000) return;
         lastBackupAt = now;
         try {
-          const b1 = localStorage.getItem(SAVE_KEY + "_bak1");
-          const b2 = localStorage.getItem(SAVE_KEY + "_bak2");
-          if (b2) localStorage.setItem(SAVE_KEY + "_bak3", b2);
-          if (b1) localStorage.setItem(SAVE_KEY + "_bak2", b1);
-          localStorage.setItem(SAVE_KEY + "_bak1", payload);
+          const b1 = saveStore.get(SAVE_KEY + "_bak1");
+          const b2 = saveStore.get(SAVE_KEY + "_bak2");
+          if (b2) saveStore.set(SAVE_KEY + "_bak3", b2);
+          if (b1) saveStore.set(SAVE_KEY + "_bak2", b1);
+          saveStore.set(SAVE_KEY + "_bak1", payload);
         } catch (e) {}
       }
       function saveGame(force = false) {
@@ -17793,7 +17868,7 @@
             state: serializeState(),
           });
           if (!force && payload === lastSavedPayload) return false;
-          localStorage.setItem(SAVE_KEY, payload);
+          saveStore.set(SAVE_KEY, payload);
           rotateSaveBackups(payload);
           lastSavedPayload = payload;
           flashSaved();
@@ -17815,7 +17890,7 @@
   ═══════════════════════════════════════════ */
       function exportSave() {
         saveGame(true);
-        const raw = localStorage.getItem(SAVE_KEY);
+        const raw = saveStore.get(SAVE_KEY);
         if (!raw) return toast("Nothing to export yet.", "err");
         const blob = new Blob([raw], { type: "application/json" });
         const a = document.createElement("a");
@@ -17829,7 +17904,7 @@
       }
       function copySaveToClipboard() {
         saveGame(true);
-        const raw = localStorage.getItem(SAVE_KEY);
+        const raw = saveStore.get(SAVE_KEY);
         if (!raw) return toast("Nothing to copy yet.", "err");
         const done = () => toast("Save copied, paste it somewhere safe (notes, email to yourself).", "event-good");
         if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -17858,9 +17933,9 @@
         }
         if (!confirm("Import this save? Your current garage will be replaced. (A backup of the current save is kept.)")) return;
         try {
-          const current = localStorage.getItem(SAVE_KEY);
-          if (current) localStorage.setItem(SAVE_KEY + "_preimport", current);
-          localStorage.setItem(SAVE_KEY, text);
+          const current = saveStore.get(SAVE_KEY);
+          if (current) saveStore.set(SAVE_KEY + "_preimport", current);
+          saveStore.set(SAVE_KEY, text);
           location.reload();
         } catch (e) {
           toast("Import failed to write, storage may be full.", "err");
@@ -17886,7 +17961,7 @@
 
       function loadGame() {
         try {
-          let raw = localStorage.getItem(SAVE_KEY);
+          let raw = saveStore.get(SAVE_KEY);
           if (!raw) return false;
           let parsed = null;
           try {
@@ -17897,13 +17972,13 @@
           if (!parsed || !parsed.state) {
             // Main save is corrupt, fall back to the newest good backup.
             for (const k of ["_bak1", "_bak2", "_bak3"]) {
-              const bak = localStorage.getItem(SAVE_KEY + k);
+              const bak = saveStore.get(SAVE_KEY + k);
               if (!bak) continue;
               try {
                 const p = JSON.parse(bak);
                 if (p && p.state) {
                   parsed = p;
-                  localStorage.setItem(SAVE_KEY, bak);
+                  saveStore.set(SAVE_KEY, bak);
                   setTimeout(() => {
                     try { toast("Your save file was damaged, restored from an automatic backup.", "event-good"); } catch (e) {}
                   }, 1600);
@@ -19268,7 +19343,7 @@
 
       function restartGame() {
         Object.assign(state, makeDefaultState());
-        localStorage.removeItem(SAVE_KEY);
+        saveStore.remove(SAVE_KEY);
         requestRender("full");
       }
 
@@ -25768,7 +25843,7 @@ addEventListener("DOMContentLoaded",function(){
           // the old game it would just re-write what we just deleted.
           Object.assign(state, makeDefaultState());
           try {
-            localStorage.removeItem(SAVE_KEY);
+            saveStore.remove(SAVE_KEY);
           } catch (e) {}
           location.reload();
         } catch (err) {
@@ -32321,8 +32396,8 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         // Block the beforeunload auto-save, it would re-write the save
         // from memory during the reload and resurrect the wiped game.
         window.__wipeInProgress = true;
-        localStorage.removeItem(SAVE_KEY);
-        ["_bak1", "_bak2", "_bak3"].forEach((k) => localStorage.removeItem(SAVE_KEY + k));
+        saveStore.remove(SAVE_KEY);
+        ["_bak1", "_bak2", "_bak3"].forEach((k) => saveStore.remove(SAVE_KEY + k));
         location.reload();
       }
       // Title-screen helpers: Settings reuses the in-game settings modal
@@ -32360,7 +32435,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         // AAA-style vertical menu: primary play action on top, then the
         // usual title-screen fare. Arrow keys + Enter drive it too.
         const car = currentCar();
-        const hasSave = !!(localStorage.getItem(SAVE_KEY) && state.tutorialComplete && car);
+        const hasSave = !!(saveStore.get(SAVE_KEY) && state.tutorialComplete && car);
         // The title screen remembers your career: a trophy on Continue once
         // you've retired a National-winning build, and a legacy line in the
         // corner. A save that's been around knows who you are.

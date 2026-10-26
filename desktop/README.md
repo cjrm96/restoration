@@ -63,6 +63,28 @@ To build without pushing, click **Run workflow** on the Desktop build page.
 `npm run dev` opens the app without packaging it, which is faster when you
 just want to look.
 
+## Where saves live
+
+The game saves the same way in both builds, and the desktop app also copies
+every save to a real file:
+
+| | Folder |
+| --- | --- |
+| Windows | `%APPDATA%\com.winnxt.carguysim\saves\` |
+| Linux / Steam Deck | `~/.local/share/com.winnxt.carguysim/saves/` |
+| Mac | `~/Library/Application Support/com.winnxt.carguysim/saves/` |
+
+- The main save plus the game's 3 automatic backups, one `.json` file each.
+- On launch the files win, so the save survives the app's browser data being
+  wiped.
+- The first launch after this update copies an existing in-app save into
+  files, so nobody loses a career.
+- Closing the window saves one last time before the app exits.
+- This folder is what Steam Cloud will sync (Auto-Cloud, set up in Steamworks).
+
+The code is `saveStore` in `Car_Guy_Sim.html` and the save commands in
+`src-tauri/src/main.rs`. In a browser, `saveStore` is plain localStorage.
+
 ## What has been tested
 
 Tested on Linux with WebKitGTK 2.52, the same engine family the Steam Deck
@@ -72,6 +94,8 @@ uses:
 - Art, the handwriting font, and music (MP3) all load and play
 - Mouse clicks and the Enter key work
 - A save survives closing and reopening the app
+- Saves: an old in-app save carries over to files, closing writes a final
+  save, and the save file wins after the app's browser data is wiped
 
 Not yet tested: a real Steam Deck, Windows, Mac.
 
@@ -81,5 +105,4 @@ Not yet tested: a real Steam Deck, Windows, Mac.
   `npx tauri icon <1024px square png>`. Swap in a proper one the same way.
 - **App id is locked.** `com.winnxt.carguysim` in `tauri.conf.json` decides
   where saves live. Never change it after release or players lose their saves.
-- **Steam hookup** (achievements, Cloud saves), saves as real files, controller
-  support. See `docs/STEAM_BUILD_PLAN.md`.
+- **Steam hookup** (achievements, Cloud saves) and controller support. See `docs/STEAM_BUILD_PLAN.md`.

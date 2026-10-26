@@ -53,7 +53,9 @@ music live in `assets/`.
 assets into `desktop/web/` (gitignored) and reads `GAME_VERSION`; it never edits
 the game, so the itch build is unaffected. Build with `cd desktop && npm run
 build`. Any desktop-only behavior must be gated on detecting the Tauri runtime
-so the browser build keeps working unchanged. See `desktop/README.md`.
+so the browser build keeps working unchanged. Save reads and writes go through
+`saveStore` (never `localStorage` directly with `SAVE_KEY`); in the desktop app
+it mirrors every save to a file. See `desktop/README.md`.
 
 ## Conventions
 
