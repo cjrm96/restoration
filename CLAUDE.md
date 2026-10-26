@@ -47,6 +47,14 @@ as needed. Do not go back to a single inlined HTML: past 50 MB itch stopped
 loading it. Never upload the source `Car_Guy_Sim.html` on its own, its art and
 music live in `assets/`.
 
+## The desktop app (Steam)
+
+`desktop/` wraps the game in Tauri. `desktop/stage.js` copies the game and its
+assets into `desktop/web/` (gitignored) and reads `GAME_VERSION`; it never edits
+the game, so the itch build is unaffected. Build with `cd desktop && npm run
+build`. Any desktop-only behavior must be gated on detecting the Tauri runtime
+so the browser build keeps working unchanged. See `desktop/README.md`.
+
 ## Conventions
 
 - Develop on the designated feature branch; `main` and `garage` are

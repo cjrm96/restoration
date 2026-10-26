@@ -1,0 +1,12 @@
+{
+  "name": "car-guy-sim-desktop",
+  "private": true,
+  "scripts": {
+    "stage": "node stage.js",
+    "dev": "node stage.js && tauri dev --config version.json",
+    "build": "node stage.js && tauri build --config version.json"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.2"
+  }
+}

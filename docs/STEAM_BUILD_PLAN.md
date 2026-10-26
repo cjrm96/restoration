@@ -23,7 +23,11 @@ enough that Cloud sync is trivial.
 
 ## 1. Pick the wrapper
 
-**Recommendation: Tauri.**
+**Recommendation: Tauri.** **Status, 0.107.3: spike passed on Linux.** The app
+lives in `desktop/` (see its README). WebKitGTK 2.52 ran the game with no
+script errors; art, fonts and MP3 music load and play; saves survive a restart.
+The Linux AppImage bundles WebKitGTK and GStreamer (`bundleMediaFramework`),
+197 MB. Still untested on a real Deck, Windows and Mac.
 
 | | Tauri | Electron | Steam's own CEF |
 | --- | --- | --- | --- |
@@ -98,6 +102,7 @@ art are the strongest hero candidates.
 In order, because each unblocks the next:
 
 1. **Wrapper spike.** Tauri + WebKitGTK, confirm Web Audio and the render loop.
+   *Done on Linux in 0.107.3; confirm on a real Deck.*
    This is the only real technical unknown in the whole project.
 2. **Storage abstraction + file saves.** Small, mechanical, unblocks Cloud.
 3. **Steam Cloud Auto-Cloud.** Configuration, not code.
