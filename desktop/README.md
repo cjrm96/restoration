@@ -43,13 +43,27 @@ and builds the app for the computer you are on:
 | Windows | `.exe` installer | `src-tauri/target/release/bundle/nsis/` |
 | Mac | `.dmg` | `src-tauri/target/release/bundle/dmg/` |
 
-Each computer only builds its own version. To build all three from one place,
-set up GitHub Actions later.
+Each computer only builds its own version.
+
+### The easy way: let GitHub build it
+
+You don't need any of the setup above to get a Windows build. Every push that
+changes the game or this folder builds Windows and Linux on GitHub's machines:
+
+1. Open the repo on GitHub, click **Actions**, then **Desktop build**.
+2. Click the newest run with a green check.
+3. Scroll to **Artifacts** and download `car-guy-sim-windows`.
+4. Unzip it and double-click `Car Guy Simulator.exe`. No install needed.
+
+The zip also has a `..._x64-setup.exe` installer. Steam doesn't use it (Steam
+installs the game itself), but it's handy for sending to a tester.
+
+To build without pushing, click **Run workflow** on the Desktop build page.
 
 `npm run dev` opens the app without packaging it, which is faster when you
 just want to look.
 
-## What has been tested (0.107.3)
+## What has been tested
 
 Tested on Linux with WebKitGTK 2.52, the same engine family the Steam Deck
 uses:
@@ -65,8 +79,7 @@ Not yet tested: a real Steam Deck, Windows, Mac.
 
 - **Real icon.** `src-tauri/icons/` is a crop of the title art, made with
   `npx tauri icon <1024px square png>`. Swap in a proper one the same way.
-- **App id.** `com.winnxt.carguysim` in `tauri.conf.json`. Change it before
-  the first public release. It decides where saves live, so changing it later
-  orphans everyone's saves.
+- **App id is locked.** `com.winnxt.carguysim` in `tauri.conf.json` decides
+  where saves live. Never change it after release or players lose their saves.
 - **Steam hookup** (achievements, Cloud saves), saves as real files, controller
   support. See `docs/STEAM_BUILD_PLAN.md`.
