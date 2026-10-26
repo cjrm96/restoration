@@ -11284,21 +11284,21 @@
       ];
 
       const DIY_START_LINES = [
-        "You cracked open the toolbox and committed to another night of bad lighting and stubborn bolts.",
+        "You opened the toolbox and got ready for another night of bad lighting and rusted bolts.",
         "You started wrenching after hours like this is a part time job.",
         "You laid all the parts out on the floor, and they slowly looked increasingly difficult to install as each part came out of the box.",
-        "You fired up the garage playlist, grabbed the headlamp, and got to work.",
+        "You put on the garage playlist, strapped on the headlamp, and got to work.",
         "You rolled up your sleeves and began another 30 minute project that will last until 4AM.",
         "You started the job, primarily because you need to get to work in the morning.",
-        "You laid down the creeper, looked up at the underside, and made peace with the next four hours.",
-        "You poured a coffee, opened the manual to the wrong chapter, and got started anyway.",
+        "You slid under on the creeper and looked up at 60 years of road grime. This is gonna take a while.",
+        "You poured a coffee, opened up the Chilton's manual, and got started.",
         "You parked the project on jack stands that have an open recall. But it did hold up yesterday.",
-        "You wheeled the toolbox over, told yourself this was 'just an hour,' and committed.",
-        "You started this one with a clean rag and high hopes. Both will be gone within twenty minutes.",
-        "You set up the work light, grabbed the wrong size socket twice, and finally got to it.",
-        "You opened the parts boxes, lined them up like soldiers, and prepared to assemble in the wrong order.",
+        "You rolled the toolbox over and told yourself this was a one hour job. It's never a one hour job.",
+        "You grabbed a fresh shop rag and started in. It wont be clean for long.",
+        "You clamped the work light to the hood, grabbed a 1/2 when you needed a 9/16, twice, and finally got started.",
+        "You lined up all the new parts on the bench in order. They won't go back in that order.",
         "You took the before pics, but best we don't take any after pics.",
-        "You ran the extension cord across the driveway and accepted that the kitchen would be cold tonight.",
+        "You ran the extension cord out the kitchen door to the driveway. The wife is not thrilled about the door being cracked open all night.",
         "You turned on the 4 hour lofi mix on motortube, pulled the worklight off the charger, and cracked your neck like you were about to enter the ring.",
         "No real man reads intructions.",
         "You took your wedding ring off, found a clean spot of cardboard, and started stripping bolts.",
@@ -12797,7 +12797,7 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.107.0";
+      const GAME_VERSION = "0.107.1";
 
       const getEl = (id) => document.getElementById(id);
       // Which nav tab is currently mid-arrival, and the timers driving it.
@@ -14669,7 +14669,7 @@
           n === 1
             ? {
                 title: "The Wrong Wrench",
-                text: "The oldest wanders into the garage in pajamas and watches for ten whole minutes without a word. Then they pick a wrench off the crate, both hands, and hold it up to you. It's the wrong one. You use it anyway. On nothing. For a good long while.",
+                text: "Your oldest wanders into the garage in pajamas and just watches you for a while. Then they grab a wrench out of the crate with both hands and hold it up for you. It's the wrong size. You use it anyway.",
               }
             : n === 2
               ? {
@@ -14688,7 +14688,7 @@
           id: "kid_wrench_s" + n,
           title: beat.title,
           text: beat.text,
-          choices: [{ label: n >= 3 ? "Nod. Keep working." : "Take the wrench", lore: 6 }],
+          choices: [{ label: n >= 3 ? "Keep working" : "Take the wrench", lore: 6 }],
         });
       }
 
@@ -15576,15 +15576,15 @@
         } else if (buckJustWon && Math.random() < 0.7) {
           msg = pickFresh(BUCK_POSTS_AFTER_WIN, "buckPostWin");
         } else {
-          const buckPaintLine = `Someone at Cars & Coffee says Buck's paint finally stopped looking terrible. Unfortunately.`;
+          const buckPaintLine = `Someone at Cars & Coffee says Buck's new paint actually looks good. Dang it.`;
           const beats = [
-            `Buck posted a smug photo from his garage. His Stallion looks a little cleaner this week.`,
-            `Word at the parts counter is Buck just finished another late-night wrench session.`,
-            `Buck is telling people he already has the Regional field figured out.`,
+            `Buck posted a pic from his shop. The Stallion's looking cleaner this week.`,
+            `Guy at the parts counter says Buck was in his garage till 2am again.`,
+            `Buck is telling everyone at the parts counter he's already got Regionals in the bag.`,
             ...(state.seenBuckPaintLine ? [] : [buckPaintLine]),
-            `Buck told the whole coffee line your build sheet reads like a cry for help.`,
+            `Buck told the whole Cars & Coffee line your build list is a mess.`,
             `Rumor says Buck bought fresh white-letter tires and now will not stop talking about stance.`,
-            `Buck says he is not worried about your truck yet. The yet part is doing a lot of work.`,
+            `Buck says he isn't worried about your truck, but he's been asking around about it.`,
             pickFresh(BUCK_SOCIAL_POSTS, "buckSocial"),
           ];
           msg = beats[Math.floor(Math.random() * beats.length)];
@@ -18408,25 +18408,25 @@
         ) {
           queueScene({
             title: "While I'm In Here...",
-            text: `You opened up ${part.name.toLowerCase()} and immediately found one more thing that technically should be handled while everything is apart.`,
+            text: `You tore into ${part.name.toLowerCase()} and found something else that's worn out. Might as well fix it while it's all apart.`,
             choices: [
               {
-                label: "Do it right",
+                label: "Fix it now",
                 money: -60,
                 lore: 6,
                 statBoost: { cat: part.category, amt: 3 },
-                note: "It got more expensive, but the job came out better.",
+                note: "Cost you a little more, but it's done right and you wont have to go back in there.",
               },
               {
-                label: "Button it up and move on",
+                label: "Put it back together",
                 lore: 3,
-                note: "You chose peace, or denial. Hard to say.",
+                note: "You bolted it back up. It'll hold for now... probably.",
               },
               {
-                label: "Pretend you never saw it",
+                label: "Act like you didn't see it",
                 pendingPenalty: { cat: part.category, amt: 2 },
                 lore: 5,
-                note: "Future You just got a new problem to inherit.",
+                note: "Thats a problem for future you.",
               },
             ],
           });
@@ -18936,22 +18936,22 @@
         const model = `${car.year} ${car.make} ${car.model}`;
         queueScene({
           id: "spouse_saturday",
-          title: "It's Saturday.",
-          text: `The lawnmower died a week ago and the gate still drags. Meanwhile the ${model} engine block you ordered just landed on the porch, still warm from the delivery truck. One Saturday. Two very different to-do lists, and both of them are yours.`,
+          title: "Honey-Do List",
+          text: `The lawnmower quit last week and the back gate still drags in the dirt. Then the delivery guy drops the ${model} engine block on the porch. You've got one Saturday and two lists, and the wife knows which one she's hoping you pick.`,
           choices: [
             {
-              label: "Fix the lawnmower",
+              label: "Knock out the chores",
               lore: 5,
               noteTone: "event-good",
-              note: "You mowed, edged, and finally fixed the gate. The block sat in its box calling your name the whole time, but the house runs right, and Saturday felt like an actual Saturday.",
+              note: "You mowed, edged, and got the gate swinging right again. The block sat in its crate all day, but the wife brought you a cold one on the porch and that counted for something.",
             },
             {
-              label: "Install the block",
+              label: "Drop in the block",
               statBoost: { cat: "engine", amt: 7 },
               lore: 6,
               noteTone: "event-bad",
-              buzz: "Local man picked the engine block over the lawn. The grass is now taller than the fence.",
-              note: "Six hours later it's in and it sounds MEAN. The lawn's a jungle, dinner went cold, and you noticed neither. Worth it? Ask the lawn.",
+              buzz: "Neighbors report one lawn on the west side hasn't been mowed in two weeks. The garage door has been open the whole time.",
+              note: "Six hours later the block is in and it sounds MEAN. The grass is up to your ankles and dinner went cold, but you didn't notice either one.",
             },
           ],
         });
@@ -19791,7 +19791,7 @@
           if (Math.random() < 0.05) {
             state.money += 120;
             recordMoneyChange(120, "Grocery money in the toolbox");
-            toast(`Found $120 in the toolbox with a note: "for the loud thing the truck needs." Keep her.`, "event-good");
+            toast(`Found $120 in the toolbox with a note from the wife: "for whatever the loud thing is." She's a keeper.`, "event-good");
           }
         }
         // The world moves without you: if a Cars & Coffee ran this week
@@ -20230,7 +20230,7 @@
             emoji: beat.emoji || "",
             title: beat.title,
             text: beat.text || beat.sub,
-            choices: [{ label: beat.cta || "Load it in", lore: 2 }],
+            choices: [{ label: beat.cta || "Load it up", lore: 2 }],
           });
         } else {
           toast(`${next.name} rolled in. Restorations will finish faster now.`, "ok");
@@ -20515,7 +20515,7 @@
           cta: "Wake her up",
         });
         pushWifeMessage(
-          "Okay, your phone buzzed forty times before I even had coffee. Are we famous now? Do famous people still take the trash out? (Congrats, weirdo. I'm proud of you.)",
+          "ok your phone has been going off all morning. are we famous now?? you still have to take the trash out lol. so proud of you babe",
           "wife-viral",
         );
       }
@@ -21129,9 +21129,9 @@
         const arrivalLine =
           (eventFlavor && eventFlavor.arrival) ||
           (show.tier === "Cars & Coffee"
-            ? "You rolled in early, parked crooked, and immediately started pretending the idle sounded intentional."
+            ? "You showed up early, parked a little crooked, and kept the hood shut so nobody would ask about the idle."
             : show.tier === "Local"
-              ? "Main Street is closed off, sawhorses up, somebody's already plugged in their boom box. Local crowd's already gathering."
+              ? "Main Street is blocked off with sawhorses and someone already has music going. The local crowd is starting to show up."
               : show.tier === "Regional"
                 ? "You can feel the room tighten up now. Fewer jokes, more measuring tape energy."
                 : "This is the big stage now. Every panel gap feels like public information.");
@@ -26070,7 +26070,7 @@ addEventListener("DOMContentLoaded",function(){
   ═══════════════════════════════════════════ */
       const ACHIEVEMENTS = [
         { id: "ran_when_parked", name: "Ran When Parked", desc: "Loaded up the trailer with a ran when parked", test: () => (state.cars || []).some((c) => getOverall(c) < 25) },
-        { id: "first_start", name: "First Start in Years", desc: "Cranked a dead barn find back to life.", test: () => (state.cars || []).some((c) => roadworthy(c)) },
+        { id: "first_start", name: "First Start in Years", desc: "Got a barn find to fire up again", test: () => (state.cars || []).some((c) => roadworthy(c)) },
         { id: "shadetree", name: "Shadetree Certified", desc: "Twenty-five parts swapped out follwoing videos on the internet", test: () => (state.installsDone || 0) >= 25 },
         { id: "concours", name: "Concours Clean", desc: "One system detailed to a perfect 100.", test: () => (state.cars || []).some((c) => CATS.some((k) => c[k] >= 100)) },
         { id: "coffee_regular", name: "Cars & Coffee Regular", desc: "Five Saturday mornings, five bad coffees, zero regrets.", test: () => (state.history || []).filter((h) => h.tier === "Cars & Coffee").length >= 5 },
@@ -30724,7 +30724,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
             <div class="phone-dm-avatar green">${ico("shake", "16px")}</div>
             <div class="phone-dm-body">
               <div class="phone-dm-handle">@scene_creator</div>
-              <div class="phone-dm-text">Want to do a collab build video? Big follower bump, one-time deal.</div>
+              <div class="phone-dm-text">yo been following the build. want to film a collab video at your place? could get you a bunch of new followers, one time thing</div>
               ${button(`Do a Collab · +${fmtF(reward)} followers`, "doCollab()", collabAlready, "", "width:100%;background:linear-gradient(180deg,#93c884 0%,#5d8b4f 100%);border-color:#a7d998;color:#11180d")}
             </div>
           </div>`,
@@ -31905,7 +31905,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         if ((state.history || []).some((x) => x.tier === "Regional" && x.place <= 3))
           news("rx-fairground2", "A packed Regional is the best argument the fairground has got. The county counts parking lots too.");
         // The town, named and never explained.
-        radio("rx-town", "DANNY", "Sixty-eight and clear in Palomar Junction, and every garage door on the west side is up. You can hear it from here.");
+        radio("rx-town", "DANNY", "68 and sunny in Palomar Junction today. Perfect garage weather folks, get those doors open.");
         // A following big enough that the scene has a main character.
         if (state.followers >= 10000)
           news("rx-famous", `A local build account just cleared ${fmtF(state.followers)} followers. The scene officially has a main character.`);
