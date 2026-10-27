@@ -7,7 +7,9 @@ edition = "2021"
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+# Default features minus "compression": the art and music are already
+# compressed, so brotli would only slow builds and asset loads.
+tauri = { version = "2", default-features = false, features = ["wry", "common-controls-v6", "dynamic-acl", "x11", "dbus"] }
 serde_json = "1"
 
 [profile.release]

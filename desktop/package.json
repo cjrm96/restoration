@@ -3,8 +3,8 @@
   "private": true,
   "scripts": {
     "stage": "node stage.js",
-    "dev": "node stage.js && tauri dev --config version.json",
-    "build": "node stage.js && tauri build --config version.json"
+    "dev": "npm run stage && tauri dev --config version.json",
+    "build": "npm run stage && tauri build --config version.json"
   },
   "devDependencies": {
     "@tauri-apps/cli": "2.12.2"

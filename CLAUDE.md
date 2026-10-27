@@ -51,7 +51,8 @@ music live in `assets/`.
 
 `desktop/` wraps the game in Tauri. `desktop/stage.js` copies the game and its
 assets into `desktop/web/` (gitignored) and reads `GAME_VERSION`; it never edits
-the game, so the itch build is unaffected. Build with `cd desktop && npm run
+the game, so the itch build is unaffected. Both builds take their file list from
+`dev/game-files.js`, so a new asset folder goes there once. Build with `cd desktop && npm run
 build`. Any desktop-only behavior must be gated on detecting the Tauri runtime
 so the browser build keeps working unchanged. Save reads and writes go through
 `saveStore` (never `localStorage` directly with `SAVE_KEY`); in the desktop app

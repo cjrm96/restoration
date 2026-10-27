@@ -3,64 +3,71 @@
 //
 // Read-only on the game: Car_Guy_Sim.html and assets/ are copied, never
 // edited, so the itch build is untouched. The source becomes index.html beside
-// the same assets/ files build-web.js puts in the itch zip, read from the same
-// ART_KEYS / MUSIC_KEYS lists so the two builds never drift.
+// the same files the itch zip carries (dev/game-files.js lists them for both).
 //
-// Also writes web/version.json from GAME_VERSION, which the Tauri build reads
-// so the desktop app's version stamps from the one source of truth.
+// Unchanged files are left alone (same size and time), so Tauri doesn't
+// re-embed every asset on each local build.
+//
+// Also writes desktop/version.json from GAME_VERSION, which the Tauri build
+// reads (see package.json) so the app's version stamps from the one source of
+// truth.
 //
 //   node desktop/stage.js
 //
 const fs = require("fs");
 const path = require("path");
+const gameFiles = require("../dev/game-files");
 
-const ROOT = path.join(__dirname, "..");
-const SRC = path.join(ROOT, "Car_Guy_Sim.html");
 const OUT = path.join(__dirname, "web");
 
-const html = fs.readFileSync(SRC, "utf8");
+let game;
+try {
+  game = gameFiles();
+} catch (e) {
+  console.error("stage: " + e.message);
+  process.exit(1);
+}
+if (game.missing.length) {
+  console.error("stage: missing assets:\n  " + game.missing.join("\n  "));
+  process.exit(1);
+}
 
-function keysFrom(listName) {
-  const m = html.match(new RegExp(`const ${listName} = \\[([\\s\\S]*?)\\];`));
-  if (!m) {
-    console.error(`stage: could not find ${listName} in the source.`);
-    process.exit(1);
+// [destination relative to web/, source path]
+const copies = [
+  ["index.html", game.src],
+  ...game.files.map((rel) => [rel, path.join(game.root, rel)]),
+];
+
+let copied = 0;
+for (const [rel, src] of copies) {
+  const dest = path.join(OUT, rel);
+  const s = fs.statSync(src);
+  const d = fs.existsSync(dest) && fs.statSync(dest);
+  if (d && d.size === s.size && Math.floor(d.mtimeMs) === Math.floor(s.mtimeMs)) continue;
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  fs.copyFileSync(src, dest);
+  fs.utimesSync(dest, s.atimeMs / 1000, s.mtimeMs / 1000);
+  copied++;
+}
+
+// Drop anything the game no longer ships.
+const keep = new Set(copies.map(([rel]) => path.join(OUT, rel)));
+(function prune(dir) {
+  if (!fs.existsSync(dir)) return;
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) prune(p);
+    else if (!keep.has(p)) fs.rmSync(p);
   }
-  return [...m[1].matchAll(/"([a-z0-9-]+)"/g)].map((x) => x[1]);
-}
-const ver = html.match(/const GAME_VERSION = "(\d+\.\d+\.\d+)"/);
-if (!ver) {
-  console.error("stage: could not find GAME_VERSION in the source.");
-  process.exit(1);
-}
+})(OUT);
 
-const files = [];
-const missing = [];
-function add(rel) {
-  if (!fs.existsSync(path.join(ROOT, rel))) return missing.push(rel);
-  files.push(rel);
+const versionFile = path.join(__dirname, "version.json");
+const versionJson = JSON.stringify({ version: game.version }) + "\n";
+if (!fs.existsSync(versionFile) || fs.readFileSync(versionFile, "utf8") !== versionJson) {
+  fs.writeFileSync(versionFile, versionJson);
 }
-const artKeys = keysFrom("ART_KEYS");
-const musicKeys = keysFrom("MUSIC_KEYS");
-artKeys.forEach((k) => add(`assets/art/${k}.webp`));
-musicKeys.forEach((k) => add(`assets/audio/${k}.mp3`));
-for (const f of fs.readdirSync(path.join(ROOT, "assets", "fonts"))) add(`assets/fonts/${f}`);
-if (missing.length) {
-  console.error("stage: missing assets:\n  " + missing.join("\n  "));
-  process.exit(1);
-}
-
-fs.rmSync(OUT, { recursive: true, force: true });
-fs.mkdirSync(OUT, { recursive: true });
-fs.copyFileSync(SRC, path.join(OUT, "index.html"));
-for (const rel of files) {
-  fs.mkdirSync(path.dirname(path.join(OUT, rel)), { recursive: true });
-  fs.copyFileSync(path.join(ROOT, rel), path.join(OUT, rel));
-}
-// Tauri merges this over tauri.conf.json at build time (see package.json).
-fs.writeFileSync(path.join(__dirname, "version.json"), JSON.stringify({ version: ver[1] }) + "\n");
 
 console.log(
-  `stage: v${ver[1]}, ${files.length + 1} files (index.html, ${artKeys.length} art, ` +
-    `${musicKeys.length} music) -> desktop/web/`,
+  `stage: v${game.version}, ${copies.length} files (index.html, ${game.artKeys.length} art, ` +
+    `${game.musicKeys.length} music), ${copied} updated -> desktop/web/`,
 );

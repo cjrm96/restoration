@@ -12797,29 +12797,31 @@
       // BUMP THIS ON EVERY PUSH (see CLAUDE.md: minor for features, patch
       // for fixes). Distinct from SAVE_VERSION, which only tracks the save
       // format.
-      const GAME_VERSION = "0.108.0";
+      const GAME_VERSION = "0.108.1";
 
       // Every save read and write goes through saveStore. In a browser it is
       // plain localStorage, exactly as before. In the desktop app (desktop/,
       // Tauri) localStorage stays the working copy and every write is also
       // mirrored to a real file on disk, which Steam Cloud can sync and an OS
       // cache wipe can't touch. The app hands those files to the page at
-      // launch as window.__DESKTOP_SAVES; on the first page load of a launch
-      // they win over localStorage. Reloads within a launch skip that step,
-      // because localStorage is already newer than what the app read at
-      // startup.
-      const SAVE_SUFFIXES = ["", "_bak1", "_bak2", "_bak3", "_preimport"];
+      // launch as window.__DESKTOP_SAVES, stamped with a per-launch id. The
+      // first page load of a launch lets the files win over localStorage and
+      // records the id beside the saves; reloads within the launch see the id
+      // and keep localStorage, which is newer than what the app read.
+      const SAVE_BACKUPS = ["_bak1", "_bak2", "_bak3"];
+      const SAVE_SUFFIXES = ["", ...SAVE_BACKUPS, "_preimport"];
       const saveStore = (() => {
         const ls = {
           get: (k) => localStorage.getItem(k),
           set: (k, v) => localStorage.setItem(k, v),
           remove: (k) => localStorage.removeItem(k),
           flush: () => Promise.resolve(),
-          desktop: false,
         };
         const files = window.__DESKTOP_SAVES;
+        const launch = window.__DESKTOP_LAUNCH;
         const invoke = window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke;
         if (!files || typeof invoke !== "function") return ls;
+        delete window.__DESKTOP_SAVES;
 
         // Writes run one at a time, in order, so a remove can't land after
         // the write that follows it, and quitting can wait on the last one.
@@ -12839,10 +12841,10 @@
           return queue;
         };
         const keys = SAVE_SUFFIXES.map((s) => SAVE_KEY + s);
-        let firstLoad = true;
+        let firstLoad = false;
         try {
-          firstLoad = !sessionStorage.getItem("__desktopSavesLoaded");
-          sessionStorage.setItem("__desktopSavesLoaded", "1");
+          firstLoad = localStorage.getItem("__desktopLaunch") !== launch;
+          if (firstLoad) localStorage.setItem("__desktopLaunch", launch);
         } catch (e) {}
         if (firstLoad) {
           if (typeof files[SAVE_KEY] === "string") {
@@ -12859,6 +12861,8 @@
             });
           }
         }
+        // The app calls this when the window closes, then quits once it settles.
+        window.__desktopBeforeQuit = saveOnExit;
         return {
           get: ls.get,
           set: (k, v) => {
@@ -12870,7 +12874,6 @@
             send("save_remove", { key: k });
           },
           flush: () => queue,
-          desktop: true,
         };
       })();
 
@@ -17971,7 +17974,7 @@
           }
           if (!parsed || !parsed.state) {
             // Main save is corrupt, fall back to the newest good backup.
-            for (const k of ["_bak1", "_bak2", "_bak3"]) {
+            for (const k of SAVE_BACKUPS) {
               const bak = saveStore.get(SAVE_KEY + k);
               if (!bak) continue;
               try {
@@ -32298,9 +32301,14 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
           setTimeout(() => saveGame(false), 0);
         }
       }, 15000);
-      window.addEventListener("beforeunload", () => {
+      // The last save before the page goes away: on reload or tab close here,
+      // and from the desktop app when its window closes (resolves once the
+      // save file is written).
+      function saveOnExit() {
         if (!window.__wipeInProgress) saveGame(true);
-      });
+        return saveStore.flush();
+      }
+      window.addEventListener("beforeunload", saveOnExit);
 
       // Fullscreen feature detection + state sync
       ["fullscreenchange", "webkitfullscreenchange", "mozfullscreenchange", "MSFullscreenChange"].forEach((ev) =>
@@ -32397,7 +32405,7 @@ ${bx(0,0,64,64,L.a,L.aa)}${bx(0,0,64,64,`url(#g${uid})`)}${bx(0,0,64,64,`url(#v$
         // from memory during the reload and resurrect the wiped game.
         window.__wipeInProgress = true;
         saveStore.remove(SAVE_KEY);
-        ["_bak1", "_bak2", "_bak3"].forEach((k) => saveStore.remove(SAVE_KEY + k));
+        SAVE_BACKUPS.forEach((k) => saveStore.remove(SAVE_KEY + k));
         location.reload();
       }
       // Title-screen helpers: Settings reuses the in-game settings modal

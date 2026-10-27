@@ -17,39 +17,28 @@ const fs = require("fs");
 const path = require("path");
 const zlib = require("zlib");
 
+const gameFiles = require("./game-files");
+
 const ROOT = path.join(__dirname, "..");
-const SRC = path.join(ROOT, "Car_Guy_Sim.html");
 const OUT_DIR = path.join(ROOT, "dist");
 const OUT = path.join(OUT_DIR, "car-guy-sim-itch.zip");
 
-const html = fs.readFileSync(SRC, "utf8");
-
-// Pull the key lists straight from the source so the two never drift.
-function keysFrom(listName) {
-  const m = html.match(new RegExp(`const ${listName} = \\[([\\s\\S]*?)\\];`));
-  if (!m) {
-    console.error(`build-web: could not find ${listName} in the source.`);
-    process.exit(1);
-  }
-  return [...m[1].matchAll(/"([a-z0-9-]+)"/g)].map((x) => x[1]);
-}
-
-const files = [["index.html", fs.readFileSync(SRC)]];
-const missing = [];
-function add(rel) {
-  const abs = path.join(ROOT, rel);
-  if (!fs.existsSync(abs)) return missing.push(rel);
-  files.push([rel, fs.readFileSync(abs)]);
-}
-const artKeys = keysFrom("ART_KEYS");
-const musicKeys = keysFrom("MUSIC_KEYS");
-artKeys.forEach((k) => add(`assets/art/${k}.webp`));
-musicKeys.forEach((k) => add(`assets/audio/${k}.mp3`));
-for (const f of fs.readdirSync(path.join(ROOT, "assets", "fonts"))) add(`assets/fonts/${f}`);
-if (missing.length) {
-  console.error("build-web: missing assets:\n  " + missing.join("\n  "));
+let game;
+try {
+  game = gameFiles();
+} catch (e) {
+  console.error("build-web: " + e.message);
   process.exit(1);
 }
+if (game.missing.length) {
+  console.error("build-web: missing assets:\n  " + game.missing.join("\n  "));
+  process.exit(1);
+}
+const { artKeys, musicKeys } = game;
+const files = [
+  ["index.html", fs.readFileSync(game.src)],
+  ...game.files.map((rel) => [rel, fs.readFileSync(path.join(ROOT, rel))]),
+];
 
 // ── minimal zip writer ──
 // Media is already compressed, so it is stored; text gets deflated.

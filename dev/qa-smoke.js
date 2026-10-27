@@ -3258,9 +3258,10 @@ const pass = (msg) => console.log("✓", msg);
     const art = keys("ART_KEYS"), songs = keys("MUSIC_KEYS");
     if (art.length < 60) fail("itch zip check found too few ART_KEYS: " + art.length);
     if (!songs.length) fail("itch zip check found no MUSIC_KEYS");
-    const lost = [...art.map((k) => `assets/art/${k}.webp`), ...songs.map((k) => `assets/audio/${k}.mp3`)].filter((f) => !entries.has(f));
+    const fonts = fs.readdirSync(path.join(__dirname, "..", "assets", "fonts")).map((f) => `assets/fonts/${f}`);
+    const lost = [...art.map((k) => `assets/art/${k}.webp`), ...songs.map((k) => `assets/audio/${k}.mp3`), ...fonts].filter((f) => !entries.has(f));
     if (lost.length) fail("itch zip is missing: " + lost.join(", "));
-    pass(`itch zip complete (index.html, ${art.length} art, ${songs.length} songs, ${(zip.length / 1048576).toFixed(1)} MB)`);
+    pass(`itch zip complete (index.html, ${art.length} art, ${songs.length} songs, ${fonts.length} font files, ${(zip.length / 1048576).toFixed(1)} MB)`);
   }
 
   // ── the first playable screen at phone width, in a real narrow viewport.

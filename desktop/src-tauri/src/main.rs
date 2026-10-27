@@ -60,10 +60,10 @@ fn read_saves(app: &AppHandle) -> BTreeMap<String, String> {
     saves
 }
 
-// Plain (non-async) commands run in order on the main thread, so a remove
-// followed by a write after a reload can never land out of order.
+// Async, so disk writes never stall the window. Order is kept by the page,
+// which waits for each save command to finish before sending the next.
 #[tauri::command]
-fn save_write(app: AppHandle, key: String, data: String) -> Result<(), String> {
+async fn save_write(app: AppHandle, key: String, data: String) -> Result<(), String> {
     let path = key_file(&app, &key)?;
     // Write a temp file, flush it to disk, then swap it in, so a crash or
     // power cut mid-write leaves the old save whole.
@@ -76,7 +76,7 @@ fn save_write(app: AppHandle, key: String, data: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn save_remove(app: AppHandle, key: String) -> Result<(), String> {
+async fn save_remove(app: AppHandle, key: String) -> Result<(), String> {
     let path = key_file(&app, &key)?;
     match fs::remove_file(path) {
         Err(e) if e.kind() != std::io::ErrorKind::NotFound => Err(e.to_string()),
@@ -94,13 +94,19 @@ fn main() {
         .invoke_handler(tauri::generate_handler![save_write, save_remove, app_quit])
         .setup(|app| {
             let saves = serde_json::to_string(&read_saves(app.handle()))?;
+            // Tells the page's first load of this launch apart from reloads.
+            let launch = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_nanos())
+                .unwrap_or_default();
             let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
                 .title("Car Guy Simulator")
                 .inner_size(1280.0, 800.0)
                 .min_inner_size(1024.0, 640.0)
-                .resizable(true)
                 .center()
-                .initialization_script(&format!("window.__DESKTOP_SAVES = {saves};"))
+                .initialization_script(&format!(
+                    "window.__DESKTOP_SAVES = {saves}; window.__DESKTOP_LAUNCH = \"{launch}\";"
+                ))
                 .build()?;
             window.on_window_event({
                 let window = window.clone();
@@ -109,13 +115,14 @@ fn main() {
                         if QUITTING.swap(true, Ordering::SeqCst) {
                             return; // second close: let it go
                         }
-                        // Save one last time and wait for the file write,
-                        // then the page calls app_quit. If the page is stuck,
-                        // quit anyway after two seconds.
+                        // The game saves one last time (__desktopBeforeQuit
+                        // waits for the file write), then the page calls
+                        // app_quit. If the page is stuck, quit anyway after
+                        // two seconds.
                         api.prevent_close();
                         let _ = window.eval(
-                            "try { saveGame(true); } catch (e) {} \
-                             saveStore.flush().finally(() => window.__TAURI__.core.invoke('app_quit'));",
+                            "Promise.resolve(window.__desktopBeforeQuit && window.__desktopBeforeQuit()) \
+                             .finally(() => window.__TAURI__.core.invoke('app_quit'));",
                         );
                         let app = window.app_handle().clone();
                         std::thread::spawn(move || {

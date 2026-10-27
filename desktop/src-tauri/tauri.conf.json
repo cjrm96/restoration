@@ -16,7 +16,6 @@
     "active": true,
     "targets": [
       "appimage",
-      "deb",
       "nsis",
       "dmg"
     ],

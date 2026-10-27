@@ -10,46 +10,34 @@ name: Desktop build
 on:
   workflow_dispatch:
   push:
+    # garage is fast-forwarded to the same commit as main on push live, so
+    # building it too would only repeat the main build.
+    branches-ignore: [garage]
     paths:
       - "Car_Guy_Sim.html"
       - "assets/**"
       - "desktop/**"
+      - "dev/game-files.js"
       - ".github/workflows/desktop-build.yml"
 
-jobs:
-  windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: desktop/package-lock.json
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: desktop/src-tauri
-      - name: Build
-        working-directory: desktop
-        run: |
-          npm ci
-          npm run build -- --bundles nsis
-      - name: Collect
-        shell: bash
-        run: |
-          mkdir out
-          cp desktop/src-tauri/target/release/car-guy-sim.exe "out/Car Guy Simulator.exe"
-          cp desktop/src-tauri/target/release/bundle/nsis/*.exe out/
-      - uses: actions/upload-artifact@v4
-        with:
-          name: car-guy-sim-windows
-          path: out/
+# A newer push to the same branch replaces a build still running.
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
 
-  linux:
-    # Built on the oldest Ubuntu Tauri recommends so the AppImage runs on
-    # older systems and on the Steam Deck.
-    runs-on: ubuntu-22.04
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: car-guy-sim-windows
+          # The oldest Ubuntu Tauri recommends, so the AppImage runs on older
+          # systems and on the Steam Deck.
+          - os: ubuntu-22.04
+            artifact: car-guy-sim-linux
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -62,6 +50,7 @@ jobs:
         with:
           workspaces: desktop/src-tauri
       - name: System packages
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev librsvg2-dev patchelf \
@@ -70,8 +59,19 @@ jobs:
         working-directory: desktop
         run: |
           npm ci
-          npm run build -- --bundles appimage
+          npm run build
+      - name: Collect
+        shell: bash
+        run: |
+          mkdir out
+          bundle=desktop/src-tauri/target/release/bundle
+          if [ "$RUNNER_OS" = Windows ]; then
+            cp desktop/src-tauri/target/release/car-guy-sim.exe "out/Car Guy Simulator.exe"
+            cp $bundle/nsis/*.exe out/
+          else
+            cp $bundle/appimage/*.AppImage out/
+          fi
       - uses: actions/upload-artifact@v4
         with:
-          name: car-guy-sim-linux
-          path: desktop/src-tauri/target/release/bundle/appimage/*.AppImage
+          name: ${{ matrix.artifact }}
+          path: out/
